@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    android:style="@style/AppTheme"
+    
+    
+	<PreferenceCategory
+	    android:title="@string/title_download_settings"
+	    >
+        
+	    <SwitchPreference 
+		    android:key="use_timer"
+    		android:defaultValue="false"
+		    android:title="@string/use_timer" 
+    		android:dialogTitle="@string/use_timer"
+		    android:summary="@string/use_timer_description"
+    		/>
+	    
+        <SwitchPreference
+		    android:key="use_wifi"
+    		android:defaultValue="true"
+		    android:title="@string/use_wifi"
+		    android:summary="@string/use_wifi_description"
+         	/>
+        
+        <SwitchPreference
+		    android:key="use_data"
+    		android:defaultValue="false"
+		    android:title="@string/use_mobile"
+		    android:summary="@string/use_mobile_description"
+         	/>
+        
+        <SwitchPreference
+		    android:key="use_high_quality"
+    		android:defaultValue="true"
+		    android:title="@string/use_high_quality"
+		    android:summary="@string/use_high_quality_description"
+         	/>
+        
+        <SwitchPreference
+		    android:key="force_download"
+    		android:defaultValue="false"
+		    android:title="@string/force_download"
+		    android:summary="@string/force_download_description"
+         	/>
+        
+        <SwitchPreference
+		    android:key="keep_images"
+    		android:defaultValue="true"
+		    android:title="@string/keep_images"
+		    android:summary="@string/keep_images_description"
+         	/>
+        
+    </PreferenceCategory>
+    
+</PreferenceScreen>

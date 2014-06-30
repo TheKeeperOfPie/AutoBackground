@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    
+    <EditText
+    	style="@android:style/Theme.Dialog"
+        android:id="@+id/website_title"
+        android:inputType="text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:hint="@string/website_title"
+        />
+    
+    <EditText
+	    style="@android:style/Theme.Dialog"
+        android:id="@+id/website_url"
+        android:inputType="textUri"
+    	android:layout_below="@id/website_title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:hint="@string/website_url"
+        />
+    
+    <EditText
+	    style="@android:style/Theme.Dialog"
+        android:id="@+id/num_images"
+        android:inputType="number"
+    	android:layout_below="@id/website_url"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginBottom="4dp"
+        android:hint="@string/num_images"
+        />
+
+</RelativeLayout>

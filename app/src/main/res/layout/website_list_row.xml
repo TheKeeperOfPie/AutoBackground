@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:orientation="vertical"
+    >
+    <Switch
+        android:id="@+id/use_website_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:focusable="false"
+        />
+
+    <TextView
+        android:id="@+id/title_text"
+        android:layout_toLeftOf="@id/use_website_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:textSize="22sp"
+        android:singleLine="true"
+        android:textColor="@color/COLOR_WHITE_OPAQUE"
+        android:background="@android:color/transparent"
+        android:focusable="false"
+        />
+
+    <TextView
+        android:id="@+id/num_text"
+        android:layout_gravity="right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:textSize="14sp"
+        android:singleLine="true"
+        android:background="@android:color/transparent"
+        android:focusable="false"
+        />
+
+    <TextView
+        android:id="@+id/summary_text"
+        android:layout_below="@id/title_text"
+        android:layout_toLeftOf="@id/num_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:textSize="14sp"
+        android:singleLine="true"
+        android:background="@android:color/transparent"
+        android:focusable="false"
+        />
+
+</RelativeLayout>

@@ -1,0 +1,121 @@
+package cw.kop.autobackground.websites;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import cw.kop.autobackground.R;
+
+import cw.kop.autobackground.settings.AppSettings;
+import android.app.Activity;
+import android.content.Context;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.Switch;
+import android.widget.TextView;
+
+public class WebsiteListAdapter extends BaseAdapter {
+
+	private Activity mainActivity;
+    private ArrayList<HashMap<String, String>> listData;
+    private static LayoutInflater inflater = null;
+	
+	public WebsiteListAdapter(Activity activity) {
+		mainActivity = activity;
+		listData = new ArrayList<HashMap<String, String>>();
+		inflater = (LayoutInflater)mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	}
+
+	@Override
+	public int getCount() {
+		return listData.size();
+	}
+
+	public HashMap<String, String> getItem(int position) {
+		return listData.get(position);
+	}
+	
+	@Override
+	public long getItemId(int position) {
+		return position;
+	}
+
+	@Override
+	public View getView(int position, View convertView, ViewGroup parent) {
+		
+		final HashMap<String, String> listItem = listData.get(position);
+		
+		View view = convertView;
+		
+		if (convertView == null) {
+			view = inflater.inflate(R.layout.website_list_row, null);
+		}
+		
+		TextView title = (TextView) view.findViewById(R.id.title_text);
+		TextView summary = (TextView) view.findViewById(R.id.summary_text);
+		TextView num = (TextView) view.findViewById(R.id.num_text);
+		final Switch useBox = (Switch) view.findViewById(R.id.use_website_checkbox);
+		useBox.setTag(position);
+		
+		useBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				
+				int index = Integer.parseInt(useBox.getTag().toString());
+				
+				setItem(index, listData.get(index).get("title"), listData.get(index).get("url"), isChecked, listData.get(index).get("num"));
+				notifyDataSetChanged();
+				
+			}
+			
+		});
+		
+		title.setText(listItem.get("title"));
+		summary.setText(listItem.get("url"));
+		num.setText("# Images: " + listItem.get("num"));
+		useBox.setChecked(Boolean.valueOf(listItem.get("use")));
+		
+		return view;
+	}
+
+	public void setItem(int position, String title, String url, boolean use, String num) {
+		HashMap<String, String> changedItem = new HashMap<String, String>();
+		changedItem.put("title", title);
+		changedItem.put("url", url);
+		changedItem.put("num", "" + num);
+		changedItem.put("use", "" + use);
+		listData.set(position, changedItem);
+		notifyDataSetChanged();
+	}
+	
+	public void addItem(String title, String url, boolean use, String num) {
+		HashMap<String, String> newItem = new HashMap<String, String>();
+		newItem.put("title", title);
+		newItem.put("url", url);
+		newItem.put("num", "" + num);
+		newItem.put("use", "" + use);
+		listData.add(newItem);
+		notifyDataSetChanged();
+
+		Log.i("WLA", "listData" + listData.size());
+	}
+	
+	public void removeItem(int position) {
+		listData.remove(position);
+		notifyDataSetChanged();
+	}
+	
+	public void saveData() {
+		
+		AppSettings.setWebsites(listData);
+		
+		Log.i("WLA", "SavedListData" + listData.size());
+		Log.i("WLA", "Saved Data: " + AppSettings.getNumWebsites());
+	}
+	
+}

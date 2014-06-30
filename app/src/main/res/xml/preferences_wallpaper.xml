@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+	<PreferenceCategory
+		android:title="@string/title_image_settings"
+		>
+      
+		<EditTextPreference
+			android:key="user_width"
+			android:defaultValue="1000"
+			android:title="@string/user_width" 
+			android:inputType="number"
+			android:numeric="integer"
+			android:summary="@string/user_width_description"
+			/>
+      
+		<EditTextPreference
+			android:key="user_height"
+			android:defaultValue="1000"
+			android:title="@string/user_height"
+			android:inputType="number"
+			android:numeric="integer"
+			android:summary="@string/user_height_description"
+			/>
+  
+		<SwitchPreference
+			android:key="fill_images"
+			android:defaultValue="true"
+			android:title="@string/fill_images" 
+			android:summary="@string/fill_images_description"
+			/>
+      
+		<SwitchPreference
+			android:key="shuffle_images"
+			android:defaultValue="true"
+			android:title="@string/shuffle_images" 
+			android:summary="@string/shuffle_images_description"
+			/>
+      
+	</PreferenceCategory>
+
+	<PreferenceCategory
+	    android:title="@string/title_interval_settings">
+	
+		<SwitchPreference 
+			android:key="use_interval"
+			android:defaultValue="false"
+			android:title="@string/use_interval" 
+			android:dialogTitle="@string/use_interval"
+			android:summary="@string/use_interval_description"
+			/>
+  
+		<SwitchPreference 
+			android:key="force_interval"
+			android:defaultValue="false"
+			android:title="@string/force_interval" 
+			android:dialogTitle="@string/force_interval"
+			android:summary="@string/force_interval_description"
+			/>
+  
+		<SwitchPreference 
+			android:key="on_leave"
+			android:defaultValue="true"
+			android:title="@string/on_leave" 
+			android:dialogTitle="@string/on_leave"
+			android:summary="@string/on_leave_description"
+			/>
+		
+	</PreferenceCategory>
+	
+	<PreferenceCategory
+	    android:title="@string/title_animation_settings">	
+	    
+		<SwitchPreference 
+			android:key="use_animation"
+			android:defaultValue="false"
+			android:title="@string/use_animation" 
+			android:dialogTitle="@string/use_animation"
+			android:summary="@string/use_animation_description"
+			/>
+		
+		<SeekBarPreference
+			android:key="animation_speed"
+			android:max="10"
+			android:defaultValue="1"
+			android:title="@string/animation_speed"
+			android:summary="@string/animation_speed_description"
+			/>
+		
+	</PreferenceCategory>	
+		
+</PreferenceScreen>

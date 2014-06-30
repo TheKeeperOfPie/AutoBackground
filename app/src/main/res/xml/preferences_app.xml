@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    
+	<PreferenceCategory
+		android:title="@string/title_app_settings"
+		>
+
+		<SwitchPreference
+			android:key="use_notification"
+			android:defaultValue="false"
+			android:title="@string/use_notification" 
+			android:summary="@string/use_notification_description"
+			/>
+   
+		<SwitchPreference
+			android:key="force_multipane"
+			android:defaultValue="false"
+			android:title="@string/force_multipane" 
+			android:summary="@string/force_multipane_description"
+			/>
+		
+		<SwitchPreference
+			android:key="use_transparent_theme"
+			android:defaultValue="false"
+			android:title="@string/use_transparent_theme" 
+			android:summary="@string/use_transparent_theme_description"
+			/>
+		
+	</PreferenceCategory>	
+		
+</PreferenceScreen>
