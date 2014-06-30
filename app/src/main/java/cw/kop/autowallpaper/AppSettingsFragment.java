@@ -1,4 +1,4 @@
-package cw.kop.autobackground;
+package cw.kop.autowallpaper;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,8 +13,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import cw.kop.autobackground.R;
 
 public class AppSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 

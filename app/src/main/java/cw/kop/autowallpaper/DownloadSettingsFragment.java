@@ -1,7 +1,6 @@
-package cw.kop.autobackground;
+package cw.kop.autowallpaper;
 
-import cw.kop.autobackground.R;
-import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autowallpaper.settings.AppSettings;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -12,7 +11,6 @@ import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;

@@ -3,37 +3,37 @@
 <preference-headers
         xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <header android:fragment="cw.kop.autobackground.WallpaperSettingsFragment"
+    <header android:fragment="cw.kop.autowallpaper.WallpaperSettingsFragment"
         	android:icon="@drawable/ic_action_picture"
         	android:title="@string/header_title_wallpaper"
         	android:summary="@string/header_summary_wallpaper"
         	/>
 
-    <header android:fragment="cw.kop.autobackground.websites.WebsiteListFragment"
+    <header android:fragment="cw.kop.autowallpaper.websites.WebsiteListFragment"
         	android:icon="@drawable/ic_action_web_site"
             android:title="@string/header_title_websites"
             android:summary="@string/header_summary_websites"
             />
     
-    <header android:fragment="cw.kop.autobackground.DownloadSettingsFragment"
+    <header android:fragment="cw.kop.autowallpaper.DownloadSettingsFragment"
             android:icon="@drawable/ic_action_download"
             android:title="@string/header_title_download"
             android:summary="@string/header_summary_download"
             />
     
-    <header android:fragment="cw.kop.autobackground.images.LocalImageFragment"
+    <header android:fragment="cw.kop.autowallpaper.images.LocalImageFragment"
             android:icon="@drawable/ic_action_storage"
             android:title="@string/header_title_image"
             android:summary="@string/header_summary_image"
             />
     
-    <header android:fragment="cw.kop.autobackground.AppSettingsFragment"
+    <header android:fragment="cw.kop.autowallpaper.AppSettingsFragment"
             android:icon="@drawable/ic_action_settings"
             android:title="@string/header_title_app"
             android:summary="@string/header_summary_app"
             />
     
-    <header android:fragment="cw.kop.autobackground.AboutFragment"
+    <header android:fragment="cw.kop.autowallpaper.AboutFragment"
             android:icon="@drawable/ic_action_about"
             android:title="@string/header_title_about"
             android:summary="@string/header_summary_about"

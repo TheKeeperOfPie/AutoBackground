@@ -1,11 +1,11 @@
-package cw.kop.autobackground.images;
+package cw.kop.autowallpaper.images;
 
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import cw.kop.autobackground.R;
+import cw.kop.autowallpaper.R;
 import com.squareup.picasso.Picasso;
 
 import android.app.Activity;

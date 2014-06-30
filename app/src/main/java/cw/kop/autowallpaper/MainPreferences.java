@@ -1,10 +1,10 @@
-package cw.kop.autobackground;
+package cw.kop.autowallpaper;
 
 import java.util.List;
 
-import cw.kop.autobackground.images.LocalImageFragment;
-import cw.kop.autobackground.settings.AppSettings;
-import cw.kop.autobackground.websites.WebsiteListFragment;
+import cw.kop.autowallpaper.images.LocalImageFragment;
+import cw.kop.autowallpaper.settings.AppSettings;
+import cw.kop.autowallpaper.websites.WebsiteListFragment;
 import android.app.ActionBar;
 import android.app.ActivityManager;
 import android.app.FragmentBreadCrumbs;

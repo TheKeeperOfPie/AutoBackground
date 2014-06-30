@@ -1,10 +1,10 @@
-package cw.kop.autobackground.images;
+package cw.kop.autowallpaper.images;
 
 import java.io.File;
 
-import cw.kop.autobackground.R;
+import cw.kop.autowallpaper.R;
 
-import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autowallpaper.settings.AppSettings;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;

@@ -1,4 +1,4 @@
-package cw.kop.autobackground;
+package cw.kop.autowallpaper;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -13,12 +13,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
-import java.util.logging.Handler;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
-
-import cw.kop.autobackground.GLShaders;
 
 public class GLRenderer implements Renderer {
 

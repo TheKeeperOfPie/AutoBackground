@@ -1,4 +1,4 @@
-package cw.kop.autobackground;
+package cw.kop.autowallpaper;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -13,9 +13,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.opengl.GLES20;
@@ -41,7 +39,7 @@ import java.nio.ShortBuffer;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autowallpaper.settings.AppSettings;
 
 public class LiveWallpaperService extends GLWallpaperService {
 
@@ -161,8 +159,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             }
             Log.i("Receiver", "ServiceReceived");
-
-
 
         }
     };

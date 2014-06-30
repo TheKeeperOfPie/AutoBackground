@@ -1,4 +1,4 @@
-package cw.kop.autobackground;
+package cw.kop.autowallpaper;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

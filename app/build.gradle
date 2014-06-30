@@ -5,11 +5,11 @@ android {
     buildToolsVersion '20.0.0'
 
     defaultConfig {
-        applicationId "cw.kop.myapplication"
+        applicationId "cw.kop.autowallpaper"
         minSdkVersion 17
         targetSdkVersion 20
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "0.2"
     }
     buildTypes {
         release {

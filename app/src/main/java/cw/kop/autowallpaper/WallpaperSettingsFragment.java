@@ -1,7 +1,6 @@
-package cw.kop.autobackground;
+package cw.kop.autowallpaper;
 
-import cw.kop.autobackground.R;
-import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autowallpaper.settings.AppSettings;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;

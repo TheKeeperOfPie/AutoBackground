@@ -1,4 +1,4 @@
-package cw.kop.autobackground;
+package cw.kop.autowallpaper;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;

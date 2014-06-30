@@ -1,10 +1,8 @@
-package cw.kop.autobackground;
+package cw.kop.autowallpaper;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-
-import cw.kop.autobackground.R;
 
 public class AboutFragment extends PreferenceFragment{
 

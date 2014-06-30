@@ -1,4 +1,4 @@
-package cw.kop.autobackground;
+package cw.kop.autowallpaper;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,10 +17,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import cw.kop.autobackground.R;
-import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autowallpaper.settings.AppSettings;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
