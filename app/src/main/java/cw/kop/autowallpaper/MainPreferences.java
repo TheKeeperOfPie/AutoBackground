@@ -40,7 +40,6 @@ public class MainPreferences extends PreferenceActivity{
 	private Button downloadButton;
 	private Button refreshButton;
 	private LinearLayout footerLayout;
-    private MainPreferences mainPreferences;
     private WebView webView;
 	
 	protected boolean isValidFragment(final String fragmentName) {
@@ -109,12 +108,13 @@ public class MainPreferences extends PreferenceActivity{
         });
         
         refreshButton = new Button(this);
-        refreshButton.setText("Refresh Wallpaper");
+        refreshButton.setText("Cycle Wallpaper");
         refreshButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				refreshWallpaper();
+                cycleWallpaper();
+                Toast.makeText(getApplicationContext(), "Cycling...", Toast.LENGTH_SHORT).show();
 			}
         	
         });
@@ -174,7 +174,7 @@ public class MainPreferences extends PreferenceActivity{
 			setButton.setVisibility(View.VISIBLE);
 		}
 		if (onIsMultiPane()) {
-			((FragmentBreadCrumbs) (findViewById(android.R.id.title))).setVisibility(View.GONE);
+			(findViewById(android.R.id.title)).setVisibility(View.GONE);
 		}
 		setBackgroundColorForViewTree((ViewGroup) getWindow().getDecorView(), Color.TRANSPARENT);
 	}
@@ -215,10 +215,10 @@ public class MainPreferences extends PreferenceActivity{
 		startActivityForResult(i, 0);
 	}
     
-    protected void refreshWallpaper() {
+    protected void cycleWallpaper() {
     	
     	Intent intent = new Intent();
-		intent.setAction(LiveWallpaperService.REFRESH_WALLPAPER);
+		intent.setAction(LiveWallpaperService.CYCLE_WALLPAPER);
 		intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
 
 		sendBroadcast(intent);

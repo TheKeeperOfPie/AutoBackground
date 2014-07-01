@@ -38,12 +38,12 @@ public abstract class GLWallpaperService extends WallpaperService {
             glSurfaceView.setRenderMode(mode);
         }
 
-        protected void render() {
-            glSurfaceView.requestRender();
+        protected int getRendererMode() {
+            return glSurfaceView.getRenderMode();
         }
 
-        protected WallpaperGLSurfaceView getGLSurfaceView() {
-            return glSurfaceView;
+        protected void render() {
+            glSurfaceView.requestRender();
         }
 
         protected void addEvent(Runnable runnable) {
