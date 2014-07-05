@@ -21,6 +21,9 @@
         <item name="android:background">@color/COLOR_TRANSPARENT_BACKGROUND</item>
         <item name="android:windowBackground">@color/COLOR_TRANSPARENT_BACKGROUND</item>
     	<item name="android:listViewStyle">@style/MyListView</item>
+        <item name="android:textColor">@color/COLOR_WHITE_OPAQUE</item>
+        <item name="android:shadowColor">@color/COLOR_BLACK_OPAQUE</item>
+        <item name="android:shadowRadius">4</item>
     </style>
 
     <style name="MyListView" parent="@android:style/Widget.ListView">

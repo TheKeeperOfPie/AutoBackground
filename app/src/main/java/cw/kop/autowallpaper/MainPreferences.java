@@ -49,7 +49,8 @@ public class MainPreferences extends PreferenceActivity{
 				|| WallpaperSettingsFragment.class.getName().equals(fragmentName)
 				|| WebsiteListFragment.class.getName().equals(fragmentName)
 				|| DownloadSettingsFragment.class.getName().equals(fragmentName)
-				|| LocalImageFragment.class.getName().equals(fragmentName)
+				|| ImageSettingsFragment.class.getName().equals(fragmentName)
+                || LocalImageFragment.class.getName().equals(fragmentName)
 				|| AppSettingsFragment.class.getName().equals(fragmentName)
 				|| AboutFragment.class.getName().equals(fragmentName);
 	}
@@ -80,9 +81,8 @@ public class MainPreferences extends PreferenceActivity{
         webView.getSettings().setUserAgentString(ua);
 
 		Downloader.setNewTask(getApplicationContext());
-		
-		ActionBar actionBar = getActionBar();
-	    actionBar.setDisplayHomeAsUpEnabled(true);
+
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 		
         setButton = new Button(this) ;
         setButton.setText("Set Wallpaper");
@@ -176,7 +176,10 @@ public class MainPreferences extends PreferenceActivity{
 		if (onIsMultiPane()) {
 			(findViewById(android.R.id.title)).setVisibility(View.GONE);
 		}
-		setBackgroundColorForViewTree((ViewGroup) getWindow().getDecorView(), Color.TRANSPARENT);
+
+        if (android.os.Build.VERSION.SDK_INT < 20) {
+            setBackgroundColorForViewTree((ViewGroup) getWindow().getDecorView(), Color.TRANSPARENT);
+        }
 	}
 	
 	private static void setBackgroundColorForViewTree(ViewGroup viewGroup, int color)
@@ -189,8 +192,7 @@ public class MainPreferences extends PreferenceActivity{
 			child.setBackgroundColor(color);
 		}
 		viewGroup.setBackgroundColor(color);
-		
-		
+
 	}
 
 	@Override

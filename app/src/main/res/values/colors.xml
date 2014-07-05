@@ -2,4 +2,5 @@
 <resources>
     <color name="COLOR_TRANSPARENT_BACKGROUND">#00000000</color>
     <color name="COLOR_WHITE_OPAQUE">#FFFFFFFF</color>
+    <color name="COLOR_BLACK_OPAQUE">#FF000000</color>
 </resources>

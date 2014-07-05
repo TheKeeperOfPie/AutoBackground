@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     
 	<PreferenceCategory
-		android:title="@string/title_image_settings"
+		android:title="@string/title_wallpaper_settings"
 		>
       
 		<EditTextPreference
@@ -70,12 +70,18 @@
 	
 	<PreferenceCategory
 	    android:title="@string/title_animation_settings">	
-	    
+
+        <SwitchPreference
+            android:key="use_fade"
+            android:defaultValue="true"
+            android:title="@string/use_fade"
+            android:summary="@string/use_fade_description"
+            />
+
 		<SwitchPreference 
 			android:key="use_animation"
 			android:defaultValue="false"
-			android:title="@string/use_animation" 
-			android:dialogTitle="@string/use_animation"
+			android:title="@string/use_animation"
 			android:summary="@string/use_animation_description"
 			/>
 		

@@ -61,13 +61,17 @@ public abstract class GLWallpaperService extends WallpaperService {
         @Override
         public void onVisibilityChanged(boolean visible) {
             super.onVisibilityChanged(visible);
+        }
 
+        public void pause() {
             if (rendererHasBeenSet) {
-                if (visible) {
-                    glSurfaceView.onResume();
-                } else {
-                    glSurfaceView.onPause();
-                }
+                glSurfaceView.onPause();
+            }
+        }
+
+        public void resume() {
+            if (rendererHasBeenSet) {
+                glSurfaceView.onResume();
             }
         }
 

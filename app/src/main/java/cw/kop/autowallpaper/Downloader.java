@@ -21,7 +21,9 @@ import cw.kop.autowallpaper.settings.AppSettings;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
@@ -32,8 +34,7 @@ import android.util.Patterns;
 import android.widget.Toast;
 
 public class Downloader {
-	
-	public static Bitmap wallpaper = null;
+
 	public static File bitmapFile = null;
 	
 	private static FilenameFilter fileFilter = null;
@@ -113,10 +114,6 @@ public class Downloader {
 		
 	}
 	
-	public static Bitmap getBitmap() {		
-		return wallpaper;
-	}
-	
 	public static String getBitmapUrl() {
 		return AppSettings.getUrl(bitmapFile.getName());
 	}
@@ -125,22 +122,8 @@ public class Downloader {
 		return bitmapFile;
 	}
 	
-	public static void clearBitmap() {
-		wallpaper.recycle();
-		wallpaper = null;
-	}
-	
 	public static void deleteCurrentBitmap() {
 		bitmapFile.delete();
-	}
-	
-	public static Boolean setBitmap(Bitmap bitmap) {
-		// TODO Auto-generated method stub
-		if (bitmap != null) {
-			wallpaper = bitmap;
-			return true;
-		}
-		return false;
 	}
 	
 	public static void loadImagesFromWeb(Context appContext) {
@@ -154,30 +137,6 @@ public class Downloader {
 		imageAsyncTask.execute(cacheDir);
 		Log.i("Downloader", "Sent Task");
     }
-
-	public static Bitmap getFirstImage(Context appContext) {
-		
-    	File[] images = getBitmapList(appContext);
-    	
-		Bitmap bitmap = null;
-		
-		File image = images[0];
-		
-		if (image.exists()) {
-
-			BitmapFactory.Options options = new BitmapFactory.Options();
-			if (!AppSettings.useHighQuality()) {
-				options.inPreferredConfig = Bitmap.Config.RGB_565;
-			}
-			bitmap = BitmapFactory.decodeFile(image.getAbsolutePath(), options);
-		}
-		
-		else {
-			Log.i("TAG", "No image");
-		}
-		
-		return bitmap;
-	}
 	
 	public static Bitmap getNextImage(Context appContext) {
 		
@@ -198,7 +157,7 @@ public class Downloader {
 			randIndex -= images.length;
 		}
 		
-		if (images != null && images.length > 0) {
+		if (images != null && images.length > 0 && randIndex < images.length) {
 			bitmapFile = images[randIndex];
 		}
 		
@@ -212,12 +171,12 @@ public class Downloader {
 				
 				bitmap = BitmapFactory.decodeFile(bitmapFile.getAbsolutePath(), options);
 				
-				wallpaper = bitmap;
-				
 				Log.i("RandIndex", "" + randIndex);
 			}
 			catch (OutOfMemoryError e) {
 				Toast.makeText(appContext, "Out of memory error", Toast.LENGTH_SHORT).show();
+                bitmap.recycle();
+                return null;
 			}
 			
 		}
@@ -449,7 +408,9 @@ public class Downloader {
 	                publishProgress("Downloaded: " + imageUrl);
 	                
 	                //Log.i(TAG, "Wrote: " + imageUrl + "\nWidth: " + bitmap.getWidth() + "\nHeight: " + bitmap.getHeight() + "\nIndex: " + (index - 1));
-	                
+
+                    bitmap.recycle();
+
 	                return true;
 	                
 		        } 
@@ -518,6 +479,11 @@ public class Downloader {
 			
 			NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 			notificationManager.notify(1, notification.build());
+
+            Intent cycleIntent = new Intent();
+            cycleIntent.setAction(LiveWallpaperService.CYCLE_WALLPAPER);
+            cycleIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+            context.sendBroadcast(cycleIntent);
 			
 			context = null;
 			

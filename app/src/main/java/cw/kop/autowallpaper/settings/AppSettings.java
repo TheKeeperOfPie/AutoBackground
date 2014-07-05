@@ -207,4 +207,20 @@ public class AppSettings {
 		return prefs.getBoolean("use_transparent_theme", false);
 	}
 
+    public static boolean useFade() {
+        return prefs.getBoolean("use_fade", true);
+    }
+
+    public static boolean useEffects() {
+        return prefs.getBoolean("use_effects", false);
+    }
+
+    public static int getBrightnessValue() {
+        return prefs.getInt("effect_brightness", 0);
+    }
+
+    public static int getContrastValue() {
+        return prefs.getInt("effect_contrast", 0);
+    }
+
 }

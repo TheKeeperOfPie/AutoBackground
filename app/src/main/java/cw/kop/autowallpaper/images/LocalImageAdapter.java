@@ -105,7 +105,7 @@ public class LocalImageAdapter extends BaseAdapter {
 	
 	public void setDirectory(File selectedFile) {
 		
-		if (selectedFile != null && selectedFile.isDirectory() && selectedFile.list().length > 0) {
+		if (selectedFile != null && selectedFile.isDirectory()) {
 			mainDir = selectedFile;
 			
 			ArrayList<File> tempList = new ArrayList<File>();

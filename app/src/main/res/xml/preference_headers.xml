@@ -20,11 +20,17 @@
             android:title="@string/header_title_download"
             android:summary="@string/header_summary_download"
             />
+
+    <header android:fragment="cw.kop.autowallpaper.ImageSettingsFragment"
+            android:icon="@drawable/ic_action_crop"
+            android:title="@string/header_title_image"
+            android:summary="@string/header_summary_image"
+            />
     
     <header android:fragment="cw.kop.autowallpaper.images.LocalImageFragment"
             android:icon="@drawable/ic_action_storage"
-            android:title="@string/header_title_image"
-            android:summary="@string/header_summary_image"
+            android:title="@string/header_title_storage"
+            android:summary="@string/header_summary_storage"
             />
     
     <header android:fragment="cw.kop.autowallpaper.AppSettingsFragment"

@@ -24,7 +24,7 @@
         android:text="@string/use_directory_button"
 	    android:layout_width="fill_parent" 
 	    android:layout_height="wrap_content"
-    	android:textSize="22sp"
+    	android:textSize="18sp"
     	android:textColor="@color/COLOR_WHITE_OPAQUE"
 	    />
     
@@ -33,7 +33,7 @@
         android:text="@string/reset_directory_button"
 	    android:layout_width="fill_parent" 
 	    android:layout_height="wrap_content"
-    	android:textSize="22sp"
+    	android:textSize="18sp"
     	android:textColor="@color/COLOR_WHITE_OPAQUE"
 	    />
     

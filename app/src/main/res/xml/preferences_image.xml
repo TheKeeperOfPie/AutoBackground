@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/title_image_settings"
+        >
+
+        <SwitchPreference
+            android:key="use_effects"
+            android:defaultValue="false"
+            android:title="@string/use_effects"
+            android:summary="@string/use_effects_description"
+            />
+
+        <SeekBarPreference
+            android:key="effect_brightness"
+            android:max="5"
+            android:defaultValue="0"
+            android:title="@string/effect_brightness"
+            android:summary="@string/effect_brightness_description"
+            />
+
+        <SeekBarPreference
+            android:key="effect_contrast"
+            android:max="5"
+            android:defaultValue="0"
+            android:title="@string/effect_contrast"
+            android:summary="@string/effect_contrast_description"
+            />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
