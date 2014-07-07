@@ -1,14 +1,9 @@
 package cw.kop.autowallpaper.websites;
 
-import java.util.HashMap;
-
-import cw.kop.autowallpaper.R;
-
-import cw.kop.autowallpaper.settings.AppSettings;
-import android.os.Bundle;
 import android.app.AlertDialog;
 import android.app.ListFragment;
 import android.content.DialogInterface;
+import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -21,6 +16,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.HashMap;
+
+import cw.kop.autowallpaper.R;
+import cw.kop.autowallpaper.settings.AppSettings;
 
 public class WebsiteListFragment extends ListFragment {
 

@@ -60,6 +60,8 @@
     
     <string name="use_timer">Download Timer</string>
     <string name="use_timer_description">Download interval</string>
+    <string name="use_timer_adv">Download Timer</string>
+    <string name="use_timer_description_adv">Interval in minutes</string>
     <string name="use_wifi">Use WiFi</string>
     <string name="use_wifi_description">Allow download on WiFi</string>
     <string name="use_mobile">Use Mobile Data</string>
@@ -70,6 +72,8 @@
     <string name="force_download_description">Attempt to force download</string>
     <string name="keep_images">Keep Images</string>
     <string name="keep_images_description">Keep old images in cache</string>
+    <string name="use_experimental_downloader">Experimental Downloader</string>
+    <string name="use_experimental_downloader_description">Include JavaScript generated websites</string>
 
     <string name="use_effects">Use Effects</string>
     <string name="use_effects_description">Use image effects</string>
@@ -84,6 +88,8 @@
     <string name="force_multipane_description">Use a dual pane layout</string>
     <string name="use_transparent_theme">Transparent App Theme</string>
     <string name="use_transparent_theme_description">Make App Transparent</string>
+    <string name="use_advanced">Advanced Settings</string>
+    <string name="use_advanced_description">Show advanced settings</string>
     
     
     <string name="file_content_description">File Image</string>

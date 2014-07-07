@@ -1,11 +1,5 @@
 package cw.kop.autowallpaper.websites;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import cw.kop.autowallpaper.R;
-
-import cw.kop.autowallpaper.settings.AppSettings;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
@@ -17,6 +11,12 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import cw.kop.autowallpaper.R;
+import cw.kop.autowallpaper.settings.AppSettings;
 
 public class WebsiteListAdapter extends BaseAdapter {
 

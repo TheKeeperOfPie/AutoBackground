@@ -1,6 +1,5 @@
 package cw.kop.autowallpaper;
 
-import cw.kop.autowallpaper.settings.AppSettings;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -20,6 +19,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+
+import cw.kop.autowallpaper.settings.AppSettings;
 
 public class DownloadSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
@@ -39,7 +41,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		
+
 		timerPref = (SwitchPreference) findPreference("use_timer");
 		
 		return super.onCreateView(inflater, container, savedInstanceState);
@@ -55,8 +57,10 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 		intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
 		intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
 		pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-		
+
 		alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+
+        Log.i("DSF", "onAttach");
 	}
 
 	private void showDialogTimerMenu() {
@@ -118,6 +122,46 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 		dialog.show();
 	}
 
+    private void showDialogTimerForInput() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+        dialog.setMessage("Download Interval");
+
+        View dialogView = getActivity().getLayoutInflater().inflate(R.layout.numeric_dialog, null);
+
+        dialog.setView(dialogView);
+
+        final EditText inputField = (EditText) dialogView.findViewById(R.id.input_field);
+
+        inputField.setHint("Enter number of minutes");
+
+        dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                AppSettings.setTimerDuration(Integer.parseInt(inputField.getText().toString()) * CONVERT_MILLES_TO_MIN);
+                setDownloadAlarm();
+                timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
+            }
+        });
+        dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                AppSettings.setTimerDuration(0);
+                timerPref.setChecked(false);
+            }
+        });
+        dialog.setOnDismissListener(new OnDismissListener () {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (AppSettings.getTimerDuration() <= 0) {
+                    timerPref.setChecked(false);
+                }
+            }
+
+        });
+
+        dialog.show();
+    }
+
 	private void setDownloadAlarm() {
 		
 		if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
@@ -132,7 +176,19 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 	public void onResume() {
 		super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-        
+
+//        if (AppSettings.useAdvanced()) {
+//            for (int i = 0; i < getPreferenceScreen().getPreferenceCount(); i++) {
+//                Preference pref = getPreferenceScreen().getPreference(i);
+//                if (pref.getKey().contains("basic")) {
+//                    pref.setEnabled(false);
+//                }
+//                if (pref.getKey().contains("adv")) {
+//                    pref.setEnabled(true);
+//                }
+//            }
+//        }
+
         if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
             timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
         }
@@ -160,7 +216,12 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 			
 			if (key.equals("use_timer")) {
 				if (AppSettings.useTimer()) {
-	        		showDialogTimerMenu();
+                    if (AppSettings.useAdvanced()) {
+                        showDialogTimerForInput();
+                    }
+	        		else {
+                        showDialogTimerMenu();
+                    }
 	    		}
 				else {
 					SwitchPreference timerPref = (SwitchPreference) pref;

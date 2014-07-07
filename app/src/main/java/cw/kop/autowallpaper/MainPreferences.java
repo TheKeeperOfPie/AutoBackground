@@ -1,22 +1,16 @@
 package cw.kop.autowallpaper;
 
-import java.util.List;
-
-import cw.kop.autowallpaper.images.LocalImageFragment;
-import cw.kop.autowallpaper.settings.AppSettings;
-import cw.kop.autowallpaper.websites.WebsiteListFragment;
-import android.app.ActionBar;
 import android.app.ActivityManager;
-import android.app.FragmentBreadCrumbs;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.app.WallpaperManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -33,14 +27,18 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import java.util.List;
+
+import cw.kop.autowallpaper.images.LocalImageFragment;
+import cw.kop.autowallpaper.settings.AppSettings;
+import cw.kop.autowallpaper.websites.WebsiteListFragment;
+
 public class MainPreferences extends PreferenceActivity{
 
 	public static SharedPreferences prefs;
 	private Button setButton;
-	private Button downloadButton;
-	private Button refreshButton;
-	private LinearLayout footerLayout;
     private WebView webView;
+    private boolean isDownloading = false;
 	
 	protected boolean isValidFragment(final String fragmentName) {
 		Log.i("MP", "isValidFragment Called for " + fragmentName);
@@ -63,7 +61,7 @@ public class MainPreferences extends PreferenceActivity{
 		
         return super.onIsMultiPane();
     }
-	
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -92,34 +90,37 @@ public class MainPreferences extends PreferenceActivity{
 			public void onClick(View v) {
 				setWallpaper();
 			}
-        	
+
         });
-        
-        downloadButton = new Button(this);
+
+        Button downloadButton = new Button(this);
         downloadButton.setText("Download Wallpaper");
         downloadButton.setOnClickListener(new OnClickListener() {
 
-			@Override
-			public void onClick(View v) {
-				Downloader.download(getApplicationContext());
-                //getHtml(AppSettings.getWebsiteUrl(0));
-			}
-        	
+            @Override
+            public void onClick(View v) {
+                if (!isDownloading) {
+                    Downloader.download(getApplicationContext());
+                } else {
+                    Log.i("MP", "isDownloading");
+                }
+            }
+
         });
-        
-        refreshButton = new Button(this);
+
+        Button refreshButton = new Button(this);
         refreshButton.setText("Cycle Wallpaper");
         refreshButton.setOnClickListener(new OnClickListener() {
 
-			@Override
-			public void onClick(View v) {
+            @Override
+            public void onClick(View v) {
                 cycleWallpaper();
                 Toast.makeText(getApplicationContext(), "Cycling...", Toast.LENGTH_SHORT).show();
-			}
-        	
+            }
+
         });
-        
-        footerLayout = new LinearLayout(this);
+
+        LinearLayout footerLayout = new LinearLayout(this);
         footerLayout.setOrientation(LinearLayout.VERTICAL);
         footerLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         footerLayout.setGravity(Gravity.CENTER);
@@ -134,7 +135,13 @@ public class MainPreferences extends PreferenceActivity{
         webView.setLayoutParams(params);
 
         setListFooter(footerLayout);
-        
+
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null && bundle.getBoolean("download")) {
+            getHtml();
+            Log.i("MP", "Called getHtml()");
+        }
+
     }
 
 //	@Override
@@ -197,7 +204,6 @@ public class MainPreferences extends PreferenceActivity{
 
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		super.onPause();
 	}
 
@@ -236,105 +242,76 @@ public class MainPreferences extends PreferenceActivity{
 		return false;
 	}
 
-    public void getHtml(final String url) {
+    public void getHtml() {
 
-        webView.post(new Runnable() {
+        isDownloading = true;
 
-            boolean test = true;
+        final Handler handler = new Handler();
+
+        Thread thread = new Thread(new Runnable() {
 
             @Override
             public void run() {
+                Log.i("MP", "Test1");
 
-                final String[] generatedHtml = new String[1];
-            /* An instance of this class will be registered as a JavaScript interface */
-                class MyJavaScriptInterface
-                {
-                    private Context ctx;
-                    public String html;
+                for (int i = 0; i < AppSettings.getNumWebsites(); i++) {
 
-                    MyJavaScriptInterface(Context ctx) {
-                        this.ctx = ctx;
-                    }
+                    Log.i("MP", "Test2");
 
-                    @JavascriptInterface
-                    public void processHTML(final String html) {
-                        webView.post(new Runnable() {
+                    final int index = i;
+
+                    if (AppSettings.useWebsite(i)) {
+
+                        handler.post(new Runnable() {
+
                             @Override
                             public void run() {
-                                webView.loadDataWithBaseURL(url, html, "text/html", "UTF-8", url);
+                                Log.i("MP", "Test3");
+
+                                String url = AppSettings.getWebsiteUrl(index);
+
+                                class MyJavaScriptInterface {
+
+                                    @JavascriptInterface
+                                    public void showHTML(String html) {
+                                        Downloader.setHtml(html, getCacheDir().getAbsolutePath(), index);
+                                        Log.i("MP", "Written html");
+                                    }
+                                }
+
+
+                                webView.addJavascriptInterface(new MyJavaScriptInterface(), "HTMLOUT");
+
+
+                                webView.setWebViewClient(new WebViewClient() {
+
+                                    @Override
+                                    public void onPageFinished(WebView view, String url) {
+
+                                        webView.postDelayed(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+                                                webView.loadUrl("javascript:HTMLOUT.showHTML(document.documentElement.outerHTML);");
+                                            }
+                                        }, 15000);
+                                    }
+                                });
+                                Toast.makeText(getApplicationContext(), "Loading page", Toast.LENGTH_SHORT).show();
+
+                                webView.getSettings().setJavaScriptEnabled(true);
+
+                                webView.loadUrl(url);
+
+                                Log.i("MP", "WebView finished");
                             }
                         });
                     }
-
-                    @JavascriptInterface
-                    public void showHTML(String html) {
-                        Downloader.setHtml(html, getCacheDir().getAbsolutePath());
-                        Log.i("MP", "Written html");
-                    }
                 }
-
-                webView.getSettings().setJavaScriptEnabled(true);
-
-
-                webView.addJavascriptInterface(new MyJavaScriptInterface(getApplicationContext()), "HTMLOUT");
-
-
-                webView.setWebViewClient(new WebViewClient() {
-
-                    boolean loadingFinished = true;
-                    boolean redirect = false;
-
-                    @Override
-                    public boolean shouldOverrideUrlLoading(WebView view, String urlNewString) {
-
-                        if (!loadingFinished) {
-                            redirect = true;
-                        }
-
-                        loadingFinished = false;
-                        view.loadUrl(urlNewString);
-                        return true;
-                    }
-
-                    @Override
-                    public void onPageStarted(WebView view, String url, Bitmap facIcon) {
-                        loadingFinished = false;
-                    }
-
-                    @Override
-                    public void onPageFinished(WebView view, String url) {
-                        if(!redirect){
-                            loadingFinished = true;
-                        }
-
-                        if(loadingFinished && !redirect){
-
-                            if (test) {
-                                webView.loadUrl("javascript:HTMLOUT.processHTML(document.documentElement.outerHTML);");
-                                test = false;
-                            }
-                            else {
-                                webView.loadUrl("javascript:HTMLOUT.showHTML(document.documentElement.outerHTML);");
-                            }
-
-                        } else{
-                            redirect = false;
-                        }
-
-                    }
-                });
-
-        /* load a web page */
-
-                webView.getSettings().setUserAgentString("Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.4) Gecko/20100101 Firefox/4.0");
-
-                Toast.makeText(getApplicationContext(), "Loading page", Toast.LENGTH_SHORT).show();
-
-                webView.loadUrl(url);
-
+                Downloader.resetIndex();
+                isDownloading = false;
             }
         });
-
+        thread.start();
     }
-    
 }

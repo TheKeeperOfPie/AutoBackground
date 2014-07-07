@@ -25,7 +25,14 @@
 			android:title="@string/use_transparent_theme" 
 			android:summary="@string/use_transparent_theme_description"
 			/>
-		
+
+        <SwitchPreference
+            android:key="use_advanced"
+            android:defaultValue="false"
+            android:title="@string/use_advanced"
+            android:summary="@string/use_advanced_description"
+            />
+
 	</PreferenceCategory>	
 		
 </PreferenceScreen>

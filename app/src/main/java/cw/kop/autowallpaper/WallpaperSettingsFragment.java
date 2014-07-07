@@ -1,15 +1,14 @@
 package cw.kop.autowallpaper;
 
-import cw.kop.autowallpaper.settings.AppSettings;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.DialogInterface.OnDismissListener;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
@@ -20,14 +19,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+
+import cw.kop.autowallpaper.settings.AppSettings;
 
 public class WallpaperSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener{
 
 	private final static long CONVERT_MILLES_TO_MIN = 60000;
 	private SwitchPreference intervalPref;
 	private Context context;
-	private Intent intent;
-	private PendingIntent pendingIntent;
+    private PendingIntent pendingIntent;
 	private AlarmManager alarmManager;
 	
 	@Override
@@ -39,7 +40,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		intervalPref = (SwitchPreference) findPreference("use_interval");
-		
+
 		return super.onCreateView(inflater, container, savedInstanceState);
 	}
 
@@ -48,7 +49,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 		super.onAttach(activity);
 		
 		context = getActivity();
-		intent = new Intent();
+        Intent intent = new Intent();
 		intent.setAction(LiveWallpaperService.UPDATE_WALLPAPER);
 		intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
 		pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
@@ -133,6 +134,46 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 		dialog.show();
 	}
 
+    private void showDialogIntervalForInput() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+        dialog.setMessage("Update Interval");
+
+        View dialogView = getActivity().getLayoutInflater().inflate(R.layout.numeric_dialog, null);
+
+        dialog.setView(dialogView);
+
+        final EditText inputField = (EditText) dialogView.findViewById(R.id.input_field);
+
+        inputField.setHint("Enter number of minutes");
+
+        dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                AppSettings.setIntervalDuration(Integer.parseInt(inputField.getText().toString()) * CONVERT_MILLES_TO_MIN);
+                setIntervalAlarm();
+                intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
+            }
+        });
+        dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                AppSettings.setIntervalDuration(0);
+                intervalPref.setChecked(false);
+            }
+        });
+        dialog.setOnDismissListener(new OnDismissListener () {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (AppSettings.getIntervalDuration() <= 0) {
+                    intervalPref.setChecked(false);
+                }
+            }
+
+        });
+
+        dialog.show();
+    }
+
 	private void setIntervalAlarm() {
 		
 		if (AppSettings.useInterval() && AppSettings.getIntervalDuration() > 0) {
@@ -165,8 +206,13 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 			}
 			
 			if (key.equals("use_interval")) {
-				if (AppSettings.useInterval() && !((Activity) context).isFinishing()) {
-					showDialogIntervalMenu();
+				if (AppSettings.useInterval()) {
+                    if (AppSettings.useAdvanced()) {
+                        showDialogIntervalForInput();
+                    }
+                    else {
+                        showDialogIntervalMenu();
+                    }
 	    		}
 				else {
 					AppSettings.setIntervalDuration(0);

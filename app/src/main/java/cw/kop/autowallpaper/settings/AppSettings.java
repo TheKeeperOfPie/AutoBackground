@@ -1,12 +1,12 @@
 package cw.kop.autowallpaper.settings;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import cw.kop.autowallpaper.LiveWallpaperService;
 
@@ -130,10 +130,6 @@ public class AppSettings {
 		return prefs.getBoolean("use_notification", false);
 	}
 	
-	public static void setUseTimer(boolean timer) {
-		prefs.edit().putBoolean("use_timer", timer).commit();
-	}
-	
 	public static Boolean useTimer() {
 		return prefs.getBoolean("use_timer", false);
 	}
@@ -223,4 +219,11 @@ public class AppSettings {
         return prefs.getInt("effect_contrast", 0);
     }
 
+    public static boolean useExperimentalDownloader() {
+        return prefs.getBoolean("use_experimental_downloader_adv", false);
+    }
+
+    public static boolean useAdvanced() {
+        return prefs.getBoolean("use_advanced", false);
+    }
 }

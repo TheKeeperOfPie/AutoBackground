@@ -1,10 +1,5 @@
 package cw.kop.autowallpaper.images;
 
-import java.io.File;
-
-import cw.kop.autowallpaper.R;
-
-import cw.kop.autowallpaper.settings.AppSettings;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
@@ -22,6 +17,11 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.Toast;
+
+import java.io.File;
+
+import cw.kop.autowallpaper.R;
+import cw.kop.autowallpaper.settings.AppSettings;
 
 public class LocalImageFragment extends Fragment {
 

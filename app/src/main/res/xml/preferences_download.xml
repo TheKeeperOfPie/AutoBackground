@@ -49,7 +49,13 @@
 		    android:title="@string/keep_images"
 		    android:summary="@string/keep_images_description"
          	/>
-        
+
+        <SwitchPreference
+            android:key="use_experimental_downloader_adv"
+            android:defaultValue="false"
+            android:title="@string/use_experimental_downloader"
+            android:summary="@string/use_experimental_downloader_description"
+            />
     </PreferenceCategory>
     
 </PreferenceScreen>
