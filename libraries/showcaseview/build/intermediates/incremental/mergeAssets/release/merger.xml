@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="2" >
+
+    <dataSet config="main" >
+        <source path="X:\AndroidStudio\Projects\AutoBackground\libraries\showcaseview\src\main\assets" />
+    </dataSet>
+    <dataSet config="release" >
+        <source path="X:\AndroidStudio\Projects\AutoBackground\libraries\showcaseview\src\release\assets" />
+    </dataSet>
+
+</merger>
