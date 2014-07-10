@@ -6,7 +6,6 @@
     >
     
     <EditText
-    	style="@android:style/Theme.Dialog"
         android:id="@+id/website_title"
         android:inputType="text"
         android:layout_width="fill_parent"
@@ -19,7 +18,6 @@
         />
     
     <EditText
-	    style="@android:style/Theme.Dialog"
         android:id="@+id/website_url"
         android:inputType="textUri"
     	android:layout_below="@id/website_title"
@@ -33,7 +31,6 @@
         />
     
     <EditText
-	    style="@android:style/Theme.Dialog"
         android:id="@+id/num_images"
         android:inputType="number"
     	android:layout_below="@id/website_url"

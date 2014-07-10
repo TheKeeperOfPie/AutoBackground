@@ -7,7 +7,6 @@
     >
 
     <EditText
-        style="@android:style/Theme.Dialog"
         android:id="@+id/input_field"
         android:inputType="number"
         android:numeric="integer"

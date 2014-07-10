@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import cw.kop.autowallpaper.R;
+import cw.kop.autowallpaper.settings.AppSettings;
 
 public class LocalImageAdapter extends BaseAdapter {
 
@@ -128,7 +129,9 @@ public class LocalImageAdapter extends BaseAdapter {
 		}
 		
 		if (selectedFile != null && selectedFile.isDirectory() && selectedFile.list().length == 0) {
-			Toast.makeText(mainActivity.getApplicationContext(), "No files in this folder", Toast.LENGTH_SHORT).show();
+            if (AppSettings.useToast()) {
+                Toast.makeText(mainActivity.getApplicationContext(), "No files in this folder", Toast.LENGTH_SHORT).show();
+            }
 		}
 		
 	}

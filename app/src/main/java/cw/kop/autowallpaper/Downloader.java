@@ -13,6 +13,7 @@ import android.util.Log;
 import android.util.Patterns;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -26,6 +27,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +58,7 @@ public class Downloader {
 	
 	public static void download(Context appContext) {
 
-        if (AppSettings.useExperimentalDownloader()) {
+        if (AppSettings.useAdvanced() && AppSettings.useExperimentalDownloader()) {
             Intent intent = new Intent(appContext, MainPreferences.class);
             intent.putExtra("download", true);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -76,15 +78,21 @@ public class Downloader {
 
                 }
                 else {
-                    Toast.makeText(appContext, "No connection availble,\ncheck Download Settings", Toast.LENGTH_SHORT).show();
+                    if (AppSettings.useToast()) {
+                        Toast.makeText(appContext, "No connection availble,\ncheck Download Settings", Toast.LENGTH_SHORT).show();
+                    }
                     return;
                 }
                 imageAsyncTask = new RetrieveImageTask(appContext);
                 loadImagesFromWeb(appContext);
-                Toast.makeText(appContext, "Downloading images", Toast.LENGTH_SHORT).show();
+                if (AppSettings.useToast()) {
+                    Toast.makeText(appContext, "Downloading images", Toast.LENGTH_SHORT).show();
+                }
             }
             else {
-                Toast.makeText(appContext, "Already downloading", Toast.LENGTH_SHORT).show();
+                if (AppSettings.useToast()) {
+                    Toast.makeText(appContext, "Already downloading", Toast.LENGTH_SHORT).show();
+                }
                 Log.i("Downloader", "Already downloading");
             }
 
@@ -113,7 +121,9 @@ public class Downloader {
     	}
 		
 		File[] bitmaps = (new File(cacheDir)).listFiles(fileFilter);
-		
+
+        Log.i(TAG, "Bitmap list size: " + bitmaps.length);
+
 		return bitmaps;
 		
 	}
@@ -164,7 +174,9 @@ public class Downloader {
 		if (images != null && images.length > 0 && randIndex < images.length) {
 			bitmapFile = images[randIndex];
 		}
-		
+
+        Log.i("RandIndex", "" + randIndex);
+
 		if (bitmapFile != null && bitmapFile.exists()) {
 
 			try {
@@ -174,11 +186,11 @@ public class Downloader {
 				}
 				
 				bitmap = BitmapFactory.decodeFile(bitmapFile.getAbsolutePath(), options);
-				
-				Log.i("RandIndex", "" + randIndex);
 			}
 			catch (OutOfMemoryError e) {
-				Toast.makeText(appContext, "Out of memory error", Toast.LENGTH_SHORT).show();
+                if (AppSettings.useToast()) {
+                    Toast.makeText(appContext, "Out of memory error", Toast.LENGTH_SHORT).show();
+                }
                 bitmap.recycle();
                 return null;
 			}
@@ -197,8 +209,8 @@ public class Downloader {
         index = 0;
     }
 
-    public static void setHtml(String html, String dir, int urlIndex) {
-        Log.i(TAG, "SetHtml called");
+    public static void setHtml(String html, String dir, int urlIndex, String baseUrl) {
+        Log.i(TAG, "SetHtml called with baseURL: " + baseUrl);
         try {
 
             File toWrite = new File(dir + "/html.txt");
@@ -207,15 +219,34 @@ public class Downloader {
             }
 
             BufferedWriter buf = new BufferedWriter(new FileWriter(toWrite, true));
-            buf.append(html);
+//            buf.append(html);
 
-            Document doc = Jsoup.parse(html);
+            Document rootDoc = Jsoup.parse(html);
 
             Log.i(TAG, AppSettings.getWebsiteUrl(urlIndex));
 
+            List<String> links = new ArrayList<String>();
+            links.addAll(compileLinks(rootDoc, "a", "href", baseUrl));
+
             List<String> imageLinks = new ArrayList<String>();
-            imageLinks.addAll(compileLinks(doc, "a", "href"));
-            imageLinks.addAll(compileLinks(doc, "img", "src"));
+            imageLinks.addAll(compileImageLinks(rootDoc, "a", "href"));
+            imageLinks.addAll(compileImageLinks(rootDoc, "img", "src"));
+
+            for (String link : links) {
+                try  {
+                    Document docDepthOne = Jsoup.connect(link).get();
+                    imageLinks.addAll(compileImageLinks(docDepthOne, "a", "href"));
+                    imageLinks.addAll(compileImageLinks(docDepthOne, "img", "src"));
+                    }
+                catch (Exception e) {
+
+                }
+            }
+
+            for (String test : imageLinks) {
+                buf.append(test);
+                buf.newLine();
+            }
 
             buf.close();
 
@@ -227,6 +258,53 @@ public class Downloader {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+    }
+
+    protected static List<String> compileLinks(Document doc, String tag, String attr, String baseUrl) {
+
+        Elements downloadLinks = doc.select(tag);
+        List<String> links = new ArrayList<String>();
+
+        for (Element link : downloadLinks) {
+            String url = link.attr(attr);
+            if (!(url.contains(".com") || url.contains(".org") || url.contains(".net"))) {
+                links.add(baseUrl + url);
+                Log.i(TAG, baseUrl + url);
+            }
+            else {
+                links.add(url);
+                Log.i(TAG, url);
+            }
+        }
+        return links;
+
+    }
+
+    protected static List<String> compileImageLinks(Document doc, String tag, String attr) {
+
+        Elements downloadLinks = doc.select(tag);
+        List<String> links = new ArrayList<String>();
+
+        for (Element link : downloadLinks) {
+            Log.i(TAG, link.attr(attr));
+            String url = link.attr(attr);
+            if (!url.contains("http")) {
+                url = "http:" + url;
+            }
+            if (link.attr(attr).contains(".png")) {
+                links.add(url);
+            }
+            else if (link.attr(attr).contains(".jpg")) {
+                links.add(url);
+            }
+            else if (AppSettings.forceDownload() && link.attr(attr).length() > 5 && (link.attr(attr).contains(".com") || link.attr(attr).contains(".org") || link.attr(attr).contains(".net"))) {
+                links.add(url + ".png");
+                links.add(url + ".jpg");
+                links.add(url);
+            }
+        }
+        return links;
 
     }
 
@@ -245,6 +323,8 @@ public class Downloader {
 
                 String randLink = links.get(randValues.get(count));
 
+                Log.i(TAG, "Downloading: " + randLink);
+
                 boolean oldLink = false;
 
                 for (String link : usedLinks) {
@@ -261,27 +341,7 @@ public class Downloader {
                 count++;
             }
         }
-    }
 
-    protected static List<String> compileLinks(Document doc, String tag, String attr) {
-
-        Elements downloadLinks = doc.select(tag);
-        List<String> links = new ArrayList<String>();
-
-        for (Element link : downloadLinks) {
-            if (link.attr(attr).contains(".png")) {
-                links.add(link.attr(attr));
-            }
-            else if (link.attr(attr).contains(".jpg")) {
-                links.add(link.attr(attr));
-            }
-            else if (AppSettings.forceDownload() && link.attr(attr).length() > 5 && (link.attr(attr).contains(".com") || link.attr(attr).contains(".org") || link.attr(attr).contains(".net"))) {
-                links.add(link.attr(attr) + ".png");
-                links.add(link.attr(attr) + ".jpg");
-                links.add(link.attr(attr));
-            }
-        }
-        return links;
 
     }
 
@@ -289,6 +349,8 @@ public class Downloader {
 
         if (Patterns.WEB_URL.matcher(url).matches()) {
             try {
+
+                Log.i(TAG, "URL: " + url);
 
                 int minWidth = AppSettings.getWidth();
                 int minHeight = AppSettings.getHeight();
@@ -298,10 +360,10 @@ public class Downloader {
                 connection.connect();
                 InputStream input = connection.getInputStream();
 
-                if (!connection.getHeaderField("Content-Type").startsWith("image/")) {
-                    Log.i(TAG, "Not an image: " + url);
-                    return false;
-                }
+//                if (!connection.getHeaderField("Content-Type").startsWith("image/")) {
+//                    Log.i(TAG, "Not an image: " + url);
+//                    return false;
+//                }
 
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inPreferredConfig = Bitmap.Config.ARGB_8888;
@@ -434,19 +496,26 @@ public class Downloader {
 				
 				if (AppSettings.useWebsite(i)) {
 					try {
-						linkDoc = Jsoup.connect(AppSettings.getWebsiteUrl(i)).get();
+						linkDoc = Jsoup.connect(AppSettings.getWebsiteUrl(i))
+                            .userAgent("Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36")
+                            .referrer("http://www.google.com")
+                            .get();
 						
 						Log.i(TAG, AppSettings.getWebsiteUrl(i));
 						
 						List<String> imageLinks = new ArrayList<String>();
-						imageLinks.addAll(compileLinks(linkDoc, "a", "href"));
-						imageLinks.addAll(compileLinks(linkDoc, "img", "src"));
+						imageLinks.addAll(compileImageLinks(linkDoc, "a", "href"));
+						imageLinks.addAll(compileImageLinks(linkDoc, "img", "src"));
 						
 						Log.i(TAG, "Num Images: " + AppSettings.getNumImages(i));
 						
 						downloadImages(imageLinks, AppSettings.getNumImages(i), downloadCacheDir);
 						
 						imageDetails += AppSettings.getWebsiteTitle(i) + ": " + num + " images;break;";
+
+                        if (num < AppSettings.getNumImages(i)) {
+                            publishProgress("Not enough photos found from " + AppSettings.getWebsiteUrl(i) + "\nTry lowering the resolution or changing websites");
+                        }
 						
 					}
 					catch (IOException e) {
@@ -477,7 +546,9 @@ public class Downloader {
 	    @Override
 		protected void onProgressUpdate(String... values) {
 			super.onProgressUpdate(values);
-			Toast.makeText(context, values[0], Toast.LENGTH_SHORT).show();
+            if (AppSettings.useToast()) {
+                Toast.makeText(context, values[0], Toast.LENGTH_SHORT).show();
+            }
 		}
 	    
 	    @Override

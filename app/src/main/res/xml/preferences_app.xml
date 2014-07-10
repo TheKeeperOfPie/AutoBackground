@@ -11,7 +11,14 @@
 			android:title="@string/use_notification" 
 			android:summary="@string/use_notification_description"
 			/>
-   
+
+        <SwitchPreference
+            android:key="use_toast"
+            android:defaultValue="true"
+            android:title="@string/use_toast"
+            android:summary="@string/use_toast_description"
+            />
+
 		<SwitchPreference
 			android:key="force_multipane"
 			android:defaultValue="false"
@@ -19,11 +26,11 @@
 			android:summary="@string/force_multipane_description"
 			/>
 		
-		<SwitchPreference
-			android:key="use_transparent_theme"
+		<Preference
+			android:key="change_theme"
 			android:defaultValue="false"
-			android:title="@string/use_transparent_theme" 
-			android:summary="@string/use_transparent_theme_description"
+			android:title="@string/change_theme"
+			android:summary="@string/change_theme_description"
 			/>
 
         <SwitchPreference
@@ -33,6 +40,12 @@
             android:summary="@string/use_advanced_description"
             />
 
-	</PreferenceCategory>	
-		
+        <Preference
+            android:key="clear_pref"
+            android:title="@string/clear_pref"
+            android:summary="@string/clear_pref_description"
+            />
+
+	</PreferenceCategory>
+
 </PreferenceScreen>

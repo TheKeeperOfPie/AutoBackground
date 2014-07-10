@@ -65,6 +65,14 @@
 			android:dialogTitle="@string/on_leave"
 			android:summary="@string/on_leave_description"
 			/>
+
+        <SwitchPreference
+            android:key="double_tap"
+            android:defaultValue="false"
+            android:title="@string/double_tap"
+            android:dialogTitle="@string/double_tap"
+            android:summary="@string/double_tap_description"
+            />
 		
 	</PreferenceCategory>
 	

@@ -41,6 +41,8 @@
     <string name="force_interval_description">Force change on interval</string>
     <string name="on_leave">Change on Leave</string>
     <string name="on_leave_description">New image on return</string>
+    <string name="double_tap">Double Tap Gesture</string>
+    <string name="double_tap_description">Change on double tap</string>
     <string name="use_fade">Use Fade</string>
     <string name="use_fade_description">Fade between images</string>
     <string name="use_animation">Use Animation</string>
@@ -64,8 +66,10 @@
     <string name="use_timer_description_adv">Interval in minutes</string>
     <string name="use_wifi">Use WiFi</string>
     <string name="use_wifi_description">Allow download on WiFi</string>
-    <string name="use_mobile">Use Mobile Data</string>
-    <string name="use_mobile_description">Allow download on mobile</string>
+    <string name="use_data">Use Mobile Data</string>
+    <string name="use_data_description">Allow download on mobile</string>
+    <string name="use_download_notification">Download notification</string>
+    <string name="use_download_notification_description">Notify on download completed</string>
     <string name="use_high_quality">High Quality</string>
     <string name="use_high_quality_description">Download high quality images</string>
     <string name="force_download">Force Images</string>
@@ -84,12 +88,16 @@
 
     <string name="use_notification">Use Notification</string>
     <string name="use_notification_description">Show a persistent notification</string>
+    <string name="use_toast">Use Toasts</string>
+    <string name="use_toast_description">Notify user of info on screen</string>
     <string name="force_multipane">Force Multi-Pane</string>
     <string name="force_multipane_description">Use a dual pane layout</string>
-    <string name="use_transparent_theme">Transparent App Theme</string>
-    <string name="use_transparent_theme_description">Make App Transparent</string>
+    <string name="change_theme">Change Theme</string>
+    <string name="change_theme_description">Use different app theme</string>
     <string name="use_advanced">Advanced Settings</string>
     <string name="use_advanced_description">Show advanced settings</string>
+    <string name="clear_pref">Reset Settings</string>
+    <string name="clear_pref_description">Set default settings</string>
     
     
     <string name="file_content_description">File Image</string>
@@ -123,5 +131,11 @@
     	<item>2 Days</item>
     	<item>4 Days</item>
 	</string-array>
+
+    <string-array name="theme_entry_menu">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>Transparent</item>
+    </string-array>
     
 </resources>

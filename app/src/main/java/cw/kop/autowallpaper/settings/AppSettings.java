@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import cw.kop.autowallpaper.LiveWallpaperService;
+import cw.kop.autowallpaper.R;
 
 public class AppSettings {
 
@@ -21,35 +22,53 @@ public class AppSettings {
 		prefs = preferences;
 	}
 
+    public static boolean isFirstRun() {
+        return prefs.getBoolean("first_run", true);
+    }
+
+    public static void setTutorial(boolean tutorial) {
+        prefs.edit().putBoolean("tutorial", tutorial);
+    }
+
+    public static boolean useTutorial() {
+        return prefs.getBoolean("tutorial", false);
+    }
+
 	public static void initPrefs(SharedPreferences preferences, Context context) {
-		
 		prefs = preferences;
-		if (prefs.getBoolean("first_run", true)) {
-			prefs.edit().putBoolean("first_run", false).commit();
-			prefs.edit().putString("main_website", "http://reddit.com/r/aww").commit();
-			prefs.edit().putString("user_width", "" + (WallpaperManager.getInstance(context).getDesiredMinimumWidth() / 2)).commit();
-			prefs.edit().putString("user_height", "" + (WallpaperManager.getInstance(context).getDesiredMinimumHeight() / 2)).commit();
-			
-		}
-		
+        if (isFirstRun()) {
+            prefs.edit().putString("user_width", "" + (WallpaperManager.getInstance(context).getDesiredMinimumWidth() / 2)).apply();
+            prefs.edit().putString("user_height", "" + (WallpaperManager.getInstance(context).getDesiredMinimumHeight() / 2)).apply();
+            prefs.edit().putBoolean("first_run", false).apply();
+        }
 	}
-	
+
+    public static void clearPrefs(Context context) {
+        prefs.edit().clear().apply();
+        prefs.edit().putString("user_width", "" + (WallpaperManager.getInstance(context).getDesiredMinimumWidth() / 2)).apply();
+        prefs.edit().putString("user_height", "" + (WallpaperManager.getInstance(context).getDesiredMinimumHeight() / 2)).apply();
+    }
+
 	public static void setUrl(String key, String url) {
-		prefs.edit().putString(key, url).commit();
+		prefs.edit().putString(key, url).apply();
 	}
 	
 	public static String getUrl(String key) {
 		return prefs.getString(key, null);
 	}
 	
-	public static boolean usePath() {
-		return prefs.getBoolean("use_path", false);
-	}
-	
 	public static void setDownloadPath(String path) {
-		prefs.edit().putString("download_path", path).commit();
+		prefs.edit().putString("download_path", path).apply();
 	}
-	
+
+    public static int getTheme() {
+        return prefs.getInt("app_theme", R.style.AppLightTheme);
+    }
+
+    public static void setTheme(int theme) {
+        prefs.edit().putInt("app_theme", theme).apply();
+    }
+
 	public static String getDownloadPath() {
 		
 		if (prefs.getString("download_path", null) != null) {
@@ -75,17 +94,13 @@ public class AppSettings {
 	public static int getNumImages(int index) {
 		return Integer.parseInt(prefs.getString("num_images_" + index, "3"));
 	}
-//	
-//	public static void setNumImages(String value) {
-//		prefs.edit().putString("num_images", value).commit();
-//	}
 	
 	public static int getNumStored() {
 		return prefs.getInt("num_stored", 1);
 	}
 	
 	public static void setNumStored(int value) {
-		prefs.edit().putInt("num_stored", value).commit();
+		prefs.edit().putInt("num_stored", value).apply();
 	}
 
 	public static boolean shuffleImages() {
@@ -98,14 +113,14 @@ public class AppSettings {
 	
 	public static void setWebsites(ArrayList<HashMap<String, String>> listData) {
 		
-		prefs.edit().putInt("num_websites", listData.size()).commit();
+		prefs.edit().putInt("num_websites", listData.size()).apply();
 		
 		for (int i = 0; i < listData.size(); i++) {
 			
-			prefs.edit().putString("website_title_" + i, listData.get(i).get("title")).commit();
-			prefs.edit().putString("website_url_" + i, listData.get(i).get("url")).commit();
-			prefs.edit().putString("num_images_" + i, listData.get(i).get("num")).commit();
-			prefs.edit().putBoolean("use_website_" + i, Boolean.valueOf(listData.get(i).get("use"))).commit();
+			prefs.edit().putString("website_title_" + i, listData.get(i).get("title")).apply();
+			prefs.edit().putString("website_url_" + i, listData.get(i).get("url")).apply();
+			prefs.edit().putString("num_images_" + i, listData.get(i).get("num")).apply();
+			prefs.edit().putBoolean("use_website_" + i, Boolean.valueOf(listData.get(i).get("use"))).apply();
 			
 		}
 	}
@@ -135,7 +150,7 @@ public class AppSettings {
 	}
 
 	public static void setTimerDuration(long timer) {
-		prefs.edit().putLong("timer_duration", timer).commit();
+		prefs.edit().putLong("timer_duration", timer).apply();
 	}
 	
 	public static long getTimerDuration() {
@@ -147,7 +162,7 @@ public class AppSettings {
 	}
 	
 	public static void setIntervalDuration(long interval) {
-		prefs.edit().putLong("interval_duration", interval).commit();
+		prefs.edit().putLong("interval_duration", interval).apply();
 	}
 	
 	public static long getIntervalDuration() {
@@ -174,11 +189,6 @@ public class AppSettings {
 		return prefs.getBoolean("use_high_quality", true);
 	}
 
-	public static int getAffinity(int i) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
 	public static boolean changeOnLeave() {
 		return prefs.getBoolean("on_leave", true);
 	}
@@ -197,10 +207,6 @@ public class AppSettings {
 
 	public static int getAnimationSpeed() {
 		return prefs.getInt("animation_speed", 1);
-	}
-	
-	public static boolean useTransparentTheme() {
-		return prefs.getBoolean("use_transparent_theme", false);
 	}
 
     public static boolean useFade() {
@@ -226,4 +232,14 @@ public class AppSettings {
     public static boolean useAdvanced() {
         return prefs.getBoolean("use_advanced", false);
     }
+
+    public static boolean useDoubleTap() {
+        return prefs.getBoolean("double_tap", false);
+    }
+
+    public static boolean useToast() {
+        return prefs.getBoolean("use_toast", true);
+    }
+
+
 }

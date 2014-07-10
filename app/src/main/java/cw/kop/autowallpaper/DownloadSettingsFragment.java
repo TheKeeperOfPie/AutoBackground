@@ -13,9 +13,11 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +45,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		timerPref = (SwitchPreference) findPreference("use_timer");
-		
+
 		return super.onCreateView(inflater, container, savedInstanceState);
 		
 	}
@@ -64,7 +66,19 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 	}
 
 	private void showDialogTimerMenu() {
-		AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+
+        int themeId;
+
+        if(AppSettings.getTheme() == R.style.AppLightTheme) {
+            themeId = R.style.LightDialogTheme;
+        }
+        else {
+            themeId = R.style.DarkDialogTheme;
+        }
+
+        AppSettings.setTimerDuration(0);
+
+		AlertDialog.Builder dialog = new AlertDialog.Builder(context, themeId);
 		
 		dialog.setItems(R.array.timer_entry_menu, new DialogInterface.OnClickListener() {
 			
@@ -123,10 +137,22 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 	}
 
     private void showDialogTimerForInput() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+
+        int themeId;
+
+        if(AppSettings.getTheme() == R.style.AppLightTheme) {
+            themeId = R.style.LightDialogTheme;
+        }
+        else {
+            themeId = R.style.DarkDialogTheme;
+        }
+
+        AppSettings.setTimerDuration(0);
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context, themeId);
         dialog.setMessage("Download Interval");
 
-        View dialogView = getActivity().getLayoutInflater().inflate(R.layout.numeric_dialog, null);
+        View dialogView = View.inflate(new ContextThemeWrapper(context, themeId), R.layout.numeric_dialog, null);
 
         dialog.setView(dialogView);
 
@@ -137,6 +163,10 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
+                if (inputField.getText().toString().equals("")) {
+                    timerPref.setChecked(false);
+                    return;
+                }
                 AppSettings.setTimerDuration(Integer.parseInt(inputField.getText().toString()) * CONVERT_MILLES_TO_MIN);
                 setDownloadAlarm();
                 timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
@@ -177,17 +207,10 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 		super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 
-//        if (AppSettings.useAdvanced()) {
-//            for (int i = 0; i < getPreferenceScreen().getPreferenceCount(); i++) {
-//                Preference pref = getPreferenceScreen().getPreference(i);
-//                if (pref.getKey().contains("basic")) {
-//                    pref.setEnabled(false);
-//                }
-//                if (pref.getKey().contains("adv")) {
-//                    pref.setEnabled(true);
-//                }
-//            }
-//        }
+        if (!AppSettings.useAdvanced()) {
+            SwitchPreference experimentalPref = (SwitchPreference) findPreference("use_experimental_downloader_adv");
+            ((PreferenceCategory) findPreference("title_download_settings")).removePreference(experimentalPref);
+        }
 
         if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
             timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");

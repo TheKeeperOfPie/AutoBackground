@@ -21,7 +21,6 @@
         android:layout_alignParentLeft="true"
         android:textSize="22sp"
         android:singleLine="true"
-        android:textColor="@color/COLOR_WHITE_OPAQUE"
         android:background="@android:color/transparent"
         android:focusable="false"
         />

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="COLOR_TRANSPARENT_BACKGROUND">#00000000</color>
-    <color name="COLOR_WHITE_OPAQUE">#FFFFFFFF</color>
-    <color name="COLOR_BLACK_OPAQUE">#FF000000</color>
+    <color name="TRANSPARENT_BACKGROUND">#00000000</color>
+    <color name="WHITE_OPAQUE">#FFFFFFFF</color>
+    <color name="BLACK_OPAQUE">#FF000000</color>
+    <color name="BLACK_TRANSPARENT">#CC000000</color>
+    <color name="LIGHT_GRAY_OPAQUE">#FF4D4D4D</color>
+    <color name="DARK_GRAY_OPAQUE">#FFB3B3B3</color>
 </resources>

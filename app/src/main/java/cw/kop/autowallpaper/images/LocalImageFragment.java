@@ -62,12 +62,16 @@ public class LocalImageFragment extends Fragment {
 				File dir = imageAdapter.getDirectory();
 				if (dir != null && dir.exists() && dir.isDirectory() && dir.canWrite()) {
 					AppSettings.setDownloadPath(dir.getAbsolutePath());
-					Toast.makeText(context, "Directory set to " + dir.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                    if (AppSettings.useToast()) {
+                        Toast.makeText(context, "Directory set to " + dir.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                    }
 					imageAdapter.setFinished(true);
 					getActivity().onBackPressed();
 				}
 				else {
-					Toast.makeText(context, "Invalid directory", Toast.LENGTH_SHORT).show();
+                    if (AppSettings.useToast()) {
+                        Toast.makeText(context, "Invalid directory", Toast.LENGTH_SHORT).show();
+                    }
 				}
 			}
 			
@@ -79,7 +83,9 @@ public class LocalImageFragment extends Fragment {
 			@Override
 			public void onClick(View v) {
 				AppSettings.setDownloadPath(context.getCacheDir().getAbsolutePath());
-				Toast.makeText(context, "Reset directory", Toast.LENGTH_SHORT).show();
+                if (AppSettings.useToast()) {
+                    Toast.makeText(context, "Reset directory", Toast.LENGTH_SHORT).show();
+                }
 				imageAdapter.setFinished(true);
 				getActivity().onBackPressed();
 			}

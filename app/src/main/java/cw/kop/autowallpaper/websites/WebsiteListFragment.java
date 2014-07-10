@@ -1,10 +1,13 @@
 package cw.kop.autowallpaper.websites;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.TypedValue;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,30 +28,32 @@ import cw.kop.autowallpaper.settings.AppSettings;
 public class WebsiteListFragment extends ListFragment {
 
 	private WebsiteListAdapter listAdapter;
+    private Context context;
 	
 	public WebsiteListFragment() {
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		
-		setHasOptionsMenu(true);
+//		setHasOptionsMenu(true);
 		
 	}
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		// TODO Auto-generated method stub
 		
 		inflater.inflate(R.menu.website_actions, menu);
 		
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
-	
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        context = getActivity();
+    }
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -62,11 +67,20 @@ public class WebsiteListFragment extends ListFragment {
 	}
 
 	private void showDialogForInput() {
-		// TODO Auto-generated method stub
-		AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+
+        int themeId;
+
+        if(AppSettings.getTheme() == R.style.AppLightTheme) {
+            themeId = R.style.LightDialogTheme;
+        }
+        else {
+            themeId = R.style.DarkDialogTheme;
+        }
+
+		AlertDialog.Builder dialog = new AlertDialog.Builder(context, themeId);
 		dialog.setMessage("Enter website");
-		
-		View dialogView = getActivity().getLayoutInflater().inflate(R.layout.add_website_dialog, null);
+
+        View dialogView = View.inflate(new ContextThemeWrapper(context, themeId), R.layout.add_website_dialog, null);
 		
 		dialog.setView(dialogView);
 		

@@ -4,6 +4,7 @@
     
     
 	<PreferenceCategory
+        android:key="title_download_settings"
 	    android:title="@string/title_download_settings"
 	    >
         
@@ -25,10 +26,17 @@
         <SwitchPreference
 		    android:key="use_data"
     		android:defaultValue="false"
-		    android:title="@string/use_mobile"
-		    android:summary="@string/use_mobile_description"
+		    android:title="@string/use_data"
+		    android:summary="@string/use_data_description"
          	/>
-        
+
+        <SwitchPreference
+            android:key="use_download_notification"
+            android:defaultValue="true"
+            android:title="@string/use_download_notification"
+            android:summary="@string/use_download_notification_description"
+            />
+
         <SwitchPreference
 		    android:key="use_high_quality"
     		android:defaultValue="true"

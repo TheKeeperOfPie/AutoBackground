@@ -16,6 +16,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,7 +79,19 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
     }
 	
 	private void showDialogIntervalMenu() {
-		AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+
+        int themeId;
+
+        if(AppSettings.getTheme() == R.style.AppLightTheme) {
+            themeId = R.style.LightDialogTheme;
+        }
+        else {
+            themeId = R.style.DarkDialogTheme;
+        }
+
+        AppSettings.setIntervalDuration(0);
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context, themeId);
 		
 		dialog.setItems(R.array.interval_entry_menu, new DialogInterface.OnClickListener() {
 			
@@ -135,10 +148,22 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 	}
 
     private void showDialogIntervalForInput() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+
+        int themeId;
+
+        if(AppSettings.getTheme() == R.style.AppLightTheme) {
+            themeId = R.style.LightDialogTheme;
+        }
+        else {
+            themeId = R.style.DarkDialogTheme;
+        }
+
+        AppSettings.setIntervalDuration(0);
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context, themeId);
         dialog.setMessage("Update Interval");
 
-        View dialogView = getActivity().getLayoutInflater().inflate(R.layout.numeric_dialog, null);
+        View dialogView = View.inflate(new ContextThemeWrapper(context, themeId), R.layout.numeric_dialog, null);
 
         dialog.setView(dialogView);
 
@@ -149,6 +174,10 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
+                if (inputField.getText().toString().equals("")) {
+                    intervalPref.setChecked(false);
+                    return;
+                }
                 AppSettings.setIntervalDuration(Integer.parseInt(inputField.getText().toString()) * CONVERT_MILLES_TO_MIN);
                 setIntervalAlarm();
                 intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");

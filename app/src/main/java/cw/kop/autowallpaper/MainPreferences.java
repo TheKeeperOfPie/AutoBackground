@@ -2,12 +2,15 @@ package cw.kop.autowallpaper;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,12 +23,17 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
 import java.util.List;
 
@@ -39,18 +47,20 @@ public class MainPreferences extends PreferenceActivity{
 	private Button setButton;
     private WebView webView;
     private boolean isDownloading = false;
-	
+    private String baseUrl;
+
+    private ShowcaseView tutorialPromptView;
+
 	protected boolean isValidFragment(final String fragmentName) {
 		Log.i("MP", "isValidFragment Called for " + fragmentName);
 
-		return AboutFragment.class.getName().equals(fragmentName)
-				|| WallpaperSettingsFragment.class.getName().equals(fragmentName)
-				|| WebsiteListFragment.class.getName().equals(fragmentName)
-				|| DownloadSettingsFragment.class.getName().equals(fragmentName)
-				|| ImageSettingsFragment.class.getName().equals(fragmentName)
-                || LocalImageFragment.class.getName().equals(fragmentName)
-				|| AppSettingsFragment.class.getName().equals(fragmentName)
-				|| AboutFragment.class.getName().equals(fragmentName);
+		return WallpaperSettingsFragment.class.getName().equals(fragmentName)
+            || WebsiteListFragment.class.getName().equals(fragmentName)
+            || DownloadSettingsFragment.class.getName().equals(fragmentName)
+            || ImageSettingsFragment.class.getName().equals(fragmentName)
+            || LocalImageFragment.class.getName().equals(fragmentName)
+            || AppSettingsFragment.class.getName().equals(fragmentName)
+            || AboutFragment.class.getName().equals(fragmentName);
 	}
 	
 	@Override
@@ -63,24 +73,30 @@ public class MainPreferences extends PreferenceActivity{
     }
 
     @Override
+    public void onConfigurationChanged (Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Log.i("MP", "onConfigurationChanged");
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+
+        Log.i("MP", "onCreate");
+
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-		AppSettings.initPrefs(prefs, getApplicationContext());
-		
-        if (AppSettings.useTransparentTheme()) {
-        	setTheme(R.style.AppTheme);
-        }
-        
+
+        AppSettings.initPrefs(prefs, getApplicationContext());
+
         super.onCreate(savedInstanceState);
 
-        String ua = "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.4) Gecko/20100101 Firefox/4.0";
-        webView = new WebView(this);
-        webView.getSettings().setUserAgentString(ua);
+        setTheme(AppSettings.getTheme());
+
+//        String ua = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36";
+//        webView = new WebView(this);
+//        webView.getSettings().setUserAgentString(ua);
 
 		Downloader.setNewTask(getApplicationContext());
-
-        getActionBar().setDisplayHomeAsUpEnabled(true);
 		
         setButton = new Button(this) ;
         setButton.setText("Set Wallpaper");
@@ -99,11 +115,16 @@ public class MainPreferences extends PreferenceActivity{
 
             @Override
             public void onClick(View v) {
-                if (!isDownloading) {
-                    Downloader.download(getApplicationContext());
-                } else {
-                    Log.i("MP", "isDownloading");
-                }
+//                if (!isDownloading) {
+//                    Downloader.download(getApplicationContext());
+//                } else {
+//                    Log.i("MP", "isDownloading");
+//                }
+                FragmentManager fragmentManager = getFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                WebsiteListFragment fragment = new WebsiteListFragment();
+                fragmentTransaction.add(fragment, "test");
+                fragmentTransaction.commit();
             }
 
         });
@@ -115,7 +136,9 @@ public class MainPreferences extends PreferenceActivity{
             @Override
             public void onClick(View v) {
                 cycleWallpaper();
-                Toast.makeText(getApplicationContext(), "Cycling...", Toast.LENGTH_SHORT).show();
+                if (AppSettings.useToast()) {
+                    Toast.makeText(getApplicationContext(), "Cycling...", Toast.LENGTH_SHORT).show();
+                }
             }
 
         });
@@ -128,19 +151,48 @@ public class MainPreferences extends PreferenceActivity{
         footerLayout.addView(setButton);
         footerLayout.addView(refreshButton);
         footerLayout.addView(downloadButton);
-        footerLayout.addView(webView);
-
-        ViewGroup.LayoutParams params = webView.getLayoutParams();
-        params.height = 1;
-        webView.setLayoutParams(params);
+//        if (AppSettings.useExperimentalDownloader()) {
+//            footerLayout.addView(webView);
+//            ViewGroup.LayoutParams params = webView.getLayoutParams();
+//            params.height = 1;
+//            webView.setLayoutParams(params);
+//        }
 
         setListFooter(footerLayout);
 
-        Bundle bundle = getIntent().getExtras();
-        if (bundle != null && bundle.getBoolean("download")) {
-            getHtml();
-            Log.i("MP", "Called getHtml()");
-        }
+//        Bundle bundle = getIntent().getExtras();
+//        if (bundle != null && bundle.getBoolean("download")) {
+//            getHtml();
+//            Log.i("MP", "Called getHtml()");
+//        }
+
+        OnClickListener tutorialPromptListener = new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tutorialPromptView.hide();
+                AppSettings.setTutorial(true);
+                showTutorial();
+            }
+        };
+
+        tutorialPromptView = new ShowcaseView.Builder(this)
+                .setContentTitle("Welcome to AutoBackground")
+                .setContentText("If you would like to go through\n" +
+                        "a quick tutorial, hit the OK button.")
+                .setStyle(R.style.ShowcaseStyle)
+                .setOnClickListener(tutorialPromptListener)
+                .build();
+
+    }
+
+    private void showTutorial() {
+        ShowcaseView websiteTutorialView = new ShowcaseView.Builder(this)
+                .setTarget(new ViewTarget(getListView().getChildAt(1)))
+                .setContentTitle("Website Settings")
+                .setContentText("Click here to add\n" +
+                        "your first website.")
+                .setStyle(R.style.ShowcaseStyle)
+                .build();
 
     }
 
@@ -174,6 +226,9 @@ public class MainPreferences extends PreferenceActivity{
 	@Override
 	protected void onResume() {
 		super.onResume();
+
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+
 		if (isServiceRunning(LiveWallpaperService.class.getName())) {
         	setButton.setVisibility(View.GONE);
         }
@@ -184,23 +239,23 @@ public class MainPreferences extends PreferenceActivity{
 			(findViewById(android.R.id.title)).setVisibility(View.GONE);
 		}
 
-        if (android.os.Build.VERSION.SDK_INT < 20) {
-            setBackgroundColorForViewTree((ViewGroup) getWindow().getDecorView(), Color.TRANSPARENT);
-        }
+//        if (android.os.Build.VERSION.SDK_INT < 20) {
+//            setBackgroundColorForViewTree((ViewGroup) getWindow().getDecorView(), Color.TRANSPARENT);
+//        }
 	}
 	
-	private static void setBackgroundColorForViewTree(ViewGroup viewGroup, int color)
-	{
-		for (int i = 0; i < viewGroup.getChildCount(); i++)
-		{
-			View child = viewGroup.getChildAt(i);
-			if (child instanceof ViewGroup) 
-				setBackgroundColorForViewTree((ViewGroup)child, color);
-			child.setBackgroundColor(color);
-		}
-		viewGroup.setBackgroundColor(color);
-
-	}
+//	private static void setBackgroundColorForViewTree(ViewGroup viewGroup, int color)
+//	{
+//		for (int i = 0; i < viewGroup.getChildCount(); i++)
+//		{
+//			View child = viewGroup.getChildAt(i);
+//			if (child instanceof ViewGroup)
+//				setBackgroundColorForViewTree((ViewGroup)child, color);
+//			child.setBackgroundColor(color);
+//		}
+//		viewGroup.setBackgroundColor(color);
+//
+//	}
 
 	@Override
 	protected void onPause() {
@@ -270,11 +325,21 @@ public class MainPreferences extends PreferenceActivity{
 
                                 String url = AppSettings.getWebsiteUrl(index);
 
+                                if (url.contains(".com")) {
+                                    baseUrl = url.substring(0, url.indexOf(".com") + 4);
+                                }
+                                else if (url.contains(".net")) {
+                                    baseUrl = url.substring(0, url.indexOf(".net") + 4);
+                                }
+                                else {
+                                    baseUrl = url;
+                                }
+
                                 class MyJavaScriptInterface {
 
                                     @JavascriptInterface
                                     public void showHTML(String html) {
-                                        Downloader.setHtml(html, getCacheDir().getAbsolutePath(), index);
+                                        Downloader.setHtml(html, getCacheDir().getAbsolutePath(), index, getBaseUrl());
                                         Log.i("MP", "Written html");
                                     }
                                 }
@@ -297,7 +362,9 @@ public class MainPreferences extends PreferenceActivity{
                                         }, 15000);
                                     }
                                 });
-                                Toast.makeText(getApplicationContext(), "Loading page", Toast.LENGTH_SHORT).show();
+                                if (AppSettings.useToast()) {
+                                    Toast.makeText(getApplicationContext(), "Loading page", Toast.LENGTH_SHORT).show();
+                                }
 
                                 webView.getSettings().setJavaScriptEnabled(true);
 
@@ -314,4 +381,9 @@ public class MainPreferences extends PreferenceActivity{
         });
         thread.start();
     }
+
+    private String getBaseUrl() {
+        return baseUrl;
+    }
+
 }
