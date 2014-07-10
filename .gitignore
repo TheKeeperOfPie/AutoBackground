@@ -8,6 +8,7 @@
 *.pro
 
 app/libs
+libraries
 #built application files
 *.apk
 *.ap_
