@@ -1,8 +1,15 @@
 package cw.kop.autowallpaper;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import cw.kop.autowallpaper.settings.AppSettings;
 
 public class AboutFragment extends PreferenceFragment{
 
@@ -20,6 +27,14 @@ public class AboutFragment extends PreferenceFragment{
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences_about);
     }
-	
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
+
+        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
+
+        return localInflater.inflate(R.layout.fragment_list, container, false);
+    }
 }
 

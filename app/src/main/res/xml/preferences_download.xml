@@ -7,7 +7,25 @@
         android:key="title_download_settings"
 	    android:title="@string/title_download_settings"
 	    >
-        
+
+        <EditTextPreference
+            android:key="user_width"
+            android:defaultValue="1000"
+            android:title="@string/user_width"
+            android:inputType="number"
+            android:numeric="integer"
+            android:summary="@string/user_width_description"
+            />
+
+        <EditTextPreference
+            android:key="user_height"
+            android:defaultValue="1000"
+            android:title="@string/user_height"
+            android:inputType="number"
+            android:numeric="integer"
+            android:summary="@string/user_height_description"
+            />
+
 	    <SwitchPreference 
 		    android:key="use_timer"
     		android:defaultValue="false"
@@ -53,10 +71,25 @@
         
         <SwitchPreference
 		    android:key="keep_images"
-    		android:defaultValue="true"
+    		android:defaultValue="false"
 		    android:title="@string/keep_images"
 		    android:summary="@string/keep_images_description"
          	/>
+
+        <Preference
+            android:key="delete_images"
+            android:title="@string/delete_images"
+            android:summary="@string/delete_images_description"
+            />
+
+        <EditTextPreference
+            android:key="image_prefix_adv"
+            android:defaultValue="AutoBackground"
+            android:inputType="textWebEditText"
+            android:digits="@string/letters_and_numbers"
+            android:title="@string/image_prefix"
+            android:summary="@string/image_prefix_description"
+            />
 
         <SwitchPreference
             android:key="use_experimental_downloader_adv"

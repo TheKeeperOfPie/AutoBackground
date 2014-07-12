@@ -4,21 +4,10 @@
     <string name="app_name">AutoBackground</string>
     <string name="wallpaper_description">AutoBackground</string>
     <string name="menu_help">Help</string>
-    
-    <string name="header_title_wallpaper">Wallpaper Settings</string>
-    <string name="header_summary_wallpaper">Change settings for wallpaper</string>
-    <string name="header_title_websites">Change Websites</string>
-    <string name="header_summary_websites">Edit website entries</string>
-    <string name="header_title_download">Download Settings</string>
-    <string name="header_summary_download">Change settings for downloading</string>
-    <string name="header_title_image">Image Settings</string>
-    <string name="header_summary_image">Change image effects</string>
-    <string name="header_title_storage">Directory Settings</string>
-    <string name="header_summary_storage">Change image directory</string>
-    <string name="header_title_app">Application Settings</string>
-    <string name="header_summary_app">Various settings for app</string>
-    <string name="header_title_about">About</string>
-    <string name="header_summary_about">Various Information</string>
+    <string name="fragment_content_description">Fragment image</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    <string name="letters_and_numbers">ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890</string>
 
     <string name="title_wallpaper_settings">Wallpaper Settings</string>
     <string name="title_image_settings">Image Settings</string>
@@ -76,6 +65,10 @@
     <string name="force_download_description">Attempt to force download</string>
     <string name="keep_images">Keep Images</string>
     <string name="keep_images_description">Keep old images in cache</string>
+    <string name="delete_images">Delete Images</string>
+    <string name="delete_images_description">Purge downloaded images</string>
+    <string name="image_prefix">Image Prefix</string>
+    <string name="image_prefix_description">Prefix for file name</string>
     <string name="use_experimental_downloader">Experimental Downloader</string>
     <string name="use_experimental_downloader_description">Include JavaScript generated websites</string>
 
@@ -98,6 +91,8 @@
     <string name="use_advanced_description">Show advanced settings</string>
     <string name="clear_pref">Reset Settings</string>
     <string name="clear_pref_description">Set default settings</string>
+    <string name="show_tutorial">Reshow Tutorial</string>
+    <string name="show_tutorial_description">Click to restart tutorial</string>
     
     
     <string name="file_content_description">File Image</string>
@@ -106,7 +101,28 @@
     <string name="copy">Copy</string>
     <string name="cycle">Cycle</string>
     <string name="delete">Delete</string>
-	
+
+    <string-array name="fragment_titles">
+        <item>Websites</item>
+        <item>Wallpaper</item>
+        <item>Downloader</item>
+        <item>Images</item>
+        <item>Directory</item>
+        <item>Application</item>
+        <item>About</item>
+    </string-array>
+
+    <string-array name="fragment_descriptions">
+        <item>Edit website entries</item>
+        <item>Change settings for wallpaper</item>
+        <item>Change settings for downloading</item>
+        <item>Change image effects</item>
+        <item>Change image directory</item>
+        <item>Various settings for app</item>
+        <item>Various Information</item>
+    </string-array>
+
+
     <string-array name="website_entry_menu">
     	<item>Edit</item>
     	<item>Delete</item>

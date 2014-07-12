@@ -30,8 +30,13 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
 import cw.kop.autowallpaper.settings.AppSettings;
 
@@ -42,7 +47,7 @@ public class Downloader {
     private static final String TAG = "Downloader";
 	private static FilenameFilter fileFilter = null;
     private static int randIndex = 0;
-    private static int index = 0;
+    private static int index;
     private static int num = 0;
 	
 	private static RetrieveImageTask imageAsyncTask;
@@ -58,44 +63,35 @@ public class Downloader {
 	
 	public static void download(Context appContext) {
 
-        if (AppSettings.useAdvanced() && AppSettings.useExperimentalDownloader()) {
-            Intent intent = new Intent(appContext, MainPreferences.class);
-            intent.putExtra("download", true);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            appContext.startActivity(intent);
-        }
-        else {
-            if (imageAsyncTask != null && imageAsyncTask.getStatus() != AsyncTask.Status.RUNNING) {
-                ConnectivityManager connect = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (imageAsyncTask != null && imageAsyncTask.getStatus() != AsyncTask.Status.RUNNING) {
+            ConnectivityManager connect = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-                NetworkInfo wifi = connect.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-                NetworkInfo mobile = connect.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+            NetworkInfo wifi = connect.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            NetworkInfo mobile = connect.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
-                if (wifi.isConnected() && AppSettings.useWifi()) {
+            if (wifi.isConnected() && AppSettings.useWifi()) {
 
-                }
-                else if (mobile.isConnected() && AppSettings.useMobile()) {
+            }
+            else if (mobile.isConnected() && AppSettings.useMobile()) {
 
-                }
-                else {
-                    if (AppSettings.useToast()) {
-                        Toast.makeText(appContext, "No connection availble,\ncheck Download Settings", Toast.LENGTH_SHORT).show();
-                    }
-                    return;
-                }
-                imageAsyncTask = new RetrieveImageTask(appContext);
-                loadImagesFromWeb(appContext);
-                if (AppSettings.useToast()) {
-                    Toast.makeText(appContext, "Downloading images", Toast.LENGTH_SHORT).show();
-                }
             }
             else {
                 if (AppSettings.useToast()) {
-                    Toast.makeText(appContext, "Already downloading", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(appContext, "No connection availble,\ncheck Download Settings", Toast.LENGTH_SHORT).show();
                 }
-                Log.i("Downloader", "Already downloading");
+                return;
             }
-
+            imageAsyncTask = new RetrieveImageTask(appContext);
+            loadImagesFromWeb(appContext);
+            if (AppSettings.useToast()) {
+                Toast.makeText(appContext, "Downloading images", Toast.LENGTH_SHORT).show();
+            }
+        }
+        else {
+            if (AppSettings.useToast()) {
+                Toast.makeText(appContext, "Already downloading", Toast.LENGTH_SHORT).show();
+            }
+            Log.i("Downloader", "Already downloading");
         }
 	}
 	
@@ -139,6 +135,15 @@ public class Downloader {
 	public static void deleteCurrentBitmap() {
 		bitmapFile.delete();
 	}
+
+    public static void deleteAllBitmaps(Context appContext) {
+        File[] files = getBitmapList(appContext);
+        for (File file : files) {
+            if (file.getName().contains(AppSettings.getImagePrefix())) {
+                file.delete();
+            }
+        }
+    }
 	
 	public static void loadImagesFromWeb(Context appContext) {
 
@@ -209,9 +214,16 @@ public class Downloader {
         index = 0;
     }
 
-    public static void setHtml(String html, String dir, int urlIndex, String baseUrl) {
+    public static void setHtml(String html, String dir, int urlIndex, String baseUrl, Context appContext) {
         Log.i(TAG, "SetHtml called with baseURL: " + baseUrl);
         try {
+
+            if (!AppSettings.keepImages()) {
+                deleteAllBitmaps(appContext);
+                AppSettings.setNumStored(0);
+            }
+
+            index = AppSettings.getNumStored();
 
             File toWrite = new File(dir + "/html.txt");
             if (toWrite.exists()){
@@ -219,40 +231,39 @@ public class Downloader {
             }
 
             BufferedWriter buf = new BufferedWriter(new FileWriter(toWrite, true));
-//            buf.append(html);
+            buf.append(html);
 
             Document rootDoc = Jsoup.parse(html);
 
             Log.i(TAG, AppSettings.getWebsiteUrl(urlIndex));
 
-            List<String> links = new ArrayList<String>();
-            links.addAll(compileLinks(rootDoc, "a", "href", baseUrl));
-
-            List<String> imageLinks = new ArrayList<String>();
+            Set<String> imageLinks = new HashSet<String>();
             imageLinks.addAll(compileImageLinks(rootDoc, "a", "href"));
             imageLinks.addAll(compileImageLinks(rootDoc, "img", "src"));
 
+            Set<String> links = new HashSet<String>();
+            links.addAll(compileLinks(rootDoc, "a", "href", baseUrl));
+            links.addAll(compileLinks(rootDoc, "img", "href", baseUrl));
+
             for (String link : links) {
-                try  {
-                    Document docDepthOne = Jsoup.connect(link).get();
-                    imageLinks.addAll(compileImageLinks(docDepthOne, "a", "href"));
-                    imageLinks.addAll(compileImageLinks(docDepthOne, "img", "src"));
-                    }
+                try {
+                    Document imageDoc = Jsoup.connect(link).get();
+                    imageLinks.addAll(compileImageLinks(imageDoc, "a", "href"));
+                    imageLinks.addAll(compileImageLinks(imageDoc, "img", "src"));
+                }
                 catch (Exception e) {
 
                 }
-            }
-
-            for (String test : imageLinks) {
-                buf.append(test);
-                buf.newLine();
             }
 
             buf.close();
 
             Log.i(TAG, "Num Images: " + AppSettings.getNumImages(urlIndex));
 
-            downloadImages(imageLinks, AppSettings.getNumImages(urlIndex), dir);
+            List<String> imageList = new ArrayList<String>();
+            imageList.addAll(imageLinks);
+
+            downloadImages(imageList, AppSettings.getNumImages(urlIndex), dir);
 
             Log.i("Downloader", "Written");
         } catch (IOException e) {
@@ -281,27 +292,42 @@ public class Downloader {
 
     }
 
-    protected static List<String> compileImageLinks(Document doc, String tag, String attr) {
+    protected static Set<String> compileImageLinks(Document doc, String tag, String attr) {
 
         Elements downloadLinks = doc.select(tag);
-        List<String> links = new ArrayList<String>();
+        Set<String> links = new HashSet<String>();
 
         for (Element link : downloadLinks) {
-            Log.i(TAG, link.attr(attr));
+//            Log.i(TAG, link.attr(attr));
             String url = link.attr(attr);
             if (!url.contains("http")) {
                 url = "http:" + url;
             }
-            if (link.attr(attr).contains(".png")) {
-                links.add(url);
+            if (link.attr("width") != null && !link.attr("width").equals("")) {
+                try {
+                    Log.i(TAG, "Width attribute: " + Integer.parseInt(link.attr("width")) + " Height attribute: " + Integer.parseInt(link.attr("width")));
+                    if (Integer.parseInt(link.attr("width")) < AppSettings.getWidth() || Integer.parseInt(link.attr("height")) < AppSettings.getHeight()) {
+                        continue;
+                    }
+                }
+                catch (NumberFormatException e) {
+
+                }
             }
-            else if (link.attr(attr).contains(".jpg")) {
+
+            if (url.contains(".png")) {
                 links.add(url);
+                Log.i(TAG, link.attr(attr));
             }
-            else if (AppSettings.forceDownload() && link.attr(attr).length() > 5 && (link.attr(attr).contains(".com") || link.attr(attr).contains(".org") || link.attr(attr).contains(".net"))) {
+            else if (url.contains(".jpg")) {
+                links.add(url);
+                Log.i(TAG, link.attr(attr));
+            }
+            else if (AppSettings.forceDownload() && url.length() > 5 && (url.contains(".com") || url.contains(".org") || url.contains(".net"))) {
                 links.add(url + ".png");
                 links.add(url + ".jpg");
                 links.add(url);
+                Log.i(TAG, url);
             }
         }
         return links;
@@ -322,8 +348,6 @@ public class Downloader {
             while (num < numImages && count <= randValues.size() - 1) {
 
                 String randLink = links.get(randValues.get(count));
-
-                Log.i(TAG, "Downloading: " + randLink);
 
                 boolean oldLink = false;
 
@@ -350,8 +374,6 @@ public class Downloader {
         if (Patterns.WEB_URL.matcher(url).matches()) {
             try {
 
-                Log.i(TAG, "URL: " + url);
-
                 int minWidth = AppSettings.getWidth();
                 int minHeight = AppSettings.getHeight();
                 System.gc();
@@ -360,10 +382,10 @@ public class Downloader {
                 connection.connect();
                 InputStream input = connection.getInputStream();
 
-//                if (!connection.getHeaderField("Content-Type").startsWith("image/")) {
-//                    Log.i(TAG, "Not an image: " + url);
-//                    return false;
-//                }
+                if (!connection.getHeaderField("Content-Type").startsWith("image/")) {
+                    Log.i(TAG, "Not an image: " + url);
+                    return false;
+                }
 
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inPreferredConfig = Bitmap.Config.ARGB_8888;
@@ -380,7 +402,9 @@ public class Downloader {
                 int bitHeight = options.outHeight;
                 options.inJustDecodeBounds = false;
 
-                if (bitWidth < minWidth || bitHeight < minHeight) {
+                Log.i(TAG, "bitWidth: " + bitWidth + " bitHeight: " + bitHeight);
+
+                if (bitWidth + 10 < minWidth || bitHeight + 10 < minHeight) {
                     return false;
                 }
 
@@ -428,7 +452,7 @@ public class Downloader {
 
     protected static void writeToFile(Bitmap image, String url, String dir) {
 
-        File file = new File(dir + "/image" + index + ".png");
+        File file = new File(dir + "/" + AppSettings.getImagePrefix() + index + ".png");
         if (file.isFile()) {
             file.delete();
         }
@@ -480,16 +504,12 @@ public class Downloader {
 	    	Log.i(TAG, downloadCacheDir);
 			
 			if (!AppSettings.keepImages()) {
-				for (int i = 0; i < AppSettings.getNumStored(); i++) {
-					File toDelete = new File(downloadCacheDir + "/image" + i + ".png");
-					if (toDelete != null && toDelete.exists() && toDelete.isFile()) {
-						toDelete.delete();
-					}
-				}
+				deleteAllBitmaps(context);
+                AppSettings.setNumStored(0);
 			}
 
-			AppSettings.setNumStored(0);
-			
+            index = AppSettings.getNumStored();
+
 			Log.i(TAG, "Num websites: " + AppSettings.getNumWebsites());
 			
 			for (int i = 0; i < AppSettings.getNumWebsites(); i++) {
@@ -503,13 +523,16 @@ public class Downloader {
 						
 						Log.i(TAG, AppSettings.getWebsiteUrl(i));
 						
-						List<String> imageLinks = new ArrayList<String>();
+						Set<String> imageLinks = new HashSet<String>();
 						imageLinks.addAll(compileImageLinks(linkDoc, "a", "href"));
 						imageLinks.addAll(compileImageLinks(linkDoc, "img", "src"));
 						
 						Log.i(TAG, "Num Images: " + AppSettings.getNumImages(i));
-						
-						downloadImages(imageLinks, AppSettings.getNumImages(i), downloadCacheDir);
+
+                        List<String> imageList = new ArrayList<String>();
+                        imageList.addAll(imageLinks);
+
+						downloadImages(imageList, AppSettings.getNumImages(i), downloadCacheDir);
 						
 						imageDetails += AppSettings.getWebsiteTitle(i) + ": " + num + " images;break;";
 

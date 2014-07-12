@@ -22,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import cw.kop.autowallpaper.settings.AppSettings;
 
@@ -46,7 +47,24 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
 		timerPref = (SwitchPreference) findPreference("use_timer");
 
-		return super.onCreateView(inflater, container, savedInstanceState);
+        Preference deletePref = (Preference) findPreference("delete_images");
+        deletePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Downloader.deleteAllBitmaps(context);
+                Toast.makeText(context, "Deleting images with prefix\n" + AppSettings.getImagePrefix(), Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
+
+        EditTextPreference prefixPref = (EditTextPreference) findPreference("image_prefix_adv");
+        prefixPref.setSummary("Prefix: " + AppSettings.getImagePrefix());
+
+        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
+
+        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
+
+        return localInflater.inflate(R.layout.fragment_list, container, false);
 		
 	}
 
@@ -69,7 +87,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         int themeId;
 
-        if(AppSettings.getTheme() == R.style.AppLightTheme) {
+        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
             themeId = R.style.LightDialogTheme;
         }
         else {
@@ -140,7 +158,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         int themeId;
 
-        if(AppSettings.getTheme() == R.style.AppLightTheme) {
+        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
             themeId = R.style.LightDialogTheme;
         }
         else {
@@ -210,7 +228,14 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         if (!AppSettings.useAdvanced()) {
             SwitchPreference experimentalPref = (SwitchPreference) findPreference("use_experimental_downloader_adv");
             ((PreferenceCategory) findPreference("title_download_settings")).removePreference(experimentalPref);
+            EditTextPreference prefixPref = (EditTextPreference) findPreference("image_prefix_adv");
+            ((PreferenceCategory) findPreference("title_download_settings")).removePreference(prefixPref);
         }
+
+        EditTextPreference widthPref = (EditTextPreference) findPreference("user_width");
+        widthPref.setSummary("Minimum Width of Image: " + AppSettings.getWidth());
+        EditTextPreference heightPref = (EditTextPreference) findPreference("user_height");
+        heightPref.setSummary("Minimum Height of Image: " + AppSettings.getHeight());
 
         if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
             timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");

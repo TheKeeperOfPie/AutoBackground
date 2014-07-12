@@ -4,24 +4,6 @@
 	<PreferenceCategory
 		android:title="@string/title_wallpaper_settings"
 		>
-      
-		<EditTextPreference
-			android:key="user_width"
-			android:defaultValue="1000"
-			android:title="@string/user_width" 
-			android:inputType="number"
-			android:numeric="integer"
-			android:summary="@string/user_width_description"
-			/>
-      
-		<EditTextPreference
-			android:key="user_height"
-			android:defaultValue="1000"
-			android:title="@string/user_height"
-			android:inputType="number"
-			android:numeric="integer"
-			android:summary="@string/user_height_description"
-			/>
   
 		<SwitchPreference
 			android:key="fill_images"
@@ -68,7 +50,7 @@
 
         <SwitchPreference
             android:key="double_tap"
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:title="@string/double_tap"
             android:dialogTitle="@string/double_tap"
             android:summary="@string/double_tap_description"

@@ -1,7 +1,6 @@
 package cw.kop.autowallpaper;
 
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,7 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.preference.DialogPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
@@ -18,7 +16,6 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import cw.kop.autowallpaper.settings.AppSettings;
@@ -27,8 +24,9 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
 	private Context context;
     private SwitchPreference toastPref;
-	
-	@Override
+    private Preference themePref;
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_app);
@@ -51,9 +49,9 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
             }
         });
 
-        Preference themePref = findPreference("change_theme");
+        themePref = findPreference("change_theme");
         String themeName = getResources().getResourceName(AppSettings.getTheme());
-        themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("App") + 3, themeName.indexOf("Theme")));
+        themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("Fragment") + 8, themeName.indexOf("Theme")));
         themePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -62,9 +60,23 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
             }
         });
 
+        Preference tutorialPref = findPreference("show_tutorial");
+        tutorialPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                AppSettings.setTutorial(true);
+                Toast.makeText(context, "Will reshow tutorial", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
+
         toastPref = (SwitchPreference) findPreference("use_toast");
 
-		return super.onCreateView(inflater, container, savedInstanceState);
+        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
+
+        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
+
+        return localInflater.inflate(R.layout.fragment_list, container, false);
 		
 	}
 
@@ -78,7 +90,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
         int themeId;
 
-        if(AppSettings.getTheme() == R.style.AppLightTheme) {
+        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
             themeId = R.style.LightDialogTheme;
         }
         else {
@@ -94,16 +106,20 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
                 switch (which) {
                     case 0:
-                        AppSettings.setTheme(R.style.AppLightTheme);
+                        AppSettings.setTheme(R.style.FragmentLightTheme);
                         break;
                     case 1:
-                        AppSettings.setTheme(R.style.AppDarkTheme);
+                        AppSettings.setTheme(R.style.FragmentDarkTheme);
                         break;
                     case 2:
-                        AppSettings.setTheme(R.style.AppTransparentTheme);
+                        AppSettings.setTheme(R.style.FragmentTransparentTheme);
                         break;
                     default:
                 }
+
+                ((MainPreferences) getActivity()).setAppTheme();
+                String themeName = getResources().getResourceName(AppSettings.getTheme());
+                themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("Fragment") + 8, themeName.indexOf("Theme")));
 
             }
         });
@@ -116,7 +132,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
         int themeId;
 
-        if(AppSettings.getTheme() == R.style.AppLightTheme) {
+        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
             themeId = R.style.LightDialogTheme;
         }
         else {

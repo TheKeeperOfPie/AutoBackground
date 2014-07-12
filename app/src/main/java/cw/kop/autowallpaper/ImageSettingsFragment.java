@@ -7,9 +7,12 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import cw.kop.autowallpaper.settings.AppSettings;
 
 /**
  * Created by TheKeeperOfPie on 7/4/2014.
@@ -27,7 +30,11 @@ public class ImageSettingsFragment extends PreferenceFragment implements OnShare
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        return super.onCreateView(inflater, container, savedInstanceState);
+        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
+
+        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
+
+        return localInflater.inflate(R.layout.fragment_list, container, false);
 
     }
 

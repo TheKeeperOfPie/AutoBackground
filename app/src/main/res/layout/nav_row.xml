@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    >
+    <ImageView
+        android:id="@+id/fragment_image"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/fragment_content_description"
+        />
+
+    <TextView
+        android:id="@+id/fragment_title"
+        android:layout_toRightOf="@id/fragment_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="8dp"
+        android:background="@color/TRANSPARENT_BACKGROUND"
+        android:textColor="@color/WHITE_OPAQUE"
+        android:textSize="18sp"
+        android:singleLine="true"
+        android:focusable="false"
+        />
+
+</RelativeLayout>

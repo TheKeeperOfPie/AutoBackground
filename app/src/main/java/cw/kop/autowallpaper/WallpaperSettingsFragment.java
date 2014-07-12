@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ListView;
 
 import cw.kop.autowallpaper.settings.AppSettings;
 
@@ -36,13 +37,19 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_wallpaper);
+
     }
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
 		intervalPref = (SwitchPreference) findPreference("use_interval");
 
-		return super.onCreateView(inflater, container, savedInstanceState);
+        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
+
+        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
+
+        return localInflater.inflate(R.layout.fragment_list, container, false);
 	}
 
 	@Override
@@ -58,19 +65,12 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 		alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 	}
 
-	
-	@Override
+    @Override
 	public void onResume() {
         super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         
         onSharedPreferenceChanged(getPreferenceScreen().getSharedPreferences(), "");
-        
-        SharedPreferences sp = getPreferenceScreen().getSharedPreferences();
-        EditTextPreference widthPref = (EditTextPreference) findPreference("user_width");
-        widthPref.setSummary("Minimum Width of Image: " + sp.getString("user_width", "1000"));
-        EditTextPreference heightPref = (EditTextPreference) findPreference("user_height");
-        heightPref.setSummary("Minimum Height of Image: " + sp.getString("user_height", "1000"));
 
         if (AppSettings.getIntervalDuration() > 0) {
             intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
@@ -82,7 +82,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         int themeId;
 
-        if(AppSettings.getTheme() == R.style.AppLightTheme) {
+        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
             themeId = R.style.LightDialogTheme;
         }
         else {
@@ -151,7 +151,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         int themeId;
 
-        if(AppSettings.getTheme() == R.style.AppLightTheme) {
+        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
             themeId = R.style.LightDialogTheme;
         }
         else {

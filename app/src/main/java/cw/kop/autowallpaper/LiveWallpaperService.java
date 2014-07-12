@@ -401,8 +401,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     if (bitmap != null && renderer != null) {
 
-                        final Bitmap bitmapScaled = scaleBitmap(bitmap);
-
                         if (AppSettings.useNotification()) {
                             notifyChangeImage();
                         }
@@ -411,7 +409,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                             @Override
                             public void run() {
-                                renderer.setBitmap(bitmapScaled, true, 1);
+                                renderer.setBitmap(bitmap, true, 1);
                             }
                         });
 
@@ -419,43 +417,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
             });
 
-        }
-
-        protected Bitmap scaleBitmap(Bitmap bitmap) {
-            int bitWidth = bitmap.getWidth();
-            int bitHeight = bitmap.getHeight();
-            float scaleWidth = ((float) screenWidth) / bitWidth;
-            float scaleHeight = ((float) screenHeight) / bitHeight;
-
-            if (bitWidth * scaleWidth > maxTextureSize[0] ||
-                bitWidth * scaleHeight > maxTextureSize[0] ||
-                bitHeight * scaleWidth > maxTextureSize[0] ||
-                bitHeight * scaleHeight > maxTextureSize[0]) {
-
-                int ratio = maxTextureSize[0] / screenHeight;
-                int scaledWidth = bitHeight * ratio;
-                if (scaledWidth > bitWidth || scaledWidth == 0) {
-                    scaledWidth = bitWidth;
-                }
-
-                bitmap = Bitmap.createBitmap(bitmap, (bitWidth / 2) - (scaledWidth / 2), 0, scaledWidth, bitHeight);
-
-                bitWidth = bitmap.getWidth();
-                bitHeight = bitmap.getHeight();
-                scaleWidth = ((float) screenWidth) / bitWidth;
-                scaleHeight = ((float) screenHeight) / bitHeight;
-            }
-
-            Matrix matrix = new Matrix();
-
-            if (AppSettings.fillImages() && scaleWidth > scaleHeight) {
-                matrix.postScale(scaleWidth, scaleWidth);
-            }
-            else {
-                matrix.postScale(scaleHeight, scaleHeight);
-            }
-
-            return Bitmap.createBitmap(bitmap, 0, 0, bitWidth, bitHeight, matrix, false);
         }
 
         class MyGLRenderer implements GLSurfaceView.Renderer {
@@ -593,7 +554,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         Render(mtrxProjectionAndView);
                     }
 
-                    if (animated) {
+                    if (animated && !toFade) {
                         if (animationX < (-bitmapWidth + renderScreenWidth + animationModifier)) {
                             animationModifier = -Math.abs(animationModifier);
                         }
@@ -761,6 +722,14 @@ public class LiveWallpaperService extends GLWallpaperService {
                 // Create image texture
                 setBitmap(localBitmap, false, 0);
 
+                Log.i(TAG, "Animation offset: " + animationX);
+
+                if (animationX < renderScreenWidth - bitmapWidth) {
+                    animationX = 0;
+                }
+
+                Log.i(TAG, "Animation offset: " + animationX);
+
                 GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
                 android.opengl.Matrix.setIdentityM(transMatrix, 0);
                 android.opengl.Matrix.translateM(transMatrix, 0, offset, 0, 0);
@@ -814,7 +783,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             }
 
             public void setBitmap(Bitmap bitmap, boolean fade, int texture) {
-                localBitmap = bitmap;
+                localBitmap = scaleBitmap(bitmap);
 
                 oldBitmapWidth = bitmapWidth;
                 oldBitmapHeight = bitmapHeight;
@@ -826,9 +795,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 Log.i(TAG, "screenHeight: " + renderScreenHeight + " oldBitmapHeight: " + oldBitmapHeight + " bitmapHeight: " + bitmapHeight);
 
                 newOffset = xOffset * (renderScreenWidth - bitmapWidth);
-
-                Log.i(TAG, "Old Width: " + oldBitmapWidth + " Offset: " + offset);
-                Log.i(TAG, "Width: " + bitmapWidth + " newOffset: " + newOffset);
 
                 GLES20.glDeleteTextures(1, textureNames, texture);
 
@@ -850,10 +816,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     toEffect = true;
                 }
 
-                if (animationX > bitmapWidth - renderScreenWidth) {
-                    animationX = 0;
-                }
-
                 if (AppSettings.useFade() && fade) {
                     toFade = fade;
                     setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
@@ -864,6 +826,45 @@ public class LiveWallpaperService extends GLWallpaperService {
                     onDrawFrame(null);
                 }
 
+            }
+
+
+
+            protected Bitmap scaleBitmap(Bitmap bitmap) {
+                int bitWidth = bitmap.getWidth();
+                int bitHeight = bitmap.getHeight();
+                float scaleWidth = ((float) screenWidth) / bitWidth;
+                float scaleHeight = ((float) screenHeight) / bitHeight;
+
+                if (bitWidth * scaleWidth > maxTextureSize[0] ||
+                        bitWidth * scaleHeight > maxTextureSize[0] ||
+                        bitHeight * scaleWidth > maxTextureSize[0] ||
+                        bitHeight * scaleHeight > maxTextureSize[0]) {
+
+                    int ratio = maxTextureSize[0] / screenHeight;
+                    int scaledWidth = bitHeight * ratio;
+                    if (scaledWidth > bitWidth || scaledWidth == 0) {
+                        scaledWidth = bitWidth;
+                    }
+
+                    bitmap = Bitmap.createBitmap(bitmap, (bitWidth / 2) - (scaledWidth / 2), 0, scaledWidth, bitHeight);
+
+                    bitWidth = bitmap.getWidth();
+                    bitHeight = bitmap.getHeight();
+                    scaleWidth = ((float) screenWidth) / bitWidth;
+                    scaleHeight = ((float) screenHeight) / bitHeight;
+                }
+
+                Matrix matrix = new Matrix();
+
+                if (AppSettings.fillImages() && scaleWidth > scaleHeight) {
+                    matrix.postScale(scaleWidth, scaleWidth);
+                }
+                else {
+                    matrix.postScale(scaleHeight, scaleHeight);
+                }
+
+                return Bitmap.createBitmap(bitmap, 0, 0, bitWidth, bitHeight, matrix, false);
             }
 
             /**

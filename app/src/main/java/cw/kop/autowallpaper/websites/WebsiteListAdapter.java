@@ -3,6 +3,7 @@ package cw.kop.autowallpaper.websites;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,9 +51,13 @@ public class WebsiteListAdapter extends BaseAdapter {
 		final HashMap<String, String> listItem = listData.get(position);
 		
 		View view = convertView;
-		
+
+        final Context contextThemeWrapper = new ContextThemeWrapper(mainActivity, AppSettings.getTheme());
+
+        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
+
 		if (convertView == null) {
-			view = inflater.inflate(R.layout.website_list_row, null);
+			view = localInflater.inflate(R.layout.website_list_row, null);
 		}
 		
 		TextView title = (TextView) view.findViewById(R.id.title_text);

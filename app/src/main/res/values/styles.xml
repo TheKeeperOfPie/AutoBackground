@@ -14,25 +14,62 @@
 
     <!-- Application theme. -->
     <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+
     <style name="AppLightTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
+        <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
+        <item name="android:windowBackground">@color/TRANSPARENT_BACKGROUND</item>
+        <item name="android:textColor">@color/BLACK_OPAQUE</item>
+        <item name="android:textColorSecondary">@color/DARK_GRAY_OPAQUE</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:listSeparatorTextViewStyle">@style/LightListSeparator</item>
+    </style>
+
+    <style name="AppDarkTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
+        <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
+        <item name="android:windowBackground">@color/TRANSPARENT_BACKGROUND</item>
+        <item name="android:textColor">@color/WHITE_OPAQUE</item>
+        <item name="android:textColorSecondary">@color/LIGHT_GRAY_OPAQUE</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:listSeparatorTextViewStyle">@style/DarkListSeparator</item>>
+    </style>
+
+    <style name="FragmentLightTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
         <item name="android:background">@color/WHITE_OPAQUE</item>
+        <item name="android:windowBackground">@color/WHITE_OPAQUE</item>
         <item name="android:listViewStyle">@style/LightListView</item>
         <item name="android:titleTextStyle">@style/LightTitleColor</item>
         <item name="android:textColor">@color/BLACK_OPAQUE</item>
+        <item name="android:textColorSecondary">@color/BLACK_OPAQUE</item>
         <item name="android:textStyle">bold</item>
         <item name="android:actionBarStyle">@style/LightActionBar</item>
     </style>
 
-    <style name="AppDarkTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
+    <style name="FragmentDarkTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
         <item name="android:background">@color/BLACK_OPAQUE</item>
+        <item name="android:windowBackground">@color/BLACK_OPAQUE</item>
         <item name="android:listViewStyle">@style/DarkListView</item>
         <item name="android:titleTextStyle">@style/DarkTitleColor</item>
         <item name="android:textColor">@color/WHITE_OPAQUE</item>
+        <item name="android:textColorSecondary">@color/WHITE_OPAQUE</item>
         <item name="android:textStyle">bold</item>
         <item name="android:actionBarStyle">@style/DarkActionBar</item>
+        <item name="android:progressDrawable">@color/LIGHT_GRAY_OPAQUE</item>
+        <item name="android:thumb">@color/LIGHT_GRAY_OPAQUE</item>
     </style>
 
-    <style name="AppTransparentTheme" parent="@style/AppDarkTheme">
+    <style name="LightListSeparator">
+        <item name="android:textColor">@color/BLUE_OPAQUE</item>
+        <item name="android:paddingTop">8dp</item>
+
+    </style>
+
+    <style name="DarkListSeparator">
+        <item name="android:textColor">@color/BLUE_OPAQUE</item>
+        <item name="android:paddingTop">8dp</item>
+    </style>
+
+
+    <style name="FragmentTransparentTheme" parent="@FragmentDarkTheme">
         <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:windowBackground">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:shadowColor">@color/BLACK_OPAQUE</item>
@@ -40,7 +77,7 @@
         <item name="android:actionBarStyle">@style/TransparentActionBar</item>
     </style>
 
-    <style name="ShowcaseStyle" parent="@style/AppTransparentTheme">
+    <style name="ShowcaseStyle" parent="@FragmentTransparentTheme">
         <item name="android:background">@color/BLACK_TRANSPARENT</item>
         <item name="sv_backgroundColor">@color/BLACK_TRANSPARENT</item>
     </style>
@@ -48,13 +85,11 @@
     <style name="LightListView" parent="@android:style/Widget.ListView">
         <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:divider">@color/BLACK_OPAQUE</item>\
-        <item name="android:textColorSecondary">@color/DARK_GRAY_OPAQUE</item>
 	</style>
 
     <style name="DarkListView" parent="@android:style/Widget.ListView">
         <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:divider">@color/WHITE_OPAQUE</item>\
-        <item name="android:textColorSecondary">@color/LIGHT_GRAY_OPAQUE</item>
     </style>
 
     <style name="LightActionBar" parent="android:Widget.Holo.Light.ActionBar.Solid.Inverse">

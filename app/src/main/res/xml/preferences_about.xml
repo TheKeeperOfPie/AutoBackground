@@ -4,12 +4,6 @@
 	<PreferenceCategory
             android:title="@string/app_name">
 
-        <SwitchPreference
-                android:key="checkbox_preference"
-                android:title="@string/header_title_about"
-                android:summary="@string/header_summary_about"
-                android:defaultValue="true" />
-
     </PreferenceCategory>
     
 </PreferenceScreen>

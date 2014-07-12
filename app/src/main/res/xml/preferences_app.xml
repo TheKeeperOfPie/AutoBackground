@@ -46,6 +46,12 @@
             android:summary="@string/clear_pref_description"
             />
 
+        <Preference
+            android:key="show_tutorial"
+            android:title="@string/show_tutorial"
+            android:summary="@string/show_tutorial_description"
+            />
+
 	</PreferenceCategory>
 
 </PreferenceScreen>

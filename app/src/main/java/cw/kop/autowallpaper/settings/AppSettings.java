@@ -27,7 +27,7 @@ public class AppSettings {
     }
 
     public static void setTutorial(boolean tutorial) {
-        prefs.edit().putBoolean("tutorial", tutorial);
+        prefs.edit().putBoolean("tutorial", tutorial).apply();
     }
 
     public static boolean useTutorial() {
@@ -37,16 +37,17 @@ public class AppSettings {
 	public static void initPrefs(SharedPreferences preferences, Context context) {
 		prefs = preferences;
         if (isFirstRun()) {
-            prefs.edit().putString("user_width", "" + (WallpaperManager.getInstance(context).getDesiredMinimumWidth() / 2)).apply();
-            prefs.edit().putString("user_height", "" + (WallpaperManager.getInstance(context).getDesiredMinimumHeight() / 2)).apply();
-            prefs.edit().putBoolean("first_run", false).apply();
+            prefs.edit().putString("user_width", "" + (WallpaperManager.getInstance(context).getDesiredMinimumWidth() / 2)).commit();
+            prefs.edit().putString("user_height", "" + (WallpaperManager.getInstance(context).getDesiredMinimumHeight() / 2)).commit();
+            setTutorial(true);
+            prefs.edit().putBoolean("first_run", false).commit();
         }
 	}
 
     public static void clearPrefs(Context context) {
-        prefs.edit().clear().apply();
-        prefs.edit().putString("user_width", "" + (WallpaperManager.getInstance(context).getDesiredMinimumWidth() / 2)).apply();
-        prefs.edit().putString("user_height", "" + (WallpaperManager.getInstance(context).getDesiredMinimumHeight() / 2)).apply();
+        prefs.edit().clear().commit();
+        prefs.edit().putString("user_width", "" + (WallpaperManager.getInstance(context).getDesiredMinimumWidth() / 2)).commit();
+        prefs.edit().putString("user_height", "" + (WallpaperManager.getInstance(context).getDesiredMinimumHeight() / 2)).commit();
     }
 
 	public static void setUrl(String key, String url) {
@@ -62,7 +63,7 @@ public class AppSettings {
 	}
 
     public static int getTheme() {
-        return prefs.getInt("app_theme", R.style.AppLightTheme);
+        return prefs.getInt("app_theme", R.style.FragmentDarkTheme);
     }
 
     public static void setTheme(int theme) {
@@ -113,14 +114,14 @@ public class AppSettings {
 	
 	public static void setWebsites(ArrayList<HashMap<String, String>> listData) {
 		
-		prefs.edit().putInt("num_websites", listData.size()).apply();
+		prefs.edit().putInt("num_websites", listData.size()).commit();
 		
 		for (int i = 0; i < listData.size(); i++) {
 			
-			prefs.edit().putString("website_title_" + i, listData.get(i).get("title")).apply();
-			prefs.edit().putString("website_url_" + i, listData.get(i).get("url")).apply();
-			prefs.edit().putString("num_images_" + i, listData.get(i).get("num")).apply();
-			prefs.edit().putBoolean("use_website_" + i, Boolean.valueOf(listData.get(i).get("use"))).apply();
+			prefs.edit().putString("website_title_" + i, listData.get(i).get("title")).commit();
+			prefs.edit().putString("website_url_" + i, listData.get(i).get("url")).commit();
+			prefs.edit().putString("num_images_" + i, listData.get(i).get("num")).commit();
+			prefs.edit().putBoolean("use_website_" + i, Boolean.valueOf(listData.get(i).get("use"))).commit();
 			
 		}
 	}
@@ -234,12 +235,14 @@ public class AppSettings {
     }
 
     public static boolean useDoubleTap() {
-        return prefs.getBoolean("double_tap", false);
+        return prefs.getBoolean("double_tap", true);
     }
 
     public static boolean useToast() {
         return prefs.getBoolean("use_toast", true);
     }
 
-
+    public static String getImagePrefix() {
+        return prefs.getString("image_prefix_adv", "AutoBackground");
+    }
 }
