@@ -13,7 +13,6 @@ import android.util.Log;
 import android.util.Patterns;
 import android.widget.Toast;
 
-import org.json.JSONArray;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -27,15 +26,12 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Set;
 
 import cw.kop.autowallpaper.settings.AppSettings;
@@ -95,7 +91,7 @@ public class Downloader {
         }
 	}
 	
-	private static File[] getBitmapList(Context appContext) {
+	private static List<File> getBitmapList(Context appContext) {
 		
 		if (fileFilter == null) {
 			fileFilter = (new FilenameFilter() {
@@ -115,10 +111,20 @@ public class Downloader {
     	if (AppSettings.getDownloadPath() != null) {    		
     		cacheDir = AppSettings.getDownloadPath();
     	}
-		
-		File[] bitmaps = (new File(cacheDir)).listFiles(fileFilter);
 
-        Log.i(TAG, "Bitmap list size: " + bitmaps.length);
+        List<File> bitmaps = new ArrayList<File>();
+        bitmaps.addAll(Arrays.asList(new File(cacheDir).listFiles(fileFilter)));
+
+        for (int i = 0; i < AppSettings.getNumSources(); i++) {
+
+            if (AppSettings.getSourceType(i).equals("folder") && AppSettings.useSource(i)) {
+                bitmaps.addAll(Arrays.asList(new File(AppSettings.getSourceData(i)).listFiles(fileFilter)));
+                Log.i(TAG, "Added folder");
+            }
+
+        }
+
+        Log.i(TAG, "Bitmap list size: " + bitmaps.size());
 
 		return bitmaps;
 		
@@ -137,7 +143,7 @@ public class Downloader {
 	}
 
     public static void deleteAllBitmaps(Context appContext) {
-        File[] files = getBitmapList(appContext);
+        List<File> files = getBitmapList(appContext);
         for (File file : files) {
             if (file.getName().contains(AppSettings.getImagePrefix())) {
                 file.delete();
@@ -159,7 +165,7 @@ public class Downloader {
 	
 	public static Bitmap getNextImage(Context appContext) {
 		
-    	File[] images = getBitmapList(appContext);
+    	List<File> images = getBitmapList(appContext);
     	
 		Bitmap bitmap = null;
 		
@@ -168,16 +174,16 @@ public class Downloader {
 		if (!AppSettings.shuffleImages()) {
 			randIndex++;
 		}
-		else if (images.length > 0){
-			randIndex += (Math.random() * (images.length - 2)) + 1;
+		else if (images.size() > 0){
+			randIndex += (Math.random() * (images.size() - 2)) + 1;
 		}
 		
-		if (randIndex >= images.length) {
-			randIndex -= images.length;
+		if (randIndex >= images.size()) {
+			randIndex -= images.size();
 		}
 		
-		if (images != null && images.length > 0 && randIndex < images.length) {
-			bitmapFile = images[randIndex];
+		if (images.size() > 0 && randIndex < images.size()) {
+			bitmapFile = images.get(randIndex);
 		}
 
         Log.i("RandIndex", "" + randIndex);
@@ -235,7 +241,7 @@ public class Downloader {
 
             Document rootDoc = Jsoup.parse(html);
 
-            Log.i(TAG, AppSettings.getWebsiteUrl(urlIndex));
+            Log.i(TAG, AppSettings.getSourceData(urlIndex));
 
             Set<String> imageLinks = new HashSet<String>();
             imageLinks.addAll(compileImageLinks(rootDoc, "a", "href"));
@@ -258,12 +264,12 @@ public class Downloader {
 
             buf.close();
 
-            Log.i(TAG, "Num Images: " + AppSettings.getNumImages(urlIndex));
+            Log.i(TAG, "Num Images: " + AppSettings.getSourceNum(urlIndex));
 
             List<String> imageList = new ArrayList<String>();
             imageList.addAll(imageLinks);
 
-            downloadImages(imageList, AppSettings.getNumImages(urlIndex), dir);
+            downloadImages(imageList, AppSettings.getSourceNum(urlIndex), dir);
 
             Log.i("Downloader", "Written");
         } catch (IOException e) {
@@ -510,43 +516,43 @@ public class Downloader {
 
             index = AppSettings.getNumStored();
 
-			Log.i(TAG, "Num websites: " + AppSettings.getNumWebsites());
+			Log.i(TAG, "Num websites: " + AppSettings.getNumSources());
 			
-			for (int i = 0; i < AppSettings.getNumWebsites(); i++) {
+			for (int i = 0; i < AppSettings.getNumSources(); i++) {
 				
-				if (AppSettings.useWebsite(i)) {
+				if (AppSettings.getSourceType(i).equals("website") && AppSettings.useSource(i)) {
 					try {
-						linkDoc = Jsoup.connect(AppSettings.getWebsiteUrl(i))
+						linkDoc = Jsoup.connect(AppSettings.getSourceData(i))
                             .userAgent("Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36")
                             .referrer("http://www.google.com")
                             .get();
 						
-						Log.i(TAG, AppSettings.getWebsiteUrl(i));
+						Log.i(TAG, AppSettings.getSourceData(i));
 						
 						Set<String> imageLinks = new HashSet<String>();
 						imageLinks.addAll(compileImageLinks(linkDoc, "a", "href"));
 						imageLinks.addAll(compileImageLinks(linkDoc, "img", "src"));
 						
-						Log.i(TAG, "Num Images: " + AppSettings.getNumImages(i));
+						Log.i(TAG, "Num Images: " + AppSettings.getSourceNum(i));
 
                         List<String> imageList = new ArrayList<String>();
                         imageList.addAll(imageLinks);
 
-						downloadImages(imageList, AppSettings.getNumImages(i), downloadCacheDir);
+						downloadImages(imageList, AppSettings.getSourceNum(i), downloadCacheDir);
 						
-						imageDetails += AppSettings.getWebsiteTitle(i) + ": " + num + " images;break;";
+						imageDetails += AppSettings.getSourceTitle(i) + ": " + num + " images;break;";
 
-                        if (num < AppSettings.getNumImages(i)) {
-                            publishProgress("Not enough photos found from " + AppSettings.getWebsiteUrl(i) + "\nTry lowering the resolution or changing websites");
+                        if (num < AppSettings.getSourceNum(i)) {
+                            publishProgress("Not enough photos found from " + AppSettings.getSourceData(i) + "\nTry lowering the resolution or changing websites");
                         }
 						
 					}
 					catch (IOException e) {
-						publishProgress("Invalid URL: " + AppSettings.getWebsiteUrl(i));
+						publishProgress("Invalid URL: " + AppSettings.getSourceData(i));
 						Log.i(TAG, "Invalid URL");
 					}
 					catch (IllegalArgumentException e) {
-						publishProgress("Invalid URL: " + AppSettings.getWebsiteUrl(i));
+						publishProgress("Invalid URL: " + AppSettings.getSourceData(i));
 						Log.i(TAG, "Invalid URL");
 					}
 				}

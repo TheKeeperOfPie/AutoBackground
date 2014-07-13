@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
@@ -7,7 +7,7 @@
     
     <ImageView
     	android:id="@+id/file_image"
-    	android:layout_width="fill_parent"
+    	android:layout_width="wrap_content"
     	android:layout_height="wrap_content"
     	android:contentDescription="@string/file_content_description"
     	android:adjustViewBounds="true"
@@ -17,6 +17,7 @@
     
    	<TextView
     	android:id="@+id/file_title"
+        android:layout_toRightOf="@id/file_image"
     	android:layout_width="match_parent"
     	android:layout_height="wrap_content"
     	android:textSize="22sp"
@@ -30,6 +31,8 @@
    	
    	<TextView
     	android:id="@+id/file_summary"
+        android:layout_toRightOf="@id/file_image"
+        android:layout_below="@id/file_title"
     	android:layout_width="match_parent"
     	android:layout_height="wrap_content"
     	android:textSize="14sp"
@@ -41,5 +44,5 @@
     	android:focusable="false"
     	/>
    	
-</LinearLayout>
+</RelativeLayout>
 

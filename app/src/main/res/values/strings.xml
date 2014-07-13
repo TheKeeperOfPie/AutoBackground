@@ -103,11 +103,10 @@
     <string name="delete">Delete</string>
 
     <string-array name="fragment_titles">
-        <item>Websites</item>
+        <item>Sources</item>
         <item>Wallpaper</item>
         <item>Downloader</item>
         <item>Images</item>
-        <item>Directory</item>
         <item>Application</item>
         <item>About</item>
     </string-array>
@@ -122,6 +121,10 @@
         <item>Various Information</item>
     </string-array>
 
+    <string-array name="source_menu">
+        <item>Website</item>
+        <item>Folder</item>
+    </string-array>
 
     <string-array name="website_entry_menu">
     	<item>Edit</item>

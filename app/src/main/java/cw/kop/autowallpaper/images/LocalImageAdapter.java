@@ -56,7 +56,6 @@ public class LocalImageAdapter extends BaseAdapter {
 		
 		if (listFiles.size() > 0) {
 
-			
 			File file = listFiles.get(position);
 			
 			View view = convertView;
@@ -72,19 +71,16 @@ public class LocalImageAdapter extends BaseAdapter {
 			if (file.getName().contains(".jpg") || file.getName().contains(".png")) {
 				Picasso.with(mainActivity.getApplicationContext())
 					.load(file)
-					.resize(50, 50)
 					.into(fileImage);
 			}
 			else if (file.isDirectory()){
 				Picasso.with(mainActivity.getApplicationContext())
 					.load(R.drawable.ic_action_collection)
-					.resize(50, 50)
 					.into(fileImage);
 			}
 			else {
 				Picasso.with(mainActivity.getApplicationContext())
 					.load(R.drawable.ic_action_view_as_list)
-					.resize(50, 50)
 					.into(fileImage);
 			}
 			
@@ -110,21 +106,33 @@ public class LocalImageAdapter extends BaseAdapter {
 		if (selectedFile != null && selectedFile.isDirectory()) {
 			mainDir = selectedFile;
 			
-			ArrayList<File> tempList = new ArrayList<File>();
+			ArrayList<File> folders = new ArrayList<File>();
+            ArrayList<File> files = new ArrayList<File>();
 			
 			if (selectedFile.listFiles() != null) {
 				for (File file : selectedFile.listFiles()) {
 					if (file != null && file.exists()) {
-						tempList.add(file);
+						if (file.isDirectory()) {
+                            folders.add(file);
+                        }
+                        else {
+                            files.add(file);
+                        }
 					}
 				}
 			}
 			
-			if (tempList.size() > 0) {
-				Collections.sort(tempList);
+			if (folders.size() > 0) {
+				Collections.sort(folders);
 			}
-			
-			listFiles = tempList;
+
+            if (files.size() > 0) {
+                Collections.sort(files);
+            }
+
+            folders.addAll(files);
+
+			listFiles = folders;
 			notifyDataSetChanged();
 		}
 		

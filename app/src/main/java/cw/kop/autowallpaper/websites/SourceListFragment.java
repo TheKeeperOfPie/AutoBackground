@@ -42,11 +42,15 @@ import java.util.HashMap;
 import cw.kop.autowallpaper.Downloader;
 import cw.kop.autowallpaper.LiveWallpaperService;
 import cw.kop.autowallpaper.R;
+import cw.kop.autowallpaper.images.LocalImageFragment;
 import cw.kop.autowallpaper.settings.AppSettings;
 
-public class WebsiteListFragment extends ListFragment {
+public class SourceListFragment extends ListFragment {
 
-	private WebsiteListAdapter listAdapter;
+    public static final String WEBSITE = "website";
+    public static final String FOLDER = "folder";
+
+	private SourceListAdapter listAdapter;
     private Context context;
     private Button setButton;
     private Button downloadButton;
@@ -62,7 +66,7 @@ public class WebsiteListFragment extends ListFragment {
     private ShowcaseView settingsTutorial;
     private boolean setShown = false;
 
-	public WebsiteListFragment() {
+	public SourceListFragment() {
 	}
 
 	@Override
@@ -95,12 +99,42 @@ public class WebsiteListFragment extends ListFragment {
                 showTutorial(6);
                 return true;
 			case R.id.add_website:
-				showDialogForInput();
+				showSourceMenu();
 				return true;
 			default:
 			    return super.onOptionsItemSelected(item);
 		}
 	}
+
+    private void showSourceMenu() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+
+        dialog.setItems(R.array.source_menu, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        showDialogForInput();
+                        break;
+                    case 1:
+                        getFragmentManager().beginTransaction()
+                                .add(R.id.content_frame, new LocalImageFragment(), "image_fragment")
+                                .addToBackStack(null)
+                                .commit();
+                        break;
+                    default:
+                }
+
+            }
+        });
+
+        dialog.show();
+    }
+
+    public void addFolder(String title, String path, int num) {
+        listAdapter.addItem(FOLDER, title, path, true, "" + num);
+    }
 
 	private void showDialogForInput() {
 
@@ -129,7 +163,8 @@ public class WebsiteListFragment extends ListFragment {
 	        			numImages.setText("1");
 	        		}
 	        		
-	        		listAdapter.addItem(websiteTitle.getText().toString(), websiteUrl.getText().toString(), true, numImages.getText().toString());
+	        		listAdapter.addItem(WEBSITE, websiteTitle.getText().toString(), websiteUrl.getText().toString(), true, numImages.getText().toString());
+                    listAdapter.saveData();
                     hide(addWebsiteTutorial);
 	        	}
 	        }
@@ -176,7 +211,8 @@ public class WebsiteListFragment extends ListFragment {
 	        			numImages.setText("1");
 	        		}
 	        		
-	        		listAdapter.setItem(position, websiteTitle.getText().toString(), websiteUrl.getText().toString(), Boolean.valueOf(clickedItem.get("use")), numImages.getText().toString());
+	        		listAdapter.setItem(position, WEBSITE, websiteTitle.getText().toString(), websiteUrl.getText().toString(), Boolean.valueOf(clickedItem.get("use")), numImages.getText().toString());
+                    listAdapter.saveData();
 	        	}
 	        }
         });
@@ -286,10 +322,10 @@ public class WebsiteListFragment extends ListFragment {
 		super.onActivityCreated(savedInstanceState);
 		
 		if (listAdapter == null) {
-			listAdapter = new WebsiteListAdapter(getActivity());
-			for (int i = 0; i < AppSettings.getNumWebsites(); i++) {
-				listAdapter.addItem(AppSettings.getWebsiteTitle(i), AppSettings.getWebsiteUrl(i), AppSettings.useWebsite(i), "" + AppSettings.getNumImages(i));
-                Log.i("WLF", "Added: " + AppSettings.getWebsiteTitle(i));
+			listAdapter = new SourceListAdapter(getActivity());
+			for (int i = 0; i < AppSettings.getNumSources(); i++) {
+				listAdapter.addItem(WEBSITE, AppSettings.getSourceTitle(i), AppSettings.getSourceData(i), AppSettings.useSource(i), "" + AppSettings.getSourceNum(i));
+                Log.i("WLF", "Added: " + AppSettings.getSourceTitle(i));
 			}
 		}
 		setListAdapter(listAdapter);
@@ -530,28 +566,19 @@ public class WebsiteListFragment extends ListFragment {
     }
 
 	@Override
-	public void onDestroy() {
-		// TODO Auto-generated method stub
-		super.onDestroy();
-	}
-
-	@Override
 	public void onDestroyView() {
-		// TODO Auto-generated method stub
 		super.onDestroyView();
 		setListAdapter(null);
 	}
 
 	@Override
 	public void onPause() {
-		// TODO Auto-generated method stub
 		super.onPause();
 		listAdapter.saveData();
 	}
 
 	@Override
 	public void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
 
         if (isServiceRunning(LiveWallpaperService.class.getName())) {
@@ -598,13 +625,13 @@ public class WebsiteListFragment extends ListFragment {
             public void run() {
                 Log.i("MP", "Test1");
 
-                for (int i = 0; i < AppSettings.getNumWebsites(); i++) {
+                for (int i = 0; i < AppSettings.getNumSources(); i++) {
 
                     Log.i("MP", "Test2");
 
                     final int index = i;
 
-                    if (AppSettings.useWebsite(i)) {
+                    if (AppSettings.useSource(i)) {
 
                         handler.post(new Runnable() {
 
@@ -612,7 +639,7 @@ public class WebsiteListFragment extends ListFragment {
                             public void run() {
                                 Log.i("MP", "Test3");
 
-                                String url = AppSettings.getWebsiteUrl(index);
+                                String url = AppSettings.getSourceData(index);
 
                                 if (url.contains(".com")) {
                                     baseUrl = url.substring(0, url.indexOf(".com") + 4);

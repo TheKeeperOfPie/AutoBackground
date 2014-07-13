@@ -1,22 +1,9 @@
 package cw.kop.autowallpaper;
 
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningServiceInfo;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.app.WallpaperManager;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
@@ -24,29 +11,13 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.view.Window;
-import android.webkit.JavascriptInterface;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.github.amlcurran.showcaseview.ShowcaseView;
-import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
-import com.github.amlcurran.showcaseview.targets.ViewTarget;
-
-import java.util.List;
-
 import cw.kop.autowallpaper.images.LocalImageFragment;
 import cw.kop.autowallpaper.settings.AppSettings;
-import cw.kop.autowallpaper.websites.WebsiteListFragment;
+import cw.kop.autowallpaper.websites.SourceListFragment;
 
 public class MainPreferences extends Activity {
 
@@ -59,7 +30,7 @@ public class MainPreferences extends Activity {
 
     private CharSequence mTitle;
 
-    public WebsiteListFragment websiteFragment;
+    public SourceListFragment websiteFragment;
 
     public MainPreferences() {
     }
@@ -133,10 +104,10 @@ public class MainPreferences extends Activity {
         if (websiteFragment == null) {
             setTitle(fragmentList[0]);
 
-            websiteFragment = new WebsiteListFragment();
+            websiteFragment = new SourceListFragment();
 
             getFragmentManager().beginTransaction()
-                    .replace(R.id.content_frame, websiteFragment)
+                    .replace(R.id.content_frame, websiteFragment, "website_fragment")
                     .commit();
 
         }
@@ -161,13 +132,11 @@ public class MainPreferences extends Activity {
 
     private void selectItem(int position) {
 
-        Fragment fragment;
-
         switch (position) {
 
             case 0:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new WebsiteListFragment())
+                        .replace(R.id.content_frame, new SourceListFragment(), "website_fragment")
                         .commit();
                 break;
             case 1:
@@ -187,15 +156,10 @@ public class MainPreferences extends Activity {
                 break;
             case 4:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new LocalImageFragment())
-                        .commit();
-                break;
-            case 5:
-                getFragmentManager().beginTransaction()
                         .replace(R.id.content_frame, new AppSettingsFragment())
                         .commit();
                 break;
-            case 6:
+            case 5:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.content_frame, new AboutFragment())
                         .commit();
@@ -203,6 +167,8 @@ public class MainPreferences extends Activity {
             default:
 
         }
+
+        getFragmentManager().executePendingTransactions();
 
         setTitle(fragmentList[position]);
 
@@ -229,7 +195,7 @@ public class MainPreferences extends Activity {
 
         Log.i("MP", "Item pressed: " + item.getItemId());
 
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
+        if (getFragmentManager().findFragmentByTag("image_fragment") == null && mDrawerToggle.onOptionsItemSelected(item)) {
             if (item.getItemId() == android.R.id.home) {
                 return super.onOptionsItemSelected(item);
             }
@@ -238,12 +204,27 @@ public class MainPreferences extends Activity {
 
         return super.onOptionsItemSelected(item);
 	}
-    
-	@Override
+
+    @Override
+    public void onBackPressed() {
+
+        if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
+            Log.i("MP", "Back directory");
+            if (((LocalImageFragment) getFragmentManager().findFragmentByTag("image_fragment")).onBackPressed()) {
+                super.onBackPressed();
+            }
+        }
+        else {
+            super.onBackPressed();
+        }
+
+    }
+
+    @Override
 	protected void onResume() {
 		super.onResume();
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(false);
 
         View view = getWindow().getDecorView().findViewById(getResources().getIdentifier("action_bar_container", "id", "android"));
         if (view == null) {

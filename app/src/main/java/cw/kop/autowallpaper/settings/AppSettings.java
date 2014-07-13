@@ -92,10 +92,6 @@ public class AppSettings {
 		return Integer.parseInt(prefs.getString("user_height", "1000"));
 	}
 	
-	public static int getNumImages(int index) {
-		return Integer.parseInt(prefs.getString("num_images_" + index, "3"));
-	}
-	
 	public static int getNumStored() {
 		return prefs.getInt("num_stored", 1);
 	}
@@ -110,36 +106,6 @@ public class AppSettings {
 	
 	public static boolean forceDownload() {
 		return prefs.getBoolean("force_download", false);
-	}
-	
-	public static void setWebsites(ArrayList<HashMap<String, String>> listData) {
-		
-		prefs.edit().putInt("num_websites", listData.size()).commit();
-		
-		for (int i = 0; i < listData.size(); i++) {
-			
-			prefs.edit().putString("website_title_" + i, listData.get(i).get("title")).commit();
-			prefs.edit().putString("website_url_" + i, listData.get(i).get("url")).commit();
-			prefs.edit().putString("num_images_" + i, listData.get(i).get("num")).commit();
-			prefs.edit().putBoolean("use_website_" + i, Boolean.valueOf(listData.get(i).get("use"))).commit();
-			
-		}
-	}
-
-	public static boolean useWebsite(int index) {
-		return prefs.getBoolean("use_website_" + index, false);
-	}
-	
-	public static int getNumWebsites() {
-		return prefs.getInt("num_websites", 0);
-	}
-	
-	public static String getWebsiteTitle(int index) {
-		return prefs.getString("website_title_" + index, null);
-	}
-	
-	public static String getWebsiteUrl(int index) {
-		return prefs.getString("website_url_" + index, null);
 	}
 
 	public static boolean useNotification() {
@@ -245,4 +211,46 @@ public class AppSettings {
     public static String getImagePrefix() {
         return prefs.getString("image_prefix_adv", "AutoBackground");
     }
+
+    public static void setSources(ArrayList<HashMap<String, String>> listData) {
+
+        prefs.edit().putInt("num_sources", listData.size()).commit();
+
+        for (int i = 0; i < listData.size(); i++) {
+
+            String type = listData.get(i).get("type");
+
+            prefs.edit().putString("source_type_" + i, type).commit();
+            prefs.edit().putString("source_title_" + i, listData.get(i).get("title")).commit();
+            prefs.edit().putString("source_data_" + i, listData.get(i).get("data")).commit();
+            prefs.edit().putString("source_num_" + i, listData.get(i).get("num")).commit();
+            prefs.edit().putBoolean("use_source_" + i, Boolean.valueOf(listData.get(i).get("use"))).commit();
+
+        }
+    }
+
+    public static int getSourceNum(int index) {
+        return Integer.parseInt(prefs.getString("source_num_" + index, "0"));
+    }
+
+    public static String getSourceType(int index) {
+        return prefs.getString("source_type_" + index, null);
+    }
+
+    public static boolean useSource(int index) {
+        return prefs.getBoolean("use_source_" + index, false);
+    }
+
+    public static int getNumSources() {
+        return prefs.getInt("num_sources", 0);
+    }
+
+    public static String getSourceTitle(int index) {
+        return prefs.getString("source_title_" + index, null);
+    }
+
+    public static String getSourceData(int index) {
+        return prefs.getString("source_data_" + index, null);
+    }
+
 }

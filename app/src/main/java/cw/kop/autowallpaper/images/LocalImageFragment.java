@@ -5,30 +5,31 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
-import android.view.KeyEvent;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.GridView;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 
 import cw.kop.autowallpaper.R;
 import cw.kop.autowallpaper.settings.AppSettings;
+import cw.kop.autowallpaper.websites.SourceListFragment;
 
 public class LocalImageFragment extends Fragment {
 
 	private Context context;
 	private LocalImageAdapter imageAdapter;
-	private GridView gridView;
+    private ListView imageListView;
 	private File dir;
+    private FilenameFilter filenameFilter;
 	
 	public LocalImageFragment() {
 	}
@@ -36,43 +37,50 @@ public class LocalImageFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		setHasOptionsMenu(true);
-		
-	}
 
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		// TODO Auto-generated method stub
-		
-		super.onCreateOptionsMenu(menu, inflater);
+        filenameFilter = (new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String filename) {
+                if (filename.endsWith(".jpg") || filename.endsWith(".png")) {
+                    return true;
+                }
+                return false;
+            }
+        });
 	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		
-		ViewGroup view = (ViewGroup) inflater.inflate(R.layout.image_grid_layout, null);
-		
+
+        int themeId;
+
+        if (AppSettings.getTheme() == R.style.FragmentLightTheme) {
+            themeId = R.style.FragmentLightTheme;
+        }
+        else {
+            themeId = R.style.FragmentDarkTheme;
+        }
+
+        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), themeId);
+
+        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
+
+		ViewGroup view = (ViewGroup) localInflater.inflate(R.layout.image_grid_layout, null);
+
+        imageListView = (ListView) view.findViewById(R.id.image_listview);
+
 		Button useDirectoryButton = (Button) view.findViewById(R.id.use_directory_button);
 		useDirectoryButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				File dir = imageAdapter.getDirectory();
-				if (dir != null && dir.exists() && dir.isDirectory() && dir.canWrite()) {
-					AppSettings.setDownloadPath(dir.getAbsolutePath());
-                    if (AppSettings.useToast()) {
-                        Toast.makeText(context, "Directory set to " + dir.getAbsolutePath(), Toast.LENGTH_SHORT).show();
-                    }
-					imageAdapter.setFinished(true);
-					getActivity().onBackPressed();
-				}
-				else {
-                    if (AppSettings.useToast()) {
-                        Toast.makeText(context, "Invalid directory", Toast.LENGTH_SHORT).show();
-                    }
-				}
+                SourceListFragment sourceListFragment = (SourceListFragment) getActivity().getFragmentManager().findFragmentByTag("website_fragment");
+                sourceListFragment.addFolder(dir.getName(), dir.getAbsolutePath(), dir.listFiles(filenameFilter).length);
+                imageAdapter.setFinished(true);
+                getActivity().onBackPressed();
 			}
 			
 		});
@@ -80,18 +88,17 @@ public class LocalImageFragment extends Fragment {
 		Button resetDirectoryButton = (Button) view.findViewById(R.id.reset_directory_button);
 		resetDirectoryButton.setOnClickListener(new OnClickListener() {
 
-			@Override
-			public void onClick(View v) {
-				AppSettings.setDownloadPath(context.getCacheDir().getAbsolutePath());
+            @Override
+            public void onClick(View v) {
+                AppSettings.setDownloadPath(context.getCacheDir().getAbsolutePath());
                 if (AppSettings.useToast()) {
                     Toast.makeText(context, "Reset directory", Toast.LENGTH_SHORT).show();
                 }
-				imageAdapter.setFinished(true);
-				getActivity().onBackPressed();
-			}
-			
-		});
-		gridView = (GridView) view.findViewById(R.id.image_gridview);
+                imageAdapter.setFinished(true);
+                getActivity().onBackPressed();
+            }
+
+        });
 		
 		return view;
 	}
@@ -101,7 +108,19 @@ public class LocalImageFragment extends Fragment {
 		super.onAttach(activity);
 		context = getActivity();
 	}
-	
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+    }
+
+    public boolean onBackPressed() {
+
+        return imageAdapter.backDirectory();
+
+    }
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
@@ -114,24 +133,8 @@ public class LocalImageFragment extends Fragment {
 			imageAdapter = new LocalImageAdapter(getActivity(), dir);
 		}
 
-		getView().setOnKeyListener( new OnKeyListener()
-		{
-
-			@Override
-			public boolean onKey(View v, int keyCode, KeyEvent event) {
-				if(keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP)
-		        {
-					if (!imageAdapter.backDirectory()) {
-						return true;
-					}
-		        }
-		        return false;
-			}
-			
-		});
-		
-		gridView.setAdapter(imageAdapter);
-		gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        imageListView.setAdapter(imageAdapter);
+        imageListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             	

@@ -19,13 +19,13 @@ import java.util.HashMap;
 import cw.kop.autowallpaper.R;
 import cw.kop.autowallpaper.settings.AppSettings;
 
-public class WebsiteListAdapter extends BaseAdapter {
+public class SourceListAdapter extends BaseAdapter {
 
 	private Activity mainActivity;
     private ArrayList<HashMap<String, String>> listData;
     private static LayoutInflater inflater = null;
 	
-	public WebsiteListAdapter(Activity activity) {
+	public SourceListAdapter(Activity activity) {
 		mainActivity = activity;
 		listData = new ArrayList<HashMap<String, String>>();
 		inflater = (LayoutInflater)mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -73,7 +73,7 @@ public class WebsiteListAdapter extends BaseAdapter {
 				
 				int index = Integer.parseInt(useBox.getTag().toString());
 				
-				setItem(index, listData.get(index).get("title"), listData.get(index).get("url"), isChecked, listData.get(index).get("num"));
+				setItem(index, listData.get(index).get("type"), listData.get(index).get("title"), listData.get(index).get("data"), isChecked, listData.get(index).get("num"));
 				notifyDataSetChanged();
 				
 			}
@@ -81,27 +81,29 @@ public class WebsiteListAdapter extends BaseAdapter {
 		});
 		
 		title.setText(listItem.get("title"));
-		summary.setText(listItem.get("url"));
+		summary.setText(listItem.get("data"));
 		num.setText("# Images: " + listItem.get("num"));
 		useBox.setChecked(Boolean.valueOf(listItem.get("use")));
 		
 		return view;
 	}
 
-	public void setItem(int position, String title, String url, boolean use, String num) {
+	public void setItem(int position, String type, String title, String data, boolean use, String num) {
 		HashMap<String, String> changedItem = new HashMap<String, String>();
+        changedItem.put("type", type);
 		changedItem.put("title", title);
-		changedItem.put("url", url);
+		changedItem.put("data", data);
 		changedItem.put("num", "" + num);
 		changedItem.put("use", "" + use);
 		listData.set(position, changedItem);
 		notifyDataSetChanged();
 	}
 	
-	public void addItem(String title, String url, boolean use, String num) {
+	public void addItem(String type, String title, String data, boolean use, String num) {
 		HashMap<String, String> newItem = new HashMap<String, String>();
+        newItem.put("type", type);
 		newItem.put("title", title);
-		newItem.put("url", url);
+		newItem.put("data", data);
 		newItem.put("num", "" + num);
 		newItem.put("use", "" + use);
 		listData.add(newItem);
@@ -117,10 +119,10 @@ public class WebsiteListAdapter extends BaseAdapter {
 	
 	public void saveData() {
 		
-		AppSettings.setWebsites(listData);
+		AppSettings.setSources(listData);
 		
 		Log.i("WLA", "SavedListData" + listData.size());
-		Log.i("WLA", "Saved Data: " + AppSettings.getNumWebsites());
+		Log.i("WLA", "Saved Data: " + AppSettings.getNumSources());
 	}
 	
 }
