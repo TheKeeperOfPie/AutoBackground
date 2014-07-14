@@ -59,6 +59,7 @@
 	</PreferenceCategory>
 	
 	<PreferenceCategory
+        android:key="title_animation_settings"
 	    android:title="@string/title_animation_settings">	
 
         <SwitchPreference
@@ -82,7 +83,18 @@
 			android:title="@string/animation_speed"
 			android:summary="@string/animation_speed_description"
 			/>
-		
+
+        <EditTextPreference
+            android:key="animation_frame_rate"
+            android:defaultValue="30"
+            android:title="@string/animation_frame_rate"
+            android:summary="@string/animation_frame_rate_description"
+            android:hint="@string/animation_frame_rate_hint"
+            android:inputType="number"
+            android:numeric="integer"
+            android:maxLength="2"
+            />
+
 	</PreferenceCategory>	
 		
 </PreferenceScreen>

@@ -118,8 +118,13 @@ public class SourceListFragment extends ListFragment {
                         showDialogForInput();
                         break;
                     case 1:
+                        LocalImageFragment localImageFragment = new LocalImageFragment();
+                        Bundle arguments = new Bundle();
+                        arguments.putBoolean("change", false);
+                        localImageFragment.setArguments(arguments);
+
                         getFragmentManager().beginTransaction()
-                                .add(R.id.content_frame, new LocalImageFragment(), "image_fragment")
+                                .add(R.id.content_frame, localImageFragment, "image_fragment")
                                 .addToBackStack(null)
                                 .commit();
                         break;
@@ -134,6 +139,12 @@ public class SourceListFragment extends ListFragment {
 
     public void addFolder(String title, String path, int num) {
         listAdapter.addItem(FOLDER, title, path, true, "" + num);
+        listAdapter.saveData();
+    }
+
+    public void setFolder(int position, String title, String path, int num) {
+        listAdapter.setItem(position, FOLDER, title, path, true, "" + num);
+        listAdapter.saveData();
     }
 
 	private void showDialogForInput() {
@@ -231,11 +242,26 @@ public class SourceListFragment extends ListFragment {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				switch (which) {
-					case 0: 
-						showDialogForChange(position);
+					case 0:
+                        if (listAdapter.getItem(position).get("type").equals(WEBSITE)) {
+                            showDialogForChange(position);
+                        }
+                        else if(listAdapter.getItem(position).get("type").equals(FOLDER)) {
+                            LocalImageFragment localImageFragment = new LocalImageFragment();
+                            Bundle arguments = new Bundle();
+                            arguments.putBoolean("change", true);
+                            arguments.putInt("position", position);
+                            localImageFragment.setArguments(arguments);
+
+                            getFragmentManager().beginTransaction()
+                                    .add(R.id.content_frame, localImageFragment, "image_fragment")
+                                    .addToBackStack(null)
+                                    .commit();
+                        }
 						break;
 					case 1:	
 						listAdapter.removeItem(position);
+                        listAdapter.saveData();
 					default:
 				}
 				
@@ -324,7 +350,7 @@ public class SourceListFragment extends ListFragment {
 		if (listAdapter == null) {
 			listAdapter = new SourceListAdapter(getActivity());
 			for (int i = 0; i < AppSettings.getNumSources(); i++) {
-				listAdapter.addItem(WEBSITE, AppSettings.getSourceTitle(i), AppSettings.getSourceData(i), AppSettings.useSource(i), "" + AppSettings.getSourceNum(i));
+				listAdapter.addItem(AppSettings.getSourceType(i), AppSettings.getSourceTitle(i), AppSettings.getSourceData(i), AppSettings.useSource(i), "" + AppSettings.getSourceNum(i));
                 Log.i("WLF", "Added: " + AppSettings.getSourceTitle(i));
 			}
 		}
@@ -333,27 +359,20 @@ public class SourceListFragment extends ListFragment {
 		TextView emptyText = new TextView(getActivity());
 		emptyText.setText("List is empty. Please add new website entry.");
 		emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-		emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
+        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
 
 		LinearLayout emptyLayout = new LinearLayout(getActivity());
-		emptyLayout.setOrientation(LinearLayout.VERTICAL);
+        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 		emptyLayout.setGravity(Gravity.TOP);
 		emptyLayout.addView(emptyText);
-		
+
 		((ViewGroup) getListView().getParent()).addView(emptyLayout, 0);
-		
+
 		getListView().setEmptyView(emptyLayout);
         getListView().setDividerHeight(1);
 		
 	}
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        Log.i("WLF", "onStart");
-
-    }
 
     private void hide(ShowcaseView view) {
         if (view != null) {
@@ -421,14 +440,15 @@ public class SourceListFragment extends ListFragment {
 
                 ShowcaseView.Builder websiteListBuilder = new  ShowcaseView.Builder(getActivity())
                     .setContentTitle("Website List")
-                    .setContentText("This is a list of your websites. \n" +
-                            "Here you can edit their titles, URLs, \n" +
-                            "and number of images.")
+                    .setContentText("This is a list of your sources. \n" +
+                            "These can include both websites and your \n" +
+                            "own image folders. You can edit them by \n" +
+                            "tapping on their boxes.")
                     .setStyle(R.style.ShowcaseStyle)
                     .setOnClickListener(websiteListListener);
 
                 if (android.os.Build.VERSION.SDK_INT < 20) {
-                    websiteListBuilder.setTarget(new ActionViewTarget(getActivity(), ActionViewTarget.Type.HOME));
+                    websiteListBuilder.setTarget(new ActionViewTarget(getActivity(), ActionViewTarget.Type.TITLE));
                 }
 
                 websiteListTutorial = websiteListBuilder.build();
@@ -606,12 +626,6 @@ public class SourceListFragment extends ListFragment {
         }
         return false;
     }
-
-	@Override
-	public void onStop() {
-		// TODO Auto-generated method stub
-		super.onStop();
-	}
 
     public void getHtml() {
 

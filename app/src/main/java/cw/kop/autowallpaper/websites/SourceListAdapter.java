@@ -57,7 +57,7 @@ public class SourceListAdapter extends BaseAdapter {
         LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
 
 		if (convertView == null) {
-			view = localInflater.inflate(R.layout.website_list_row, null);
+			view = localInflater.inflate(R.layout.source_list_row, null);
 		}
 		
 		TextView title = (TextView) view.findViewById(R.id.title_text);
@@ -79,7 +79,9 @@ public class SourceListAdapter extends BaseAdapter {
 			}
 			
 		});
-		
+
+        title.setSelected(true);
+        summary.setSelected(true);
 		title.setText(listItem.get("title"));
 		summary.setText(listItem.get("data"));
 		num.setText("# Images: " + listItem.get("num"));

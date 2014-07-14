@@ -38,7 +38,10 @@
     <string name="use_animation_description">Animate Wallpaper</string>
     <string name="animation_speed">Animation Speed</string>
     <string name="animation_speed_description">Speed of scrolling</string>
-    
+    <string name="animation_frame_rate">Frame Rate</string>
+    <string name="animation_frame_rate_description">Rate of rendering</string>
+    <string name="animation_frame_rate_hint">Frames per second</string>
+
     <string name="add_website">Add New Website</string>
     <string name="website_title">Title</string>
     <string name="website_url">URL</string>

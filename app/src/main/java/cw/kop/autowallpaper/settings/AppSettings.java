@@ -39,6 +39,12 @@ public class AppSettings {
         if (isFirstRun()) {
             prefs.edit().putString("user_width", "" + (WallpaperManager.getInstance(context).getDesiredMinimumWidth() / 2)).commit();
             prefs.edit().putString("user_height", "" + (WallpaperManager.getInstance(context).getDesiredMinimumHeight() / 2)).commit();
+            prefs.edit().putInt("num_sources", 1).commit();
+            prefs.edit().putString("source_type_0", "website").commit();
+            prefs.edit().putString("source_title_0", "Kai Lehnberg Photography").commit();
+            prefs.edit().putString("source_data_0", "http://www.reddit.com/user/Ziphius/submitted/?sort=top").commit();
+            prefs.edit().putString("source_num_0", "5").commit();
+            prefs.edit().putBoolean("use_source_0", true).commit();
             setTutorial(true);
             prefs.edit().putBoolean("first_run", false).commit();
         }
@@ -93,7 +99,7 @@ public class AppSettings {
 	}
 	
 	public static int getNumStored() {
-		return prefs.getInt("num_stored", 1);
+		return prefs.getInt("num_stored", 0);
 	}
 	
 	public static void setNumStored(int value) {
@@ -176,6 +182,10 @@ public class AppSettings {
 		return prefs.getInt("animation_speed", 1);
 	}
 
+    public static int getAnimationFrameRate() {
+        return Integer.parseInt(prefs.getString("animation_frame_rate", "30"));
+    }
+
     public static boolean useFade() {
         return prefs.getBoolean("use_fade", true);
     }
@@ -230,7 +240,14 @@ public class AppSettings {
     }
 
     public static int getSourceNum(int index) {
-        return Integer.parseInt(prefs.getString("source_num_" + index, "0"));
+        int num;
+        try {
+            num = Integer.parseInt(prefs.getString("source_num_" + index, "0"));
+        }
+        catch (NumberFormatException e) {
+            num = 0;
+        }
+        return num;
     }
 
     public static String getSourceType(int index) {

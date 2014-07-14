@@ -13,6 +13,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.util.Log;
@@ -21,7 +22,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ListView;
 
 import cw.kop.autowallpaper.settings.AppSettings;
 
@@ -29,7 +29,8 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
 	private final static long CONVERT_MILLES_TO_MIN = 60000;
 	private SwitchPreference intervalPref;
-	private Context context;
+    private EditTextPreference frameRatePref;
+    private Context context;
     private PendingIntent pendingIntent;
 	private AlarmManager alarmManager;
 	
@@ -43,6 +44,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+        frameRatePref = (EditTextPreference) findPreference("animation_frame_rate");
 		intervalPref = (SwitchPreference) findPreference("use_interval");
 
         final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
@@ -69,8 +71,12 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 	public void onResume() {
         super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-        
-        onSharedPreferenceChanged(getPreferenceScreen().getSharedPreferences(), "");
+
+        frameRatePref.setSummary(AppSettings.getAnimationFrameRate() + " FPS");
+
+        if (!AppSettings.useAdvanced()) {
+            ((PreferenceCategory) findPreference("title_animation_settings")).removePreference(frameRatePref);
+        }
 
         if (AppSettings.getIntervalDuration() > 0) {
             intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
@@ -250,6 +256,10 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 				}
 				Log.i("WSF", "Interval Set: " + AppSettings.useInterval());
 			}
+
+            if (key.equals("animation_frame_rate")) {
+                frameRatePref.setSummary(AppSettings.getAnimationFrameRate() + " FPS");
+            }
 		}
 		
 	}

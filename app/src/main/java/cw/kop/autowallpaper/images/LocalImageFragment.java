@@ -5,18 +5,21 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 
 import cw.kop.autowallpaper.R;
@@ -30,13 +33,20 @@ public class LocalImageFragment extends Fragment {
     private ListView imageListView;
 	private File dir;
     private FilenameFilter filenameFilter;
-	
+
+    private boolean change;
+    private int position;
+
 	public LocalImageFragment() {
-	}
+    }
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+        Bundle bundle = getArguments();
+        change = bundle.getBoolean("change", false);
+        position = bundle.getInt("position", 0);
 
         filenameFilter = (new FilenameFilter() {
 
@@ -71,6 +81,21 @@ public class LocalImageFragment extends Fragment {
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
 
+        TextView emptyText = new TextView(getActivity());
+        emptyText.setText("Directory is empty.");
+        emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
+
+        LinearLayout emptyLayout = new LinearLayout(getActivity());
+        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyLayout.setGravity(Gravity.TOP);
+        emptyLayout.addView(emptyText);
+
+        ((ViewGroup) imageListView.getParent()).addView(emptyLayout, 0);
+
+        imageListView.setEmptyView(emptyLayout);
+
 		Button useDirectoryButton = (Button) view.findViewById(R.id.use_directory_button);
 		useDirectoryButton.setOnClickListener(new OnClickListener() {
 
@@ -78,7 +103,12 @@ public class LocalImageFragment extends Fragment {
 			public void onClick(View v) {
 				File dir = imageAdapter.getDirectory();
                 SourceListFragment sourceListFragment = (SourceListFragment) getActivity().getFragmentManager().findFragmentByTag("website_fragment");
-                sourceListFragment.addFolder(dir.getName(), dir.getAbsolutePath(), dir.listFiles(filenameFilter).length);
+                if (change) {
+                    sourceListFragment.setFolder(position, dir.getName(), dir.getAbsolutePath(), dir.listFiles(filenameFilter).length);
+                }
+                else {
+                    sourceListFragment.addFolder(dir.getName(), dir.getAbsolutePath(), dir.listFiles(filenameFilter).length);
+                }
                 imageAdapter.setFinished(true);
                 getActivity().onBackPressed();
 			}
@@ -145,6 +175,7 @@ public class LocalImageFragment extends Fragment {
 				}
             }
         });
+
 	}
 	
 }

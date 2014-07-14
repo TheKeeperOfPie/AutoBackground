@@ -365,10 +365,6 @@ public class LiveWallpaperService extends GLWallpaperService {
             if (visible) {
                 super.resume();
                 notifyChangeImage();
-                render();
-            }
-            else {
-                super.pause();
                 if (toChange) {
                     loadNextImage();
                     toChange = false;
@@ -376,6 +372,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                 else if (AppSettings.changeOnLeave()) {
                     loadNextImage();
                 }
+            }
+            else {
+                super.pause();
             }
         }
 
@@ -396,6 +395,14 @@ public class LiveWallpaperService extends GLWallpaperService {
                 public void run() {
                     animated = AppSettings.useAnimation();
                     animationModifier = AppSettings.getAnimationSpeed();
+                    renderer.targetFrameTime = 1000 / AppSettings.getAnimationFrameRate();
+
+                    if (animated) {
+                        setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+                    }
+                    else {
+                        setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+                    }
 
                     final Bitmap bitmap = Downloader.getNextImage(getApplicationContext());
 
@@ -428,6 +435,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             private float[] mtrxView = new float[16];
             private float[] mtrxProjectionAndView = new float[16];
             private float[] transMatrix = new float[16];
+            private float[] mTempMatrix = new float[16];
             private int program;
 
             // Geometric variables
@@ -441,6 +449,10 @@ public class LiveWallpaperService extends GLWallpaperService {
             // Our screenresolution
             private float renderScreenWidth;
             private float renderScreenHeight;
+            private long startTime;
+            private long endTime;
+            private long frameTime;
+            private long targetFrameTime;
 
             private float bitmapWidth;
             private float bitmapHeight;
@@ -464,6 +476,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             private Effect effect;
 
             public MyGLRenderer(Context context, int width, int height) {
+                startTime = System.currentTimeMillis();
                 appContext = context;
                 renderScreenWidth = width;
                 renderScreenHeight = height;
@@ -486,11 +499,25 @@ public class LiveWallpaperService extends GLWallpaperService {
             @Override
             public void onDrawFrame(GL10 gl) {
 
-                effectContext = EffectContext.createWithCurrentGlContext();
+                if (effectContext == null) {
+                    effectContext = EffectContext.createWithCurrentGlContext();
+                    setPreserveEGLContextOnPause(true);
+                }
 
-                if (toEffect) {
-                    initEffects();
-                    effect.apply(textureNames[1], Math.round(bitmapWidth), Math.round(bitmapHeight), textureNames[2]);
+                if (toEffect && effectContext != null) {
+
+                    if (toFade) {
+                        GLES20.glDeleteTextures(1, textureNames, 1);
+                        GLES20.glGenTextures(1, textureNames, 1);
+                        initEffects(1);
+                    }
+                    else {
+                        GLES20.glDeleteTextures(1, textureNames, 0);
+                        GLES20.glGenTextures(1, textureNames, 0);
+                        initEffects(0);
+                    }
+                    Log.i(TAG, "Applied image effects");
+
                     toEffect = false;
                 }
 
@@ -515,7 +542,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         android.opengl.Matrix.setIdentityM(transMatrix, 0);
                         android.opengl.Matrix.translateM(transMatrix, 0, offset, 0, 0);
 
-                        Render(mtrxProjectionAndView);
+                        renderImage();
 
                         setupContainer(bitmapWidth, bitmapHeight);
 
@@ -526,7 +553,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         android.opengl.Matrix.setIdentityM(transMatrix, 0);
                         android.opengl.Matrix.translateM(transMatrix, 0, newOffset, 0, 0);
 
-                        Render(mtrxProjectionAndView);
+                        renderImage();
 
                         GLES20.glDisable(GLES20.GL_BLEND);
 
@@ -542,38 +569,55 @@ public class LiveWallpaperService extends GLWallpaperService {
                             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
                             android.opengl.Matrix.setIdentityM(transMatrix, 0);
                             android.opengl.Matrix.translateM(transMatrix, 0, offset, 0, 0);
-                            Render(mtrxProjectionAndView);
-                            setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+                            render();
+
+                            if (!animated) {
+                                setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+                            }
                         }
 
                     }
                     else {
+
+                        try {
+                            endTime = System.currentTimeMillis();
+                            frameTime = endTime - startTime;
+                            if (frameTime < targetFrameTime)
+                                Thread.sleep(targetFrameTime - frameTime);
+                            startTime = System.currentTimeMillis();
+                        }
+                        catch (InterruptedException e) {
+
+                        }
+
+                        Log.i(TAG, "Render");
+
+                        Log.i(TAG, "Texture 0: " + textureNames[0] + " Texture 1: " + textureNames[1]);
+
+                        setupContainer(bitmapWidth, bitmapHeight);
                         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
                         android.opengl.Matrix.setIdentityM(transMatrix, 0);
                         android.opengl.Matrix.translateM(transMatrix, 0, offset, 0, 0);
-                        Render(mtrxProjectionAndView);
+                        renderImage();
+
+                        if (animated) {
+                            if (animationX < (-bitmapWidth + renderScreenWidth + animationModifier)) {
+                                animationModifier = -Math.abs(animationModifier);
+                            }
+                            else if (animationX > animationModifier) {
+                                animationModifier = Math.abs(animationModifier);
+                            }
+                            animationX -= animationModifier;
+                            offset = animationX;
+                            newOffset -= animationModifier;
+                        }
                     }
 
-                    if (animated && !toFade) {
-                        if (animationX < (-bitmapWidth + renderScreenWidth + animationModifier)) {
-                            animationModifier = -Math.abs(animationModifier);
-                        }
-                        else if (animationX > animationModifier) {
-                            animationModifier = Math.abs(animationModifier);
-                        }
-                        animationX -= animationModifier;
-                        offset = animationX;
-                        newOffset -= animationModifier;
-                        if (getRendererMode() == GLSurfaceView.RENDERMODE_WHEN_DIRTY) {
-                            handler.removeCallbacks(drawRunnable);
-                            handler.postDelayed(drawRunnable, (long) (50.0 / Math.abs(animationModifier)));
-                        }
-                    }
                 }
 
             }
 
-            private void Render(float[] m) {
+            private void renderImage() {
 
                 // clear Screen and Depth Buffer,
 
@@ -600,14 +644,11 @@ public class LiveWallpaperService extends GLWallpaperService {
                     // Get handle to shape's transformation matrix
                     int mtrxhandle = GLES20.glGetUniformLocation(program, "uMVPMatrix");
 
-                    android.opengl.Matrix.multiplyMM(m, 0, mtrxView, 0, transMatrix, 0);
+                    android.opengl.Matrix.multiplyMM(mtrxProjectionAndView, 0, mtrxView, 0, transMatrix, 0);
+                    android.opengl.Matrix.multiplyMM(mtrxProjectionAndView, 0, mtrxProjection, 0, transMatrix, 0);
 
                     // Apply the projection and view transformation
-                    GLES20.glUniformMatrix4fv(mtrxhandle, 1, false, m, 0);
-
-                    android.opengl.Matrix.multiplyMM(m, 0, mtrxProjection, 0, transMatrix, 0);
-
-                    GLES20.glUniformMatrix4fv(mtrxhandle, 1, false, m, 0);
+                    GLES20.glUniformMatrix4fv(mtrxhandle, 1, false, mtrxProjectionAndView, 0);
 
                     // Draw the container
                     GLES20.glDrawElements(GLES20.GL_TRIANGLES, indices.length, GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
@@ -618,11 +659,14 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
             }
 
+
             @Override
             public void onSurfaceChanged(GL10 gl, int width, int height) {
                 if (height == 0) {
                     height = 1;
                 }
+
+                Log.i(TAG, "Renderer onSurfaceChanged");
 
                 screenWidth = width;
                 screenHeight = height;
@@ -631,7 +675,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     @Override
                     public void run() {
-                        renderer.setupContainer(localBitmap.getWidth(), localBitmap.getHeight());
                         renderer.setBitmap(localBitmap, false, 0);
                     }
                 });
@@ -652,8 +695,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 // Calculate the projection and view transformation
                 android.opengl.Matrix.multiplyMM(mtrxProjectionAndView, 0, mtrxProjection, 0, mtrxView, 0);
-
-                render();
             }
 
             @Override
@@ -684,7 +725,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     Log.i(TAG, "First run");
-                    // Generate Textures, if more needed, alter these numbers.
                     GLES20.glGenTextures(3, textureNames, 0);
 
                     uvs = new float[] {
@@ -701,6 +741,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                     uvBuffer.put(uvs);
                     uvBuffer.position(0);
                     firstRun = false;
+
+                    setupContainer(bitmapWidth, bitmapHeight);
                 }
 
                 if (toFade) {
@@ -716,8 +758,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                     setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                 }
 
-                // Create the container
-                setupContainer(bitmapWidth, bitmapHeight);
+                if (animated) {
+                    setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+                }
+                else {
+                    setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+                }
 
                 // Create image texture
                 setBitmap(localBitmap, false, 0);
@@ -729,11 +775,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
 
                 Log.i(TAG, "Animation offset: " + animationX);
-
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
-                android.opengl.Matrix.setIdentityM(transMatrix, 0);
-                android.opengl.Matrix.translateM(transMatrix, 0, offset, 0, 0);
-                Render(mtrxProjectionAndView);
 
                 if (AppSettings.useEffects()) {
                     toEffect = true;
@@ -747,8 +788,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 this.xOffset = xOffset;
             }
 
-            public void setupContainer(float width, float height)
-            {
+            public void setupContainer(float width, float height) {
                 vertices = new float[] {
                         0.0f,
                         (renderScreenHeight + ((height - renderScreenHeight) / 2)),
@@ -779,6 +819,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                 drawListBuffer = dlb.asShortBuffer();
                 drawListBuffer.put(indices);
                 drawListBuffer.position(0);
+
+                Log.i(TAG, "Container set");
 
             }
 
@@ -812,23 +854,38 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, localBitmap, 0);
 
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[2]);
+                Log.i(TAG, "Binding " + textureNames[texture]);
+
+                // Set filtering
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+
+                // Set wrapping mode
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+
+                GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, localBitmap, 0);
+
                 if (AppSettings.useEffects()) {
                     toEffect = true;
                 }
 
-                if (AppSettings.useFade() && fade) {
+                if (AppSettings.useFade() && fade && isVisible()) {
+                    Log.i(TAG, "Fade set");
                     toFade = fade;
                     setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
                 }
-                else if (texture == 1) {
+                else if (texture == 1 && isVisible()) {
+                    Log.i(TAG, "Syncing textures");
+                    int storeId = textureNames[0];
                     textureNames[0] = textureNames[1];
-                    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
-                    onDrawFrame(null);
+                    textureNames[1] = storeId;
+                    offset = newOffset;
+                    render();
                 }
 
             }
-
-
 
             protected Bitmap scaleBitmap(Bitmap bitmap) {
                 int bitWidth = bitmap.getWidth();
@@ -867,6 +924,28 @@ public class LiveWallpaperService extends GLWallpaperService {
                 return Bitmap.createBitmap(bitmap, 0, 0, bitWidth, bitHeight, matrix, false);
             }
 
+            private void initEffects(int texture) {
+
+                effectFactory = effectContext.getFactory();
+
+                if (AppSettings.getBrightnessValue() > 0) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_BRIGHTNESS);
+                    effect.setParameter("brightness", ((float) AppSettings.getBrightnessValue()) - 0.5f);
+                    effect.apply(textureNames[2], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[texture]);
+                    GLES20.glDeleteTextures(1, textureNames, 2);
+                    GLES20.glGenTextures(1, textureNames, 2);
+                    effect.apply(textureNames[texture], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[2]);
+                }
+
+                effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAYSCALE);
+                effect.apply(textureNames[2], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[texture]);
+                GLES20.glDeleteTextures(1, textureNames, 2);
+                GLES20.glGenTextures(1, textureNames, 2);
+                effect.apply(textureNames[texture], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[2]);
+
+                Log.i(TAG, "bitWidth: " + Math.round(bitmapWidth));
+            }
+
             /**
              * Called when the engine is destroyed. Do any necessary clean up because
              * at this point your renderer instance is now done for.
@@ -874,19 +953,6 @@ public class LiveWallpaperService extends GLWallpaperService {
             public void release() {
                 Log.i(TAG, "release");
                 localBitmap.recycle();
-            }
-
-            private void initEffects() {
-
-                effectFactory = effectContext.getFactory();
-
-                if (AppSettings.getBrightnessValue() > 0) {
-                    effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAYSCALE);
-//                    effect.setParameter("brightness", ((float) AppSettings.getBrightnessValue()) - 0.5f);
-                    Log.i(TAG, "Applied image effects");
-                }
-
-                Log.i(TAG, "bitWidth: " + Math.round(bitmapWidth));
             }
 
         }

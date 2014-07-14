@@ -9,21 +9,21 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 import cw.kop.autowallpaper.R;
-import cw.kop.autowallpaper.settings.AppSettings;
 
 public class LocalImageAdapter extends BaseAdapter {
 
 	private Activity mainActivity;
 	private File mainDir;
+    private File startDir;
     private ArrayList<File> listFiles;
     private LayoutInflater inflater = null;
     private boolean finish;
@@ -32,6 +32,7 @@ public class LocalImageAdapter extends BaseAdapter {
 		mainActivity = activity;
 		listFiles = new ArrayList<File>();
 		inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        startDir = directory;
 		mainDir = directory;
 		setDirectory(mainDir);
 	}
@@ -123,11 +124,21 @@ public class LocalImageAdapter extends BaseAdapter {
 			}
 			
 			if (folders.size() > 0) {
-				Collections.sort(folders);
+				Collections.sort(folders, new Comparator<File>() {
+                    @Override
+                    public int compare(File lhs, File rhs) {
+                        return lhs.getName().compareToIgnoreCase(rhs.getName());
+                    }
+                });
 			}
 
             if (files.size() > 0) {
-                Collections.sort(files);
+                Collections.sort(files, new Comparator<File>() {
+                    @Override
+                    public int compare(File lhs, File rhs) {
+                        return lhs.getName().compareToIgnoreCase(rhs.getName());
+                    }
+                });
             }
 
             folders.addAll(files);
@@ -136,11 +147,11 @@ public class LocalImageAdapter extends BaseAdapter {
 			notifyDataSetChanged();
 		}
 		
-		if (selectedFile != null && selectedFile.isDirectory() && selectedFile.list().length == 0) {
-            if (AppSettings.useToast()) {
-                Toast.makeText(mainActivity.getApplicationContext(), "No files in this folder", Toast.LENGTH_SHORT).show();
-            }
-		}
+//		if (selectedFile != null && selectedFile.isDirectory() && selectedFile.list() != null && selectedFile.list().length == 0) {
+//            if (AppSettings.useToast()) {
+//                Toast.makeText(mainActivity.getApplicationContext(), "No files in this folder", Toast.LENGTH_SHORT).show();
+//            }
+//		}
 		
 	}
 	
@@ -149,10 +160,10 @@ public class LocalImageAdapter extends BaseAdapter {
 	}
 
 	public Boolean backDirectory() {
-		
-		if (finish) {
-			return true;
-		}
+
+        if (finish || mainDir.getAbsolutePath().equals(startDir.getAbsolutePath())) {
+            return true;
+        }
 		
 		File parentDir = mainDir.getParentFile();
 		
