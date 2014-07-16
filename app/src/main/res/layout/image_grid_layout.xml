@@ -4,36 +4,20 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
    	>
-   	
-    <!--<GridView-->
-        <!--android:id="@+id/image_gridview"-->
-	    <!--android:layout_width="fill_parent" -->
-	    <!--android:layout_height="0dp"-->
-	    <!--android:layout_weight="1"-->
-	    <!--android:columnWidth="90dp"-->
-	    <!--android:rowHeight="90dp"-->
-	    <!--android:numColumns="auto_fit"-->
-	    <!--android:verticalSpacing="1dp"-->
-	    <!--android:horizontalSpacing="1dp"-->
-	    <!--android:stretchMode="columnWidth"-->
-	    <!--android:gravity="center"-->
+
+    <!--<Button-->
+        <!--android:id="@+id/reset_directory_button"-->
+        <!--android:text="@string/reset_directory_button"-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textSize="18sp"-->
         <!--/>-->
-
-
-    <Button
-        android:id="@+id/reset_directory_button"
-        android:text="@string/reset_directory_button"
-        android:layout_alignParentBottom="true"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        />
-
 
     <Button
         android:id="@+id/use_directory_button"
         android:text="@string/use_directory_button"
-        android:layout_above="@id/reset_directory_button"
+        android:layout_alignParentBottom="true"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:textSize="18sp"

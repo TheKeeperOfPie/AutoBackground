@@ -8,8 +8,8 @@ android {
         applicationId "cw.kop.autowallpaper"
         minSdkVersion 17
         targetSdkVersion 19
-        versionCode 6
-        versionName "0.31"
+        versionCode 7
+        versionName "0.4"
     }
     buildTypes {
         release {

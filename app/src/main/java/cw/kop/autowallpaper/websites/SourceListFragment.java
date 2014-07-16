@@ -121,6 +121,7 @@ public class SourceListFragment extends ListFragment {
                         LocalImageFragment localImageFragment = new LocalImageFragment();
                         Bundle arguments = new Bundle();
                         arguments.putBoolean("change", false);
+                        arguments.putBoolean("set_path", false);
                         localImageFragment.setArguments(arguments);
 
                         getFragmentManager().beginTransaction()
@@ -250,6 +251,7 @@ public class SourceListFragment extends ListFragment {
                             LocalImageFragment localImageFragment = new LocalImageFragment();
                             Bundle arguments = new Bundle();
                             arguments.putBoolean("change", true);
+                            arguments.putBoolean("set_path", false);
                             arguments.putInt("position", position);
                             localImageFragment.setArguments(arguments);
 
@@ -439,7 +441,7 @@ public class SourceListFragment extends ListFragment {
                 };
 
                 ShowcaseView.Builder websiteListBuilder = new  ShowcaseView.Builder(getActivity())
-                    .setContentTitle("Website List")
+                    .setContentTitle("Sources List")
                     .setContentText("This is a list of your sources. \n" +
                             "These can include both websites and your \n" +
                             "own image folders. You can edit them by \n" +

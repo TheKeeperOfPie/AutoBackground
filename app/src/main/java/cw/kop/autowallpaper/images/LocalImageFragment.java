@@ -34,7 +34,7 @@ public class LocalImageFragment extends Fragment {
 	private File dir;
     private FilenameFilter filenameFilter;
 
-    private boolean change;
+    private boolean change, setPath;
     private int position;
 
 	public LocalImageFragment() {
@@ -46,6 +46,7 @@ public class LocalImageFragment extends Fragment {
 
         Bundle bundle = getArguments();
         change = bundle.getBoolean("change", false);
+        setPath = bundle.getBoolean("set_path", false);
         position = bundle.getInt("position", 0);
 
         filenameFilter = (new FilenameFilter() {
@@ -102,12 +103,17 @@ public class LocalImageFragment extends Fragment {
 			@Override
 			public void onClick(View v) {
 				File dir = imageAdapter.getDirectory();
-                SourceListFragment sourceListFragment = (SourceListFragment) getActivity().getFragmentManager().findFragmentByTag("website_fragment");
-                if (change) {
-                    sourceListFragment.setFolder(position, dir.getName(), dir.getAbsolutePath(), dir.listFiles(filenameFilter).length);
+                if (setPath) {
+                    AppSettings.setDownloadPath(dir.getAbsolutePath());
+                    Toast.makeText(context, "Download path set to: \n" + AppSettings.getDownloadPath(), Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    sourceListFragment.addFolder(dir.getName(), dir.getAbsolutePath(), dir.listFiles(filenameFilter).length);
+                    SourceListFragment sourceListFragment = (SourceListFragment) getActivity().getFragmentManager().findFragmentByTag("website_fragment");
+                    if (change) {
+                        sourceListFragment.setFolder(position, dir.getName(), dir.getAbsolutePath(), dir.listFiles(filenameFilter).length);
+                    } else {
+                        sourceListFragment.addFolder(dir.getName(), dir.getAbsolutePath(), dir.listFiles(filenameFilter).length);
+                    }
                 }
                 imageAdapter.setFinished(true);
                 getActivity().onBackPressed();
@@ -115,20 +121,20 @@ public class LocalImageFragment extends Fragment {
 			
 		});
 		
-		Button resetDirectoryButton = (Button) view.findViewById(R.id.reset_directory_button);
-		resetDirectoryButton.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                AppSettings.setDownloadPath(context.getCacheDir().getAbsolutePath());
-                if (AppSettings.useToast()) {
-                    Toast.makeText(context, "Reset directory", Toast.LENGTH_SHORT).show();
-                }
-                imageAdapter.setFinished(true);
-                getActivity().onBackPressed();
-            }
-
-        });
+//		Button resetDirectoryButton = (Button) view.findViewById(R.id.reset_directory_button);
+//		resetDirectoryButton.setOnClickListener(new OnClickListener() {
+//
+//            @Override
+//            public void onClick(View v) {
+//                AppSettings.setDownloadPath(context.getCacheDir().getAbsolutePath());
+//                if (AppSettings.useToast()) {
+//                    Toast.makeText(context, "Reset directory", Toast.LENGTH_SHORT).show();
+//                }
+//                imageAdapter.setFinished(true);
+//                getActivity().onBackPressed();
+//            }
+//
+//        });
 		
 		return view;
 	}

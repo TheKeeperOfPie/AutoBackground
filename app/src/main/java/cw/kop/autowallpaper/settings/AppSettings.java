@@ -3,6 +3,7 @@ package cw.kop.autowallpaper.settings;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -162,8 +163,8 @@ public class AppSettings {
 		return prefs.getBoolean("use_high_quality", true);
 	}
 
-	public static boolean changeOnLeave() {
-		return prefs.getBoolean("on_leave", true);
+	public static boolean changeOnReturn() {
+		return prefs.getBoolean("on_return", true);
 	}
 
 	public static boolean forceInterval() {
@@ -188,18 +189,6 @@ public class AppSettings {
 
     public static boolean useFade() {
         return prefs.getBoolean("use_fade", true);
-    }
-
-    public static boolean useEffects() {
-        return prefs.getBoolean("use_effects", false);
-    }
-
-    public static int getBrightnessValue() {
-        return prefs.getInt("effect_brightness", 0);
-    }
-
-    public static int getContrastValue() {
-        return prefs.getInt("effect_contrast", 0);
     }
 
     public static boolean useExperimentalDownloader() {
@@ -270,4 +259,120 @@ public class AppSettings {
         return prefs.getString("source_data_" + index, null);
     }
 
+
+    public static boolean useEffects() {
+        return prefs.getBoolean("use_effects", false);
+    }
+
+    public static boolean useToastEffects() {
+        return prefs.getBoolean("use_toast_effects", true);
+    }
+
+    public static boolean useRandomEffects() {
+        return prefs.getBoolean("use_random_effects", false);
+    }
+
+    public static void setRandomEffect(String value) {
+        prefs.edit().putString("random_effect", value).apply();
+    }
+
+    public static String getRandomEffect() {
+        return prefs.getString("random_effect", null);
+    }
+
+    public static boolean useDuotoneGray() {
+        return prefs.getBoolean("use_duotone_gray", false);
+    }
+
+    public static void setEffect(String key, int value) {
+        prefs.edit().putInt(key, value).apply();
+        Log.i("AS", "Effect set: " + key + " Value: " + value);
+    }
+
+    public static int getEffectValue(String key) {
+
+        if (key.equals("effect_brightness") || key.equals("effect_contrast") || key.equals("effect_saturate") || key.equals("effects_frequency")) {
+            return prefs.getInt(key, 100);
+        }
+        else if (key.equals("effect_temperature")) {
+            return prefs.getInt(key, 50);
+        }
+        return prefs.getInt(key, 0);
+    }
+
+    public static float getEffectsFrequency() {
+        return (float) prefs.getInt("effects_frequency", 100) / 100;
+    }
+
+    public static boolean useEffectsOverride() {
+        return prefs.getBoolean("use_effects_override", false);
+    }
+
+    public static float getAutoFixEffect() {
+        return (float) prefs.getInt("effect_auto_fix", 0) / 100;
+    }
+
+    public static float getBrightnessEffect() {
+        return (float) prefs.getInt("effect_brightness", 100) / 100;
+    }
+
+    public static float getContrastEffect() {
+        return (float) prefs.getInt("effect_contrast", 100) / 100;
+    }
+
+    public static boolean getCrossProcessEffect() {
+        return prefs.getBoolean("effect_cross_process_switch", false);
+    }
+
+    public static boolean getDocumentaryEffect() {
+        return prefs.getBoolean("effect_documentary_switch", false);
+    }
+
+    public static float getFillLightEffect() {
+        return (float) prefs.getInt("effect_fill_light", 0) / 100;
+    }
+
+    public static float getFisheyeEffect() {
+        return (float) prefs.getInt("effect_fisheye", 0) / 100;
+    }
+
+    public static float getGrainEffect() {
+        return (float) prefs.getInt("effect_grain", 0) / 100;
+    }
+
+    public static boolean getGrayscaleEffect() {
+        return prefs.getBoolean("effect_grayscale_switch", false);
+    }
+
+    public static boolean getLomoishEffect() {
+        return prefs.getBoolean("effect_lomoish_switch", false);
+    }
+
+    public static boolean getNegativeEffect() {
+        return prefs.getBoolean("effect_negative_switch", false);
+    }
+
+    public static boolean getPosterizeEffect() {
+        return prefs.getBoolean("effect_posterize_switch", false);
+    }
+
+    public static float getSaturateEffect() {
+        return (float) prefs.getInt("effect_saturate", 100) / 100 - 1.0f;
+    }
+
+    public static boolean getSepiaEffect() {
+        return prefs.getBoolean("effect_sepia_switch", false);
+    }
+
+    public static float getSharpenEffect() {
+        return (float) prefs.getInt("effect_sharpen", 0) / 100;
+    }
+
+    public static float getTemperatureEffect() {
+        return (float) prefs.getInt("effect_temperature", 50) / 100;
+    }
+
+    public static float getVignetteEffect() {
+        return (float) prefs.getInt("effect_vignette", 0) / 100;
+    }
 }

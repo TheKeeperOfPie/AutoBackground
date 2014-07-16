@@ -26,7 +26,7 @@
             android:summary="@string/user_height_description"
             />
 
-	    <SwitchPreference 
+	    <cw.kop.autowallpaper.CustomSwitchPreference
 		    android:key="use_timer"
     		android:defaultValue="false"
 		    android:title="@string/use_timer" 
@@ -34,42 +34,48 @@
 		    android:summary="@string/use_timer_description"
     		/>
 	    
-        <SwitchPreference
+        <cw.kop.autowallpaper.CustomSwitchPreference
 		    android:key="use_wifi"
     		android:defaultValue="true"
 		    android:title="@string/use_wifi"
 		    android:summary="@string/use_wifi_description"
          	/>
         
-        <SwitchPreference
+        <cw.kop.autowallpaper.CustomSwitchPreference
 		    android:key="use_data"
     		android:defaultValue="false"
 		    android:title="@string/use_data"
 		    android:summary="@string/use_data_description"
          	/>
 
-        <SwitchPreference
+        <cw.kop.autowallpaper.CustomSwitchPreference
             android:key="use_download_notification"
             android:defaultValue="true"
             android:title="@string/use_download_notification"
             android:summary="@string/use_download_notification_description"
             />
 
-        <SwitchPreference
+        <cw.kop.autowallpaper.CustomSwitchPreference
 		    android:key="use_high_quality"
     		android:defaultValue="true"
 		    android:title="@string/use_high_quality"
 		    android:summary="@string/use_high_quality_description"
          	/>
         
-        <SwitchPreference
+        <cw.kop.autowallpaper.CustomSwitchPreference
 		    android:key="force_download"
     		android:defaultValue="false"
 		    android:title="@string/force_download"
 		    android:summary="@string/force_download_description"
          	/>
-        
-        <SwitchPreference
+
+        <Preference
+            android:key="download_path"
+            android:title="@string/download_path"
+            android:summary="@string/download_path_description"
+            />
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
 		    android:key="keep_images"
     		android:defaultValue="false"
 		    android:title="@string/keep_images"
@@ -91,7 +97,7 @@
             android:summary="@string/image_prefix_description"
             />
 
-        <SwitchPreference
+        <cw.kop.autowallpaper.CustomSwitchPreference
             android:key="use_experimental_downloader_adv"
             android:defaultValue="false"
             android:title="@string/use_experimental_downloader"

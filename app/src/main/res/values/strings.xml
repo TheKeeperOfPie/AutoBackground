@@ -10,7 +10,8 @@
     <string name="letters_and_numbers">ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890</string>
 
     <string name="title_wallpaper_settings">Wallpaper Settings</string>
-    <string name="title_image_settings">Image Settings</string>
+    <string name="title_effects_settings">Effect Settings</string>
+    <string name="title_effects_parameters">Effect Parameters</string>
     <string name="title_interval_settings">Interval Settings</string>
     <string name="title_download_settings">Download Settings</string>
     <string name="title_app_settings">Application Settings</string>
@@ -28,8 +29,8 @@
     <string name="use_interval_description">Change image after certain period</string>
     <string name="force_interval">Force Interval</string>
     <string name="force_interval_description">Force change on interval</string>
-    <string name="on_leave">Change on Leave</string>
-    <string name="on_leave_description">New image on return</string>
+    <string name="on_return">Change on Return</string>
+    <string name="on_return_description">New image on return</string>
     <string name="double_tap">Double Tap Gesture</string>
     <string name="double_tap_description">Change on double tap</string>
     <string name="use_fade">Use Fade</string>
@@ -66,6 +67,8 @@
     <string name="use_high_quality_description">Download high quality images</string>
     <string name="force_download">Force Images</string>
     <string name="force_download_description">Attempt to force download</string>
+    <string name="download_path">External Download Path</string>
+    <string name="download_path_description">Set folder for downloaded images</string>
     <string name="keep_images">Keep Images</string>
     <string name="keep_images_description">Keep old images in cache</string>
     <string name="delete_images">Delete Images</string>
@@ -77,10 +80,53 @@
 
     <string name="use_effects">Use Effects</string>
     <string name="use_effects_description">Use image effects</string>
+    <string name="effects_frequency">Effect Frequency</string>
+    <string name="effects_frequency_description">Chance of applying effect</string>
+    <string name="use_effects_override">Manual Override</string>
+    <string name="use_effects_override_description">Force apply manual effects</string>
+    <string name="use_random_effects">Random Effects</string>
+    <string name="use_random_effects_description">Apply random effects</string>
+    <string name="use_duotone_gray">Dual Tone Gray</string>
+    <string name="use_duotone_gray_description">High contrast dual tone</string>
+    <string name="use_toast_effects">Toast Effects</string>
+    <string name="use_toast_effects_description">Display applied effect in message</string>
+    <string name="reset_effects">Reset Effects</string>
+    <string name="reset_effects_description">Reset to default values</string>
+
+    <string name="effect_auto_fix">Auto Fix</string>
+    <string name="effect_auto_fix_description">Auto Fix Image</string>
     <string name="effect_brightness">Brightness</string>
-    <string name="effect_brightness_description">Brightness of wallpaper</string>
+    <string name="effect_brightness_description">Brightness of image</string>
     <string name="effect_contrast">Contrast</string>
-    <string name="effect_contrast_description">Contrast of wallpaper</string>
+    <string name="effect_contrast_description">Contrast of image</string>
+    <string name="effect_cross_process">Cross Process Effect</string>
+    <string name="effect_cross_process_description">Cross process effect</string>
+    <string name="effect_documentary">Documentary Effect</string>
+    <string name="effect_documentary_description">Black and white effect</string>
+    <string name="effect_fill_light">Fill Light Effect</string>
+    <string name="effect_fill_light_description">Contrast of image</string>
+    <string name="effect_fisheye">Fisheye Effect</string>
+    <string name="effect_fisheye_description">Fisheye effect</string>
+    <string name="effect_grain">Grain Effect</string>
+    <string name="effect_grain_description">Grain effect</string>
+    <string name="effect_grayscale">Grayscale Effect</string>
+    <string name="effect_grayscale_description">Grayscale effect</string>
+    <string name="effect_lomoish">Lomoish Effect</string>
+    <string name="effect_lomoish_description">Lomoish effect</string>
+    <string name="effect_negative">Negative Effect</string>
+    <string name="effect_negative_description">Invert image colors</string>
+    <string name="effect_posterize">Posterize Effect</string>
+    <string name="effect_posterize_description">Image posterization effect</string>
+    <string name="effect_saturate">Saturation</string>
+    <string name="effect_saturate_description">Satruation of image</string>
+    <string name="effect_sepia">Sepia Effect</string>
+    <string name="effect_sepia_description">Sepia tone effect</string>
+    <string name="effect_sharpen">Sharpen Effect</string>
+    <string name="effect_sharpen_description">Sharpen image</string>
+    <string name="effect_temperature">Temperature</string>
+    <string name="effect_temperature_description">Color temperature of image</string>
+    <string name="effect_vignette">Vignette Effect</string>
+    <string name="effect_vignette_description">Vignette effect</string>
 
     <string name="use_notification">Use Notification</string>
     <string name="use_notification_description">Show a persistent notification</string>
@@ -109,7 +155,7 @@
         <item>Sources</item>
         <item>Wallpaper</item>
         <item>Downloader</item>
-        <item>Images</item>
+        <item>Effects</item>
         <item>Application</item>
         <item>About</item>
     </string-array>
@@ -159,5 +205,88 @@
         <item>Dark</item>
         <item>Transparent</item>
     </string-array>
-    
+
+    <string-array name="random_effects_entry_menu">
+        <item>Completely Random</item>
+        <item>Filter Effects</item>
+        <item>Dual Tone Random</item>
+        <item>Dual Tone Warm</item>
+        <item>Dual Tone Cool</item>
+    </string-array>
+
+    <string-array name="effects_list">
+        <item>android.media.effect.effects.AutoFixEffect</item>
+        <item>android.media.effect.effects.BrightnessEffect</item>
+        <item>android.media.effect.effects.ContrastEffect</item>
+        <item>android.media.effect.effects.CrossProcessEffect</item>
+        <item>android.media.effect.effects.DocumentaryEffect</item>
+        <item>android.media.effect.effects.FillLightEffect</item>
+        <item>android.media.effect.effects.FisheyeEffect</item>
+        <item>android.media.effect.effects.GrainEffect</item>
+        <item>android.media.effect.effects.GrayscaleEffect</item>
+        <item>android.media.effect.effects.LomoishEffect</item>
+        <item>android.media.effect.effects.NegativeEffect</item>
+        <item>android.media.effect.effects.PosterizeEffect</item>
+        <item>android.media.effect.effects.SaturateEffect</item>
+        <item>android.media.effect.effects.SepiaEffect</item>
+        <item>android.media.effect.effects.SharpenEffect</item>
+        <item>android.media.effect.effects.ColorTemperatureEffect</item>
+        <item>android.media.effect.effects.VignetteEffect</item>
+    </string-array>
+
+    <string-array name="effects_filters_list">
+        <item>android.media.effect.effects.CrossProcessEffect</item>
+        <item>android.media.effect.effects.DocumentaryEffect</item>
+        <item>android.media.effect.effects.GrainEffect</item>
+        <item>android.media.effect.effects.GrayscaleEffect</item>
+        <item>android.media.effect.effects.LomoishEffect</item>
+        <item>android.media.effect.effects.NegativeEffect</item>
+        <item>android.media.effect.effects.PosterizeEffect</item>
+        <item>android.media.effect.effects.SepiaEffect</item>
+    </string-array>
+
+    <string-array name="effects_list_parameters">
+        <item>scale</item>
+        <item>brightness</item>
+        <item>contrast</item>
+        <item>none</item>
+        <item>none</item>
+        <item>strength</item>
+        <item>scale</item>
+        <item>strength</item>
+        <item>none</item>
+        <item>none</item>
+        <item>none</item>
+        <item>none</item>
+        <item>scale</item>
+        <item>none</item>
+        <item>scale</item>
+        <item>scale</item>
+        <item>scale</item>
+    </string-array>
+
+    <string-array name="effects_color_list">
+        <item>red</item>
+        <item>blue</item>
+        <item>contrast</item>
+        <item>green</item>
+        <item>black</item>
+        <item>white</item>
+        <item>gray</item>
+        <item>cyan</item>
+        <item>magenta</item>
+        <item>yellow</item>
+        <item>lightgray</item>
+        <item>darkgray</item>
+        <item>aqua</item>
+        <item>fuschia</item>
+        <item>lime</item>
+        <item>maroon</item>
+        <item>navy</item>
+        <item>olive</item>
+        <item>purple</item>
+        <item>silver</item>
+        <item>teal</item>
+    </string-array>
+
 </resources>

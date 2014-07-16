@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import cw.kop.autowallpaper.images.LocalImageFragment;
 import cw.kop.autowallpaper.settings.AppSettings;
 
 public class DownloadSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
@@ -47,12 +48,31 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
 		timerPref = (SwitchPreference) findPreference("use_timer");
 
-        Preference deletePref = (Preference) findPreference("delete_images");
+        Preference deletePref = findPreference("delete_images");
         deletePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 Downloader.deleteAllBitmaps(context);
                 Toast.makeText(context, "Deleting images with prefix\n" + AppSettings.getImagePrefix(), Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
+
+        Preference pathPref = findPreference("download_path");
+        pathPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                LocalImageFragment localImageFragment = new LocalImageFragment();
+                Bundle arguments = new Bundle();
+                arguments.putBoolean("change", true);
+                arguments.putBoolean("set_path", false);
+                arguments.putInt("position", 0);
+                localImageFragment.setArguments(arguments);
+
+                getFragmentManager().beginTransaction()
+                        .add(R.id.content_frame, localImageFragment, "image_fragment")
+                        .addToBackStack(null)
+                        .commit();
                 return false;
             }
         });

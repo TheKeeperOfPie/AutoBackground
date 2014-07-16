@@ -8,8 +8,10 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -23,10 +25,10 @@ public class MainPreferences extends Activity {
 
 	public static SharedPreferences prefs;
 
-    private ActionBarDrawerToggle mDrawerToggle;
+    private ActionBarDrawerToggle drawerToggle;
     private String[] fragmentList;
-    private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
+    private DrawerLayout drawerLayout;
+    private ListView drawerList;
 
     private CharSequence mTitle;
 
@@ -67,21 +69,21 @@ public class MainPreferences extends Activity {
         mTitle = getTitle();
 
         fragmentList = getResources().getStringArray(R.array.fragment_titles);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
-        mDrawerLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
+        drawerLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
 
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
-        mDrawerList.setAdapter(new NavListAdapter(this, fragmentList));
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
-        mDrawerList.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+        drawerList = (ListView) findViewById(R.id.left_drawer);
+        drawerList.setAdapter(new NavListAdapter(this, fragmentList));
+        drawerList.setOnItemClickListener(new DrawerItemClickListener());
+        drawerList.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
 
-        mDrawerToggle = new ActionBarDrawerToggle(
+        drawerToggle = new ActionBarDrawerToggle(
                 this,
-                mDrawerLayout,
+                drawerLayout,
                 R.drawable.ic_drawer,
                 R.string.drawer_open,
                 R.string.drawer_close) {
@@ -123,6 +125,12 @@ public class MainPreferences extends Activity {
 
     }
 
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        drawerToggle.syncState();
+    }
+
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -151,7 +159,7 @@ public class MainPreferences extends Activity {
                 break;
             case 3:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new ImageSettingsFragment())
+                        .replace(R.id.content_frame, new EffectsSettingsFragment())
                         .commit();
                 break;
             case 4:
@@ -172,7 +180,7 @@ public class MainPreferences extends Activity {
 
         setTitle(fragmentList[position]);
 
-        mDrawerLayout.closeDrawer(mDrawerList);
+        drawerLayout.closeDrawer(drawerList);
     }
 
     @Override
@@ -195,7 +203,7 @@ public class MainPreferences extends Activity {
 
         Log.i("MP", "Item pressed: " + item.getItemId());
 
-        if (getFragmentManager().findFragmentByTag("image_fragment") == null && mDrawerToggle.onOptionsItemSelected(item)) {
+        if (getFragmentManager().findFragmentByTag("image_fragment") == null && drawerToggle.onOptionsItemSelected(item)) {
             if (item.getItemId() == android.R.id.home) {
                 return super.onOptionsItemSelected(item);
             }

@@ -13,6 +13,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
@@ -23,6 +24,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Display;
@@ -39,6 +41,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Random;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -73,6 +80,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     @Override
     public void onCreate() {
         super.onCreate();
+
         appContext = getApplicationContext();
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         AppSettings.setPrefs(prefs);
@@ -228,8 +236,6 @@ public class LiveWallpaperService extends GLWallpaperService {
         private MyGLRenderer renderer;
         private final Handler handler = new Handler();
         private int[] maxTextureSize = new int[]{0};
-        private int screenWidth = 0;
-        private int screenHeight = 0;
         private int animationModifier = 1;
         private int animationX = 0;
         private int animationY = 0;
@@ -242,12 +248,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         public GLWallpaperEngine() {
             super();
-            WindowManager wm = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            screenWidth = size.x;
-            screenHeight = size.y;
 
             gestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener(){
                 @Override
@@ -263,7 +263,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             super.onCreate(surfaceHolder);
             setEGLContextClientVersion(2);
 
-            renderer = new MyGLRenderer(getApplicationContext(), screenWidth, screenHeight);
+            renderer = new MyGLRenderer(getApplicationContext());
             setRenderer(renderer);
             setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
@@ -355,9 +355,6 @@ public class LiveWallpaperService extends GLWallpaperService {
         @Override
         public void onSurfaceChanged(final SurfaceHolder holder, final int format, final int width, final int height) {
             super.onSurfaceChanged(holder, format, width, height);
-            screenWidth = width;
-            screenHeight = height;
-            Log.i(TAG, "onSurfaceChanged Width: " + screenWidth + " Height: " + screenHeight);
         }
 
         @Override
@@ -369,7 +366,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     loadNextImage();
                     toChange = false;
                 }
-                else if (AppSettings.changeOnLeave()) {
+                else if (AppSettings.changeOnReturn()) {
                     loadNextImage();
                 }
             }
@@ -426,6 +423,20 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         }
 
+
+        private void toastEffect(final String effectName, final String effectValue) {
+            if (AppSettings.useToast() && AppSettings.useToastEffects()) {
+                handler.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Toast.makeText(appContext, "Effect applied: " + effectName + " " + effectValue, Toast.LENGTH_SHORT).show();
+                        Log.i(TAG, "Toasted");
+                    }
+                });
+            }
+        }
+
         class MyGLRenderer implements GLSurfaceView.Renderer {
 
             private static final String TAG = "Renderer";
@@ -435,7 +446,6 @@ public class LiveWallpaperService extends GLWallpaperService {
             private float[] mtrxView = new float[16];
             private float[] mtrxProjectionAndView = new float[16];
             private float[] transMatrix = new float[16];
-            private float[] mTempMatrix = new float[16];
             private int program;
 
             // Geometric variables
@@ -447,8 +457,8 @@ public class LiveWallpaperService extends GLWallpaperService {
             public FloatBuffer uvBuffer;
 
             // Our screenresolution
-            private float renderScreenWidth;
-            private float renderScreenHeight;
+            private float renderScreenWidth = 1;
+            private float renderScreenHeight = 1;
             private long startTime;
             private long endTime;
             private long frameTime;
@@ -465,21 +475,20 @@ public class LiveWallpaperService extends GLWallpaperService {
             // Misc
             Context appContext;
             private Bitmap localBitmap;
-            private float fadeInAlpha = 0f;
+            private float fadeInAlpha = 0.0f;
             private float fadeOutAlpha = 1.0f;
             private boolean toFade = false;
             private int[] textureNames = new int[3];
             private boolean firstRun = true;
             private boolean toEffect = false;
+            private boolean contextInitialized = false;
             private EffectContext effectContext;
             private EffectFactory effectFactory;
             private Effect effect;
 
-            public MyGLRenderer(Context context, int width, int height) {
+            public MyGLRenderer(Context context) {
                 startTime = System.currentTimeMillis();
                 appContext = context;
-                renderScreenWidth = width;
-                renderScreenHeight = height;
 
                 localBitmap = Downloader.getNextImage(getApplicationContext());
 
@@ -487,9 +496,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     // If no bitmap available, set wallpaper as app_icon, prevents null pointer checks
                     int id = appContext.getResources().getIdentifier("drawable/app_icon", null, appContext.getPackageName());
                     localBitmap =  BitmapFactory.decodeResource(appContext.getResources(), id);
-                }
-                else {
-                    localBitmap = scaleBitmap(localBitmap);
                 }
 
                 bitmapWidth = localBitmap.getWidth();
@@ -499,21 +505,18 @@ public class LiveWallpaperService extends GLWallpaperService {
             @Override
             public void onDrawFrame(GL10 gl) {
 
-                if (effectContext == null) {
+                if (!contextInitialized) {
                     effectContext = EffectContext.createWithCurrentGlContext();
                     setPreserveEGLContextOnPause(true);
+                    contextInitialized = true;
                 }
 
                 if (toEffect && effectContext != null) {
 
                     if (toFade) {
-                        GLES20.glDeleteTextures(1, textureNames, 1);
-                        GLES20.glGenTextures(1, textureNames, 1);
                         initEffects(1);
                     }
                     else {
-                        GLES20.glDeleteTextures(1, textureNames, 0);
-                        GLES20.glGenTextures(1, textureNames, 0);
                         initEffects(0);
                     }
                     Log.i(TAG, "Applied image effects");
@@ -536,7 +539,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         setupContainer(oldBitmapWidth, oldBitmapHeight);
 
                         GLES20.glUniform1f(mAlphaHandle, fadeOutAlpha);
-                        fadeOutAlpha -= 0.015f;
+                        fadeOutAlpha -= 0.03f;
 
                         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
                         android.opengl.Matrix.setIdentityM(transMatrix, 0);
@@ -547,7 +550,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         setupContainer(bitmapWidth, bitmapHeight);
 
                         GLES20.glUniform1f(mAlphaHandle, fadeInAlpha);
-                        fadeInAlpha += 0.015f;
+                        fadeInAlpha += 0.03f;
 
                         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[1]);
                         android.opengl.Matrix.setIdentityM(transMatrix, 0);
@@ -590,14 +593,10 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                         }
 
-                        Log.i(TAG, "Render");
-
-                        Log.i(TAG, "Texture 0: " + textureNames[0] + " Texture 1: " + textureNames[1]);
-
-                        setupContainer(bitmapWidth, bitmapHeight);
                         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
                         android.opengl.Matrix.setIdentityM(transMatrix, 0);
                         android.opengl.Matrix.translateM(transMatrix, 0, offset, 0, 0);
+                        setupContainer(bitmapWidth, bitmapHeight);
                         renderImage();
 
                         if (animated) {
@@ -668,16 +667,16 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 Log.i(TAG, "Renderer onSurfaceChanged");
 
-                screenWidth = width;
-                screenHeight = height;
-                localBitmap = scaleBitmap(localBitmap);
-                addEvent(new Runnable() {
+                if (width != renderScreenWidth) {
+                    localBitmap = scaleBitmap(localBitmap);
+                    addEvent(new Runnable() {
 
-                    @Override
-                    public void run() {
-                        renderer.setBitmap(localBitmap, false, 0);
-                    }
-                });
+                        @Override
+                        public void run() {
+                            renderer.setBitmap(localBitmap, false, 0);
+                        }
+                    });
+                }
 
                 renderScreenWidth = width;
                 renderScreenHeight = height;
@@ -695,26 +694,22 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 // Calculate the projection and view transformation
                 android.opengl.Matrix.multiplyMM(mtrxProjectionAndView, 0, mtrxProjection, 0, mtrxView, 0);
+
             }
 
             @Override
             public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 
-                int vertexShader = GLShaders.loadShader(GLES20.GL_VERTEX_SHADER, GLShaders.vertexShaderImage);
-                int fragmentShader = GLShaders.loadShader(GLES20.GL_FRAGMENT_SHADER, GLShaders.fragmentShaderImage);
-
-                program = GLES20.glCreateProgram();
-                GLES20.glAttachShader(program, vertexShader);
-                GLES20.glAttachShader(program, fragmentShader);
-                GLES20.glLinkProgram(program);
-                GLES20.glUseProgram(program);
-
-                // Set the clear color to black
-                GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1);
-
-                GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
                 if (firstRun) {
+
+                    int vertexShader = GLShaders.loadShader(GLES20.GL_VERTEX_SHADER, GLShaders.vertexShaderImage);
+                    int fragmentShader = GLShaders.loadShader(GLES20.GL_FRAGMENT_SHADER, GLShaders.fragmentShaderImage);
+
+                    program = GLES20.glCreateProgram();
+                    GLES20.glAttachShader(program, vertexShader);
+                    GLES20.glAttachShader(program, fragmentShader);
+                    GLES20.glLinkProgram(program);
+                    GLES20.glUseProgram(program);
 
                     GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
 
@@ -745,6 +740,10 @@ public class LiveWallpaperService extends GLWallpaperService {
                     setupContainer(bitmapWidth, bitmapHeight);
                 }
 
+                GLES20.glUseProgram(program);
+                GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1);
+                GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+
                 if (toFade) {
                     Log.i(TAG, "Fade reset");
                     fadeInAlpha = 0.0f;
@@ -755,7 +754,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     textureNames[1] = storeId;
                     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
                     toFade = false;
-                    setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                 }
 
                 if (animated) {
@@ -765,16 +763,11 @@ public class LiveWallpaperService extends GLWallpaperService {
                     setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                 }
 
-                // Create image texture
                 setBitmap(localBitmap, false, 0);
-
-                Log.i(TAG, "Animation offset: " + animationX);
 
                 if (animationX < renderScreenWidth - bitmapWidth) {
                     animationX = 0;
                 }
-
-                Log.i(TAG, "Animation offset: " + animationX);
 
                 if (AppSettings.useEffects()) {
                     toEffect = true;
@@ -819,8 +812,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 drawListBuffer = dlb.asShortBuffer();
                 drawListBuffer.put(indices);
                 drawListBuffer.position(0);
-
-                Log.i(TAG, "Container set");
 
             }
 
@@ -867,7 +858,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, localBitmap, 0);
 
-                if (AppSettings.useEffects()) {
+                if (texture == 1 && AppSettings.useEffects()) {
                     toEffect = true;
                 }
 
@@ -890,15 +881,15 @@ public class LiveWallpaperService extends GLWallpaperService {
             protected Bitmap scaleBitmap(Bitmap bitmap) {
                 int bitWidth = bitmap.getWidth();
                 int bitHeight = bitmap.getHeight();
-                float scaleWidth = ((float) screenWidth) / bitWidth;
-                float scaleHeight = ((float) screenHeight) / bitHeight;
+                float scaleWidth = ((float) renderScreenWidth) / bitWidth;
+                float scaleHeight = ((float) renderScreenHeight) / bitHeight;
 
                 if (bitWidth * scaleWidth > maxTextureSize[0] ||
                         bitWidth * scaleHeight > maxTextureSize[0] ||
                         bitHeight * scaleWidth > maxTextureSize[0] ||
                         bitHeight * scaleHeight > maxTextureSize[0]) {
 
-                    int ratio = maxTextureSize[0] / screenHeight;
+                    int ratio = Math.round(maxTextureSize[0] / renderScreenHeight);
                     int scaledWidth = bitHeight * ratio;
                     if (scaledWidth > bitWidth || scaledWidth == 0) {
                         scaledWidth = bitWidth;
@@ -908,8 +899,8 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     bitWidth = bitmap.getWidth();
                     bitHeight = bitmap.getHeight();
-                    scaleWidth = ((float) screenWidth) / bitWidth;
-                    scaleHeight = ((float) screenHeight) / bitHeight;
+                    scaleWidth = (renderScreenWidth) / bitWidth;
+                    scaleHeight = (renderScreenHeight) / bitHeight;
                 }
 
                 Matrix matrix = new Matrix();
@@ -926,24 +917,265 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             private void initEffects(int texture) {
 
-                effectFactory = effectContext.getFactory();
+                Random random = new Random();
 
-                if (AppSettings.getBrightnessValue() > 0) {
-                    effect = effectFactory.createEffect(EffectFactory.EFFECT_BRIGHTNESS);
-                    effect.setParameter("brightness", ((float) AppSettings.getBrightnessValue()) - 0.5f);
-                    effect.apply(textureNames[2], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[texture]);
-                    GLES20.glDeleteTextures(1, textureNames, 2);
-                    GLES20.glGenTextures(1, textureNames, 2);
-                    effect.apply(textureNames[texture], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[2]);
+                if (random.nextDouble() > AppSettings.getEffectsFrequency()) {
+                    toastEffect("Not applied", "");
+                    return;
                 }
 
-                effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAYSCALE);
-                effect.apply(textureNames[2], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[texture]);
-                GLES20.glDeleteTextures(1, textureNames, 2);
-                GLES20.glGenTextures(1, textureNames, 2);
-                effect.apply(textureNames[texture], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[2]);
+                effectFactory = effectContext.getFactory();
 
-                Log.i(TAG, "bitWidth: " + Math.round(bitmapWidth));
+                if (effect != null) {
+                    effect.release();
+                }
+
+                if (AppSettings.useRandomEffects()) {
+                    applyRandomEffects(AppSettings.getRandomEffect(), texture);
+                }
+
+                if (!AppSettings.useRandomEffects() || AppSettings.useEffectsOverride()) {
+                    if (AppSettings.getAutoFixEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_AUTOFIX)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_AUTOFIX);
+                        effect.setParameter("scale", AppSettings.getAutoFixEffect());
+                        applyEffect(effect, texture);
+                        toastEffect("Auto Fix", "Value:" + AppSettings.getAutoFixEffect());
+                    }
+
+                    if (AppSettings.getBrightnessEffect() != 1.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_BRIGHTNESS)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_BRIGHTNESS);
+                        effect.setParameter("brightness", AppSettings.getBrightnessEffect());
+                        applyEffect(effect, texture);
+                        toastEffect("Brightness", "Value:" + AppSettings.getBrightnessEffect());
+                    }
+
+                    if (AppSettings.getContrastEffect() != 1.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_CONTRAST)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_CONTRAST);
+                        effect.setParameter("contrast", AppSettings.getContrastEffect());
+                        applyEffect(effect, texture);
+                        toastEffect("Contrast", "Value:" + AppSettings.getContrastEffect());
+                    }
+
+                    if (AppSettings.getCrossProcessEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_CROSSPROCESS)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_CROSSPROCESS);
+                        applyEffect(effect, texture);
+                        toastEffect("Cross Process", "");
+                    }
+
+                    if (AppSettings.getDocumentaryEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_DOCUMENTARY)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_DOCUMENTARY);
+                        applyEffect(effect, texture);
+                        toastEffect("Documentary", "");
+                    }
+
+                    if (AppSettings.getFillLightEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_FILLLIGHT)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_FILLLIGHT);
+                        effect.setParameter("strength", AppSettings.getFillLightEffect());
+                        applyEffect(effect, texture);
+                        toastEffect("Fill Light", "Value:" + AppSettings.getFillLightEffect());
+                    }
+
+                    if (AppSettings.getFisheyeEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_FISHEYE)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_FISHEYE);
+                        effect.setParameter("scale", AppSettings.getFisheyeEffect());
+                        applyEffect(effect, texture);
+                        toastEffect("Fisheye", "Value:" + AppSettings.getFisheyeEffect());
+                    }
+
+                    if (AppSettings.getGrainEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_GRAIN)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAIN);
+                        effect.setParameter("strength", AppSettings.getGrainEffect());
+                        applyEffect(effect, texture);
+                        toastEffect("Grain", "Value:" + AppSettings.getGrainEffect());
+                    }
+
+                    if (AppSettings.getGrayscaleEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_GRAYSCALE)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAYSCALE);
+                        applyEffect(effect, texture);
+                        toastEffect("Grayscale", "");
+                    }
+
+                    if (AppSettings.getLomoishEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_LOMOISH)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_LOMOISH);
+                        applyEffect(effect, texture);
+                        toastEffect("Lomoish", "");
+                    }
+
+                    if (AppSettings.getNegativeEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_NEGATIVE)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_NEGATIVE);
+                        applyEffect(effect, texture);
+                        toastEffect("Negaative", "");
+                    }
+
+                    if (AppSettings.getPosterizeEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_POSTERIZE)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_POSTERIZE);
+                        applyEffect(effect, texture);
+                        toastEffect("Posterize", "");
+                    }
+
+                    if (AppSettings.getSaturateEffect() != 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_SATURATE)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_SATURATE);
+                        effect.setParameter("scale", AppSettings.getSaturateEffect());
+                        applyEffect(effect, texture);
+                        toastEffect("Saturate", "Value:" + AppSettings.getSaturateEffect());
+                    }
+
+                    if (AppSettings.getSepiaEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_SEPIA)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_SEPIA);
+                        applyEffect(effect, texture);
+                        toastEffect("Sepia", "Value:");
+                    }
+
+                    if (AppSettings.getSharpenEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_SHARPEN)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_SHARPEN);
+                        effect.setParameter("scale", AppSettings.getSharpenEffect());
+                        applyEffect(effect, texture);
+                        toastEffect("Sharpen", "Value:" + AppSettings.getSharpenEffect());
+                    }
+
+                    if (AppSettings.getTemperatureEffect() != 0.5f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_TEMPERATURE)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_TEMPERATURE);
+                        effect.setParameter("scale", AppSettings.getTemperatureEffect());
+                        applyEffect(effect, texture);
+                        toastEffect("Temperature", "Value:" + AppSettings.getTemperatureEffect());
+                    }
+
+                    if (AppSettings.getVignetteEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_VIGNETTE)) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_VIGNETTE);
+                        effect.setParameter("scale", AppSettings.getVignetteEffect());
+                        applyEffect(effect, texture);
+                        toastEffect("Vignette", "Value:" + AppSettings.getVignetteEffect());
+                    }
+                }
+            }
+
+            private void applyEffect(Effect setEffect, int texture) {
+
+                GLES20.glDeleteTextures(1, textureNames, texture);
+                setEffect.apply(textureNames[2], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[texture]);
+                GLES20.glDeleteTextures(1, textureNames, 2);
+                setEffect.apply(textureNames[texture], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[2]);
+            }
+
+            private void applyRandomEffects(String randomEffect, int texture) {
+
+                Random random = new Random();
+
+                if (randomEffect.equals("Completely Random")) {
+                    String[] effectsList = appContext.getResources().getStringArray(R.array.effects_list);
+                    String[] effectParameters = appContext.getResources().getStringArray(R.array.effects_list_parameters);
+
+                    int index = (int) (Math.random() * effectsList.length);
+                    String effectName = effectsList[index];
+                    String parameter = effectParameters[index];
+                    float value = 3.0f;
+
+                    effect = effectFactory.createEffect(effectName);
+                    if (effectsList[index].equals("android.media.effect.effects.SaturateEffect")) {
+                        value = (float) (Math.random() * 0.6f) - 0.3f;
+                    }
+                    else if (effectsList[index].equals("android.media.effect.effects.ColorTemperatureEffect")) {
+                        value = (float) Math.random();
+                    }
+                    else if (parameter.equals("brightness") || parameter.equals("contrast")) {
+                        value = (float) (Math.random() * 0.4f) + 0.8f;
+                    }
+                    else if (!effectParameters[index].equals("none")) {
+                        value = (float) (Math.random() * 0.3f) + 0.3f;
+                    }
+
+                    if (EffectFactory.isEffectSupported(effectName)) {
+                        if (value < 3.0f) {
+                            effect.setParameter(parameter, value);
+                        }
+                        applyEffect(effect, texture);
+                    }
+
+                    Log.i(TAG, "Effect applied: " + effectsList[index]);
+                    toastEffect(effectName.substring(effectName.indexOf("effects.") + 8), "");
+                }
+                else if (randomEffect.equals("Filter Effects")){
+                    String[] filtersList = appContext.getResources().getStringArray(R.array.effects_filters_list);
+
+                    int index = random.nextInt(filtersList.length);
+
+                    effect = effectFactory.createEffect(filtersList[index]);
+                    applyEffect(effect, texture);
+                    toastEffect(filtersList[index].substring(filtersList[index].indexOf("effects.") + 8), "");
+                }
+                else if (randomEffect.equals("Dual Tone Random")) {
+
+                    int firstColor = Color.argb(255, random.nextInt(80), random.nextInt(80), random.nextInt(80));
+                    int secondColor = Color.argb(255, random.nextInt(100) + 75, random.nextInt(100) + 75, random.nextInt(100) + 75);
+
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                    effect.setParameter("first_color", firstColor);
+                    effect.setParameter("second_color", secondColor);
+                    applyEffect(effect, texture);
+
+                    toastEffect(randomEffect, "\n" + firstColor + "\n" + secondColor);
+
+                }
+                else if (randomEffect.equals("Dual Tone Rainbow")) {
+
+                    ArrayList<String> colorsList = (ArrayList<String>) Arrays.asList(appContext.getResources().getStringArray(R.array.effects_color_list));
+
+                    Collections.shuffle(colorsList);
+
+                    int firstColor = Color.parseColor(colorsList.get(0));
+                    int secondColor = Color.parseColor(colorsList.get(1));
+
+                    if (AppSettings.useDuotoneGray()) {
+                        firstColor = Color.parseColor("gray");
+                        Log.i(TAG, "Duotone gray");
+                    }
+
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                    effect.setParameter("first_color", firstColor);
+                    effect.setParameter("second_color", secondColor);
+                    applyEffect(effect, texture);
+
+                    toastEffect(randomEffect, "\n" + firstColor + "\n" + secondColor);
+
+                }
+                else if (randomEffect.equals("Dual Tone Warm")) {
+
+                    int firstColor = Color.argb(255, random.nextInt(40) + 40, random.nextInt(40), random.nextInt(40));
+                    int secondColor = Color.argb(255, random.nextInt(80) + 150, random.nextInt(80) + 125, random.nextInt(80) + 125);
+
+                    if (AppSettings.useDuotoneGray()) {
+                        int grayValue = random.nextInt(50);
+                        firstColor = Color.argb(255, grayValue, grayValue, grayValue);
+                        Log.i(TAG, "Duotone gray");
+                    }
+
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                    effect.setParameter("first_color", firstColor);
+                    effect.setParameter("second_color", secondColor);
+                    applyEffect(effect, texture);
+
+                    toastEffect(randomEffect, "\n" + firstColor + "\n" + secondColor);
+
+                }
+                else if (randomEffect.equals("Dual Tone Cool")) {
+
+                    int firstColor = Color.argb(255, random.nextInt(40), random.nextInt(40) + 40, random.nextInt(40) + 40);
+                    int secondColor = Color.argb(255, random.nextInt(80) + 125, random.nextInt(80) + 150, random.nextInt(80) + 150);
+
+                    if (AppSettings.useDuotoneGray()) {
+                        int grayValue = random.nextInt(50);
+                        firstColor = Color.argb(255, grayValue, grayValue, grayValue);
+                        Log.i(TAG, "Duotone gray");
+                    }
+
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                    effect.setParameter("first_color", firstColor);
+                    effect.setParameter("second_color", secondColor);
+                    applyEffect(effect, texture);
+
+                    toastEffect(randomEffect, "\n" + firstColor + "\n" + secondColor);
+
+                }
             }
 
             /**

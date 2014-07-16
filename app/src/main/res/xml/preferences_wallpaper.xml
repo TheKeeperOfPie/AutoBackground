@@ -12,7 +12,7 @@
 			android:summary="@string/fill_images_description"
 			/>
       
-		<SwitchPreference
+		<cw.kop.autowallpaper.CustomSwitchPreference
 			android:key="shuffle_images"
 			android:defaultValue="true"
 			android:title="@string/shuffle_images" 
@@ -24,7 +24,7 @@
 	<PreferenceCategory
 	    android:title="@string/title_interval_settings">
 	
-		<SwitchPreference 
+		<cw.kop.autowallpaper.CustomSwitchPreference
 			android:key="use_interval"
 			android:defaultValue="false"
 			android:title="@string/use_interval" 
@@ -32,7 +32,7 @@
 			android:summary="@string/use_interval_description"
 			/>
   
-		<SwitchPreference 
+		<cw.kop.autowallpaper.CustomSwitchPreference
 			android:key="force_interval"
 			android:defaultValue="false"
 			android:title="@string/force_interval" 
@@ -40,15 +40,15 @@
 			android:summary="@string/force_interval_description"
 			/>
   
-		<SwitchPreference 
-			android:key="on_leave"
+		<cw.kop.autowallpaper.CustomSwitchPreference
+			android:key="on_return"
 			android:defaultValue="true"
-			android:title="@string/on_leave" 
-			android:dialogTitle="@string/on_leave"
-			android:summary="@string/on_leave_description"
+			android:title="@string/on_return"
+			android:dialogTitle="@string/on_return"
+			android:summary="@string/on_return_description"
 			/>
 
-        <SwitchPreference
+        <cw.kop.autowallpaper.CustomSwitchPreference
             android:key="double_tap"
             android:defaultValue="true"
             android:title="@string/double_tap"
@@ -62,14 +62,14 @@
         android:key="title_animation_settings"
 	    android:title="@string/title_animation_settings">	
 
-        <SwitchPreference
+        <cw.kop.autowallpaper.CustomSwitchPreference
             android:key="use_fade"
             android:defaultValue="true"
             android:title="@string/use_fade"
             android:summary="@string/use_fade_description"
             />
 
-		<SwitchPreference 
+		<cw.kop.autowallpaper.CustomSwitchPreference
 			android:key="use_animation"
 			android:defaultValue="false"
 			android:title="@string/use_animation"

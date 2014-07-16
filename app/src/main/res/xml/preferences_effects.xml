@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+
+    <PreferenceCategory
+        android:title="@string/title_effects_settings"
+        android:key="title_effects_settings"
+        >
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
+            android:key="use_effects"
+            android:defaultValue="false"
+            android:title="@string/use_effects"
+            android:summary="@string/use_effects_description"
+            />
+
+        <cw.kop.autowallpaper.EffectPreference
+            android:key="effects_frequency"
+            android:max="100"
+            android:defaultValue="100"
+            android:title="@string/effects_frequency"
+            android:summary="@string/effects_frequency_description"
+            />
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
+            android:key="use_effects_override"
+            android:defaultValue="false"
+            android:title="@string/use_effects_override"
+            android:summary="@string/use_effects_override_description"
+            />
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
+            android:key="use_random_effects"
+            android:defaultValue="false"
+            android:title="@string/use_random_effects"
+            android:summary="@string/use_random_effects_description"
+            />
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
+            android:key="use_duotone_gray"
+            android:defaultValue="false"
+            android:title="@string/use_duotone_gray"
+            android:summary="@string/use_duotone_gray_description"
+            />
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
+            android:key="use_toast_effects"
+            android:defaultValue="false"
+            android:title="@string/use_toast_effects"
+            android:summary="@string/use_toast_effects_description"
+            />
+
+        <Preference
+            android:key="reset_effects"
+            android:title="@string/reset_effects"
+            android:summary="@string/reset_effects_description"
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/title_effects_parameters"
+        android:key="title_effects_parameters"
+        >
+
+        <cw.kop.autowallpaper.EffectPreference
+            android:key="effect_auto_fix"
+            android:max="100"
+            android:defaultValue="0"
+            android:title="@string/effect_auto_fix"
+            android:summary="@string/effect_auto_fix_description"
+            />
+
+        <cw.kop.autowallpaper.EffectPreference
+            android:key="effect_brightness"
+            android:max="200"
+            android:defaultValue="100"
+            android:title="@string/effect_brightness"
+            android:summary="@string/effect_brightness_description"
+            />
+
+        <cw.kop.autowallpaper.EffectPreference
+            android:key="effect_contrast"
+            android:max="200"
+            android:defaultValue="100"
+            android:title="@string/effect_contrast"
+            android:summary="@string/effect_contrast_description"
+            />
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
+            android:key="effect_cross_process_switch"
+            android:defaultValue="false"
+            android:title="@string/effect_cross_process"
+            android:summary="@string/effect_cross_process_description"
+            />
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
+            android:key="effect_documentary_switch"
+            android:defaultValue="false"
+            android:title="@string/effect_documentary"
+            android:summary="@string/effect_documentary_description"
+            />
+
+        <cw.kop.autowallpaper.EffectPreference
+            android:key="effect_fill_light"
+            android:max="100"
+            android:defaultValue="0"
+            android:title="@string/effect_fill_light"
+            android:summary="@string/effect_fill_light_description"
+            />
+
+        <cw.kop.autowallpaper.EffectPreference
+            android:key="effect_fisheye"
+            android:max="100"
+            android:defaultValue="0"
+            android:title="@string/effect_fisheye"
+            android:summary="@string/effect_fisheye_description"
+            />
+
+        <cw.kop.autowallpaper.EffectPreference
+            android:key="effect_grain"
+            android:max="100"
+            android:defaultValue="0"
+            android:title="@string/effect_grain"
+            android:summary="@string/effect_grain_description"
+            />
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
+            android:key="effect_grayscale_switch"
+            android:defaultValue="false"
+            android:title="@string/effect_grayscale"
+            android:summary="@string/effect_grayscale_description"
+            />
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
+            android:key="effect_lomoish_switch"
+            android:defaultValue="false"
+            android:title="@string/effect_lomoish"
+            android:summary="@string/effect_lomoish_description"
+            />
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
+            android:key="effect_negative_switch"
+            android:defaultValue="false"
+            android:title="@string/effect_negative"
+            android:summary="@string/effect_negative_description"
+            />
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
+            android:key="effect_posterize_switch"
+            android:defaultValue="false"
+            android:title="@string/effect_posterize"
+            android:summary="@string/effect_posterize_description"
+            />
+
+        <cw.kop.autowallpaper.EffectPreference
+            android:key="effect_saturate"
+            android:max="200"
+            android:defaultValue="100"
+            android:title="@string/effect_saturate"
+            android:summary="@string/effect_saturate_description"
+            />
+
+        <cw.kop.autowallpaper.CustomSwitchPreference
+            android:key="effect_sepia_switch"
+            android:defaultValue="false"
+            android:title="@string/effect_sepia"
+            android:summary="@string/effect_sepia_description"
+            />
+
+        <cw.kop.autowallpaper.EffectPreference
+            android:key="effect_sharpen"
+            android:max="100"
+            android:title="@string/effect_sharpen"
+            android:summary="@string/effect_sharpen_description"
+            />
+
+        <cw.kop.autowallpaper.EffectPreference
+            android:key="effect_temperature"
+            android:max="100"
+            android:defaultValue="50"
+            android:title="@string/effect_temperature"
+            android:summary="@string/effect_temperature_description"
+            />
+
+        <cw.kop.autowallpaper.EffectPreference
+            android:key="effect_vignette"
+            android:max="100"
+            android:defaultValue="0"
+            android:title="@string/effect_vignette"
+            android:summary="@string/effect_vignette_description"
+            />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
