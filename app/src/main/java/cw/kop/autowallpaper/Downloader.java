@@ -588,7 +588,7 @@ public class Downloader {
 	    	Notification.Builder notification  = new Notification.Builder(context)
                 .setContentTitle("Download Completed")
                 .setContentText("AutoBackground downloaded " + index + " images")
-                .setSmallIcon(R.drawable.ic_action_picture);
+                .setSmallIcon(R.drawable.ic_action_picture_dark);
 
             Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
 			inboxStyle.setBigContentTitle("Downloaded Image Details:");

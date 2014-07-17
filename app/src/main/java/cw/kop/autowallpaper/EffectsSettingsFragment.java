@@ -187,6 +187,9 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
                 if (AppSettings.useRandomEffects()) {
                     showEffectDialogMenu();
                 }
+                else {
+                    AppSettings.setRandomEffect("None");
+                }
             }
 
         }

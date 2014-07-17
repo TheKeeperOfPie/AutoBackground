@@ -105,19 +105,19 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
 	private void showDialogTimerMenu() {
 
-        int themeId;
-
-        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-            themeId = R.style.LightDialogTheme;
-        }
-        else {
-            themeId = R.style.DarkDialogTheme;
-        }
+//        int themeId;
+//
+//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
+//            themeId = R.style.LightDialogTheme;
+//        }
+//        else {
+//            themeId = R.style.DarkDialogTheme;
+//        }
 
         AppSettings.setTimerDuration(0);
 
-		AlertDialog.Builder dialog = new AlertDialog.Builder(context, themeId);
-		
+		AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+
 		dialog.setItems(R.array.timer_entry_menu, new DialogInterface.OnClickListener() {
 			
 			@Override
@@ -176,21 +176,21 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
     private void showDialogTimerForInput() {
 
-        int themeId;
-
-        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-            themeId = R.style.LightDialogTheme;
-        }
-        else {
-            themeId = R.style.DarkDialogTheme;
-        }
+//        int themeId;
+//
+//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
+//            themeId = R.style.LightDialogTheme;
+//        }
+//        else {
+//            themeId = R.style.DarkDialogTheme;
+//        }
 
         AppSettings.setTimerDuration(0);
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context, themeId);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
         dialog.setMessage("Download Interval");
 
-        View dialogView = View.inflate(new ContextThemeWrapper(context, themeId), R.layout.numeric_dialog, null);
+        View dialogView = View.inflate(context, R.layout.numeric_dialog, null);
 
         dialog.setView(dialogView);
 

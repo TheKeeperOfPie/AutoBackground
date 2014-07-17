@@ -3,7 +3,7 @@
 
     <item
         android:id="@+id/add_website"
-        android:icon = "@drawable/ic_action_new"
+        android:icon = "@drawable/ic_action_new_dark"
         android:title="@string/add_website"
         android:showAsAction="always"
         />

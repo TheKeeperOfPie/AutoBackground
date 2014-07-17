@@ -65,20 +65,20 @@ public class LocalImageFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-        int themeId;
+//        int themeId;
+//
+//        if (AppSettings.getTheme() == R.style.FragmentLightTheme) {
+//            themeId = R.style.FragmentLightTheme;
+//        }
+//        else {
+//            themeId = R.style.FragmentDarkTheme;
+//        }
+//
+//        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), themeId);
+//
+//        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
 
-        if (AppSettings.getTheme() == R.style.FragmentLightTheme) {
-            themeId = R.style.FragmentLightTheme;
-        }
-        else {
-            themeId = R.style.FragmentDarkTheme;
-        }
-
-        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), themeId);
-
-        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
-		ViewGroup view = (ViewGroup) localInflater.inflate(R.layout.image_grid_layout, null);
+		ViewGroup view = (ViewGroup) inflater.inflate(R.layout.image_grid_layout, null);
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
 

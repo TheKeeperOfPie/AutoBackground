@@ -51,7 +51,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
 
-        return localInflater.inflate(R.layout.fragment_list, container, false);
+        return super.onCreateView(inflater, container, savedInstanceState);
 	}
 
 	@Override
@@ -86,18 +86,18 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 	
 	private void showDialogIntervalMenu() {
 
-        int themeId;
-
-        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-            themeId = R.style.LightDialogTheme;
-        }
-        else {
-            themeId = R.style.DarkDialogTheme;
-        }
+//        int themeId;
+//
+//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
+//            themeId = R.style.LightDialogTheme;
+//        }
+//        else {
+//            themeId = R.style.DarkDialogTheme;
+//        }
 
         AppSettings.setIntervalDuration(0);
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context, themeId);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
 		
 		dialog.setItems(R.array.interval_entry_menu, new DialogInterface.OnClickListener() {
 			
@@ -155,21 +155,21 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
     private void showDialogIntervalForInput() {
 
-        int themeId;
-
-        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-            themeId = R.style.LightDialogTheme;
-        }
-        else {
-            themeId = R.style.DarkDialogTheme;
-        }
+//        int themeId;
+//
+//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
+//            themeId = R.style.LightDialogTheme;
+//        }
+//        else {
+//            themeId = R.style.DarkDialogTheme;
+//        }
 
         AppSettings.setIntervalDuration(0);
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context, themeId);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
         dialog.setMessage("Update Interval");
 
-        View dialogView = View.inflate(new ContextThemeWrapper(context, themeId), R.layout.numeric_dialog, null);
+        View dialogView = View.inflate(context, R.layout.numeric_dialog, null);
 
         dialog.setView(dialogView);
 

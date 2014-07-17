@@ -36,5 +36,6 @@ public class AboutFragment extends PreferenceFragment{
 
         return localInflater.inflate(R.layout.fragment_list, container, false);
     }
+
 }
 

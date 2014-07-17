@@ -11,6 +11,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import cw.kop.autowallpaper.settings.AppSettings;
+
 /**
  * Created by TheKeeperOfPie on 7/9/2014.
  */
@@ -19,7 +21,7 @@ public class NavListAdapter extends BaseAdapter {
     private Activity mainActivity;
     private static LayoutInflater inflater = null;
     private ArrayList<String> fragmentList;
-    private static int[] imageIds = new int[] {
+    private int[] lightImages = new int[] {
             R.drawable.ic_action_picture,
             R.drawable.ic_action_web_site,
             R.drawable.ic_action_download,
@@ -27,6 +29,14 @@ public class NavListAdapter extends BaseAdapter {
             R.drawable.ic_action_storage,
             R.drawable.ic_action_settings,
             R.drawable.ic_action_about};
+    private int[] darkImages = new int[] {
+            R.drawable.ic_action_picture_dark,
+            R.drawable.ic_action_web_site_dark,
+            R.drawable.ic_action_download_dark,
+            R.drawable.ic_action_crop_dark,
+            R.drawable.ic_action_storage_dark,
+            R.drawable.ic_action_settings_dark,
+            R.drawable.ic_action_about_dark};
 
     public NavListAdapter(Activity activity, String[] nameArray) {
         mainActivity = activity;
@@ -63,7 +73,12 @@ public class NavListAdapter extends BaseAdapter {
         ImageView fragmentImage = (ImageView) view.findViewById(R.id.fragment_image);
         TextView fragmentTitle = (TextView) view.findViewById(R.id.fragment_title);
 
-        fragmentImage.setImageResource(imageIds[position]);
+        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+            fragmentImage.setImageResource(lightImages[position]);
+        }
+        else {
+            fragmentImage.setImageResource(darkImages[position]);
+        }
         fragmentTitle.setText(fragmentList.get(position));
 
         return view;

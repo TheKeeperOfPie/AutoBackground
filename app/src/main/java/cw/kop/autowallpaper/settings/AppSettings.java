@@ -70,7 +70,7 @@ public class AppSettings {
 	}
 
     public static int getTheme() {
-        return prefs.getInt("app_theme", R.style.FragmentDarkTheme);
+        return prefs.getInt("app_theme", R.style.AppDarkTheme);
     }
 
     public static void setTheme(int theme) {

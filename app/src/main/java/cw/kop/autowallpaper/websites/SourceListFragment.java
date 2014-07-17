@@ -276,11 +276,7 @@ public class SourceListFragment extends ListFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
-
-        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
-        View view = localInflater.inflate(R.layout.fragment_websites, container, false);
+        View view = inflater.inflate(R.layout.fragment_websites, container, false);
 
         String ua = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36";
         webView = (WebView) view.findViewById(R.id.webview);
@@ -467,8 +463,17 @@ public class SourceListFragment extends ListFragment {
 
                 ShowcaseView.Builder addWebsiteBuilder = new ShowcaseView.Builder(getActivity())
                         .setContentTitle("Adding Websites")
-                        .setContentText("To add a new website entry, \n" +
-                                "click the plus (+) sign.")
+                        .setContentText(
+                                "To add a new website entry, \n" +
+                                "click the plus (+) sign. \n" +
+                                "\n" +
+                                "Not all websites will work, \n" +
+                                "so if there are no images, \n" +
+                                "try a different website. \n" +
+                                "\n" +
+                                "Provided is a website \n" +
+                                "of some landscape photos \n" +
+                                "taken by Kai Lehnberg.")
                         .setStyle(R.style.ShowcaseStyle)
                         .setOnClickListener(addWebsiteListener);
 

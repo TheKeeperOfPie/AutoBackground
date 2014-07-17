@@ -76,12 +76,12 @@ public class LocalImageAdapter extends BaseAdapter {
 			}
 			else if (file.isDirectory()){
 				Picasso.with(mainActivity.getApplicationContext())
-					.load(R.drawable.ic_action_collection)
+					.load(R.drawable.ic_action_collection_dark)
 					.into(fileImage);
 			}
 			else {
 				Picasso.with(mainActivity.getApplicationContext())
-					.load(R.drawable.ic_action_view_as_list)
+					.load(R.drawable.ic_action_view_as_list_dark)
 					.into(fileImage);
 			}
 			

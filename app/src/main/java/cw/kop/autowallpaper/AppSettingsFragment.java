@@ -51,7 +51,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
         themePref = findPreference("change_theme");
         String themeName = getResources().getResourceName(AppSettings.getTheme());
-        themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("Fragment") + 8, themeName.indexOf("Theme")));
+        themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("App") + 3, themeName.indexOf("Theme")));
         themePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -88,16 +88,16 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     private void showThemeDialogMenu() {
 
-        int themeId;
+//        int themeId;
+//
+//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
+//            themeId = R.style.LightDialogTheme;
+//        }
+//        else {
+//            themeId = R.style.DarkDialogTheme;
+//        }
 
-        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-            themeId = R.style.LightDialogTheme;
-        }
-        else {
-            themeId = R.style.DarkDialogTheme;
-        }
-
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context, R.style.DarkDialogTheme);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
 
         dialog.setItems(R.array.theme_entry_menu, new DialogInterface.OnClickListener() {
 
@@ -106,20 +106,19 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
                 switch (which) {
                     case 0:
-                        AppSettings.setTheme(R.style.FragmentLightTheme);
+                        AppSettings.setTheme(R.style.AppLightTheme);
                         break;
                     case 1:
-                        AppSettings.setTheme(R.style.FragmentDarkTheme);
+                        AppSettings.setTheme(R.style.AppDarkTheme);
                         break;
                     case 2:
-                        AppSettings.setTheme(R.style.FragmentTransparentTheme);
+                        AppSettings.setTheme(R.style.AppTransparentTheme);
                         break;
                     default:
                 }
 
-                ((MainPreferences) getActivity()).setAppTheme();
                 String themeName = getResources().getResourceName(AppSettings.getTheme());
-                themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("Fragment") + 8, themeName.indexOf("Theme")));
+                themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("App") + 3, themeName.indexOf("Theme")));
 
             }
         });
@@ -130,16 +129,16 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     private void showToastDialog() {
 
-        int themeId;
+//        int themeId;
+//
+//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
+//            themeId = R.style.LightDialogTheme;
+//        }
+//        else {
+//            themeId = R.style.DarkDialogTheme;
+//        }
 
-        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-            themeId = R.style.LightDialogTheme;
-        }
-        else {
-            themeId = R.style.DarkDialogTheme;
-        }
-
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context, themeId);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
 
         dialog.setTitle("Are you sure you want to disable toast messages?");
         dialog.setMessage("You will not be notified of errors or info about the app.");

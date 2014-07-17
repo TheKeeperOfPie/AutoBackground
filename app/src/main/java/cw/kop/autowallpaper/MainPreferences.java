@@ -8,10 +8,8 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -43,15 +41,6 @@ public class MainPreferences extends Activity {
         Log.i("MP", "onConfigurationChanged");
     }
 
-    public void setAppTheme() {
-        if (AppSettings.getTheme() == R.style.FragmentLightTheme) {
-            setTheme(R.style.AppLightTheme);
-        }
-        else if (AppSettings.getTheme() == R.style.FragmentDarkTheme){
-            setTheme(R.style.AppDarkTheme);
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i("MP", "onCreate");
@@ -62,21 +51,30 @@ public class MainPreferences extends Activity {
 
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_layout);
+        int drawerIndicatorId = R.drawable.ic_drawer_dark;
 
-        setAppTheme();
+        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+            setTheme(R.style.AppLightTheme);
+            drawerIndicatorId = R.drawable.ic_drawer;
+        }
+        else if (AppSettings.getTheme() == R.style.AppDarkTheme){
+            setTheme(R.style.AppDarkTheme);
+        }
+        else if (AppSettings.getTheme() == R.style.AppTransparentTheme){
+            setTheme(R.style.AppTransparentTheme);
+        }
+
+        setContentView(R.layout.activity_layout);
 
         mTitle = getTitle();
 
         fragmentList = getResources().getStringArray(R.array.fragment_titles);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
-        drawerLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
 
         drawerList = (ListView) findViewById(R.id.left_drawer);
         drawerList.setAdapter(new NavListAdapter(this, fragmentList));
         drawerList.setOnItemClickListener(new DrawerItemClickListener());
-        drawerList.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
@@ -84,7 +82,7 @@ public class MainPreferences extends Activity {
         drawerToggle = new ActionBarDrawerToggle(
                 this,
                 drawerLayout,
-                R.drawable.ic_drawer,
+                drawerIndicatorId,
                 R.string.drawer_open,
                 R.string.drawer_close) {
 
@@ -97,9 +95,12 @@ public class MainPreferences extends Activity {
             /** Called when a drawer has settled in a completely open state. */
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
+                Log.i("MP", "Title: Settings");
                 getActionBar().setTitle("Settings");
             }
         };
+
+        drawerLayout.setDrawerListener(drawerToggle);
 
 		Downloader.setNewTask(getApplicationContext());
 
@@ -177,9 +178,8 @@ public class MainPreferences extends Activity {
         }
 
         getFragmentManager().executePendingTransactions();
-
+        drawerList.setItemChecked(position, true);
         setTitle(fragmentList[position]);
-
         drawerLayout.closeDrawer(drawerList);
     }
 
@@ -231,8 +231,6 @@ public class MainPreferences extends Activity {
     @Override
 	protected void onResume() {
 		super.onResume();
-
-        getActionBar().setDisplayHomeAsUpEnabled(false);
 
         View view = getWindow().getDecorView().findViewById(getResources().getIdentifier("action_bar_container", "id", "android"));
         if (view == null) {
