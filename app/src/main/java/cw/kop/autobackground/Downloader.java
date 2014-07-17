@@ -1,4 +1,4 @@
-package cw.kop.autowallpaper;
+package cw.kop.autobackground;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -34,7 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import cw.kop.autowallpaper.settings.AppSettings;
+import cw.kop.autobackground.settings.AppSettings;
 
 public class Downloader {
 

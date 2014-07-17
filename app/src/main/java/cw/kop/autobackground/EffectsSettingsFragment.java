@@ -1,4 +1,4 @@
-package cw.kop.autowallpaper;
+package cw.kop.autobackground;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -10,17 +10,14 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
-import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Switch;
 import android.widget.Toast;
 
-import cw.kop.autowallpaper.settings.AppSettings;
+import cw.kop.autobackground.settings.AppSettings;
 
 /**
  * Created by TheKeeperOfPie on 7/4/2014.

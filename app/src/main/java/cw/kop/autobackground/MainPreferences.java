@@ -1,4 +1,4 @@
-package cw.kop.autowallpaper;
+package cw.kop.autobackground;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -15,9 +15,9 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import cw.kop.autowallpaper.images.LocalImageFragment;
-import cw.kop.autowallpaper.settings.AppSettings;
-import cw.kop.autowallpaper.websites.SourceListFragment;
+import cw.kop.autobackground.images.LocalImageFragment;
+import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.websites.SourceListFragment;
 
 public class MainPreferences extends Activity {
 
@@ -51,11 +51,9 @@ public class MainPreferences extends Activity {
 
         super.onCreate(savedInstanceState);
 
-        int drawerIndicatorId = R.drawable.ic_drawer_dark;
 
         if (AppSettings.getTheme() == R.style.AppLightTheme) {
             setTheme(R.style.AppLightTheme);
-            drawerIndicatorId = R.drawable.ic_drawer;
         }
         else if (AppSettings.getTheme() == R.style.AppDarkTheme){
             setTheme(R.style.AppDarkTheme);
@@ -82,7 +80,7 @@ public class MainPreferences extends Activity {
         drawerToggle = new ActionBarDrawerToggle(
                 this,
                 drawerLayout,
-                drawerIndicatorId,
+                R.drawable.ic_drawer_dark,
                 R.string.drawer_open,
                 R.string.drawer_close) {
 

@@ -1,4 +1,4 @@
-package cw.kop.autowallpaper;
+package cw.kop.autobackground;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -44,7 +44,7 @@ import java.util.Random;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import cw.kop.autowallpaper.settings.AppSettings;
+import cw.kop.autobackground.settings.AppSettings;
 
 public class LiveWallpaperService extends GLWallpaperService {
 

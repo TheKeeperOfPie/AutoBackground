@@ -1,4 +1,4 @@
-package cw.kop.autowallpaper;
+package cw.kop.autobackground;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -9,7 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import cw.kop.autowallpaper.settings.AppSettings;
+import cw.kop.autobackground.settings.AppSettings;
 
 public class AboutFragment extends PreferenceFragment{
 

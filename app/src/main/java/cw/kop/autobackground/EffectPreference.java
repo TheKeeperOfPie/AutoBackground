@@ -1,4 +1,4 @@
-package cw.kop.autowallpaper;
+package cw.kop.autobackground;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,11 +12,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
-import android.widget.RelativeLayout;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
-import cw.kop.autowallpaper.settings.AppSettings;
+import cw.kop.autobackground.settings.AppSettings;
 
 /**
  * Created by TheKeeperOfPie on 7/14/2014.

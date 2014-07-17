@@ -1,4 +1,4 @@
-package cw.kop.autowallpaper.websites;
+package cw.kop.autobackground.websites;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,11 +38,11 @@ import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
 import java.util.HashMap;
 
-import cw.kop.autowallpaper.Downloader;
-import cw.kop.autowallpaper.LiveWallpaperService;
-import cw.kop.autowallpaper.R;
-import cw.kop.autowallpaper.images.LocalImageFragment;
-import cw.kop.autowallpaper.settings.AppSettings;
+import cw.kop.autobackground.Downloader;
+import cw.kop.autobackground.LiveWallpaperService;
+import cw.kop.autobackground.R;
+import cw.kop.autobackground.images.LocalImageFragment;
+import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListFragment extends ListFragment {
 

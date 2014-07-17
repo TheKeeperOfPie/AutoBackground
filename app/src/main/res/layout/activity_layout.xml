@@ -5,7 +5,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="cw.kop.autowallpaper.MainPreferences"
+    tools:context="cw.kop.autobackground.MainPreferences"
     tools:ignore="MergeRootFrame"
     android:background="@color/TRANSPARENT_BACKGROUND"
     >

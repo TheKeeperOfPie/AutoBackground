@@ -1,4 +1,4 @@
-package cw.kop.autowallpaper.images;
+package cw.kop.autobackground.images;
 
 
 import android.app.Activity;
@@ -17,7 +17,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import cw.kop.autowallpaper.R;
+import cw.kop.autobackground.R;
+import cw.kop.autobackground.settings.AppSettings;
 
 public class LocalImageAdapter extends BaseAdapter {
 
@@ -75,14 +76,28 @@ public class LocalImageAdapter extends BaseAdapter {
 					.into(fileImage);
 			}
 			else if (file.isDirectory()){
-				Picasso.with(mainActivity.getApplicationContext())
-					.load(R.drawable.ic_action_collection_dark)
-					.into(fileImage);
+                if (AppSettings.getTheme() == R.style.AppLightTheme) {
+                    Picasso.with(mainActivity.getApplicationContext())
+                            .load(R.drawable.ic_action_collection)
+                            .into(fileImage);
+                }
+                else {
+                    Picasso.with(mainActivity.getApplicationContext())
+                            .load(R.drawable.ic_action_collection_dark)
+                            .into(fileImage);
+                }
 			}
 			else {
-				Picasso.with(mainActivity.getApplicationContext())
-					.load(R.drawable.ic_action_view_as_list_dark)
-					.into(fileImage);
+                if (AppSettings.getTheme() == R.style.AppLightTheme) {
+                    Picasso.with(mainActivity.getApplicationContext())
+                            .load(R.drawable.ic_action_view_as_list)
+                            .into(fileImage);
+                }
+                else {
+                    Picasso.with(mainActivity.getApplicationContext())
+                            .load(R.drawable.ic_action_view_as_list_dark)
+                            .into(fileImage);
+                }
 			}
 			
 			fileTitle.setText(file.getName());

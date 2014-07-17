@@ -1,4 +1,4 @@
-package cw.kop.autowallpaper.websites;
+package cw.kop.autobackground.websites;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,8 +16,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import cw.kop.autowallpaper.R;
-import cw.kop.autowallpaper.settings.AppSettings;
+import cw.kop.autobackground.R;
+import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListAdapter extends BaseAdapter {
 

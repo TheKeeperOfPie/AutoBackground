@@ -16,7 +16,6 @@
     <!-- All customizations that are NOT specific to a particular API-level can go here. -->
 
     <style name="AppLightTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
-        <item name="android:background">@color/WHITE_OPAQUE</item>
         <item name="android:windowBackground">@color/WHITE_OPAQUE</item>
         <item name="android:listViewStyle">@style/LightListView</item>
         <item name="android:titleTextStyle">@style/LightTitleColor</item>
@@ -24,12 +23,13 @@
         <item name="android:textColorSecondary">@color/BLACK_OPAQUE</item>
         <item name="android:textStyle">bold</item>
         <item name="android:actionBarStyle">@style/LightActionBar</item>
+        <!--<item name="android:actionBarItemBackground">@color/BLUE_OPAQUE</item>-->
         <item name="android:listSeparatorTextViewStyle">@style/LightListSeparator</item>
         <item name="android:alertDialogTheme">@style/LightDialogTheme</item>
+        <item name="ic_action_new">@drawable/ic_action_new</item>
     </style>
 
     <style name="AppDarkTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
-        <item name="android:background">@color/BLACK_OPAQUE</item>
         <item name="android:windowBackground">@color/BLACK_OPAQUE</item>
         <item name="android:listViewStyle">@style/DarkListView</item>
         <item name="android:titleTextStyle">@style/DarkTitleColor</item>
@@ -42,14 +42,17 @@
     </style>
 
     <style name="AppTransparentTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
-        <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:windowBackground">@color/TRANSPARENT_BACKGROUND</item>
+        <item name="android:listViewStyle">@style/TransparentListView</item>
+        <item name="android:titleTextStyle">@style/DarkTitleColor</item>
         <item name="android:textColor">@color/WHITE_OPAQUE</item>
         <item name="android:textColorSecondary">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:textStyle">bold</item>
         <item name="android:shadowColor">@color/BLACK_OPAQUE</item>
         <item name="android:shadowRadius">4</item>
+        <item name="android:actionBarStyle">@style/TransparentActionBar</item>
         <item name="android:listSeparatorTextViewStyle">@style/DarkListSeparator</item>>
+        <item name="android:alertDialogTheme">@style/DarkDialogTheme</item>
     </style>
 
     <style name="LightListSeparator">
@@ -84,66 +87,54 @@
         <item name="android:divider">@color/WHITE_OPAQUE</item>\
     </style>
 
-    <style name="LightActionBar" parent="android:Widget.Holo.Light.ActionBar.Solid.Inverse">
-        <item name="android:background">@color/WHITE_OPAQUE</item>
-        <item name="android:titleTextStyle">@style/LightTitleColor</item>
+    <style name="TransparentListView" parent="android:style/Widget.ListView">
+        <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
+        <item name="android:textColor">@color/WHITE_OPAQUE</item>
+        <item name="android:divider">@color/WHITE_OPAQUE</item>\
     </style>
 
-    <style name="DarkActionBar" parent="android:Widget.Holo.Light.ActionBar.Solid.Inverse">
-        <item name="android:background">@color/BLACK_OPAQUE</item>
+    <style name="LightActionBar" parent="android:Widget.Holo.Light.ActionBar">
+        <item name="android:background">@color/BLUE_OPAQUE</item>
+        <item name="android:titleTextStyle">@style/LightTitleColor</item>
+        <item name="android:actionOverflowButtonStyle">@style/LightOverflow</item>
+    </style>
+
+    <style name="LightOverflow" parent="@style/Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:background">@color/BLUE_OPAQUE</item>
+        <item name="android:titleTextStyle">@style/LightTitleColor</item>
+        <item name="android:textAppearance">@style/LightTitleColor</item>
+    </style>
+
+    <style name="DarkActionBar" parent="android:Widget.Holo.Light.ActionBar">
+        <item name="android:background">@color/BLUE_OPAQUE</item>
         <item name="android:titleTextStyle">@style/DarkTitleColor</item>
     </style>
 
     <style name="TransparentActionBar" parent="android:Widget.Holo.Light.ActionBar.Solid.Inverse">
-        <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
+        <item name="android:background">@color/BLUE_OPAQUE</item>
         <item name="android:titleTextStyle">@style/DarkTitleColor</item>
     </style>
 
     <style name="LightTitleColor" parent="android:TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:textColor">@color/BLACK_OPAQUE</item>
         <item name="android:textStyle">bold</item>
     </style>
 
     <style name="DarkTitleColor" parent="android:TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:textColor">@color/WHITE_OPAQUE</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="LightDialogTheme" parent="android:style/Theme.Dialog">
-        <item name="android:background">@color/WHITE_OPAQUE</item>
+    <style name="LightDialogTheme" parent="android:style/Theme.Holo.Light.Dialog.NoActionBar">
         <item name="android:textColor">@color/BLACK_OPAQUE</item>
-        <item name="android:textSize">18sp</item>
-        <item name="android:textColorPrimary">@color/BLACK_OPAQUE</item>
-        <item name="android:textColorSecondary">@color/BLACK_OPAQUE</item>
-        <item name="android:textColorTertiary">@color/BLACK_OPAQUE</item>
-        <item name="android:windowBackground">@null</item>
-        <item name="android:windowFrame">@null</item>
-        <item name="android:windowIsFloating">true</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowAnimationStyle">@null</item>
-        <item name="android:backgroundDimEnabled">false</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowCloseOnTouchOutside">false</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:listPreferredItemPaddingStart">0dp</item>
-        <item name="android:listPreferredItemPaddingEnd">0dp</item>
+        <item name="android:windowBackground">@color/TRANSPARENT_BACKGROUND</item>
     </style>
 
-    <style name="DarkDialogTheme">
-        <item name="android:background">@color/BLACK_OPAQUE</item>
+    <style name="DarkDialogTheme" parent="android:style/Theme.Holo.Dialog.NoActionBar">
         <item name="android:textColor">@color/WHITE_OPAQUE</item>
-        <item name="android:textColorPrimary">@color/WHITE_OPAQUE</item>
-        <item name="android:textColorSecondary">@color/WHITE_OPAQUE</item>
-        <item name="android:textColorTertiary">@color/WHITE_OPAQUE</item>
-        <item name="android:windowBackground">@null</item>
-        <item name="android:windowFrame">@null</item>
-        <item name="android:windowIsFloating">true</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowAnimationStyle">@null</item>
-        <item name="android:backgroundDimEnabled">false</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowCloseOnTouchOutside">false</item>
-        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/TRANSPARENT_BACKGROUND</item>
     </style>
     
 </resources>

@@ -1,4 +1,4 @@
-package cw.kop.autowallpaper;
+package cw.kop.autobackground;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -24,8 +24,8 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import cw.kop.autowallpaper.images.LocalImageFragment;
-import cw.kop.autowallpaper.settings.AppSettings;
+import cw.kop.autobackground.images.LocalImageFragment;
+import cw.kop.autobackground.settings.AppSettings;
 
 public class DownloadSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 

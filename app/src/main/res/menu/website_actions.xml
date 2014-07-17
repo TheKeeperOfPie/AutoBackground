@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:autobackground="http://schemas.android.com/apk/res-auto"
+    >
 
     <item
         android:id="@+id/add_website"
-        android:icon = "@drawable/ic_action_new_dark"
+        android:icon="@drawable/ic_action_new"
         android:title="@string/add_website"
         android:showAsAction="always"
-        />
+        tools:ignore="AppCompatResource" />
 
 </menu>

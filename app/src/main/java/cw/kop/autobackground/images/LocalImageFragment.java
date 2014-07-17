@@ -1,4 +1,4 @@
-package cw.kop.autowallpaper.images;
+package cw.kop.autobackground.images;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -6,7 +6,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.TypedValue;
-import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,9 +21,9 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import cw.kop.autowallpaper.R;
-import cw.kop.autowallpaper.settings.AppSettings;
-import cw.kop.autowallpaper.websites.SourceListFragment;
+import cw.kop.autobackground.R;
+import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.websites.SourceListFragment;
 
 public class LocalImageFragment extends Fragment {
 
@@ -81,6 +80,10 @@ public class LocalImageFragment extends Fragment {
 		ViewGroup view = (ViewGroup) inflater.inflate(R.layout.image_grid_layout, null);
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
+
+        if (AppSettings.getTheme() == R.style.AppTransparentTheme) {
+            imageListView.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+        }
 
         TextView emptyText = new TextView(getActivity());
         emptyText.setText("Directory is empty.");
