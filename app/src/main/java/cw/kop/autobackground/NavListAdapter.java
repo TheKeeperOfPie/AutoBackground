@@ -26,7 +26,7 @@ public class NavListAdapter extends BaseAdapter {
             R.drawable.ic_action_web_site,
             R.drawable.ic_action_download,
             R.drawable.ic_action_crop,
-            R.drawable.ic_action_storage,
+            R.drawable.ic_action_chat,
             R.drawable.ic_action_settings,
             R.drawable.ic_action_about};
     private int[] darkImages = new int[] {
@@ -34,7 +34,7 @@ public class NavListAdapter extends BaseAdapter {
             R.drawable.ic_action_web_site_dark,
             R.drawable.ic_action_download_dark,
             R.drawable.ic_action_crop_dark,
-            R.drawable.ic_action_storage_dark,
+            R.drawable.ic_action_chat_dark,
             R.drawable.ic_action_settings_dark,
             R.drawable.ic_action_about_dark};
 

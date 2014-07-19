@@ -16,6 +16,8 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import cw.kop.autobackground.settings.AppSettings;
@@ -120,6 +122,12 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                 String themeName = getResources().getResourceName(AppSettings.getTheme());
                 themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("App") + 3, themeName.indexOf("Theme")));
 
+                Intent intent = new Intent(context, MainPreferences.class);
+                intent.putExtra("fragment", 5);
+                context.startActivity(intent);
+
+                getActivity().finish();
+
             }
         });
 
@@ -180,9 +188,9 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 			if (key.equals("use_notification")) {
 				
 				Intent intent = new Intent();
-				intent.setAction(LiveWallpaperService.UPDATE_NOTIFICATION);
-				intent.putExtra("use", ((SwitchPreference) pref).isChecked());
-				context.sendBroadcast(intent);
+                intent.setAction(LiveWallpaperService.UPDATE_NOTIFICATION);
+                intent.putExtra("use", ((SwitchPreference) pref).isChecked());
+                context.sendBroadcast(intent);
 				
 				Log.i("WSF", "Toggle Notification");
 				

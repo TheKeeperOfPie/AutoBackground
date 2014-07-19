@@ -1,4 +1,4 @@
-package cw.kop.autobackground.websites;
+package cw.kop.autobackground.sources;
 
 import android.app.Activity;
 import android.app.ActivityManager;
@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -438,7 +439,7 @@ public class SourceListFragment extends ListFragment {
                 ShowcaseView.Builder websiteListBuilder = new  ShowcaseView.Builder(getActivity())
                     .setContentTitle("Sources List")
                     .setContentText("This is a list of your sources. \n" +
-                            "These can include both websites and your \n" +
+                            "These can include both sources and your \n" +
                             "own image folders. You can edit them by \n" +
                             "tapping on their boxes.")
                     .setStyle(R.style.ShowcaseStyle)
@@ -466,7 +467,7 @@ public class SourceListFragment extends ListFragment {
                                 "To add a new website entry, \n" +
                                 "click the plus (+) sign. \n" +
                                 "\n" +
-                                "Not all websites will work, \n" +
+                                "Not all sources will work, \n" +
                                 "so if there are no images, \n" +
                                 "try a different website. \n" +
                                 "\n" +
@@ -585,7 +586,7 @@ public class SourceListFragment extends ListFragment {
     protected void cycleWallpaper() {
 
         Intent intent = new Intent();
-        intent.setAction(LiveWallpaperService.CYCLE_WALLPAPER);
+        intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
 
         context.sendBroadcast(intent);

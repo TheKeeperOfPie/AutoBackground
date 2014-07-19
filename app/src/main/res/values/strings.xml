@@ -145,8 +145,67 @@
     
     
     <string name="file_content_description">File Image</string>
+
     <string name="notification_content_description">Preview Image</string>
-    
+    <string name="notification_option_icon">Notification Icon</string>
+    <string name="notification_highlight">View Highlight</string>
+    <string name="notification_option_one_image">Option Image 1</string>
+    <string name="notification_option_two_image">Option Image 2</string>
+    <string name="notification_option_three_image">Option Image 3</string>
+    <string name="notification_option_one_text">Option 1</string>
+    <string name="notification_option_two_text">Option 2</string>
+    <string name="notification_option_three_text">Option 3</string>
+
+    <string-array name="notification_icon">
+        <item>Application</item>
+        <item>Image</item>
+        <item>Custom</item>
+        <item>None</item>
+    </string-array>
+
+    <string-array name="notification_icon_descriptions">
+        <item>AutoBackground icon</item>
+        <item>Currently displayed image</item>
+        <item>Custom image</item>
+        <item>None</item>
+    </string-array>
+
+    <string-array name="notification_titles">
+        <item>Application</item>
+        <item>Location</item>
+        <item>Custom</item>
+        <item>None</item>
+    </string-array>
+
+    <string-array name="notification_titles_descriptions">
+        <item>Application name</item>
+        <item>Current image\'s locations</item>
+        <item>Custom text</item>
+        <item>Show nothing</item>
+    </string-array>
+
+    <string-array name="notification_options">
+        <item>Copy</item>
+        <item>Cycle</item>
+        <item>Delete</item>
+        <item>Open</item>
+        <item>Pin</item>
+        <item>Previous</item>
+        <item>Share</item>
+        <item>None</item>
+    </string-array>
+
+    <string-array name="notification_options_descriptions">
+        <item>Copy the current image\'s URL, or location, to your clipboard</item>
+        <item>Cycle to the next wallpaper</item>
+        <item>Delete the currently displayed image from storage</item>
+        <item>Open current image in gallery</item>
+        <item>Pin the current image for a certain amount of time</item>
+        <item>Go back to the previous image</item>
+        <item>Share the image URL</item>
+        <item>Show nothing</item>
+    </string-array>
+
     <string name="copy">Copy</string>
     <string name="cycle">Cycle</string>
     <string name="delete">Delete</string>
@@ -156,6 +215,7 @@
         <item>Wallpaper</item>
         <item>Downloader</item>
         <item>Effects</item>
+        <item>Notification</item>
         <item>Application</item>
         <item>About</item>
     </string-array>
@@ -165,7 +225,7 @@
         <item>Change settings for wallpaper</item>
         <item>Change settings for downloading</item>
         <item>Change image effects</item>
-        <item>Change image directory</item>
+        <item>Change notification look</item>
         <item>Various settings for app</item>
         <item>Various Information</item>
     </string-array>
@@ -199,6 +259,17 @@
     	<item>2 Days</item>
     	<item>4 Days</item>
 	</string-array>
+
+    <string-array name="pin_entry_menu">
+        <item>Until Unpin</item>
+        <item>5 Minutes</item>
+        <item>15 Minutes</item>
+        <item>30 Minutes</item>
+        <item>1 Hour</item>
+        <item>2 Hour</item>
+        <item>6 Hours</item>
+        <item>12 Hours</item>
+    </string-array>
 
     <string-array name="theme_entry_menu">
         <item>Light</item>

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.TypedValue;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +24,7 @@ import java.io.FilenameFilter;
 
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
-import cw.kop.autobackground.websites.SourceListFragment;
+import cw.kop.autobackground.sources.SourceListFragment;
 
 public class LocalImageFragment extends Fragment {
 
@@ -64,20 +65,20 @@ public class LocalImageFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-//        int themeId;
-//
-//        if (AppSettings.getTheme() == R.style.FragmentLightTheme) {
-//            themeId = R.style.FragmentLightTheme;
-//        }
-//        else {
-//            themeId = R.style.FragmentDarkTheme;
-//        }
-//
-//        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), themeId);
-//
-//        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
+        int themeId;
 
-		ViewGroup view = (ViewGroup) inflater.inflate(R.layout.image_grid_layout, null);
+        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+            themeId = R.style.AppLightTheme;
+        }
+        else {
+            themeId = R.style.AppDarkTheme;
+        }
+
+        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), themeId);
+
+        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
+
+		ViewGroup view = (ViewGroup) localInflater.inflate(R.layout.image_grid_layout, null);
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
 

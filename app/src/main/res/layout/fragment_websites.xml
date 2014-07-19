@@ -28,20 +28,37 @@
         android:layout_above="@id/webview"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:background="@color/DARK_GRAY_OPAQUE"
+        />
+
+    <View
+        android:id="@+id/source_divider_1"
+        android:layout_above="@id/download_button"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
         />
 
     <Button
         android:id="@+id/refresh_button"
-        android:layout_above="@id/download_button"
+        android:layout_above="@id/source_divider_1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:background="@color/DARK_GRAY_OPAQUE"
+        />
+
+    <View
+        android:id="@+id/source_divider_2"
+        android:layout_above="@id/refresh_button"
+        android:layout_width="match_parent"
+        android:layout_height="1px"
         />
 
     <Button
         android:id="@+id/set_button"
-        android:layout_above="@id/refresh_button"
+        android:layout_above="@id/source_divider_2"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:background="@color/DARK_GRAY_OPAQUE"
         />
 
 </RelativeLayout>

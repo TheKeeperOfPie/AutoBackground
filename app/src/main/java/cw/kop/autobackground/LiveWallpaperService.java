@@ -12,12 +12,17 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.media.effect.Effect;
 import android.media.effect.EffectContext;
 import android.media.effect.EffectFactory;
+import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
@@ -27,11 +32,13 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -39,6 +46,7 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -51,21 +59,38 @@ public class LiveWallpaperService extends GLWallpaperService {
     public static SharedPreferences prefs;
     private static final String TAG = "LiveWallpaperService";
     public static final String UPDATE_NOTIFICATION = "UPDATE_NOTIFICATION";
-    public static final String CYCLE_WALLPAPER = "CYCLE_WALLPAPER";
     public static final String DOWNLOAD_WALLPAPER = "DOWNLOAD_WALLPAPER";
     public static final String UPDATE_WALLPAPER = "UPDATE_WALLPAPER";
-    public static final String DELETE_WALLPAPER = "DELETE_WALLPAPER";
-    public static final String COPY_URL = "COPY_URL";
+    public static final String TOAST_LOCATION = "TOAST_LOCATION";
+
+    public static final String COPY_IMAGE = "COPY_IMAGE";
+    public static final String CYCLE_IMAGE = "CYCLE_IMAGE";
+    public static final String DELETE_IMAGE = "DELETE_IMAGE";
+    public static final String OPEN_IMAGE = "OPEN_IMAGE";
+    public static final String PIN_IMAGE = "PIN_IMAGE";
+    public static final String PREVIOUS_IMAGE = "PREVIOUS_IMAGE";
+    public static final String SHARE_IMAGE = "SHARE_IMAGE";
+
+    private PendingIntent pendingToastIntent;
+    private PendingIntent pendingCopyIntent;
+    private PendingIntent pendingCycleIntent;
+    private PendingIntent pendingDeleteIntent;
+    private PendingIntent pendingOpenIntent;
+    private PendingIntent pendingPinIntent;
+    private PendingIntent pendingPreviousIntent;
+    private PendingIntent pendingShareIntent;
+
     private Notification.Builder notificationBuilder;
     private NotificationManager notificationManager;
+    private RemoteViews normalView;
+    private RemoteViews bigView;
     private Context appContext;
     private AlarmManager alarmManager;
     private PendingIntent pendingDownloadIntent;
     private PendingIntent pendingIntervalIntent;
-    private PendingIntent pendingCycleIntent;
-    private PendingIntent pendingDeleteIntent;
-    private PendingIntent pendingCopyIntent;
     private PendingIntent pendingAppIntent;
+
+    private boolean pinned;
 
     public LiveWallpaperService() {
         super();
@@ -80,11 +105,6 @@ public class LiveWallpaperService extends GLWallpaperService {
         AppSettings.setPrefs(prefs);
         Downloader.getNextImage(appContext);
 
-        Intent copyIntent = new Intent();
-        copyIntent.setAction(LiveWallpaperService.COPY_URL);
-        copyIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-        pendingCopyIntent = PendingIntent.getBroadcast(this, 0, copyIntent, 0);
-
         Intent downloadIntent = new Intent();
         downloadIntent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
         downloadIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
@@ -92,18 +112,39 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         Intent intervalIntent = new Intent();
         intervalIntent.setAction(LiveWallpaperService.UPDATE_WALLPAPER);
-        intervalIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
         pendingIntervalIntent = PendingIntent.getBroadcast(this, 0, intervalIntent, 0);
 
+        Intent toastIntent = new Intent();
+        toastIntent.setAction(LiveWallpaperService.TOAST_LOCATION);
+        pendingToastIntent = PendingIntent.getBroadcast(this, 0, toastIntent, 0);
+
+        Intent copyIntent = new Intent();
+        copyIntent.setAction(LiveWallpaperService.COPY_IMAGE);
+        pendingCopyIntent = PendingIntent.getBroadcast(this, 0, copyIntent, 0);
+
         Intent cycleIntent = new Intent();
-        cycleIntent.setAction(LiveWallpaperService.CYCLE_WALLPAPER);
-        cycleIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        cycleIntent.setAction(LiveWallpaperService.CYCLE_IMAGE);
         pendingCycleIntent = PendingIntent.getBroadcast(this, 0, cycleIntent, 0);
 
         Intent deleteIntent = new Intent();
-        deleteIntent.setAction(LiveWallpaperService.DELETE_WALLPAPER);
-        deleteIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        deleteIntent.setAction(LiveWallpaperService.DELETE_IMAGE);
         pendingDeleteIntent = PendingIntent.getBroadcast(this, 0, deleteIntent, 0);
+
+        Intent openIntent = new Intent();
+        openIntent.setAction(LiveWallpaperService.OPEN_IMAGE);
+        pendingOpenIntent = PendingIntent.getBroadcast(this, 0, openIntent, 0);
+
+        Intent pinIntent = new Intent();
+        pinIntent.setAction(LiveWallpaperService.PIN_IMAGE);
+        pendingPinIntent = PendingIntent.getBroadcast(this, 0, pinIntent, 0);
+
+        Intent previousIntent = new Intent();
+        previousIntent.setAction(LiveWallpaperService.PREVIOUS_IMAGE);
+        pendingPreviousIntent = PendingIntent.getBroadcast(this, 0, previousIntent, 0);
+
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(LiveWallpaperService.SHARE_IMAGE);
+        pendingShareIntent = PendingIntent.getBroadcast(this, 0, shareIntent, 0);
 
         Intent appIntent = new Intent(this, MainPreferences.class);
         pendingAppIntent = PendingIntent.getActivity(this, 0, appIntent, 0);
@@ -112,7 +153,8 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(LiveWallpaperService.UPDATE_NOTIFICATION);
-        intentFilter.addAction(LiveWallpaperService.COPY_URL);
+        intentFilter.addAction(LiveWallpaperService.COPY_IMAGE);
+        intentFilter.addAction(LiveWallpaperService.TOAST_LOCATION);
 
         registerReceiver(serviceReceiver, intentFilter);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -151,13 +193,18 @@ public class LiveWallpaperService extends GLWallpaperService {
             if (intent.getAction().equals(LiveWallpaperService.UPDATE_NOTIFICATION)) {
                 startNotification(intent.getBooleanExtra("use", false));
             }
-            else if (intent.getAction().equals(LiveWallpaperService.COPY_URL)) {
+            else if (intent.getAction().equals(LiveWallpaperService.COPY_IMAGE)) {
                 ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Image URL", Downloader.getBitmapUrl());
+                ClipData clip = ClipData.newPlainText("Image URL", Downloader.getBitmapLocation());
                 clipboard.setPrimaryClip(clip);
                 if (AppSettings.useToast()) {
                     Toast.makeText(context, "Copied image URL to clipboard", Toast.LENGTH_SHORT).show();
                 }
+            }
+            else if(intent.getAction().equals(LiveWallpaperService.TOAST_LOCATION)) {
+                Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+                context.sendBroadcast(closeDrawer);
+                Toast.makeText(context, "Image Location:\n" + Downloader.getBitmapLocation(), Toast.LENGTH_LONG).show();
             }
             Log.i("Receiver", "ServiceReceived");
         }
@@ -168,15 +215,39 @@ public class LiveWallpaperService extends GLWallpaperService {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
             if (notificationBuilder != null && notificationManager != null) {
-                notificationBuilder.setLargeIcon(bitmap);
-                notificationBuilder.setContentText("Drag down to expand options");
 
-                if (Downloader.getBitmapUrl() != null) {
-                    Log.i("LWS", Downloader.getBitmapUrl());
-                    notificationBuilder.setContentText(Downloader.getBitmapUrl());
+                if (pinned) {
+
+                    int notifyIconWidth = bitmap.getWidth();
+                    int notifyIconHeight = bitmap.getHeight();
+
+                    Drawable[] layers = new Drawable[2];
+                    layers[0] = new BitmapDrawable(appContext.getResources(), bitmap);
+                    layers[1] = appContext.getResources().getDrawable(R.drawable.pin_overlay);
+
+                    LayerDrawable layerDrawable = new LayerDrawable(layers);
+
+                    Bitmap mutableBitmap = Bitmap.createBitmap(notifyIconWidth, notifyIconHeight, Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(mutableBitmap);
+                    layerDrawable.setBounds(0, 0, notifyIconWidth, notifyIconHeight);
+                    layerDrawable.draw(canvas);
+
+                    normalView.setImageViewBitmap(R.id.notification_icon, mutableBitmap);
+                    bigView.setImageViewBitmap(R.id.notification_big_icon, mutableBitmap);
+//                    notificationBuilder.setLargeIcon(mutableBitmap);
                 }
+                else {
+                    normalView.setImageViewBitmap(R.id.notification_icon, bitmap);
+                    bigView.setImageViewBitmap(R.id.notification_big_icon, bitmap);
+//                    notificationBuilder.setLargeIcon(bitmap);
+                }
+
+                Notification notification = notificationBuilder.build();
+
+                notification.bigContentView = bigView;
+
                 notificationManager.cancel(0);
-                notificationManager.notify(0, notificationBuilder.build());
+                notificationManager.notify(0, notification);
             }
         }
 
@@ -191,33 +262,200 @@ public class LiveWallpaperService extends GLWallpaperService {
     };
 
     public void notifyChangeImage() {
-        Picasso.with(appContext).load(Downloader.getBitmapFile()).resizeDimen(android.R.dimen.notification_large_icon_height, android.R.dimen.notification_large_icon_width).into(target);
+
+        int drawable = AppSettings.getNotificationIcon();
+
+        if (AppSettings.getNotificationTitle().equals("Location") && Downloader.getBitmapLocation() != null) {
+            normalView.setTextViewText(R.id.notification_title, Downloader.getBitmapLocation());
+            normalView.setOnClickPendingIntent(R.id.notification_title, pendingToastIntent);
+            bigView.setTextViewText(R.id.notification_big_title, Downloader.getBitmapLocation());
+            bigView.setOnClickPendingIntent(R.id.notification_big_title, pendingToastIntent);
+        }
+        else {
+            normalView.setOnClickPendingIntent(R.id.notification_title, null);
+            bigView.setOnClickPendingIntent(R.id.notification_big_title, null);
+        }
+
+        if (AppSettings.getNotificationSummary().equals("Location") && Downloader.getBitmapLocation() != null) {
+            normalView.setTextViewText(R.id.notification_summary, Downloader.getBitmapLocation());
+            normalView.setOnClickPendingIntent(R.id.notification_summary, pendingToastIntent);
+            bigView.setTextViewText(R.id.notification_big_summary, Downloader.getBitmapLocation());
+            bigView.setOnClickPendingIntent(R.id.notification_big_summary, pendingToastIntent);
+        }
+        else {
+            normalView.setOnClickPendingIntent(R.id.notification_summary, null);
+            bigView.setOnClickPendingIntent(R.id.notification_big_summary, null);
+        }
+
+        if (AppSettings.useNotificationIconFile() && AppSettings.getNotificationIconFile() != null) {
+
+            File image = new File(AppSettings.getNotificationIconFile());
+
+            if (image.exists() && image.isFile()) {
+                Picasso.with(appContext).load(image).resizeDimen(android.R.dimen.notification_large_icon_width, android.R.dimen.notification_large_icon_height).into(target);
+            }
+
+        }
+        else if (drawable == R.drawable.ic_action_picture || drawable == R.drawable.ic_action_picture_dark){
+            Picasso.with(appContext).load(Downloader.getCurrentBitmapFile()).resizeDimen(android.R.dimen.notification_large_icon_width, android.R.dimen.notification_large_icon_height).into(target);
+        }
+        else {
+            normalView.setImageViewResource(R.id.notification_icon, drawable);
+            bigView.setImageViewResource(R.id.notification_big_icon, drawable);
+
+
+            Notification notification = notificationBuilder.build();
+
+            notification.bigContentView = bigView;
+
+            notificationManager.cancel(0);
+            notificationManager.notify(0, notification);
+        }
+
+
+
     }
 
     private void startNotification(boolean useNotification) {
         if (useNotification) {
+            notificationManager.cancel(0);
+
+            normalView = new RemoteViews(getPackageName(), R.layout.notification_layout);
+            normalView.setInt(R.id.notification_container, "setBackgroundColor", AppSettings.getNotificationColor());
+            normalView.setImageViewResource(R.id.notification_icon, R.drawable.app_icon);
+            normalView.setTextViewText(R.id.notification_title, AppSettings.getNotificationTitle());
+            normalView.setInt(R.id.notification_title, "setTextColor", AppSettings.getNotificationTitleColor());
+            normalView.setTextViewText(R.id.notification_summary, AppSettings.getNotificationSummary());
+            normalView.setInt(R.id.notification_summary, "setTextColor", AppSettings.getNotificationSummaryColor());
+
+            Drawable coloredImageOne = appContext.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(0)));
+            Drawable coloredImageTwo = appContext.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(1)));;
+            Drawable coloredImageThree = appContext.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(2)));
+
+            coloredImageOne.mutate().setColorFilter(AppSettings.getNotificationOptionColor(0), PorterDuff.Mode.MULTIPLY);
+            coloredImageTwo.mutate().setColorFilter(AppSettings.getNotificationOptionColor(1), PorterDuff.Mode.MULTIPLY);
+            coloredImageThree.mutate().setColorFilter(AppSettings.getNotificationOptionColor(2), PorterDuff.Mode.MULTIPLY);
+
+            Bitmap mutableBitmapOne = Bitmap.createBitmap(coloredImageOne.getIntrinsicWidth(), coloredImageOne.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvasOne = new Canvas(mutableBitmapOne);
+            coloredImageOne.setBounds(0, 0, coloredImageOne.getIntrinsicWidth(), coloredImageOne.getIntrinsicHeight());
+            coloredImageOne.draw(canvasOne);
+
+            Bitmap mutableBitmapTwo = Bitmap.createBitmap(coloredImageTwo.getIntrinsicWidth(), coloredImageTwo.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvasTwo = new Canvas(mutableBitmapTwo);
+            coloredImageTwo.setBounds(0, 0, coloredImageTwo.getIntrinsicWidth(), coloredImageTwo.getIntrinsicHeight());
+            coloredImageTwo.draw(canvasTwo);
+
+            Bitmap mutableBitmapThree = Bitmap.createBitmap(coloredImageThree.getIntrinsicWidth(), coloredImageThree.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvasThree = new Canvas(mutableBitmapThree);
+            coloredImageThree.setBounds(0, 0, coloredImageThree.getIntrinsicWidth(), coloredImageThree.getIntrinsicHeight());
+            coloredImageThree.draw(canvasThree);
+
+            bigView = new RemoteViews(getPackageName(), R.layout.notification_big_layout);
+            bigView.setInt(R.id.notification_big_container, "setBackgroundColor", AppSettings.getNotificationColor());
+            bigView.setImageViewResource(R.id.notification_big_icon, R.drawable.app_icon);
+            bigView.setTextViewText(R.id.notification_big_title, AppSettings.getNotificationTitle());
+            bigView.setInt(R.id.notification_big_title, "setTextColor", AppSettings.getNotificationTitleColor());
+            bigView.setTextViewText(R.id.notification_big_summary, AppSettings.getNotificationSummary());
+            bigView.setInt(R.id.notification_big_summary, "setTextColor", AppSettings.getNotificationSummaryColor());
+
+            bigView.setImageViewBitmap(R.id.notification_button_one_image, mutableBitmapOne);
+            bigView.setImageViewBitmap(R.id.notification_button_two_image, mutableBitmapTwo);
+            bigView.setImageViewBitmap(R.id.notification_button_three_image, mutableBitmapThree);
+            bigView.setTextViewText(R.id.notification_button_one_text, AppSettings.getNotificationOptionTitle(0));
+            bigView.setInt(R.id.notification_button_one_text, "setTextColor", AppSettings.getNotificationOptionColor(0));
+            bigView.setTextViewText(R.id.notification_button_two_text, AppSettings.getNotificationOptionTitle(1));
+            bigView.setInt(R.id.notification_button_two_text, "setTextColor", AppSettings.getNotificationOptionColor(1));
+            bigView.setTextViewText(R.id.notification_button_three_text, AppSettings.getNotificationOptionTitle(2));
+            bigView.setInt(R.id.notification_button_three_text, "setTextColor", AppSettings.getNotificationOptionColor(2));
+
+            if (getIntentForNotification(AppSettings.getNotificationOptionTitle(0)) != null) {
+                bigView.setOnClickPendingIntent(R.id.notification_button_one, getIntentForNotification(AppSettings.getNotificationOptionTitle(0)));
+            }
+            if (getIntentForNotification(AppSettings.getNotificationOptionTitle(1)) != null) {
+                bigView.setOnClickPendingIntent(R.id.notification_button_two, getIntentForNotification(AppSettings.getNotificationOptionTitle(1)));
+            }
+            if (getIntentForNotification(AppSettings.getNotificationOptionTitle(2)) != null) {
+                bigView.setOnClickPendingIntent(R.id.notification_button_three, getIntentForNotification(AppSettings.getNotificationOptionTitle(2)));
+            }
+
             notificationBuilder  = new Notification.Builder(this)
-                .setContentTitle("AutoBackground")
-                .setContentText("Drag down to expand options")
-                .setContentIntent(pendingAppIntent)
-                .setSmallIcon(R.drawable.ic_action_picture_dark)
-                .setPriority(Notification.PRIORITY_MIN)
-                .setOngoing(true)
-                .addAction(R.drawable.ic_action_copy_dark, getString(R.string.copy), pendingCopyIntent)
-                .addAction(R.drawable.ic_action_refresh_dark, getString(R.string.cycle), pendingCycleIntent)
-                .addAction(R.drawable.ic_action_discard_dark, getString(R.string.delete), pendingDeleteIntent);
+                    .setContent(normalView)
+                    .setContentIntent(pendingAppIntent)
+                    .setSmallIcon(R.drawable.ic_action_picture_dark)
+                    .setPriority(Notification.PRIORITY_MIN)
+                    .setOngoing(true);
 
             Notification notification = notificationBuilder.build();
 
+            notification.bigContentView = bigView;
+
             notificationManager.notify(0, notification);
 
-            if (Downloader.getBitmapFile() != null) {
+            if (Downloader.getCurrentBitmapFile() != null) {
                 notifyChangeImage();
             }
         }
         else {
             notificationManager.cancel(0);
         }
+    }
+
+    private int getWhiteDrawable(int drawable) {
+
+        if (drawable == R.drawable.ic_action_copy) {
+            return R.drawable.ic_action_copy_dark;
+        }
+        else if (drawable == R.drawable.ic_action_refresh) {
+            return R.drawable.ic_action_refresh_dark;
+        }
+        else if (drawable == R.drawable.ic_action_discard) {
+            return R.drawable.ic_action_discard_dark;
+        }
+        else if (drawable == R.drawable.ic_action_picture) {
+            return R.drawable.ic_action_picture_dark;
+        }
+        else if (drawable == R.drawable.ic_action_make_available_offline) {
+            return R.drawable.ic_action_make_available_offline_dark;
+        }
+        else if (drawable == R.drawable.ic_action_back) {
+            return R.drawable.ic_action_back_dark;
+        }
+        else if (drawable == R.drawable.ic_action_share) {
+            return R.drawable.ic_action_share_dark;
+        }
+        else if (drawable == R.drawable.ic_action_backspace) {
+            return R.drawable.ic_action_backspace_dark;
+        }
+        else {
+            return drawable;
+        }
+    }
+
+    private PendingIntent getIntentForNotification(String title) {
+
+        if (title.equals("Copy")) {
+            return pendingCopyIntent;
+        }
+        else if (title.equals("Cycle")) {
+            return pendingCycleIntent;
+        }
+        else if (title.equals("Delete")) {
+            return pendingDeleteIntent;
+        }
+        else if (title.equals("Open")) {
+            return pendingOpenIntent;
+        }
+        else if (title.equals("Pin")) {
+            return pendingPinIntent;
+        }
+        else if (title.equals("Previous")) {
+            return pendingPreviousIntent;
+        }
+        else if (title.equals("Share")) {
+            return pendingShareIntent;
+        }
+        return null;
     }
 
     public Engine onCreateEngine() {
@@ -239,6 +477,8 @@ public class LiveWallpaperService extends GLWallpaperService {
         private PendingIntent pendingIntervalIntent;
         private AlarmManager alarmManager;
         private GestureDetector gestureDetector;
+        private List<File> previousBitmaps = null;
+        private long pinReleaseTime;
 
         public GLWallpaperEngine() {
             super();
@@ -250,6 +490,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                     return true;
                 }
             });
+
+            previousBitmaps = new ArrayList<File>();
+            pinReleaseTime = System.currentTimeMillis();
         }
 
         @Override
@@ -264,9 +507,13 @@ public class LiveWallpaperService extends GLWallpaperService {
             if (!isPreview()){
                 IntentFilter intentFilter = new IntentFilter();
                 intentFilter.addAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
-                intentFilter.addAction(LiveWallpaperService.CYCLE_WALLPAPER);
+                intentFilter.addAction(LiveWallpaperService.CYCLE_IMAGE);
                 intentFilter.addAction(LiveWallpaperService.UPDATE_WALLPAPER);
-                intentFilter.addAction(LiveWallpaperService.DELETE_WALLPAPER);
+                intentFilter.addAction(LiveWallpaperService.DELETE_IMAGE);
+                intentFilter.addAction(LiveWallpaperService.OPEN_IMAGE);
+                intentFilter.addAction(LiveWallpaperService.PREVIOUS_IMAGE);
+                intentFilter.addAction(LiveWallpaperService.PIN_IMAGE);
+                intentFilter.addAction(LiveWallpaperService.SHARE_IMAGE);
                 registerReceiver(updateReceiver, intentFilter);
                 Log.i("WE", "Registered");
 
@@ -287,13 +534,55 @@ public class LiveWallpaperService extends GLWallpaperService {
                 if (intent.getAction().equals(LiveWallpaperService.DOWNLOAD_WALLPAPER)) {
                     getNewImages();
                 }
-                else if (intent.getAction().equals(LiveWallpaperService.CYCLE_WALLPAPER)) {
+                else if (intent.getAction().equals(LiveWallpaperService.CYCLE_IMAGE)) {
                     handler.post(new Runnable(){
                         @Override
                         public void run() {
                             loadNextImage();
                         }
                     });
+                }
+                else if (intent.getAction().equals(LiveWallpaperService.DELETE_IMAGE)) {
+                    Downloader.deleteCurrentBitmap();
+                    loadNextImage();
+                }
+                else if (intent.getAction().equals(LiveWallpaperService.OPEN_IMAGE)) {
+                    Intent galleryIntent = new Intent();
+                    galleryIntent.setAction(Intent.ACTION_VIEW);
+                    galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    galleryIntent.setDataAndType(Uri.parse("file://" + Downloader.getCurrentBitmapFile()), "image/*");
+                    context.startActivity(galleryIntent);
+                    Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+                    context.sendBroadcast(closeDrawer);
+                }
+                else if (intent.getAction().equals(LiveWallpaperService.PREVIOUS_IMAGE)) {
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            loadPreviousImage();
+                        }
+                    });
+                }
+                else if (intent.getAction().equals(LiveWallpaperService.PIN_IMAGE)) {
+                    if (AppSettings.getPinDuration() > 0 && !pinned) {
+                        pinReleaseTime = System.currentTimeMillis() + AppSettings.getPinDuration();
+                    }
+                    else {
+                        pinReleaseTime = 0;
+                    }
+                    pinned = !pinned;
+                    notifyChangeImage();
+                }
+                else if (intent.getAction().equals(LiveWallpaperService.SHARE_IMAGE)) {
+                    Intent shareIntent = new Intent();
+                    shareIntent.setAction(Intent.ACTION_SEND);
+                    shareIntent.setType("image/*");
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(Downloader.getCurrentBitmapFile()));
+                    shareIntent = Intent.createChooser(shareIntent, "Share Image");
+                    shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(shareIntent);
+                    Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+                    context.sendBroadcast(closeDrawer);
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.UPDATE_WALLPAPER)) {
                     if (AppSettings.forceInterval()) {
@@ -303,10 +592,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         toChange = true;
                     }
                 }
-                else if (intent.getAction().equals(LiveWallpaperService.DELETE_WALLPAPER)) {
-                    Downloader.deleteCurrentBitmap();
-                    loadNextImage();
-                }
+
             }
         };
 
@@ -379,11 +665,62 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         }
 
-        public void loadNextImage() {
+        private void loadPreviousImage() {
 
             handler.post(new Runnable(){
                 @Override
                 public void run() {
+
+                    if (previousBitmaps.size() > 0) {
+                        animated = AppSettings.useAnimation();
+                        animationModifier = AppSettings.getAnimationSpeed();
+                        renderer.targetFrameTime = 1000 / AppSettings.getAnimationFrameRate();
+
+                        if (animated) {
+                            setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+                        } else {
+                            setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+                        }
+
+                        final Bitmap bitmap = Downloader.getBitmap(previousBitmaps.get(0), getApplicationContext());
+
+
+                        if (bitmap != null && renderer != null) {
+
+                            if (AppSettings.useNotification()) {
+                                notifyChangeImage();
+                            }
+
+                            addEvent(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    renderer.setBitmap(bitmap, true, 1);
+                                }
+                            });
+
+                        }
+                        previousBitmaps.remove(0);
+                    }
+                }
+            });
+
+        }
+
+        private void loadNextImage() {
+
+            handler.post(new Runnable(){
+                @Override
+                public void run() {
+
+                    if (pinReleaseTime > 0 && pinReleaseTime < System.currentTimeMillis()) {
+                        pinned = false;
+                    }
+
+                    if (pinned) {
+                        return;
+                    }
+
                     animated = AppSettings.useAnimation();
                     animationModifier = AppSettings.getAnimationSpeed();
                     renderer.targetFrameTime = 1000 / AppSettings.getAnimationFrameRate();
@@ -394,6 +731,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                     else {
                         setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                     }
+
+                    previousBitmaps.add(0, Downloader.getCurrentBitmapFile());
 
                     final Bitmap bitmap = Downloader.getNextImage(getApplicationContext());
 
@@ -411,6 +750,10 @@ public class LiveWallpaperService extends GLWallpaperService {
                             }
                         });
 
+                    }
+
+                    if (previousBitmaps.size() > AppSettings.getHistorySize()) {
+                        previousBitmaps.remove(previousBitmaps.size() - 1);
                     }
                 }
             });

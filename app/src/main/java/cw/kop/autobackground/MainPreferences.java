@@ -3,6 +3,9 @@ package cw.kop.autobackground;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -16,8 +19,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import cw.kop.autobackground.images.LocalImageFragment;
+import cw.kop.autobackground.notification.NotificationSettingsFragment;
 import cw.kop.autobackground.settings.AppSettings;
-import cw.kop.autobackground.websites.SourceListFragment;
+import cw.kop.autobackground.sources.SourceListFragment;
 
 public class MainPreferences extends Activity {
 
@@ -51,9 +55,11 @@ public class MainPreferences extends Activity {
 
         super.onCreate(savedInstanceState);
 
+        int[] colors = {0, 0xFFFFFFFF, 0};
 
         if (AppSettings.getTheme() == R.style.AppLightTheme) {
             setTheme(R.style.AppLightTheme);
+            colors = new int[] {0, 0xFF000000, 0};
         }
         else if (AppSettings.getTheme() == R.style.AppDarkTheme){
             setTheme(R.style.AppDarkTheme);
@@ -73,6 +79,19 @@ public class MainPreferences extends Activity {
         drawerList = (ListView) findViewById(R.id.left_drawer);
         drawerList.setAdapter(new NavListAdapter(this, fragmentList));
         drawerList.setOnItemClickListener(new DrawerItemClickListener());
+
+        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+            drawerList.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
+        }
+        else if (AppSettings.getTheme() == R.style.AppDarkTheme){
+            drawerList.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+        }
+        else if (AppSettings.getTheme() == R.style.AppTransparentTheme){
+            drawerList.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
+        }
+
+        drawerList.setDivider(new GradientDrawable(GradientDrawable.Orientation.RIGHT_LEFT, colors));
+        drawerList.setDividerHeight(1);
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
         getActionBar().setHomeButtonEnabled(true);
@@ -102,18 +121,20 @@ public class MainPreferences extends Activity {
 
 		Downloader.setNewTask(getApplicationContext());
 
+
         if (websiteFragment == null) {
-            setTitle(fragmentList[0]);
-
             websiteFragment = new SourceListFragment();
-
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.content_frame, websiteFragment, "website_fragment")
-                    .commit();
-
         }
 
         Bundle bundle = getIntent().getExtras();
+
+        if (bundle != null && bundle.getInt("fragment", 0) > 0) {
+            selectItem(bundle.getInt("fragment", 0));
+        }
+        else {
+            selectItem(0);
+        }
+
         if (bundle != null && bundle.getBoolean("download")) {
             websiteFragment.getHtml();
             if (AppSettings.useToast()) {
@@ -143,7 +164,7 @@ public class MainPreferences extends Activity {
 
             case 0:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new SourceListFragment(), "website_fragment")
+                        .replace(R.id.content_frame, websiteFragment, "website_fragment")
                         .commit();
                 break;
             case 1:
@@ -163,10 +184,15 @@ public class MainPreferences extends Activity {
                 break;
             case 4:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new AppSettingsFragment())
+                        .replace(R.id.content_frame, new NotificationSettingsFragment())
                         .commit();
                 break;
             case 5:
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.content_frame, new AppSettingsFragment())
+                        .commit();
+                break;
+            case 6:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.content_frame, new AboutFragment())
                         .commit();

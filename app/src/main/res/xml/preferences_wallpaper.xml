@@ -4,8 +4,8 @@
 	<PreferenceCategory
 		android:title="@string/title_wallpaper_settings"
 		>
-  
-		<SwitchPreference
+
+		<cw.kop.autobackground.CustomSwitchPreference
 			android:key="fill_images"
 			android:defaultValue="true"
 			android:title="@string/fill_images" 

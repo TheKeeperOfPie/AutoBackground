@@ -18,10 +18,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +36,7 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class Downloader {
 
-	public static File bitmapFile = null;
+	public static File currentBitmapFile = null;
 
     private static final String TAG = "Downloader";
 	private static FilenameFilter fileFilter = null;
@@ -132,16 +130,19 @@ public class Downloader {
 		
 	}
 	
-	public static String getBitmapUrl() {
-		return AppSettings.getUrl(bitmapFile.getName());
+	public static String getBitmapLocation() {
+        if (AppSettings.getUrl(currentBitmapFile.getName()) == null) {
+            return currentBitmapFile.getAbsolutePath();
+        }
+		return AppSettings.getUrl(currentBitmapFile.getName());
 	}
-	
-	public static File getBitmapFile() {		
-		return bitmapFile;
+
+	public static File getCurrentBitmapFile() {
+		return currentBitmapFile;
 	}
 	
 	public static void deleteCurrentBitmap() {
-		bitmapFile.delete();
+		currentBitmapFile.delete();
 	}
 
     public static void deleteAllBitmaps(Context appContext) {
@@ -164,7 +165,30 @@ public class Downloader {
 		imageAsyncTask.execute(cacheDir);
 		Log.i("Downloader", "Sent Task");
     }
-	
+
+    public static Bitmap getBitmap(File file, Context appContext) {
+        Bitmap bitmap = null;
+        if (file != null && file.exists()) {
+
+            try {
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                if (!AppSettings.useHighQuality()) {
+                    options.inPreferredConfig = Bitmap.Config.RGB_565;
+                }
+
+                bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+                currentBitmapFile = file;
+            }
+            catch (OutOfMemoryError e) {
+                if (AppSettings.useToast()) {
+                    Toast.makeText(appContext, "Out of memory error", Toast.LENGTH_SHORT).show();
+                }
+                return null;
+            }
+        }
+        return bitmap;
+    }
+
 	public static Bitmap getNextImage(Context appContext) {
 		
     	List<File> images = getBitmapList(appContext);
@@ -185,12 +209,12 @@ public class Downloader {
 		}
 		
 		if (images.size() > 0 && randIndex < images.size()) {
-			bitmapFile = images.get(randIndex);
+			currentBitmapFile = images.get(randIndex);
 		}
 
         Log.i("RandIndex", "" + randIndex);
 
-		if (bitmapFile != null && bitmapFile.exists()) {
+		if (currentBitmapFile != null && currentBitmapFile.exists()) {
 
 			try {
 				BitmapFactory.Options options = new BitmapFactory.Options();
@@ -198,13 +222,12 @@ public class Downloader {
 					options.inPreferredConfig = Bitmap.Config.RGB_565;
 				}
 				
-				bitmap = BitmapFactory.decodeFile(bitmapFile.getAbsolutePath(), options);
+				bitmap = BitmapFactory.decodeFile(currentBitmapFile.getAbsolutePath(), options);
 			}
 			catch (OutOfMemoryError e) {
                 if (AppSettings.useToast()) {
                     Toast.makeText(appContext, "Out of memory error", Toast.LENGTH_SHORT).show();
                 }
-                bitmap.recycle();
                 return null;
 			}
 			
@@ -223,60 +246,60 @@ public class Downloader {
     }
 
     public static void setHtml(String html, String dir, int urlIndex, String baseUrl, Context appContext) {
-        Log.i(TAG, "SetHtml called with baseURL: " + baseUrl);
-        try {
-
-            if (!AppSettings.keepImages()) {
-                deleteAllBitmaps(appContext);
-                AppSettings.setNumStored(0);
-            }
-
-            index = AppSettings.getNumStored();
-
-            File toWrite = new File(dir + "/html.txt");
-            if (toWrite.exists()){
-                toWrite.delete();
-            }
-
-            BufferedWriter buf = new BufferedWriter(new FileWriter(toWrite, true));
-            buf.append(html);
-
-            Document rootDoc = Jsoup.parse(html);
-
-            Log.i(TAG, AppSettings.getSourceData(urlIndex));
-
-            Set<String> imageLinks = new HashSet<String>();
-            imageLinks.addAll(compileImageLinks(rootDoc, "a", "href"));
-            imageLinks.addAll(compileImageLinks(rootDoc, "img", "src"));
-
-            Set<String> links = new HashSet<String>();
-            links.addAll(compileLinks(rootDoc, "a", "href", baseUrl));
-            links.addAll(compileLinks(rootDoc, "img", "href", baseUrl));
-
-            for (String link : links) {
-                try {
-                    Document imageDoc = Jsoup.connect(link).get();
-                    imageLinks.addAll(compileImageLinks(imageDoc, "a", "href"));
-                    imageLinks.addAll(compileImageLinks(imageDoc, "img", "src"));
-                }
-                catch (Exception e) {
-
-                }
-            }
-
-            buf.close();
-
-            Log.i(TAG, "Num Images: " + AppSettings.getSourceNum(urlIndex));
-
-            List<String> imageList = new ArrayList<String>();
-            imageList.addAll(imageLinks);
-
-            downloadImages(imageList, AppSettings.getSourceNum(urlIndex), dir);
-
-            Log.i("Downloader", "Written");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        Log.i(TAG, "SetHtml called with baseURL: " + baseUrl);
+//        try {
+//
+//            if (!AppSettings.keepImages()) {
+//                deleteAllBitmaps(appContext);
+//                AppSettings.setNumStored(0);
+//            }
+//
+//            index = AppSettings.getNumStored();
+//
+//            File toWrite = new File(dir + "/html.txt");
+//            if (toWrite.exists()){
+//                toWrite.delete();
+//            }
+//
+//            BufferedWriter buf = new BufferedWriter(new FileWriter(toWrite, true));
+//            buf.append(html);
+//
+//            Document rootDoc = Jsoup.parse(html);
+//
+//            Log.i(TAG, AppSettings.getSourceData(urlIndex));
+//
+//            Set<String> imageLinks = new HashSet<String>();
+//            imageLinks.addAll(compileImageLinks(rootDoc, "a", "href"));
+//            imageLinks.addAll(compileImageLinks(rootDoc, "img", "src"));
+//
+//            Set<String> links = new HashSet<String>();
+//            links.addAll(compileLinks(rootDoc, "a", "href", baseUrl));
+//            links.addAll(compileLinks(rootDoc, "img", "href", baseUrl));
+//
+//            for (String link : links) {
+//                try {
+//                    Document imageDoc = Jsoup.connect(link).get();
+//                    imageLinks.addAll(compileImageLinks(imageDoc, "a", "href"));
+//                    imageLinks.addAll(compileImageLinks(imageDoc, "img", "src"));
+//                }
+//                catch (Exception e) {
+//
+//                }
+//            }
+//
+//            buf.close();
+//
+//            Log.i(TAG, "Num Images: " + AppSettings.getSourceNum(urlIndex));
+//
+//            List<String> imageList = new ArrayList<String>();
+//            imageList.addAll(imageLinks);
+//
+//            downloadImages(imageList, AppSettings.getSourceNum(urlIndex), dir);
+//
+//            Log.i("Downloader", "Written");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -342,7 +365,7 @@ public class Downloader {
 
     }
 
-    protected static void downloadImages(List<String> links, int numImages, String cacheDir) {
+    protected static void downloadImages(List<String> links, int numImages, String cacheDir, String title) {
 
         ArrayList<String> usedLinks = new ArrayList<String>();
         List<Integer> randValues = new ArrayList<Integer>();
@@ -365,7 +388,7 @@ public class Downloader {
                     }
                 }
                 if (!oldLink) {
-                    if (getImage(randLink, cacheDir)) {
+                    if (getImage(randLink, cacheDir, title)) {
                         usedLinks.add(randLink);
                         num++;
                     }
@@ -377,7 +400,7 @@ public class Downloader {
 
     }
 
-    protected static boolean getImage(String url, String cacheDir) {
+    protected static boolean getImage(String url, String cacheDir, String title) {
 
         if (Patterns.WEB_URL.matcher(url).matches()) {
             try {
@@ -439,7 +462,7 @@ public class Downloader {
                     return false;
                 }
 
-                writeToFile(bitmap, url, cacheDir);
+                writeToFile(bitmap, url, cacheDir, title);
 
                 Log.i(TAG, "Wrote: " + imageUrl + "\nWidth: " + bitmap.getWidth() + "\nHeight: " + bitmap.getHeight() + "\nIndex: " + (index - 1));
 
@@ -458,9 +481,11 @@ public class Downloader {
         return false;
     }
 
-    protected static void writeToFile(Bitmap image, String url, String dir) {
+    protected static void writeToFile(Bitmap image, String url, String dir, String title) {
 
-        File file = new File(dir + "/" + AppSettings.getImagePrefix() + index + ".png");
+        String trimmedTitle = title.replace(" ", "");
+
+        File file = new File(dir + "/" + trimmedTitle + AppSettings.getImagePrefix() + index + ".png");
         if (file.isFile()) {
             file.delete();
         }
@@ -518,7 +543,7 @@ public class Downloader {
 
             index = AppSettings.getNumStored();
 
-			Log.i(TAG, "Num websites: " + AppSettings.getNumSources());
+			Log.i(TAG, "Num sources: " + AppSettings.getNumSources());
 			
 			for (int i = 0; i < AppSettings.getNumSources(); i++) {
 				
@@ -540,12 +565,12 @@ public class Downloader {
                         List<String> imageList = new ArrayList<String>();
                         imageList.addAll(imageLinks);
 
-						downloadImages(imageList, AppSettings.getSourceNum(i), downloadCacheDir);
+						downloadImages(imageList, AppSettings.getSourceNum(i), downloadCacheDir, AppSettings.getSourceTitle(i));
 						
 						imageDetails += AppSettings.getSourceTitle(i) + ": " + num + " images;break;";
 
                         if (num < AppSettings.getSourceNum(i)) {
-                            publishProgress("Not enough photos found from " + AppSettings.getSourceData(i) + "\nTry lowering the resolution or changing websites");
+                            publishProgress("Not enough photos found from " + AppSettings.getSourceData(i) + "\nTry lowering the resolution or changing sources");
                         }
 						
 					}
@@ -624,7 +649,7 @@ public class Downloader {
 			notificationManager.notify(1, notification.build());
 
             Intent cycleIntent = new Intent();
-            cycleIntent.setAction(LiveWallpaperService.CYCLE_WALLPAPER);
+            cycleIntent.setAction(LiveWallpaperService.CYCLE_IMAGE);
             cycleIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
             context.sendBroadcast(cycleIntent);
 			

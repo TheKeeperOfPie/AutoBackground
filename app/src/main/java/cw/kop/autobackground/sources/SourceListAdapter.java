@@ -1,4 +1,4 @@
-package cw.kop.autobackground.websites;
+package cw.kop.autobackground.sources;
 
 import android.app.Activity;
 import android.content.Context;

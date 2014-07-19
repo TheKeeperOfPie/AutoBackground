@@ -13,8 +13,7 @@
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:textColor="@color/WHITE_OPAQUE"
-        android:textSize="18sp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         />
 
     <EditText
@@ -27,8 +26,8 @@
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:textColor="@color/WHITE_OPAQUE"
         android:hint="@string/website_title"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         />
     
     <EditText
@@ -41,8 +40,8 @@
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:textColor="@color/WHITE_OPAQUE"
         android:hint="@string/website_url"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         />
     
     <EditText
@@ -55,8 +54,8 @@
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:textColor="@color/WHITE_OPAQUE"
         android:hint="@string/num_images"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         />
 
 </RelativeLayout>

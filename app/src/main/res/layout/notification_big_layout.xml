@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/notification_big_container"
+    android:layout_width="match_parent"
+    android:layout_height="110dp"
+    >
+
+    <ImageView
+        android:id="@+id/notification_big_icon"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:src="@drawable/app_icon"
+        android:contentDescription="@string/notification_content_description"
+        />
+
+    <RelativeLayout
+        android:id="@+id/notification_big_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/notification_buttons"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@id/notification_big_icon"
+        android:orientation="vertical"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        >
+
+        <TextView
+            android:id="@+id/notification_big_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:paddingTop="4dp"
+            android:textStyle="normal"
+            android:singleLine="true"
+            />
+
+        <TextView
+            android:id="@+id/notification_big_summary"
+            android:layout_below="@+id/notification_big_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:paddingBottom="6dp"
+            android:textStyle="normal"
+            android:singleLine="true"
+            />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/notification_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        >
+
+        <TextView
+            android:id="@+id/notification_buffer"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            />
+
+        <RelativeLayout
+            android:id="@+id/notification_button_one"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="6"
+            >
+
+            <ImageView
+                android:id="@+id/notification_button_one_image"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:scaleType="centerInside"
+                android:adjustViewBounds="true"
+                android:src="@drawable/app_icon"
+                android:contentDescription="@string/notification_option_one_image"
+                android:focusable="false"
+                />
+
+            <TextView
+                android:id="@+id/notification_button_one_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_toRightOf="@id/notification_button_one_image"
+                android:text="@string/notification_option_one_text"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:focusable="false"
+                />
+
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:id="@+id/notification_button_two"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="6"
+            >
+
+            <ImageView
+                android:id="@+id/notification_button_two_image"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:scaleType="centerInside"
+                android:adjustViewBounds="true"
+                android:src="@drawable/app_icon"
+                android:contentDescription="@string/notification_option_two_image"
+                android:focusable="false"
+                />
+
+            <TextView
+                android:id="@+id/notification_button_two_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_toRightOf="@id/notification_button_two_image"
+                android:text="@string/notification_option_two_text"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:focusable="false"
+                />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/notification_button_three"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="6"
+            >
+
+            <ImageView
+                android:id="@+id/notification_button_three_image"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:scaleType="centerInside"
+                android:adjustViewBounds="true"
+                android:src="@drawable/app_icon"
+                android:contentDescription="@string/notification_option_three_image"
+                android:focusable="false"
+                />
+
+            <TextView
+                android:id="@+id/notification_button_three_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_toRightOf="@id/notification_button_three_image"
+                android:text="@string/notification_option_three_text"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:focusable="false"
+                />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

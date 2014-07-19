@@ -22,10 +22,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ListView;
 
 import cw.kop.autobackground.settings.AppSettings;
 
-public class WallpaperSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener{
+public class WallpaperSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
 	private final static long CONVERT_MILLES_TO_MIN = 60000;
 	private SwitchPreference intervalPref;
@@ -33,8 +34,8 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
     private Context context;
     private PendingIntent pendingIntent;
 	private AlarmManager alarmManager;
-	
-	@Override
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_wallpaper);
@@ -51,7 +52,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
 
-        return super.onCreateView(inflater, container, savedInstanceState);
+        return localInflater.inflate(R.layout.fragment_list, container, false);
 	}
 
 	@Override
