@@ -15,6 +15,7 @@
     <string name="title_effects_parameters">Effect Parameters</string>
     <string name="title_interval_settings">Interval Settings</string>
     <string name="title_download_settings">Download Settings</string>
+    <string name="title_notification_settings">Notification Settings</string>
     <string name="title_app_settings">Application Settings</string>
     <string name="title_animation_settings">Animation Settings</string>
     <string name="title_about">About Application</string>
@@ -137,8 +138,6 @@
     <string name="effect_vignette">Vignette Effect</string>
     <string name="effect_vignette_description">Vignette effect</string>
 
-    <string name="use_notification">Use Notification</string>
-    <string name="use_notification_description">Show a persistent notification</string>
     <string name="use_toast">Use Toasts</string>
     <string name="use_toast_description">Notify user of info on screen</string>
     <string name="force_multipane">Force Multi-Pane</string>
@@ -149,8 +148,17 @@
     <string name="use_advanced_description">Show advanced settings</string>
     <string name="clear_pref">Reset Settings</string>
     <string name="clear_pref_description">Set default settings</string>
-    <string name="show_tutorial">Reshow Tutorial</string>
-    <string name="show_tutorial_description">Click to restart tutorial</string>
+    <string name="show_tutorial_source">Reshow Source List Tutorial</string>
+    <string name="show_tutorial_source_description">Click to reshow source tutorial</string>
+
+    <string name="notification_instructions">How to Customize</string>
+    <string name="notification_instructions_description">Simply click one of the parts of the notification above to view that part\'s settings</string>
+    <string name="use_notification">Use Notification</string>
+    <string name="use_notification_description">Show a persistent notification</string>
+    <string name="use_pin_indicator">Show Pin Indicator</string>
+    <string name="use_pin_indicator_description">Show a pin overlay in the notification when image is pinned</string>
+    <string name="show_tutorial_notification">Reshow Notification Tutorial</string>
+    <string name="show_tutorial_notification_description">Click to reshow notification tutorial screen</string>
 
     <string name="about_libraries">Used Libraries</string>
     <string name="about_libraries_description">The following libraries were used in the creation

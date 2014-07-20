@@ -37,7 +37,6 @@ import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
 import java.util.HashMap;
-import java.util.TreeMap;
 
 import cw.kop.autobackground.Downloader;
 import cw.kop.autobackground.LiveWallpaperService;
@@ -407,7 +406,7 @@ public class SourceListFragment extends ListFragment {
 
         });
 
-        Button refreshButton = (Button) view.findViewById(R.id.refresh_button);;
+        Button refreshButton = (Button) view.findViewById(R.id.refresh_button);
         refreshButton.setText("Cycle Wallpaper");
         refreshButton.setOnClickListener(new View.OnClickListener() {
 
@@ -464,7 +463,7 @@ public class SourceListFragment extends ListFragment {
 
     private void showTutorial(int page) {
 
-        if (!AppSettings.useTutorial()) {
+        if (!AppSettings.useSourceTutorial()) {
             return;
         }
 
@@ -493,7 +492,7 @@ public class SourceListFragment extends ListFragment {
                             @Override
                             public void onShowcaseViewHide(ShowcaseView showcaseView) {
                                 if (websiteListTutorial == null) {
-                                    AppSettings.setTutorial(false);
+                                    AppSettings.setTutorial(false, "source");
                                     tutorialPromptView = null;
                                 }
                             }
@@ -640,7 +639,7 @@ public class SourceListFragment extends ListFragment {
                 settingsTutorial = settingsBuilder.build();
                 break;
             case 6:
-                AppSettings.setTutorial(false);
+                AppSettings.setTutorial(false, "source");
                 break;
             default:
         }
@@ -699,7 +698,7 @@ public class SourceListFragment extends ListFragment {
             setButton.setVisibility(View.VISIBLE);
         }
 
-        if (AppSettings.useTutorial() && tutorialPromptView == null) {
+        if (AppSettings.useSourceTutorial() && tutorialPromptView == null) {
 
             Log.i("WLF", "Showing tutorial");
 

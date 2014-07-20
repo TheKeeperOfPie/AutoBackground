@@ -3,7 +3,6 @@ package cw.kop.autobackground.notification;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,9 +10,10 @@ import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.Preference;
+import android.preference.PreferenceFragment;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -26,16 +26,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.util.ArrayList;
 
-import afzkl.development.colorpickerview.dialog.ColorPickerDialog;
-import afzkl.development.colorpickerview.preference.ColorPickerPreference;
 import afzkl.development.colorpickerview.view.ColorPickerView;
 import cw.kop.autobackground.Downloader;
 import cw.kop.autobackground.LiveWallpaperService;
@@ -45,12 +46,13 @@ import cw.kop.autobackground.settings.AppSettings;
 /**
  * Created by TheKeeperOfPie on 7/17/2014.
  */
-public class NotificationSettingsFragment extends Fragment implements View.OnClickListener {
+public class NotificationSettingsFragment extends PreferenceFragment implements View.OnClickListener {
 
     private final static long CONVERT_MILLES_TO_MIN = 60000;
     private static final int SELECT_PHOTO = 4;
     private Context context;
 
+    private ListView preferenceList;
     private RecyclerView recyclerView;
     private RelativeLayout notificationPreview;
     private ImageView notificationIcon;
@@ -73,6 +75,7 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
     private ImageView optionOneHighlight;
     private ImageView optionTwoHighlight;
     private ImageView optionThreeHighlight;
+    private ShowcaseView previewTutorial;
 
     public NotificationSettingsFragment() {
     }
@@ -127,7 +130,7 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
         notificationSummary.setTextColor(AppSettings.getNotificationSummaryColor());
 
         Drawable coloredImageOne = context.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(0)));
-        Drawable coloredImageTwo = context.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(1)));;
+        Drawable coloredImageTwo = context.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(1)));
         Drawable coloredImageThree = context.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(2)));
 
         coloredImageOne.mutate().setColorFilter(AppSettings.getNotificationOptionColor(0), PorterDuff.Mode.MULTIPLY);
@@ -151,6 +154,8 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.notification_settings_layout, container, false);
+
+        preferenceList = (ListView) view.findViewById(android.R.id.list);
 
         recyclerView = (RecyclerView) view.findViewById(R.id.notification_options_list);
 
@@ -202,6 +207,29 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
+        Preference tutorialPref = findPreference("show_tutorial_notification");
+        tutorialPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                previewTutorial = new ShowcaseView.Builder(getActivity())
+                        .setContentTitle("Notification Customization")
+                        .setContentText("This is where you can change \n" +
+                                "how the persistent notification looks. \n" +
+                                "To customize a part, simply click on it \n" +
+                                "inside this preview.")
+                        .setStyle(R.style.ShowcaseStyle)
+                        .setTarget(new ViewTarget(notificationPreview))
+                        .setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                AppSettings.setTutorial(false, "notification");
+                            }
+                        })
+                        .build();
+                return true;
+            }
+        });
+
         Log.i("NSF", "Options shown");
 
         return view;
@@ -210,11 +238,38 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        addPreferencesFromResource(R.xml.preferences_notification);
+    }
+
+    private void hide(ShowcaseView view) {
+        if (view != null) {
+            view.hide();
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        if (AppSettings.useNotificationTutorial()) {
+            previewTutorial = new ShowcaseView.Builder(getActivity())
+                    .setContentTitle("Notification Customization")
+                    .setContentText("This is where you can change \n" +
+                            "how the persistent notification looks. \n" +
+                            "To customize a part, simply click on it \n" +
+                            "inside this preview.")
+                    .setStyle(R.style.ShowcaseStyle)
+                    .setTarget(new ViewTarget(notificationPreview))
+                    .setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            hide(previewTutorial);
+                            AppSettings.setTutorial(false, "notification");
+                        }
+                    })
+                    .build();
+        }
+
     }
 
     @Override
@@ -229,6 +284,10 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
 
     @Override
     public void onClick(View v) {
+
+        if (previewTutorial != null) {
+            previewTutorial.hide();
+        }
 
         if (v.getId() == R.id.notification_option_one) {
             clearHighlights();
@@ -265,21 +324,25 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
             notificationPreviewHighlight.setVisibility(View.VISIBLE);
             showBackgroundColorDialog();
         }
+
+        preferenceList.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.VISIBLE);
+
     }
 
     private void showBackgroundColorDialog() {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
 
-        dialog.setTitle("Enter background color:");
+        dialogBuilder.setTitle("Enter background color:");
 
         final ColorPickerView colorPickerView = new ColorPickerView(context);
         colorPickerView.setAlphaSliderVisible(true);
         colorPickerView.setColor(AppSettings.getNotificationOptionPreviousColor());
 
-        dialog.setView(colorPickerView);
+        dialogBuilder.setView(colorPickerView);
 
-        dialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+        dialogBuilder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 AppSettings.setNotificationColor(colorPickerView.getColor());
                 notificationPreview.setBackgroundColor(AppSettings.getNotificationColor());
@@ -288,10 +351,12 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
             }
         });
 
-        dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        dialogBuilder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
             }
         });
+
+        AlertDialog dialog = dialogBuilder.create();
 
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
@@ -345,6 +410,9 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
         optionOneHighlight.setVisibility(View.GONE);
         optionTwoHighlight.setVisibility(View.GONE);
         optionThreeHighlight.setVisibility(View.GONE);
+
+        recyclerView.setVisibility(View.GONE);
+        preferenceList.setVisibility(View.VISIBLE);
     }
 
     private void showIconList(int position) {
@@ -549,6 +617,7 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
 
         recyclerView.setAdapter(optionsAdapter);
 
+
         optionsIcons.recycle();
 
     }
@@ -717,9 +786,9 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
 
         AppSettings.setIntervalDuration(0);
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
 
-        dialog.setItems(R.array.pin_entry_menu, new DialogInterface.OnClickListener() {
+        dialogBuilder.setItems(R.array.pin_entry_menu, new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -757,6 +826,8 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
             }
         });
 
+        AlertDialog dialog = dialogBuilder.create();
+
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
 
             @Override
@@ -765,7 +836,6 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
 
         });
 
-        dialog.create();
         dialog.show();
 
     }

@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.TreeMap;
 
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;

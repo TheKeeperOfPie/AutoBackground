@@ -5,21 +5,14 @@
 		android:title="@string/title_app_settings"
 		>
 
-		<SwitchPreference
-			android:key="use_notification"
-			android:defaultValue="false"
-			android:title="@string/use_notification" 
-			android:summary="@string/use_notification_description"
-			/>
-
-        <SwitchPreference
+        <cw.kop.autobackground.CustomSwitchPreference
             android:key="use_toast"
             android:defaultValue="true"
             android:title="@string/use_toast"
             android:summary="@string/use_toast_description"
             />
 
-		<SwitchPreference
+		<cw.kop.autobackground.CustomSwitchPreference
 			android:key="force_multipane"
 			android:defaultValue="false"
 			android:title="@string/force_multipane" 
@@ -32,7 +25,7 @@
 			android:summary="@string/change_theme_description"
 			/>
 
-        <SwitchPreference
+        <cw.kop.autobackground.CustomSwitchPreference
             android:key="use_advanced"
             android:defaultValue="false"
             android:title="@string/use_advanced"
@@ -46,9 +39,9 @@
             />
 
         <Preference
-            android:key="show_tutorial"
-            android:title="@string/show_tutorial"
-            android:summary="@string/show_tutorial_description"
+            android:key="show_tutorial_source"
+            android:title="@string/show_tutorial_source"
+            android:summary="@string/show_tutorial_source_description"
             />
 
 	</PreferenceCategory>

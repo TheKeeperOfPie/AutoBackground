@@ -6,7 +6,7 @@
 
         <Preference
             android:key="about_self_copyright"
-            android:title="@string/about_self_copyright"
+            android:title="@string/app_name"
             android:summary="@string/about_self_copyright_description"
             />
 

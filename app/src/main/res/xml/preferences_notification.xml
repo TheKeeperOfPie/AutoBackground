@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:key="title_notification_settings"
+        android:title="@string/title_notification_settings"
+        >
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_notification"
+            android:defaultValue="false"
+            android:title="@string/use_notification"
+            android:summary="@string/use_notification_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_pin_indicator"
+            android:defaultValue="true"
+            android:title="@string/use_pin_indicator"
+            android:summary="@string/use_pin_indicator_description"
+            />
+
+        <Preference
+            android:key="show_tutorial_notification"
+            android:title="@string/show_tutorial_notification"
+            android:summary="@string/show_tutorial_notification_description"
+            />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

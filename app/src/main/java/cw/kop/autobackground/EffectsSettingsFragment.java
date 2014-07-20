@@ -89,9 +89,9 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
     private void showEffectDialogMenu() {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context, R.style.DarkDialogTheme);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context, R.style.DarkDialogTheme);
 
-        dialog.setItems(R.array.random_effects_entry_menu, new DialogInterface.OnClickListener() {
+        dialogBuilder.setItems(R.array.random_effects_entry_menu, new DialogInterface.OnClickListener() {
 
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -100,6 +100,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
             }
         });
 
+        AlertDialog dialog = dialogBuilder.create();
 
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
 
@@ -115,7 +116,6 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
         AppSettings.setRandomEffect("None");
 
-        dialog.create();
         dialog.show();
     }
 

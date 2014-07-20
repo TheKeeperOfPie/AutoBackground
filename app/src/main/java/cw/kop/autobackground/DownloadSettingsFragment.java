@@ -28,7 +28,6 @@ import java.util.HashSet;
 
 import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.settings.AppSettings;
-import cw.kop.autobackground.sources.SourceListAdapter;
 
 public class DownloadSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
@@ -36,8 +35,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 	private final static int REQUEST_FILE_ID = 0;
 	private SwitchPreference timerPref;
 	private Context context;
-	private Intent intent;
-	private PendingIntent pendingIntent;
+    private PendingIntent pendingIntent;
 	private AlarmManager alarmManager;
 	
 	@Override
@@ -119,7 +117,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 		super.onAttach(activity);
 		context = getActivity();
 
-		intent = new Intent();
+        Intent intent = new Intent();
 		intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
 		intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
 		pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
@@ -142,9 +140,9 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         AppSettings.setTimerDuration(0);
 
-		AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
 
-		dialog.setItems(R.array.timer_entry_menu, new DialogInterface.OnClickListener() {
+        dialogBuilder.setItems(R.array.timer_entry_menu, new DialogInterface.OnClickListener() {
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -184,7 +182,9 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 		        
 			}
 		});
-		
+
+        AlertDialog dialog = dialogBuilder.create();
+
 		dialog.setOnDismissListener(new OnDismissListener () {
 
 			@Override
@@ -195,8 +195,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 			}
 			
 		});
-		
-		dialog.create();
+
 		dialog.show();
 	}
 
@@ -213,18 +212,18 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         AppSettings.setTimerDuration(0);
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-        dialog.setMessage("Download Interval");
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        dialogBuilder.setMessage("Download Interval");
 
         View dialogView = View.inflate(context, R.layout.numeric_dialog, null);
 
-        dialog.setView(dialogView);
+        dialogBuilder.setView(dialogView);
 
         final EditText inputField = (EditText) dialogView.findViewById(R.id.input_field);
 
         inputField.setHint("Enter number of minutes");
 
-        dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+        dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
                 if (inputField.getText().toString().equals("")) {
@@ -236,13 +235,16 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
             }
         });
-        dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+        dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
                 AppSettings.setTimerDuration(0);
                 timerPref.setChecked(false);
             }
         });
+
+        AlertDialog dialog = dialogBuilder.create();
+
         dialog.setOnDismissListener(new OnDismissListener () {
             @Override
             public void onDismiss(DialogInterface dialog) {

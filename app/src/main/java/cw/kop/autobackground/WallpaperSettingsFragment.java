@@ -22,7 +22,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ListView;
 
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -98,9 +97,9 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         AppSettings.setIntervalDuration(0);
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-		
-		dialog.setItems(R.array.interval_entry_menu, new DialogInterface.OnClickListener() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+
+        dialogBuilder.setItems(R.array.interval_entry_menu, new DialogInterface.OnClickListener() {
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -138,7 +137,9 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 		        
 			}
 		});
-		
+
+        AlertDialog dialog = dialogBuilder.create();
+
 		dialog.setOnDismissListener(new OnDismissListener () {
 
 			@Override
@@ -150,7 +151,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 			
 		});
 
-		dialog.create();
 		dialog.show();
 	}
 
@@ -167,18 +167,18 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         AppSettings.setIntervalDuration(0);
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-        dialog.setMessage("Update Interval");
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        dialogBuilder.setMessage("Update Interval");
 
         View dialogView = View.inflate(context, R.layout.numeric_dialog, null);
 
-        dialog.setView(dialogView);
+        dialogBuilder.setView(dialogView);
 
         final EditText inputField = (EditText) dialogView.findViewById(R.id.input_field);
 
         inputField.setHint("Enter number of minutes");
 
-        dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+        dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
                 if (inputField.getText().toString().equals("")) {
@@ -190,13 +190,16 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
             }
         });
-        dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+        dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
                 AppSettings.setIntervalDuration(0);
                 intervalPref.setChecked(false);
             }
         });
+
+        AlertDialog dialog = dialogBuilder.create();
+
         dialog.setOnDismissListener(new OnDismissListener () {
             @Override
             public void onDismiss(DialogInterface dialog) {

@@ -1,5 +1,6 @@
 package cw.kop.autobackground;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -26,6 +27,7 @@ import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
+import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -212,11 +214,12 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     private Target target = new Target() {
 
+        @SuppressLint("NewApi")
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
             if (notificationBuilder != null && notificationManager != null) {
 
-                if (pinned) {
+                if (pinned && AppSettings.usePinIndicator()) {
 
                     int notifyIconWidth = bitmap.getWidth();
                     int notifyIconHeight = bitmap.getHeight();
@@ -242,9 +245,15 @@ public class LiveWallpaperService extends GLWallpaperService {
 //                    notificationBuilder.setLargeIcon(bitmap);
                 }
 
-                Notification notification = notificationBuilder.build();
+                Notification notification;
 
-                notification.bigContentView = bigView;
+                if (Build.VERSION.SDK_INT >= 16) {
+                    notification = notificationBuilder.build();
+                    notification.bigContentView = bigView;
+                }
+                else {
+                    notification = notificationBuilder.getNotification();
+                }
 
                 notificationManager.cancel(0);
                 notificationManager.notify(0, notification);
@@ -261,7 +270,8 @@ public class LiveWallpaperService extends GLWallpaperService {
         }
     };
 
-    public void notifyChangeImage() {
+    @SuppressLint("NewApi")
+    private void notifyChangeImage() {
 
         if (normalView != null && bigView != null && notificationManager != null) {
             int drawable = AppSettings.getNotificationIcon();
@@ -297,7 +307,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             } else if (drawable == R.drawable.ic_action_picture || drawable == R.drawable.ic_action_picture_dark) {
                 Picasso.with(appContext).load(Downloader.getCurrentBitmapFile()).resizeDimen(android.R.dimen.notification_large_icon_width, android.R.dimen.notification_large_icon_height).into(target);
             } else {
-                if (pinned) {
+                if (pinned && AppSettings.usePinIndicator()) {
                     Drawable[] layers = new Drawable[2];
                     layers[0] = appContext.getResources().getDrawable(drawable);
                     layers[1] = appContext.getResources().getDrawable(R.drawable.pin_overlay);
@@ -316,9 +326,15 @@ public class LiveWallpaperService extends GLWallpaperService {
                     bigView.setImageViewResource(R.id.notification_big_icon, drawable);
                 }
 
-                Notification notification = notificationBuilder.build();
+                Notification notification;
 
-                notification.bigContentView = bigView;
+                if (Build.VERSION.SDK_INT >= 16) {
+                    notification = notificationBuilder.build();
+                    notification.bigContentView = bigView;
+                }
+                else {
+                    notification = notificationBuilder.getNotification();
+                }
 
                 notificationManager.cancel(0);
                 notificationManager.notify(0, notification);
@@ -326,6 +342,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         }
     }
 
+    @SuppressLint("NewApi")
     private void startNotification(boolean useNotification) {
         if (useNotification) {
             notificationManager.cancel(0);
@@ -339,7 +356,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             normalView.setInt(R.id.notification_summary, "setTextColor", AppSettings.getNotificationSummaryColor());
 
             Drawable coloredImageOne = appContext.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(0)));
-            Drawable coloredImageTwo = appContext.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(1)));;
+            Drawable coloredImageTwo = appContext.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(1)));
             Drawable coloredImageThree = appContext.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(2)));
 
             coloredImageOne.mutate().setColorFilter(AppSettings.getNotificationOptionColor(0), PorterDuff.Mode.MULTIPLY);
@@ -393,12 +410,18 @@ public class LiveWallpaperService extends GLWallpaperService {
                     .setContent(normalView)
                     .setContentIntent(pendingAppIntent)
                     .setSmallIcon(R.drawable.ic_action_picture_dark)
-                    .setPriority(Notification.PRIORITY_MIN)
                     .setOngoing(true);
 
-            Notification notification = notificationBuilder.build();
+            Notification notification;
 
-            notification.bigContentView = bigView;
+            if (Build.VERSION.SDK_INT >= 16) {
+                notificationBuilder.setPriority(Notification.PRIORITY_MIN);
+                notification = notificationBuilder.build();
+                notification.bigContentView = bigView;
+            }
+            else {
+                notification = notificationBuilder.getNotification();
+            }
 
             notificationManager.notify(0, notification);
 
@@ -469,8 +492,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     }
 
     public Engine onCreateEngine() {
-        GLWallpaperEngine engine = new GLWallpaperEngine();
-        return engine;
+        return new GLWallpaperEngine();
     }
 
     class GLWallpaperEngine extends GLEngine {
@@ -640,11 +662,6 @@ public class LiveWallpaperService extends GLWallpaperService {
         public void onSurfaceCreated(final SurfaceHolder holder) {
             super.onSurfaceCreated(holder);
             Log.i(TAG, "onSurfaceCreated");
-        }
-
-        @Override
-        public void onSurfaceChanged(final SurfaceHolder holder, final int format, final int width, final int height) {
-            super.onSurfaceChanged(holder, format, width, height);
         }
 
         @Override
@@ -872,7 +889,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 // Get handle to textures locations
                 int mAlphaHandle = GLES20.glGetUniformLocation(program, "opacity");
-                int mTextureUniformHandle = GLES20.glGetUniformLocation (program, "s_texture");
 
                 if (toFade) {
 
@@ -1203,7 +1219,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             }
 
-            protected Bitmap scaleBitmap(Bitmap bitmap) {
+            private Bitmap scaleBitmap(Bitmap bitmap) {
                 int bitWidth = bitmap.getWidth();
                 int bitHeight = bitmap.getHeight();
                 float scaleWidth = renderScreenWidth / bitWidth;

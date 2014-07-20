@@ -27,6 +27,11 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
         listClickListener = listener;
     }
 
+    public void addItem(NotificationOptionData data) {
+        optionsList.add(data);
+        notifyItemInserted(optionsList.size() - 1);
+    }
+
     @Override
     public NotificationListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 

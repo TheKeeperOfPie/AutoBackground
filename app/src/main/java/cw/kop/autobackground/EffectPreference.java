@@ -25,8 +25,6 @@ public class EffectPreference extends DialogPreference {
 
     private Context appContext;
     private NumberPicker valuePicker;
-    private TextView suffixText;
-    private Button defaultButton;
 
     private String key;
     private int defaultValue, maxValue;
@@ -49,7 +47,7 @@ public class EffectPreference extends DialogPreference {
         valuePicker = new CustomNumberPicker(appContext);
         valuePicker.setMaxValue(maxValue);
 
-        suffixText = new TextView(appContext);
+        TextView suffixText = new TextView(appContext);
         suffixText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
         suffixText.setText("%");
         suffixText.setGravity(Gravity.CENTER);
@@ -69,7 +67,7 @@ public class EffectPreference extends DialogPreference {
         int padding = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14, appContext.getResources().getDisplayMetrics()));
         valueLayout.setPadding(padding, padding, padding, padding);
 
-        defaultButton = new Button(appContext);
+        Button defaultButton = new Button(appContext);
         defaultButton.setText("Default");
         defaultButton.setOnClickListener(new View.OnClickListener() {
             @Override

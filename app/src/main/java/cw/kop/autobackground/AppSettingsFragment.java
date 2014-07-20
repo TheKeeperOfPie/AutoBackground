@@ -16,8 +16,6 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import cw.kop.autobackground.settings.AppSettings;
@@ -62,12 +60,12 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
             }
         });
 
-        Preference tutorialPref = findPreference("show_tutorial");
+        Preference tutorialPref = findPreference("show_tutorial_source");
         tutorialPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                AppSettings.setTutorial(true);
-                Toast.makeText(context, "Will reshow tutorial", Toast.LENGTH_SHORT).show();
+                AppSettings.setTutorial(true, "source");
+                Toast.makeText(context, "Will reshow source tutorial", Toast.LENGTH_SHORT).show();
                 return false;
             }
         });

@@ -21,7 +21,7 @@
         <item name="android:editTextStyle">@style/LightEditText</item>
         <item name="android:titleTextStyle">@style/LightTitleColor</item>
         <item name="android:textColor">@color/BLACK_OPAQUE</item>
-        <item name="android:textColorSecondary">@color/BLACK_OPAQUE</item>
+        <item name="android:textColorSecondary">@color/DARK_GRAY_OPAQUE</item>
         <item name="android:textStyle">bold</item>
         <item name="android:actionBarStyle">@style/LightActionBar</item>
         <item name="android:listSeparatorTextViewStyle">@style/LightListSeparator</item>
@@ -36,7 +36,7 @@
         <item name="android:editTextStyle">@style/DarkEditText</item>
         <item name="android:titleTextStyle">@style/DarkTitleColor</item>
         <item name="android:textColor">@color/WHITE_OPAQUE</item>
-        <item name="android:textColorSecondary">@color/WHITE_OPAQUE</item>
+        <item name="android:textColorSecondary">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:textStyle">bold</item>
         <item name="android:actionBarStyle">@style/DarkActionBar</item>
         <item name="android:listSeparatorTextViewStyle">@style/DarkListSeparator</item>>

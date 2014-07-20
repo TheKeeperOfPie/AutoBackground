@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 import android.util.Patterns;
 import android.widget.Toast;
@@ -666,7 +667,14 @@ public class Downloader {
             }
             else if (useNotification) {
                 notifyProgress.setProgress(totalTarget, Integer.parseInt(values[1]), false);
-                notificationManager.notify(NOTIFICATION_ID, notifyProgress.build());
+
+                if (Build.VERSION.SDK_INT >=16) {
+                    notificationManager.notify(NOTIFICATION_ID, notifyProgress.build());
+                }
+                else {
+                    notificationManager.notify(NOTIFICATION_ID, notifyProgress.getNotification());
+                }
+
             }
 		}
 	    
@@ -679,31 +687,27 @@ public class Downloader {
                         .setContentText("AutoBackground downloaded " + totalDownloaded + " images")
                         .setSmallIcon(R.drawable.ic_action_picture_dark);
 
-                Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
-                inboxStyle.setBigContentTitle("Downloaded Image Details:");
+                Notification notification;
 
-                if (fileFilter == null) {
-                    fileFilter = (new FilenameFilter() {
+                if (Build.VERSION.SDK_INT >= 16) {
+                    Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
+                    inboxStyle.setBigContentTitle("Downloaded Image Details:");
 
-                        @Override
-                        public boolean accept(File dir, String filename) {
-                            if (filename.endsWith(".jpg") || filename.endsWith(".png")) {
-                                return true;
-                            }
-                            return false;
-                        }
-                    });
+                    inboxStyle.addLine("Total images in folder: " + Downloader.getBitmapList(context).size());
+
+                    for (String detail : imageDetails.split(";break;")) {
+                        inboxStyle.addLine(detail);
+                    }
+
+                    notifyComplete.setStyle(inboxStyle);
+                    notification = notifyComplete.build();
+                }
+                else {
+                    notification = notifyComplete.getNotification();
                 }
 
-                inboxStyle.addLine("Total images in folder: " + Downloader.getBitmapList(context).size());
-
-                for (String detail : imageDetails.split(";break;")) {
-                    inboxStyle.addLine(detail);
-                }
-
-                notifyComplete.setStyle(inboxStyle);
                 notificationManager.cancel(NOTIFICATION_ID);
-                notificationManager.notify(NOTIFICATION_ID, notifyComplete.build());
+                notificationManager.notify(NOTIFICATION_ID, notification);
             }
 
             Intent cycleIntent = new Intent();
