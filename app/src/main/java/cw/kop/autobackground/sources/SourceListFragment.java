@@ -36,6 +36,7 @@ import com.github.amlcurran.showcaseview.targets.ActionItemTarget;
 import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
+import java.util.HashMap;
 import java.util.TreeMap;
 
 import cw.kop.autobackground.Downloader;
@@ -236,7 +237,7 @@ public class SourceListFragment extends ListFragment {
 	
 	private void showDialogForChange(final int position) {
 		
-		final TreeMap<String, String> clickedItem = listAdapter.getItem(position);
+		final HashMap<String, String> clickedItem = listAdapter.getItem(position);
 		
 		AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
 		

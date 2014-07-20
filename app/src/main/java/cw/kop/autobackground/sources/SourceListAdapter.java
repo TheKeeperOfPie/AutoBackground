@@ -26,13 +26,13 @@ import cw.kop.autobackground.settings.AppSettings;
 public class SourceListAdapter extends BaseAdapter {
 
 	private Activity mainActivity;
-    private ArrayList<TreeMap<String, String>> listData;
+    private ArrayList<HashMap<String, String>> listData;
     private HashSet<String> titles;
     private static LayoutInflater inflater = null;
 	
 	public SourceListAdapter(Activity activity) {
 		mainActivity = activity;
-		listData = new ArrayList<TreeMap<String, String>>();
+		listData = new ArrayList<HashMap<String, String>>();
         titles = new HashSet<String>();
 		inflater = (LayoutInflater)mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	}
@@ -42,7 +42,7 @@ public class SourceListAdapter extends BaseAdapter {
 		return listData.size();
 	}
 
-	public TreeMap<String, String> getItem(int position) {
+	public HashMap<String, String> getItem(int position) {
 		return listData.get(position);
 	}
 	
@@ -54,7 +54,7 @@ public class SourceListAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		
-		final TreeMap<String, String> listItem = listData.get(position);
+		final HashMap<String, String> listItem = listData.get(position);
 		
 		View view = convertView;
 
@@ -96,7 +96,7 @@ public class SourceListAdapter extends BaseAdapter {
 	}
 
     public void setActivated(int position, boolean use) {
-        TreeMap<String, String> changedItem = listData.get(position);
+        HashMap<String, String> changedItem = listData.get(position);
         changedItem.put("use", "" + use);
         listData.set(position, changedItem);
         notifyDataSetChanged();
@@ -105,7 +105,7 @@ public class SourceListAdapter extends BaseAdapter {
 
 	public boolean setItem(int position, String type, String title, String data, boolean use, String num) {
 
-        TreeMap<String, String> changedItem = listData.get(position);
+        HashMap<String, String> changedItem = listData.get(position);
 
         if (!changedItem.get("title").equals(title)) {
             if (titles.contains(title)) {
@@ -130,7 +130,7 @@ public class SourceListAdapter extends BaseAdapter {
             return false;
         }
 
-        TreeMap<String, String> newItem = new TreeMap<String, String>();
+        HashMap<String, String> newItem = new HashMap<String, String>();
         newItem.put("type", type);
 		newItem.put("title", title);
 		newItem.put("data", data);
@@ -152,12 +152,12 @@ public class SourceListAdapter extends BaseAdapter {
 
     public void sortData(final String key) {
 
-        ArrayList<TreeMap<String, String>> sortList = new ArrayList<TreeMap<String, String>>();
+        ArrayList<HashMap<String, String>> sortList = new ArrayList<HashMap<String, String>>();
         sortList.addAll(listData);
 
-        Collections.sort(sortList, new Comparator<TreeMap<String, String>>() {
+        Collections.sort(sortList, new Comparator<HashMap<String, String>>() {
             @Override
-            public int compare(TreeMap<String, String> lhs, TreeMap<String, String> rhs) {
+            public int compare(HashMap<String, String> lhs, HashMap<String, String> rhs) {
 
                 if (key.equals("use")) {
                     boolean first = Boolean.parseBoolean(lhs.get("use"));

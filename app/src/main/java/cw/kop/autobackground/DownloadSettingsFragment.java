@@ -24,8 +24,11 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.HashSet;
+
 import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.SourceListAdapter;
 
 public class DownloadSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
@@ -62,7 +65,12 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Downloader.deleteAllBitmaps(context);
-                        Toast.makeText(context, "Deleting images with prefix\n" + AppSettings.getImagePrefix(), Toast.LENGTH_SHORT).show();
+                        for (int i = 0; i < AppSettings.getNumSources(); i ++) {
+                            if (AppSettings.getSourceType(i).equals("website")) {
+                                AppSettings.setSourceSet(i, new HashSet<String>());
+                            }
+                        }
+                        Toast.makeText(context, "Deleted images with prefix\n" + AppSettings.getImagePrefix(), Toast.LENGTH_SHORT).show();
                     }
                 });
                 dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {

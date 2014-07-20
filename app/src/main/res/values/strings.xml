@@ -75,7 +75,11 @@
     <string name="download_path">External Download Path</string>
     <string name="download_path_description">Set folder for downloaded images</string>
     <string name="keep_images">Keep Images</string>
-    <string name="keep_images_description">Keep old images in cache</string>
+    <string name="keep_images_description">Keep all images in cache</string>
+    <string name="delete_old_images">Delete Old</string>
+    <string name="delete_old_images_description">Remove old images on download</string>
+    <string name="check_duplicates">Prevent Duplicates</string>
+    <string name="check_duplicates_description">Check URLs to prevent redundant downloads</string>
     <string name="delete_images">Delete Images</string>
     <string name="delete_images_description">Purge downloaded images</string>
     <string name="image_prefix">Image Prefix</string>

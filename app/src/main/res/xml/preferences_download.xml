@@ -82,6 +82,20 @@
 		    android:summary="@string/keep_images_description"
          	/>
 
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="delete_old"
+            android:defaultValue="false"
+            android:title="@string/delete_old_images"
+            android:summary="@string/delete_old_images_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="check_duplicates"
+            android:defaultValue="true"
+            android:title="@string/check_duplicates"
+            android:summary="@string/check_duplicates_description"
+            />
+
         <Preference
             android:key="delete_images"
             android:title="@string/delete_images"

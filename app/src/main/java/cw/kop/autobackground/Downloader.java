@@ -405,120 +405,6 @@ public class Downloader {
 //
 //    }
 
-    protected static boolean getImage(String url, String cacheDir, String title, int num) {
-
-        if (Patterns.WEB_URL.matcher(url).matches()) {
-            try {
-
-                int minWidth = AppSettings.getWidth();
-                int minHeight = AppSettings.getHeight();
-                System.gc();
-                URL imageUrl = new URL(url);
-                HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
-                connection.connect();
-                InputStream input = connection.getInputStream();
-
-                if (!connection.getHeaderField("Content-Type").startsWith("image/")) {
-                    Log.i(TAG, "Not an image: " + url);
-                    return false;
-                }
-
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                options.inJustDecodeBounds = true;
-                if (!AppSettings.useHighQuality()) {
-                    options.inPreferredConfig = Bitmap.Config.RGB_565;
-                }
-
-                BitmapFactory.decodeStream(input, null, options);
-
-                input.close();
-
-                int bitWidth = options.outWidth;
-                int bitHeight = options.outHeight;
-                options.inJustDecodeBounds = false;
-
-                Log.i(TAG, "bitWidth: " + bitWidth + " bitHeight: " + bitHeight);
-
-                if (bitWidth + 10 < minWidth || bitHeight + 10 < minHeight) {
-                    return false;
-                }
-
-                int sampleSize = 1;
-
-                if (bitHeight > minHeight || bitWidth > minWidth) {
-
-                    final int halfHeight = bitHeight / 2;
-                    final int halfWidth = bitWidth / 2;
-                    while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
-                        sampleSize *= 2;
-                    }
-                }
-
-                options.inSampleSize = sampleSize;
-
-                connection = (HttpURLConnection) imageUrl.openConnection();
-                connection.connect();
-                input = connection.getInputStream();
-
-                Bitmap bitmap = BitmapFactory.decodeStream(input, null, options);
-
-                if (bitmap == null) {
-                    return false;
-                }
-
-                writeToFile(bitmap, url, cacheDir, title, num);
-
-                bitmap.recycle();
-
-                return true;
-
-            }
-            catch (OutOfMemoryError e) {
-                return false;
-            }
-            catch (IOException e) {
-                return false;
-            }
-        }
-        return false;
-    }
-
-    protected static void writeToFile(Bitmap image, String url, String dir, String title, int imageIndex) {
-
-        File file = new File(dir + "/" + title + "/" + title + AppSettings.getImagePrefix() + imageIndex + ".png");
-
-        if (!file.getParentFile().exists() || !file.getParentFile().isDirectory()) {
-            if (!file.getParentFile().mkdir()) {
-                return;
-            }
-        }
-
-        if (file.isFile()) {
-            file.delete();
-        }
-
-        FileOutputStream out = null;
-        try {
-            out = new FileOutputStream(file);
-            image.compress(Bitmap.CompressFormat.PNG, 90, out);
-            AppSettings.setUrl(file.getName(), url);
-            Log.i(TAG, file.getName() + " " + url);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        finally {
-            try{
-                if (out !=null) {
-                    out.close();
-                }
-            }
-            catch(Throwable e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
 	static class RetrieveImageTask extends AsyncTask<String, String, Void> {
 
@@ -527,12 +413,13 @@ public class Downloader {
 		private Document linkDoc;
 		private Context context;
 		private String imageDetails = "";
-        private Set<String> usedLinks = new HashSet<String>();
         private NotificationManager notificationManager;
         private Notification.Builder notifyProgress;
         private int totalTarget = 0;
         private int totalDownloaded = 0;
-		
+		private boolean useNotification = AppSettings.useDownloadNotification();
+        private HashSet<String> usedLinks;
+
 		public RetrieveImageTask (Context appContext){
 			context = appContext;
 	    }
@@ -541,14 +428,16 @@ public class Downloader {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-            notifyProgress = new Notification.Builder(context)
-                    .setContentTitle("AutoBackground")
-                    .setContentText("Downloading images...")
-                    .setSmallIcon(R.drawable.ic_action_picture_dark);
+            if (useNotification) {
+                notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
+                notifyProgress = new Notification.Builder(context)
+                        .setContentTitle("AutoBackground")
+                        .setContentText("Downloading images...")
+                        .setSmallIcon(R.drawable.ic_action_picture_dark);
 
+            }
         }
 
         protected Void doInBackground(String... params) {
@@ -568,9 +457,15 @@ public class Downloader {
 
                 try {
 
+                    usedLinks = new HashSet<String>();
+                    HashSet<String> newLinks = new HashSet<String>();
                     if (!AppSettings.keepImages()) {
-                        deleteBitmaps(context, AppSettings.getSourceTitle(index));
                         AppSettings.setSourceNumStored(index, 0);
+                    }
+
+                    if (AppSettings.deleteOldImages()) {
+                        deleteBitmaps(context, AppSettings.getSourceTitle(index));
+                        AppSettings.setSourceSet(index, new HashSet<String>());
                     }
 
                     linkDoc = Jsoup.connect(AppSettings.getSourceData(index))
@@ -590,6 +485,16 @@ public class Downloader {
                     int count = 0;
                     String title = AppSettings.getSourceTitle(index);
 
+                    if (AppSettings.checkDuplicates()) {
+                        usedLinks.addAll(AppSettings.getSourceSet(index));
+                    }
+
+                    File file = new File(downloadCacheDir + "/" + title);
+
+                    if (!file.getParentFile().exists() || !file.getParentFile().isDirectory()) {
+                        file.getParentFile().mkdir();
+                    }
+
                     if (imageList.size() > 0) {
                         while (num < (AppSettings.getSourceNum(index) + stored) && count < imageList.size()) {
 
@@ -600,6 +505,7 @@ public class Downloader {
                             if (!oldLink) {
                                 if (getImage(randLink, downloadCacheDir, title, num)) {
                                     usedLinks.add(randLink);
+                                    newLinks.add(randLink);
                                     num++;
                                     publishProgress("", "" + (totalDownloaded + num - stored));
                                 }
@@ -611,13 +517,16 @@ public class Downloader {
                     int imagesDownloaded = num - stored;
 
                     AppSettings.setSourceNumStored(index, num);
+                    AppSettings.setSourceSet(index, usedLinks);
 
                     publishProgress("", "" + AppSettings.getSourceNum(index));
 
                     imageDetails += AppSettings.getSourceTitle(index) + ": " + imagesDownloaded + " images;break;";
 
                     if (imagesDownloaded < AppSettings.getSourceNum(index)) {
-                        publishProgress("Not enough photos found from " + AppSettings.getSourceData(index) + "\nTry lowering the resolution or changing sources");
+                        publishProgress("Not enough photos from " + AppSettings.getSourceData(index) + ".\n" +
+                                "Try lowering the resolution or changing sources.\n" +
+                                "There may also have been too many duplicates.");
                     }
 
                     totalDownloaded += imagesDownloaded;
@@ -632,26 +541,131 @@ public class Downloader {
             }
 
             if (totalDownloaded == 0) {
-                publishProgress("No images downloaded,\ncheck wallpaper and download settings");
-            }
-            else {
-                publishProgress("Downloaded " + totalDownloaded + " images");
+                publishProgress("No images downloaded. Check wallpaper and download settings");
             }
 			return null;
 	    }
 
-	    
+        protected boolean getImage(String url, String cacheDir, String title, int num) {
+
+            if (Patterns.WEB_URL.matcher(url).matches()) {
+                try {
+
+                    int minWidth = AppSettings.getWidth();
+                    int minHeight = AppSettings.getHeight();
+                    System.gc();
+                    URL imageUrl = new URL(url);
+                    HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
+                    connection.connect();
+                    InputStream input = connection.getInputStream();
+
+                    if (!connection.getHeaderField("Content-Type").startsWith("image/")) {
+                        Log.i(TAG, "Not an image: " + url);
+                        return false;
+                    }
+
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                    options.inJustDecodeBounds = true;
+                    if (!AppSettings.useHighQuality()) {
+                        options.inPreferredConfig = Bitmap.Config.RGB_565;
+                    }
+
+                    BitmapFactory.decodeStream(input, null, options);
+
+                    input.close();
+
+                    int bitWidth = options.outWidth;
+                    int bitHeight = options.outHeight;
+                    options.inJustDecodeBounds = false;
+
+                    Log.i(TAG, "bitWidth: " + bitWidth + " bitHeight: " + bitHeight);
+
+                    if (bitWidth + 10 < minWidth || bitHeight + 10 < minHeight) {
+                        return false;
+                    }
+
+                    int sampleSize = 1;
+
+                    if (bitHeight > minHeight || bitWidth > minWidth) {
+
+                        final int halfHeight = bitHeight / 2;
+                        final int halfWidth = bitWidth / 2;
+                        while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
+                            sampleSize *= 2;
+                        }
+                    }
+
+                    options.inSampleSize = sampleSize;
+
+                    connection = (HttpURLConnection) imageUrl.openConnection();
+                    connection.connect();
+                    input = connection.getInputStream();
+
+                    Bitmap bitmap = BitmapFactory.decodeStream(input, null, options);
+
+                    if (bitmap == null) {
+                        return false;
+                    }
+
+                    writeToFile(bitmap, url, cacheDir, title, num);
+
+                    bitmap.recycle();
+
+                    return true;
+
+                }
+                catch (OutOfMemoryError e) {
+                    return false;
+                }
+                catch (IOException e) {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        protected void writeToFile(Bitmap image, String url, String dir, String title, int imageIndex) {
+
+            File file = new File(dir + "/" + title + "/" + title + AppSettings.getImagePrefix() + imageIndex + ".png");
+
+            if (file.isFile()) {
+                usedLinks.remove(AppSettings.getUrl(file.getName()));
+                file.delete();
+            }
+
+            FileOutputStream out = null;
+            try {
+                out = new FileOutputStream(file);
+                image.compress(Bitmap.CompressFormat.PNG, 90, out);
+                AppSettings.setUrl(file.getName(), url);
+                Log.i(TAG, file.getName() + " " + url);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            finally {
+                try{
+                    if (out !=null) {
+                        out.close();
+                    }
+                }
+                catch(Throwable e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
 	    @Override
 		protected void onProgressUpdate(String... values) {
 			super.onProgressUpdate(values);
             if (!values[0].equals("")) {
                 if (AppSettings.useToast()) {
-                    Toast.makeText(context, values[0], Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, values[0], Toast.LENGTH_LONG).show();
                 }
             }
-            else {
+            else if (useNotification) {
                 notifyProgress.setProgress(totalTarget, Integer.parseInt(values[1]), false);
-                notificationManager.cancel(NOTIFICATION_ID);
                 notificationManager.notify(NOTIFICATION_ID, notifyProgress.build());
             }
 		}
@@ -659,36 +673,38 @@ public class Downloader {
 	    @Override
 	    protected void onPostExecute(Void result) {
 
-	    	Notification.Builder notifyComplete  = new Notification.Builder(context)
-                .setContentTitle("Download Completed")
-                .setContentText("AutoBackground downloaded " + totalDownloaded + " images")
-                .setSmallIcon(R.drawable.ic_action_picture_dark);
+            if (useNotification) {
+                Notification.Builder notifyComplete = new Notification.Builder(context)
+                        .setContentTitle("Download Completed")
+                        .setContentText("AutoBackground downloaded " + totalDownloaded + " images")
+                        .setSmallIcon(R.drawable.ic_action_picture_dark);
 
-            Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
-			inboxStyle.setBigContentTitle("Downloaded Image Details:");
+                Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
+                inboxStyle.setBigContentTitle("Downloaded Image Details:");
 
-            if (fileFilter == null) {
-                fileFilter = (new FilenameFilter() {
+                if (fileFilter == null) {
+                    fileFilter = (new FilenameFilter() {
 
-                    @Override
-                    public boolean accept(File dir, String filename) {
-                        if (filename.endsWith(".jpg") || filename.endsWith(".png")) {
-                            return true;
+                        @Override
+                        public boolean accept(File dir, String filename) {
+                            if (filename.endsWith(".jpg") || filename.endsWith(".png")) {
+                                return true;
+                            }
+                            return false;
                         }
-                        return false;
-                    }
-                });
+                    });
+                }
+
+                inboxStyle.addLine("Total images in folder: " + Downloader.getBitmapList(context).size());
+
+                for (String detail : imageDetails.split(";break;")) {
+                    inboxStyle.addLine(detail);
+                }
+
+                notifyComplete.setStyle(inboxStyle);
+                notificationManager.cancel(NOTIFICATION_ID);
+                notificationManager.notify(NOTIFICATION_ID, notifyComplete.build());
             }
-
-            inboxStyle.addLine("Total images in folder: " + (new File(AppSettings.getDownloadPath(context))).listFiles(fileFilter).length);
-
-			for (String detail : imageDetails.split(";break;")) {
-				inboxStyle.addLine(detail);
-			}
-
-            notifyComplete.setStyle(inboxStyle);
-            notificationManager.cancel(NOTIFICATION_ID);
-			notificationManager.notify(NOTIFICATION_ID, notifyComplete.build());
 
             Intent cycleIntent = new Intent();
             cycleIntent.setAction(LiveWallpaperService.CYCLE_IMAGE);
