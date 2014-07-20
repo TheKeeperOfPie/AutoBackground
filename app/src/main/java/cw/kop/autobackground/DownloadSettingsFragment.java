@@ -52,9 +52,27 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         deletePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                Downloader.deleteAllBitmaps(context);
-                Toast.makeText(context, "Deleting images with prefix\n" + AppSettings.getImagePrefix(), Toast.LENGTH_SHORT).show();
-                return false;
+
+                AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+
+                dialog.setTitle("Are you sure you want to delete all images?");
+                dialog.setMessage("This cannot be undone.");
+
+                dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        Downloader.deleteAllBitmaps(context);
+                        Toast.makeText(context, "Deleting images with prefix\n" + AppSettings.getImagePrefix(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                });
+
+                dialog.show();
+                return true;
             }
         });
 

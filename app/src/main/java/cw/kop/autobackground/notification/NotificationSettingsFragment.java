@@ -385,8 +385,8 @@ public class NotificationSettingsFragment extends Fragment implements View.OnCli
                     AppSettings.setUseNotificationIconFile(false);
                 }
                 else if (title.equals("None")) {
-                    AppSettings.setNotificationIcon(R.color.TRANSPARENT_BACKGROUND);
-                    notificationIcon.setImageResource(context.getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
+                    AppSettings.setNotificationIcon(R.drawable.icon_blank);
+                    notificationIcon.setImageResource(R.drawable.icon_blank);
                     clearHighlights();
                     recyclerView.setAdapter(null);
                     AppSettings.setUseNotificationIconFile(false);

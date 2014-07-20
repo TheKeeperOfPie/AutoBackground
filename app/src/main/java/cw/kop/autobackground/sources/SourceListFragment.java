@@ -23,7 +23,6 @@ import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -37,7 +36,7 @@ import com.github.amlcurran.showcaseview.targets.ActionItemTarget;
 import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
-import java.util.HashMap;
+import java.util.TreeMap;
 
 import cw.kop.autobackground.Downloader;
 import cw.kop.autobackground.LiveWallpaperService;
@@ -80,7 +79,7 @@ public class SourceListFragment extends ListFragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		
-		inflater.inflate(R.menu.website_actions, menu);
+		inflater.inflate(R.menu.source_actions, menu);
 		
 		super.onCreateOptionsMenu(menu, inflater);
 	}
@@ -98,9 +97,12 @@ public class SourceListFragment extends ListFragment {
                 hide(settingsTutorial);
                 showTutorial(6);
                 return true;
-			case R.id.add_website:
+			case R.id.add_source:
 				showSourceMenu();
 				return true;
+            case R.id.sort_sources:
+                showSourceSortMenu();
+                return true;
 			default:
 			    return super.onOptionsItemSelected(item);
 		}
@@ -138,46 +140,90 @@ public class SourceListFragment extends ListFragment {
         dialog.show();
     }
 
+    private void showSourceSortMenu() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+
+        dialog.setTitle("Sort by:");
+
+        dialog.setItems(R.array.source_sort_menu, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        listAdapter.sortData("use");
+                        break;
+                    case 1:
+                        listAdapter.sortData("data");
+                        break;
+                    case 2:
+                        listAdapter.sortData("title");
+                        break;
+                    case 3:
+                        listAdapter.sortData("num");
+                        break;
+                    default:
+                }
+
+            }
+        });
+
+        dialog.show();
+    }
+
     public void addFolder(String title, String path, int num) {
-        listAdapter.addItem(FOLDER, title, path, true, "" + num);
-        listAdapter.saveData();
+        if (listAdapter.addItem(FOLDER, title, path, true, "" + num)) {
+            listAdapter.saveData();
+        }
+        else {
+            Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     public void setFolder(int position, String title, String path, int num) {
-        listAdapter.setItem(position, FOLDER, title, path, true, "" + num);
-        listAdapter.saveData();
+        if (listAdapter.setItem(position, FOLDER, title, path, true, "" + num)) {
+            listAdapter.saveData();
+        }
+        else {
+            Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+        }
     }
 
 	private void showDialogForInput() {
 
 		AlertDialog.Builder dialog = new AlertDialog.Builder(context);
 
-        View dialogView = View.inflate(context, R.layout.add_website_dialog, null);
+        View dialogView = View.inflate(context, R.layout.add_source_dialog, null);
 		
 		dialog.setView(dialogView);
 
-		final EditText websiteTitle = (EditText) dialogView.findViewById(R.id.website_title);
-		final EditText websiteUrl = (EditText) dialogView.findViewById(R.id.website_url);
-		final EditText numImages = (EditText) dialogView.findViewById(R.id.num_images);
+		final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
+		final EditText sourceData = (EditText) dialogView.findViewById(R.id.source_data);
+		final EditText sourceNum = (EditText) dialogView.findViewById(R.id.source_num);
         TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
 
         dialogTitle.setText("Enter website:");
 
         dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int id) {
-	        	if (!websiteUrl.getText().toString().equals("") && !websiteTitle.getText().toString().equals("")){
+	        	if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals("")){
 	        		
-	        		if (!websiteUrl.getText().toString().contains("http")) {
-	        			websiteUrl.setText("http://" + websiteUrl.getText().toString());
+	        		if (!sourceData.getText().toString().contains("http")) {
+	        			sourceData.setText("http://" + sourceData.getText().toString());
 	        		}
 	        		
-	        		if (numImages.getText().toString().equals("")) {
-	        			numImages.setText("1");
+	        		if (sourceNum.getText().toString().equals("")) {
+	        			sourceNum.setText("1");
 	        		}
 	        		
-	        		listAdapter.addItem(WEBSITE, websiteTitle.getText().toString(), websiteUrl.getText().toString(), true, numImages.getText().toString());
-                    listAdapter.saveData();
-                    hide(addWebsiteTutorial);
+	        		if (listAdapter.addItem(WEBSITE, sourceTitle.getText().toString(), sourceData.getText().toString(), true, sourceNum.getText().toString())) {
+                        listAdapter.saveData();
+                        hide(addWebsiteTutorial);
+                    }
+                    else {
+                        Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+                    }
 	        	}
 	        }
         });
@@ -190,41 +236,45 @@ public class SourceListFragment extends ListFragment {
 	
 	private void showDialogForChange(final int position) {
 		
-		final HashMap<String, String> clickedItem = listAdapter.getItem(position);
+		final TreeMap<String, String> clickedItem = listAdapter.getItem(position);
 		
 		AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
 		
 		LayoutInflater inflater = getActivity().getLayoutInflater();
 		
-		View dialogView = inflater.inflate(R.layout.add_website_dialog, null);
+		View dialogView = inflater.inflate(R.layout.add_source_dialog, null);
 		
 		dialog.setView(dialogView);
 
-		final EditText websiteTitle = (EditText) dialogView.findViewById(R.id.website_title);
-		final EditText websiteUrl = (EditText) dialogView.findViewById(R.id.website_url);
-		final EditText numImages = (EditText) dialogView.findViewById(R.id.num_images);
+		final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
+		final EditText sourceData = (EditText) dialogView.findViewById(R.id.source_data);
+		final EditText sourceNum = (EditText) dialogView.findViewById(R.id.source_num);
         TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
 
         dialogTitle.setText("Enter website:");
 		
-		websiteTitle.setText(clickedItem.get("title"));
-		websiteUrl.setText(clickedItem.get("url"));
-		numImages.setText(clickedItem.get("num"));
+		sourceTitle.setText(clickedItem.get("title"));
+		sourceData.setText(clickedItem.get("data"));
+		sourceNum.setText(clickedItem.get("num"));
 		
         dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int id) {
-	        	if (!websiteUrl.getText().toString().equals("") && !websiteTitle.getText().toString().equals("")){
+	        	if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals("")){
 	        		
-	        		if (!websiteUrl.getText().toString().contains("http")) {
-	        			websiteUrl.setText("http://" + websiteUrl.getText().toString());
+	        		if (!sourceData.getText().toString().contains("http")) {
+	        			sourceData.setText("http://" + sourceData.getText().toString());
 	        		}
 	        		
-	        		if (numImages.getText().toString().equals("")) {
-	        			numImages.setText("1");
+	        		if (sourceNum.getText().toString().equals("")) {
+	        			sourceNum.setText("1");
 	        		}
 	        		
-	        		listAdapter.setItem(position, WEBSITE, websiteTitle.getText().toString(), websiteUrl.getText().toString(), Boolean.valueOf(clickedItem.get("use")), numImages.getText().toString());
-                    listAdapter.saveData();
+	        		if (listAdapter.setItem(position, WEBSITE, sourceTitle.getText().toString(), sourceData.getText().toString(), Boolean.valueOf(clickedItem.get("use")), sourceNum.getText().toString())) {
+                        listAdapter.saveData();
+                    }
+                    else {
+                        Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+                    }
 	        	}
 	        }
         });
@@ -261,9 +311,42 @@ public class SourceListFragment extends ListFragment {
                                     .commit();
                         }
 						break;
-					case 1:	
-						listAdapter.removeItem(position);
-                        listAdapter.saveData();
+					case 1:
+                        if (listAdapter.getItem(position).get("type").equals(WEBSITE)) {
+                            listAdapter.saveData();
+                            AlertDialog.Builder deleteDialog = new AlertDialog.Builder(context);
+
+                            deleteDialog.setTitle("Delete images associated with this source?");
+                            deleteDialog.setMessage("This cannot be undone.");
+
+                            deleteDialog.setPositiveButton(R.string.yes_button, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id) {
+                                    Downloader.deleteBitmaps(context, AppSettings.getSourceTitle(position));
+                                    Toast.makeText(context, "Deleting " + AppSettings.getSourceTitle(position) + " images", Toast.LENGTH_SHORT).show();
+                                    listAdapter.removeItem(position);
+                                    listAdapter.saveData();
+                                }
+                            });
+                            deleteDialog.setNeutralButton(R.string.no_button, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id) {
+                                    listAdapter.removeItem(position);
+                                    listAdapter.saveData();
+                                }
+                            });
+                            deleteDialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id) {
+                                }
+                            });
+
+                            deleteDialog.show();
+                        }
+                        else {
+                            listAdapter.removeItem(position);
+                            listAdapter.saveData();
+                        }
 					default:
 				}
 				
@@ -478,7 +561,7 @@ public class SourceListFragment extends ListFragment {
                         .setOnClickListener(addWebsiteListener);
 
                 if (android.os.Build.VERSION.SDK_INT < 20) {
-                    addWebsiteBuilder.setTarget(new ActionItemTarget(getActivity(), R.id.add_website));
+                    addWebsiteBuilder.setTarget(new ActionItemTarget(getActivity(), R.id.add_source));
                 }
 
                 addWebsiteTutorial = addWebsiteBuilder.build();

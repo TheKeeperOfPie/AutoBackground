@@ -9,6 +9,7 @@ import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -65,24 +66,27 @@ public class LocalImageFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 
-        int themeId;
+//        int themeId;
+//
+//        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+//            themeId = R.style.AppLightTheme;
+//        }
+//        else {
+//            themeId = R.style.AppDarkTheme;
+//        }
+//
+//        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), themeId);
+//
+//        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
 
-        if (AppSettings.getTheme() == R.style.AppLightTheme) {
-            themeId = R.style.AppLightTheme;
-        }
-        else {
-            themeId = R.style.AppDarkTheme;
-        }
-
-        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), themeId);
-
-        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
-		ViewGroup view = (ViewGroup) localInflater.inflate(R.layout.image_grid_layout, null);
+		ViewGroup view = (ViewGroup) inflater.inflate(R.layout.image_grid_layout, null);
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
 
-        if (AppSettings.getTheme() == R.style.AppTransparentTheme) {
+        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+            imageListView.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
+        }
+        else if (AppSettings.getTheme() == R.style.AppTransparentTheme) {
             imageListView.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
         }
 
@@ -109,7 +113,7 @@ public class LocalImageFragment extends Fragment {
 				File dir = imageAdapter.getDirectory();
                 if (setPath) {
                     AppSettings.setDownloadPath(dir.getAbsolutePath());
-                    Toast.makeText(context, "Download path set to: \n" + AppSettings.getDownloadPath(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Download path set to: \n" + AppSettings.getDownloadPath(context), Toast.LENGTH_SHORT).show();
                 }
                 else {
                     SourceListFragment sourceListFragment = (SourceListFragment) getActivity().getFragmentManager().findFragmentByTag("website_fragment");
@@ -165,8 +169,6 @@ public class LocalImageFragment extends Fragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		getView().setFocusableInTouchMode(true);
-		
 		dir = Environment.getExternalStorageDirectory();
 		
 		if (imageAdapter == null) {

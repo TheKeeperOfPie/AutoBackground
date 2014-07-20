@@ -26,6 +26,7 @@
         <item name="android:actionBarStyle">@style/LightActionBar</item>
         <item name="android:listSeparatorTextViewStyle">@style/LightListSeparator</item>
         <item name="android:alertDialogTheme">@style/LightDialogTheme</item>
+        <item name="android:popupMenuStyle">@style/PopupMenu</item>
         <item name="ic_action_new">@drawable/ic_action_new</item>
     </style>
 
@@ -40,6 +41,7 @@
         <item name="android:actionBarStyle">@style/DarkActionBar</item>
         <item name="android:listSeparatorTextViewStyle">@style/DarkListSeparator</item>>
         <item name="android:alertDialogTheme">@style/DarkDialogTheme</item>
+        <item name="android:popupMenuStyle">@style/PopupMenu</item>
     </style>
 
     <style name="AppTransparentTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
@@ -55,6 +57,11 @@
         <item name="android:actionBarStyle">@style/TransparentActionBar</item>
         <item name="android:listSeparatorTextViewStyle">@style/DarkListSeparator</item>>
         <item name="android:alertDialogTheme">@style/DarkDialogTheme</item>
+        <item name="android:popupMenuStyle">@style/PopupMenu</item>
+    </style>
+
+    <style name="PopupMenu" parent="@android:style/Widget.PopupMenu">
+        <item name="android:popupBackground">@color/BLUE_OPAQUE</item>
     </style>
 
     <style name="LightListSeparator">

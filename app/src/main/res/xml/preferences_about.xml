@@ -2,7 +2,20 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     
 	<PreferenceCategory
-            android:title="@string/app_name">
+        android:title="@string/title_about">
+
+        <Preference
+            android:key="about_self_copyright"
+            android:title="@string/about_self_copyright"
+            android:summary="@string/about_self_copyright_description"
+            />
+
+        <Preference
+            android:key="about_copyright"
+            android:title="@string/about_copyright"
+            android:summary="@string/about_copyright_description"
+            />
+
 
     </PreferenceCategory>
     

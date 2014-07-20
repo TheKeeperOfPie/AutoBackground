@@ -14,7 +14,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.TreeMap;
 
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
@@ -22,12 +26,14 @@ import cw.kop.autobackground.settings.AppSettings;
 public class SourceListAdapter extends BaseAdapter {
 
 	private Activity mainActivity;
-    private ArrayList<HashMap<String, String>> listData;
+    private ArrayList<TreeMap<String, String>> listData;
+    private HashSet<String> titles;
     private static LayoutInflater inflater = null;
 	
 	public SourceListAdapter(Activity activity) {
 		mainActivity = activity;
-		listData = new ArrayList<HashMap<String, String>>();
+		listData = new ArrayList<TreeMap<String, String>>();
+        titles = new HashSet<String>();
 		inflater = (LayoutInflater)mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	}
 
@@ -36,7 +42,7 @@ public class SourceListAdapter extends BaseAdapter {
 		return listData.size();
 	}
 
-	public HashMap<String, String> getItem(int position) {
+	public TreeMap<String, String> getItem(int position) {
 		return listData.get(position);
 	}
 	
@@ -48,7 +54,7 @@ public class SourceListAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		
-		final HashMap<String, String> listItem = listData.get(position);
+		final TreeMap<String, String> listItem = listData.get(position);
 		
 		View view = convertView;
 
@@ -72,9 +78,8 @@ public class SourceListAdapter extends BaseAdapter {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				
 				int index = Integer.parseInt(useBox.getTag().toString());
-				
-				setItem(index, listData.get(index).get("type"), listData.get(index).get("title"), listData.get(index).get("data"), isChecked, listData.get(index).get("num"));
-				notifyDataSetChanged();
+
+                setActivated(index, isChecked);
 				
 			}
 			
@@ -90,35 +95,103 @@ public class SourceListAdapter extends BaseAdapter {
 		return view;
 	}
 
-	public void setItem(int position, String type, String title, String data, boolean use, String num) {
-		HashMap<String, String> changedItem = new HashMap<String, String>();
+    public void setActivated(int position, boolean use) {
+        TreeMap<String, String> changedItem = listData.get(position);
+        changedItem.put("use", "" + use);
+        listData.set(position, changedItem);
+        notifyDataSetChanged();
+        saveData();
+    }
+
+	public boolean setItem(int position, String type, String title, String data, boolean use, String num) {
+
+        TreeMap<String, String> changedItem = listData.get(position);
+
+        if (!changedItem.get("title").equals(title)) {
+            if (titles.contains(title)) {
+                return false;
+            }
+        }
+
         changedItem.put("type", type);
 		changedItem.put("title", title);
 		changedItem.put("data", data);
 		changedItem.put("num", "" + num);
 		changedItem.put("use", "" + use);
 		listData.set(position, changedItem);
+        titles.add(title);
 		notifyDataSetChanged();
+        return true;
 	}
 	
-	public void addItem(String type, String title, String data, boolean use, String num) {
-		HashMap<String, String> newItem = new HashMap<String, String>();
+	public boolean addItem(String type, String title, String data, boolean use, String num) {
+
+        if (titles.contains(title)) {
+            return false;
+        }
+
+        TreeMap<String, String> newItem = new TreeMap<String, String>();
         newItem.put("type", type);
 		newItem.put("title", title);
 		newItem.put("data", data);
 		newItem.put("num", "" + num);
 		newItem.put("use", "" + use);
 		listData.add(newItem);
+        titles.add(title);
 		notifyDataSetChanged();
 
 		Log.i("WLA", "listData" + listData.size());
+        return true;
 	}
 	
 	public void removeItem(int position) {
+        titles.remove(listData.get(position).get("title"));
 		listData.remove(position);
 		notifyDataSetChanged();
 	}
-	
+
+    public void sortData(final String key) {
+
+        ArrayList<TreeMap<String, String>> sortList = new ArrayList<TreeMap<String, String>>();
+        sortList.addAll(listData);
+
+        Collections.sort(sortList, new Comparator<TreeMap<String, String>>() {
+            @Override
+            public int compare(TreeMap<String, String> lhs, TreeMap<String, String> rhs) {
+
+                if (key.equals("use")) {
+                    boolean first = Boolean.parseBoolean(lhs.get("use"));
+                    boolean second = Boolean.parseBoolean(rhs.get("use"));
+
+                    if (first && second) {
+                        return 0;
+                    }
+                    if (first) {
+                        return -1;
+                    }
+                    if (second) {
+                        return 1;
+                    }
+
+                }
+
+                if (key.equals("num")) {
+                    return Integer.parseInt(lhs.get("num")) - Integer.parseInt(rhs.get("num"));
+                }
+
+                return lhs.get(key).compareTo(rhs.get(key));
+            }
+        });
+
+        if (sortList.equals(listData)) {
+            Collections.reverse(sortList);
+        }
+        listData = sortList;
+
+        notifyDataSetChanged();
+
+    }
+
 	public void saveData() {
 		
 		AppSettings.setSources(listData);

@@ -233,6 +233,9 @@ public class MainPreferences extends Activity {
             }
             return true;
         }
+        else if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
+            getFragmentManager().popBackStack();
+        }
 
         return super.onOptionsItemSelected(item);
 	}

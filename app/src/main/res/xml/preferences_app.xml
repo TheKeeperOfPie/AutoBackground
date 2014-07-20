@@ -28,7 +28,6 @@
 		
 		<Preference
 			android:key="change_theme"
-			android:defaultValue="false"
 			android:title="@string/change_theme"
 			android:summary="@string/change_theme_description"
 			/>

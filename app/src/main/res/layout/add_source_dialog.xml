@@ -17,7 +17,7 @@
         />
 
     <EditText
-        android:id="@+id/website_title"
+        android:id="@+id/source_title"
         android:inputType="text"
         android:layout_below="@id/dialog_title"
         android:layout_width="fill_parent"
@@ -26,14 +26,14 @@
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
-        android:hint="@string/website_title"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:hint="@string/source_title"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         />
     
     <EditText
-        android:id="@+id/website_url"
+        android:id="@+id/source_data"
         android:inputType="textUri"
-    	android:layout_below="@id/website_title"
+    	android:layout_below="@id/source_title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
@@ -41,13 +41,13 @@
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
         android:hint="@string/website_url"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         />
     
     <EditText
-        android:id="@+id/num_images"
+        android:id="@+id/source_num"
         android:inputType="number"
-    	android:layout_below="@id/website_url"
+    	android:layout_below="@id/source_data"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
@@ -55,7 +55,7 @@
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
         android:hint="@string/num_images"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         />
 
 </RelativeLayout>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+
+    <item
+        android:id="@+id/add_source"
+        android:icon="@drawable/ic_action_new"
+        android:title="@string/add_source"
+        android:showAsAction="always"
+        />
+
+    <item
+        android:id="@+id/sort_sources"
+        android:icon="@drawable/ic_action_collection"
+        android:title="@string/sort_sources"
+        android:showAsAction="never"
+        />
+
+</menu>
