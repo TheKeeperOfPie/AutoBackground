@@ -89,7 +89,7 @@ public class Downloader {
         }
 	}
 	
-	private static List<File> getBitmapList(Context appContext) {
+	public static List<File> getBitmapList(Context appContext) {
 		
 		if (fileFilter == null) {
 			fileFilter = (new FilenameFilter() {
@@ -119,8 +119,6 @@ public class Downloader {
 
         for (int i = 0; i < AppSettings.getNumSources(); i++) {
 
-            Log.i(TAG, "Source: " + i);
-            Log.i(TAG, "Source: " + AppSettings.getSourceType(i).equals("folder"));
             if (AppSettings.getSourceType(i).equals("folder") && AppSettings.useSource(i)) {
                 bitmaps.addAll(Arrays.asList(new File(AppSettings.getSourceData(i)).listFiles(fileFilter)));
                 Log.i(TAG, "Added folder");

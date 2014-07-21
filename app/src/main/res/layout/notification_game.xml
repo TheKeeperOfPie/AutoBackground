@@ -4,7 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/notification_big_container"
     android:layout_width="match_parent"
-    android:layout_height="110dp"
+    android:layout_height="256dp"
     >
 
     <ImageView
@@ -20,7 +20,7 @@
     <RelativeLayout
         android:id="@+id/notification_big_header"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="wrap_content"
         android:layout_above="@+id/notification_buttons"
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@id/notification_big_icon"
@@ -56,6 +56,117 @@
 
     </RelativeLayout>
 
+
+    <LinearLayout
+        android:id="@+id/notification_game_row_1"
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:layout_below="@+id/notification_big_icon"
+        android:orientation="horizontal"
+        >
+
+        <ImageView
+            android:id="@+id/notification_game_tile_0"
+            android:layout_height="wrap_content"
+            android:layout_width="0px"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_action_picture_dark"
+            android:contentDescription="@string/notification_content_description"
+            />
+
+        <ImageView
+            android:id="@+id/notification_game_tile_1"
+            android:layout_height="wrap_content"
+            android:layout_width="0px"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_action_picture_dark"
+            android:contentDescription="@string/notification_content_description"
+            />
+
+        <ImageView
+            android:id="@+id/notification_game_tile_2"
+            android:layout_height="wrap_content"
+            android:layout_width="0px"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_action_picture_dark"
+            android:contentDescription="@string/notification_content_description"
+            />
+
+        <ImageView
+            android:id="@+id/notification_game_tile_3"
+            android:layout_height="wrap_content"
+            android:layout_width="0px"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_action_picture_dark"
+            android:contentDescription="@string/notification_content_description"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/notification_game_row_2"
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:orientation="horizontal"
+        android:layout_below="@+id/notification_game_row_1"
+        >
+
+        <ImageView
+            android:id="@+id/notification_game_tile_4"
+            android:layout_height="wrap_content"
+            android:layout_width="0px"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_action_picture_dark"
+            android:contentDescription="@string/notification_content_description"
+            />
+
+        <ImageView
+            android:id="@+id/notification_game_tile_5"
+            android:layout_height="wrap_content"
+            android:layout_width="0px"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_action_picture_dark"
+            android:contentDescription="@string/notification_content_description"
+            />
+
+
+        <ImageView
+            android:id="@+id/notification_game_tile_6"
+            android:layout_height="wrap_content"
+            android:layout_width="0px"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_action_picture_dark"
+            android:contentDescription="@string/notification_content_description"
+            />
+
+
+        <ImageView
+            android:id="@+id/notification_game_tile_7"
+            android:layout_height="wrap_content"
+            android:layout_width="0px"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_action_picture_dark"
+            android:contentDescription="@string/notification_content_description"
+            />
+
+    </LinearLayout>
+
     <LinearLayout
         android:id="@+id/notification_buttons"
         android:layout_width="match_parent"
@@ -68,7 +179,7 @@
             android:id="@+id/notification_buffer"
             android:layout_width="0px"
             android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_weight="3"
             android:focusable="false"
             android:focusableInTouchMode="false"
             />
@@ -76,8 +187,8 @@
         <RelativeLayout
             android:id="@+id/notification_button_one"
             android:layout_width="0px"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
+            android:layout_height="wrap_content"
+            android:layout_weight="6"
             >
 
             <ImageView
@@ -109,8 +220,8 @@
         <RelativeLayout
             android:id="@+id/notification_button_two"
             android:layout_width="0px"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
+            android:layout_height="wrap_content"
+            android:layout_weight="6"
             >
 
             <ImageView
@@ -141,8 +252,8 @@
         <RelativeLayout
             android:id="@+id/notification_button_three"
             android:layout_width="0px"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
+            android:layout_height="wrap_content"
+            android:layout_weight="6"
             >
 
             <ImageView

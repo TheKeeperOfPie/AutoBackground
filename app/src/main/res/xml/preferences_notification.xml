@@ -15,6 +15,13 @@
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:key="fill_notification_image"
+            android:defaultValue="true"
+            android:title="@string/fill_notification_image"
+            android:summary="@string/fill_notification_image_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
             android:key="use_pin_indicator"
             android:defaultValue="true"
             android:title="@string/use_pin_indicator"

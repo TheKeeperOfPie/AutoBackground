@@ -95,11 +95,23 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             File image = new File(AppSettings.getNotificationIconFile());
 
             if (image.exists() && image.isFile()) {
-                int imageSize = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 64, context.getResources().getDisplayMetrics()));
-                Picasso.with(context).load(image).resize(imageSize, imageSize).into(notificationIcon);
+                if (AppSettings.fillNotificationImage()) {
+                    Picasso.with(context).load(image).fit().centerCrop().into(notificationIcon);
+                }
+                else {
+                    Picasso.with(context).load(image).into(notificationIcon);
+                }
                 Log.i("NSF", "Loading custom image");
             }
 
+        }
+        else if (Downloader.getCurrentBitmapFile() != null && (AppSettings.getNotificationIcon() == R.drawable.ic_action_picture || AppSettings.getNotificationIcon() == R.drawable.ic_action_picture_dark)) {
+            if (AppSettings.fillNotificationImage()) {
+                Picasso.with(context).load(Downloader.getCurrentBitmapFile()).fit().centerCrop().into(notificationIcon);
+            }
+            else {
+                Picasso.with(context).load(Downloader.getCurrentBitmapFile()).into(notificationIcon);
+            }
         }
         else {
             Log.i("NSF", "Loading default image");
@@ -774,15 +786,6 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     }
 
     private void showDialogForPin(final int position, final String title, final int drawable) {
-
-//        int themeId;
-//
-//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-//            themeId = R.style.LightDialogTheme;
-//        }
-//        else {
-//            themeId = R.style.DarkDialogTheme;
-//        }
 
         AppSettings.setIntervalDuration(0);
 

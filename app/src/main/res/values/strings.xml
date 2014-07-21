@@ -155,6 +155,8 @@
     <string name="notification_instructions_description">Simply click one of the parts of the notification above to view that part\'s settings</string>
     <string name="use_notification">Use Notification</string>
     <string name="use_notification_description">Show a persistent notification</string>
+    <string name="fill_notification_image">Fill Image</string>
+    <string name="fill_notification_image_description">Fill notification icon with image</string>
     <string name="use_pin_indicator">Show Pin Indicator</string>
     <string name="use_pin_indicator_description">Show a pin overlay in the notification when image is pinned</string>
     <string name="show_tutorial_notification">Reshow Notification Tutorial</string>
