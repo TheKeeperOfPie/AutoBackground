@@ -109,16 +109,6 @@
             android:contentDescription="@string/notification_content_description"
             />
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/notification_game_row_2"
-        android:layout_width="match_parent"
-        android:layout_height="76dp"
-        android:orientation="horizontal"
-        android:layout_below="@+id/notification_game_row_1"
-        >
-
         <ImageView
             android:id="@+id/notification_game_tile_4"
             android:layout_height="wrap_content"
@@ -129,6 +119,16 @@
             android:src="@drawable/ic_action_picture_dark"
             android:contentDescription="@string/notification_content_description"
             />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/notification_game_row_2"
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:orientation="horizontal"
+        android:layout_below="@+id/notification_game_row_1"
+        >
 
         <ImageView
             android:id="@+id/notification_game_tile_5"
@@ -156,6 +156,28 @@
 
         <ImageView
             android:id="@+id/notification_game_tile_7"
+            android:layout_height="wrap_content"
+            android:layout_width="0px"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_action_picture_dark"
+            android:contentDescription="@string/notification_content_description"
+            />
+
+        <ImageView
+            android:id="@+id/notification_game_tile_8"
+            android:layout_height="wrap_content"
+            android:layout_width="0px"
+            android:layout_weight="1"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:src="@drawable/ic_action_picture_dark"
+            android:contentDescription="@string/notification_content_description"
+            />
+
+        <ImageView
+            android:id="@+id/notification_game_tile_9"
             android:layout_height="wrap_content"
             android:layout_width="0px"
             android:layout_weight="1"

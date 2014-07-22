@@ -65,7 +65,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                         Downloader.deleteAllBitmaps(context);
                         for (int i = 0; i < AppSettings.getNumSources(); i ++) {
                             if (AppSettings.getSourceType(i).equals("website")) {
-                                AppSettings.setSourceSet(i, new HashSet<String>());
+                                AppSettings.setSourceSet(AppSettings.getSourceTitle(i), new HashSet<String>());
                             }
                         }
                         Toast.makeText(context, "Deleted images with prefix\n" + AppSettings.getImagePrefix(), Toast.LENGTH_SHORT).show();
@@ -89,7 +89,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 LocalImageFragment localImageFragment = new LocalImageFragment();
                 Bundle arguments = new Bundle();
                 arguments.putBoolean("change", true);
-                arguments.putBoolean("set_path", false);
+                arguments.putBoolean("set_path", true);
                 arguments.putInt("position", 0);
                 localImageFragment.setArguments(arguments);
 
@@ -128,15 +128,6 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 	}
 
 	private void showDialogTimerMenu() {
-
-//        int themeId;
-//
-//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-//            themeId = R.style.LightDialogTheme;
-//        }
-//        else {
-//            themeId = R.style.DarkDialogTheme;
-//        }
 
         AppSettings.setTimerDuration(0);
 
@@ -267,11 +258,10 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 			alarmManager.cancel(pendingIntent);
 		}
 	}
-	
-	@Override
-	public void onResume() {
-		super.onResume();
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
         if (!AppSettings.useAdvanced()) {
             SwitchPreference experimentalPref = (SwitchPreference) findPreference("use_experimental_downloader_adv");
@@ -288,6 +278,12 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
             timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
         }
+    }
+
+    @Override
+	public void onResume() {
+		super.onResume();
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 	}
 	
 	@Override

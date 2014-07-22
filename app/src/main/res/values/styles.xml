@@ -22,12 +22,13 @@
         <item name="android:titleTextStyle">@style/LightTitleColor</item>
         <item name="android:textColor">@color/BLACK_OPAQUE</item>
         <item name="android:textColorSecondary">@color/DARK_GRAY_OPAQUE</item>
+        <item name="android:textColorHint">@color/DARK_GRAY_OPAQUE</item>
         <item name="android:textStyle">bold</item>
         <item name="android:actionBarStyle">@style/LightActionBar</item>
         <item name="android:listSeparatorTextViewStyle">@style/LightListSeparator</item>
         <item name="android:alertDialogTheme">@style/LightDialogTheme</item>
         <item name="android:popupMenuStyle">@style/LightPopup</item>
-        <item name="ic_action_new">@drawable/ic_action_new</item>
+        <item name="android:seekBarStyle">@style/LightSeekBar</item>
     </style>
 
     <style name="AppDarkTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
@@ -37,6 +38,7 @@
         <item name="android:titleTextStyle">@style/DarkTitleColor</item>
         <item name="android:textColor">@color/WHITE_OPAQUE</item>
         <item name="android:textColorSecondary">@color/LIGHT_GRAY_OPAQUE</item>
+        <item name="android:textColorHint">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:textStyle">bold</item>
         <item name="android:actionBarStyle">@style/DarkActionBar</item>
         <item name="android:listSeparatorTextViewStyle">@style/DarkListSeparator</item>>
@@ -51,6 +53,7 @@
         <item name="android:titleTextStyle">@style/DarkTitleColor</item>
         <item name="android:textColor">@color/WHITE_OPAQUE</item>
         <item name="android:textColorSecondary">@color/LIGHT_GRAY_OPAQUE</item>
+        <item name="android:textColorHint">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:textStyle">bold</item>
         <item name="android:shadowColor">@color/BLACK_OPAQUE</item>
         <item name="android:shadowRadius">4</item>
@@ -104,16 +107,19 @@
     </style>
 
     <style name="LightActionBar" parent="android:Widget.Holo.Light.ActionBar">
+        <item name="android:height">56dp</item>
         <item name="android:background">@color/BLUE_OPAQUE</item>
         <item name="android:titleTextStyle">@style/LightTitleColor</item>
     </style>
 
     <style name="DarkActionBar" parent="android:Widget.Holo.Light.ActionBar">
+        <item name="android:height">56dp</item>
         <item name="android:background">@color/BLUE_OPAQUE</item>
         <item name="android:titleTextStyle">@style/DarkTitleColor</item>
     </style>
 
     <style name="TransparentActionBar" parent="android:Widget.Holo.Light.ActionBar.Solid.Inverse">
+        <item name="android:height">56dp</item>
         <item name="android:background">@color/BLUE_OPAQUE</item>
         <item name="android:titleTextStyle">@style/DarkTitleColor</item>
     </style>
@@ -147,5 +153,11 @@
         <item name="android:textColor">@color/WHITE_OPAQUE</item>
         <item name="android:windowBackground">@color/TRANSPARENT_BACKGROUND</item>
     </style>
-    
+
+    <style name="LightSeekBar" parent="android:style/Widget.Holo.Light.SeekBar">
+    </style>
+
+    <style name="DarkSeekBar" parent="android:style/Widget.Holo.SeekBar">
+    </style>
+
 </resources>

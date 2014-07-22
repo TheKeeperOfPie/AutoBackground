@@ -33,10 +33,10 @@ import android.widget.Toast;
 import com.github.amlcurran.showcaseview.OnShowcaseEventListener;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ActionItemTarget;
-import com.github.amlcurran.showcaseview.targets.ActionViewTarget;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 import cw.kop.autobackground.Downloader;
 import cw.kop.autobackground.LiveWallpaperService;
@@ -45,9 +45,6 @@ import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListFragment extends ListFragment {
-
-    public static final String WEBSITE = "website";
-    public static final String FOLDER = "folder";
 
 	private SourceListAdapter listAdapter;
     private Context context;
@@ -71,16 +68,16 @@ public class SourceListFragment extends ListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+
 		setHasOptionsMenu(true);
-		
+
 	}
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		
+
 		inflater.inflate(R.menu.source_actions, menu);
-		
+
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
@@ -172,7 +169,7 @@ public class SourceListFragment extends ListFragment {
     }
 
     public void addFolder(String title, String path, int num) {
-        if (listAdapter.addItem(FOLDER, title, path, true, "" + num)) {
+        if (listAdapter.addItem(AppSettings.FOLDER, title, path, true, "" + num)) {
             listAdapter.saveData();
         }
         else {
@@ -182,7 +179,7 @@ public class SourceListFragment extends ListFragment {
     }
 
     public void setFolder(int position, String title, String path, int num) {
-        if (listAdapter.setItem(position, FOLDER, title, path, true, "" + num)) {
+        if (listAdapter.setItem(position, AppSettings.FOLDER, title, path, true, "" + num)) {
             listAdapter.saveData();
         }
         else {
@@ -217,8 +214,9 @@ public class SourceListFragment extends ListFragment {
 	        			sourceNum.setText("1");
 	        		}
 	        		
-	        		if (listAdapter.addItem(WEBSITE, sourceTitle.getText().toString(), sourceData.getText().toString(), true, sourceNum.getText().toString())) {
+	        		if (listAdapter.addItem(AppSettings.WEBSITE, sourceTitle.getText().toString(), sourceData.getText().toString(), true, sourceNum.getText().toString())) {
                         listAdapter.saveData();
+                        AppSettings.setSourceSet(sourceTitle.getText().toString().replaceAll(" ", ""), new HashSet<String>());
                         hide(addWebsiteTutorial);
                     }
                     else {
@@ -269,7 +267,7 @@ public class SourceListFragment extends ListFragment {
 	        			sourceNum.setText("1");
 	        		}
 	        		
-	        		if (listAdapter.setItem(position, WEBSITE, sourceTitle.getText().toString(), sourceData.getText().toString(), Boolean.valueOf(clickedItem.get("use")), sourceNum.getText().toString())) {
+	        		if (listAdapter.setItem(position, AppSettings.WEBSITE, sourceTitle.getText().toString(), sourceData.getText().toString(), Boolean.valueOf(clickedItem.get("use")), sourceNum.getText().toString())) {
                         listAdapter.saveData();
                     }
                     else {
@@ -288,31 +286,53 @@ public class SourceListFragment extends ListFragment {
 	private void showDialogMenu(final int position) {
 		AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
 		
-		dialog.setItems(R.array.website_entry_menu, new DialogInterface.OnClickListener() {
+		dialog.setItems(R.array.source_edit_menu, new DialogInterface.OnClickListener() {
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				switch (which) {
-					case 0:
-                        if (listAdapter.getItem(position).get("type").equals(WEBSITE)) {
+                    case 0:
+                        String directory;
+                        if (listAdapter.getItem(position).get("type").equals(AppSettings.WEBSITE)) {
+                            directory = AppSettings.getDownloadPath(context) + "/" + AppSettings.getSourceTitle(position);
+                        }
+                        else {
+                            directory = AppSettings.getSourceData(position);
+                        }
+                        LocalImageFragment localImageFragmentView = new LocalImageFragment();
+                        Bundle argumentsView = new Bundle();
+                        argumentsView.putBoolean("change", false);
+                        argumentsView.putBoolean("set_path", false);
+                        argumentsView.putString("view_path", directory);
+                        argumentsView.putInt("position", position);
+                        localImageFragmentView.setArguments(argumentsView);
+
+                        getFragmentManager().beginTransaction()
+                                .add(R.id.content_frame, localImageFragmentView, "image_fragment")
+                                .addToBackStack(null)
+                                .commit();
+
+                        break;
+					case 1:
+                        if (listAdapter.getItem(position).get("type").equals(AppSettings.WEBSITE)) {
                             showDialogForChange(position);
                         }
-                        else if(listAdapter.getItem(position).get("type").equals(FOLDER)) {
-                            LocalImageFragment localImageFragment = new LocalImageFragment();
-                            Bundle arguments = new Bundle();
-                            arguments.putBoolean("change", true);
-                            arguments.putBoolean("set_path", false);
-                            arguments.putInt("position", position);
-                            localImageFragment.setArguments(arguments);
+                        else if(listAdapter.getItem(position).get("type").equals(AppSettings.FOLDER)) {
+                            LocalImageFragment localImageFragmentEdit = new LocalImageFragment();
+                            Bundle argumentsEdit = new Bundle();
+                            argumentsEdit.putBoolean("change", true);
+                            argumentsEdit.putBoolean("set_path", false);
+                            argumentsEdit.putInt("position", position);
+                            localImageFragmentEdit.setArguments(argumentsEdit);
 
                             getFragmentManager().beginTransaction()
-                                    .add(R.id.content_frame, localImageFragment, "image_fragment")
+                                    .add(R.id.content_frame, localImageFragmentEdit, "image_fragment")
                                     .addToBackStack(null)
                                     .commit();
                         }
 						break;
-					case 1:
-                        if (listAdapter.getItem(position).get("type").equals(WEBSITE)) {
+					case 2:
+                        if (listAdapter.getItem(position).get("type").equals(AppSettings.WEBSITE)) {
                             listAdapter.saveData();
                             AlertDialog.Builder deleteDialog = new AlertDialog.Builder(context);
 
@@ -322,7 +342,7 @@ public class SourceListFragment extends ListFragment {
                             deleteDialog.setPositiveButton(R.string.yes_button, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int id) {
-                                    Downloader.deleteBitmaps(context, AppSettings.getSourceTitle(position));
+                                    Downloader.deleteBitmaps(context, position);
                                     Toast.makeText(context, "Deleting " + AppSettings.getSourceTitle(position) + " images", Toast.LENGTH_SHORT).show();
                                     listAdapter.removeItem(position);
                                     listAdapter.saveData();
@@ -332,6 +352,7 @@ public class SourceListFragment extends ListFragment {
                                 @Override
                                 public void onClick(DialogInterface dialog, int id) {
                                     listAdapter.removeItem(position);
+                                    AppSettings.setSourceSet(AppSettings.getSourceTitle(position), new HashSet<String>());
                                     listAdapter.saveData();
                                 }
                             });
@@ -519,20 +540,16 @@ public class SourceListFragment extends ListFragment {
                     }
                 };
 
-                ShowcaseView.Builder websiteListBuilder = new  ShowcaseView.Builder(getActivity())
+                websiteListTutorial = new  ShowcaseView.Builder(getActivity())
                     .setContentTitle("Sources List")
                     .setContentText("This is a list of your sources. \n" +
                             "These can include both sources and your \n" +
                             "own image folders. You can edit them by \n" +
                             "tapping on their boxes.")
                     .setStyle(R.style.ShowcaseStyle)
-                    .setOnClickListener(websiteListListener);
-
-                if (android.os.Build.VERSION.SDK_INT < 20) {
-                    websiteListBuilder.setTarget(new ActionViewTarget(getActivity(), ActionViewTarget.Type.TITLE));
-                }
-
-                websiteListTutorial = websiteListBuilder.build();
+                    .setOnClickListener(websiteListListener)
+                    .setTarget((new ViewTarget(getActivity().getActionBar().getCustomView().findViewById(R.id.action_bar_title))))
+                    .build();
                 break;
             case 2:
                 View.OnClickListener addWebsiteListener = new View.OnClickListener() {
@@ -624,19 +641,15 @@ public class SourceListFragment extends ListFragment {
                         settingsTutorial = null;
                     }
                 };
-                ShowcaseView.Builder settingsBuilder = new ShowcaseView.Builder(getActivity())
+                settingsTutorial = new ShowcaseView.Builder(getActivity())
                         .setContentTitle("Accessing Settings")
                         .setContentText("To open the other settings, \n" +
                                 "click the app icon in the top left, \n" +
                                 "which opens a list of settings.")
                         .setStyle(R.style.ShowcaseStyle)
-                        .setOnClickListener(settingsListener);
-
-                if (android.os.Build.VERSION.SDK_INT < 20) {
-                    settingsBuilder.setTarget(new ActionViewTarget(getActivity(), ActionViewTarget.Type.HOME));
-                }
-
-                settingsTutorial = settingsBuilder.build();
+                        .setOnClickListener(settingsListener)
+                        .setTarget((new ViewTarget(getActivity().getActionBar().getCustomView().findViewById(R.id.drawer_indicator))))
+                        .build();
                 break;
             case 6:
                 AppSettings.setTutorial(false, "source");

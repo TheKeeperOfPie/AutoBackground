@@ -4,17 +4,17 @@
     >
 
     <item
-        android:id="@+id/add_source"
-        android:icon="@drawable/ic_action_new"
-        android:title="@string/add_source"
+        android:id="@+id/sort_sources"
+        android:icon="@drawable/ic_action_storage_dark"
+        android:title="@string/sort_sources"
         android:showAsAction="always"
         />
 
     <item
-        android:id="@+id/sort_sources"
-        android:icon="@drawable/ic_action_collection"
-        android:title="@string/sort_sources"
-        android:showAsAction="never"
+        android:id="@+id/add_source"
+        android:icon="@drawable/ic_action_new_dark"
+        android:title="@string/add_source"
+        android:showAsAction="always"
         />
 
 </menu>

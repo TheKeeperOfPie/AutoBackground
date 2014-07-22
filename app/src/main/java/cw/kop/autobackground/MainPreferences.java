@@ -1,5 +1,6 @@
 package cw.kop.autobackground;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -13,7 +14,9 @@ import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import cw.kop.autobackground.images.LocalImageFragment;
@@ -29,6 +32,7 @@ public class MainPreferences extends Activity {
     private String[] fragmentList;
     private DrawerLayout drawerLayout;
     private ListView drawerList;
+    private TextView actionBarTitle;
 
     private CharSequence mTitle;
 
@@ -91,8 +95,41 @@ public class MainPreferences extends Activity {
         drawerList.setDivider(new GradientDrawable(GradientDrawable.Orientation.RIGHT_LEFT, colors));
         drawerList.setDividerHeight(1);
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-        getActionBar().setHomeButtonEnabled(true);
+        final ActionBar actionBar = getActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
+
+        View actionBarView = getLayoutInflater().inflate(R.layout.action_bar_layout, null);
+        actionBarTitle = (TextView) actionBarView.findViewById(R.id.action_bar_title);
+
+        ImageView drawerIndicator = (ImageView) actionBarView.findViewById(R.id.drawer_indicator);
+        drawerIndicator.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (drawerLayout.isDrawerOpen(drawerList)) {
+                    drawerLayout.closeDrawer(drawerList);
+                }
+                else {
+                    drawerLayout.openDrawer(drawerList);
+                }
+            }
+        });
+
+        ImageView actionBarIcon = (ImageView) actionBarView.findViewById(R.id.action_bar_icon);
+        actionBarIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (drawerLayout.isDrawerOpen(drawerList)) {
+                    drawerLayout.closeDrawer(drawerList);
+                }
+                else {
+                    drawerLayout.openDrawer(drawerList);
+                }
+            }
+        });
+
+        actionBar.setCustomView(actionBarView);
+        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
 
         drawerToggle = new ActionBarDrawerToggle(
                 this,
@@ -104,14 +141,14 @@ public class MainPreferences extends Activity {
             /** Called when a drawer has settled in a completely closed state. */
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
-                getActionBar().setTitle(mTitle);
+                setTitle(mTitle);
             }
 
             /** Called when a drawer has settled in a completely open state. */
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
                 Log.i("MP", "Title: Settings");
-                getActionBar().setTitle("Settings");
+                setTitle("Settings");
             }
         };
 
@@ -208,17 +245,9 @@ public class MainPreferences extends Activity {
     @Override
     public void setTitle(CharSequence title) {
         mTitle = title;
-        getActionBar().setTitle(mTitle);
+        actionBarTitle.setText(title);
 
     }
-
-//	@Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        // Inflate the menu items for use in the action bar
-//        MenuInflater inflater = getMenuInflater();
-//        inflater.inflate(R.menu.mainpreferences_activity_actions, menu);
-//        return super.onCreateOptionsMenu(menu);
-//    }
 
     @Override
 	public boolean onOptionsItemSelected(MenuItem item) {

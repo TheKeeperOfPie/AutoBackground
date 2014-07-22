@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.SourceListFragment;
 
 public class Downloader {
 
@@ -43,6 +44,7 @@ public class Downloader {
     private static final String TAG = "Downloader";
 	private static FilenameFilter fileFilter = null;
     private static int randIndex = 0;
+    private static boolean isDownloading = false;
 	
 	private static RetrieveImageTask imageAsyncTask;
 	
@@ -58,6 +60,7 @@ public class Downloader {
 	public static void download(Context appContext) {
 
         if (imageAsyncTask != null && imageAsyncTask.getStatus() != AsyncTask.Status.RUNNING) {
+            isDownloading = true;
             ConnectivityManager connect = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
             NetworkInfo wifi = connect.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
@@ -71,7 +74,7 @@ public class Downloader {
             }
             else {
                 if (AppSettings.useToast()) {
-                    Toast.makeText(appContext, "No connection availble,\ncheck Download Settings", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(appContext, "No connection available,\ncheck Download Settings", Toast.LENGTH_SHORT).show();
                 }
                 return;
             }
@@ -155,6 +158,9 @@ public class Downloader {
 	}
 
     public static void deleteAllBitmaps(Context appContext) {
+        for (int i = 0; i < AppSettings.getNumSources(); i++) {
+            AppSettings.setSourceSet(AppSettings.getSourceTitle(i), new HashSet<String>());
+        }
         for (File file : getBitmapList(appContext)) {
             if (file.getName().contains(AppSettings.getImagePrefix())) {
                 file.delete();
@@ -162,9 +168,11 @@ public class Downloader {
         }
     }
 
-    public static void deleteBitmaps(Context appContext, String title) {
+    public static void deleteBitmaps(Context appContext, int position) {
 
-        File folder = new File(AppSettings.getDownloadPath(appContext) + "/" + title);
+        File folder = new File(AppSettings.getDownloadPath(appContext) + "/" + AppSettings.getSourceTitle(position) + AppSettings.getImagePrefix());
+
+        AppSettings.setSourceSet(AppSettings.getSourceTitle(position), new HashSet<String>());
 
         if (folder.exists() && folder.isDirectory()) {
             if (folder.listFiles().length > 0) {
@@ -369,42 +377,6 @@ public class Downloader {
         return links;
     }
 
-//    protected static void downloadImages(List<String> links, int numImages, String cacheDir, String title) {
-//
-//        ArrayList<String> usedLinks = new ArrayList<String>();
-//        List<Integer> randValues = new ArrayList<Integer>();
-//        for (int i = 0; i < links.size(); randValues.add(i++));
-//        Collections.shuffle(randValues);
-//
-//        num = 0;
-//        int count = 0;
-//
-//        if (links.size() > 0) {
-//            while (num < numImages && count <= randValues.size() - 1) {
-//
-//                String randLink = links.get(randValues.get(count));
-//
-//                boolean oldLink = false;
-//
-//                for (String link : usedLinks) {
-//                    if (link.equals(randLink)) {
-//                        oldLink = true;
-//                    }
-//                }
-//                if (!oldLink) {
-//                    if (getImage(randLink, cacheDir, title)) {
-//                        usedLinks.add(randLink);
-//                        num++;
-//                    }
-//                }
-//                count++;
-//            }
-//        }
-//
-//
-//    }
-
-
 	static class RetrieveImageTask extends AsyncTask<String, String, Void> {
 
 		private String downloadCacheDir;
@@ -463,8 +435,8 @@ public class Downloader {
                     }
 
                     if (AppSettings.deleteOldImages()) {
-                        deleteBitmaps(context, AppSettings.getSourceTitle(index));
-                        AppSettings.setSourceSet(index, new HashSet<String>());
+                        deleteBitmaps(context, index);
+                        AppSettings.setSourceSet(AppSettings.getSourceTitle(index), new HashSet<String>());
                     }
 
                     linkDoc = Jsoup.connect(AppSettings.getSourceData(index))
@@ -485,13 +457,13 @@ public class Downloader {
                     String title = AppSettings.getSourceTitle(index);
 
                     if (AppSettings.checkDuplicates()) {
-                        usedLinks.addAll(AppSettings.getSourceSet(index));
+                        usedLinks.addAll(AppSettings.getSourceSet(AppSettings.getSourceTitle(index)));
                     }
 
-                    File file = new File(downloadCacheDir + "/" + title);
+                    File file = new File(downloadCacheDir + "/" + title + AppSettings.getImagePrefix());
 
-                    if (!file.getParentFile().exists() || !file.getParentFile().isDirectory()) {
-                        file.getParentFile().mkdir();
+                    if (!file.exists() || !file.isDirectory()) {
+                        file.mkdir();
                     }
 
                     if (imageList.size() > 0) {
@@ -516,7 +488,7 @@ public class Downloader {
                     int imagesDownloaded = num - stored;
 
                     AppSettings.setSourceNumStored(index, num);
-                    AppSettings.setSourceSet(index, usedLinks);
+                    AppSettings.setSourceSet(AppSettings.getSourceTitle(index), usedLinks);
 
                     publishProgress("", "" + AppSettings.getSourceNum(index));
 
@@ -626,7 +598,7 @@ public class Downloader {
 
         protected void writeToFile(Bitmap image, String url, String dir, String title, int imageIndex) {
 
-            File file = new File(dir + "/" + title + "/" + title + AppSettings.getImagePrefix() + imageIndex + ".png");
+            File file = new File(dir + "/" + title + AppSettings.getImagePrefix() + "/" + title + AppSettings.getImagePrefix() + imageIndex + ".png");
 
             if (file.isFile()) {
                 usedLinks.remove(AppSettings.getUrl(file.getName()));

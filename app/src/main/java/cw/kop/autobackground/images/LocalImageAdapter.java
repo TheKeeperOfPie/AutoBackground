@@ -3,11 +3,13 @@ package cw.kop.autobackground.images;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -22,12 +24,15 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class LocalImageAdapter extends BaseAdapter {
 
+    private static final int BYTE_TO_MEBIBYTE = 1048576;
 	private Activity mainActivity;
 	private File mainDir;
     private File startDir;
     private ArrayList<File> listFiles;
     private LayoutInflater inflater = null;
     private boolean finish;
+    private int screenWidth;
+    private int imageHeight;
 	
     public LocalImageAdapter(Activity activity, File directory) {
 		mainActivity = activity;
@@ -36,6 +41,8 @@ public class LocalImageAdapter extends BaseAdapter {
         startDir = directory;
 		mainDir = directory;
 		setDirectory(mainDir);
+        screenWidth = activity.getResources().getDisplayMetrics().widthPixels;
+        imageHeight = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 150, activity.getResources().getDisplayMetrics()));
 	}
     
 	@Override
@@ -73,6 +80,8 @@ public class LocalImageAdapter extends BaseAdapter {
 			if (file.getName().contains(".jpg") || file.getName().contains(".png")) {
 				Picasso.with(mainActivity.getApplicationContext())
 					.load(file)
+                    .resize(screenWidth, imageHeight)
+                    .centerCrop()
 					.into(fileImage);
 			}
 			else if (file.isDirectory()){
@@ -101,7 +110,7 @@ public class LocalImageAdapter extends BaseAdapter {
 			}
 			
 			fileTitle.setText(file.getName());
-			fileSummary.setText("" + file.getTotalSpace());
+			fileSummary.setText("" + (file.length() / BYTE_TO_MEBIBYTE) + " MiB");
 			return view;
 		}
 		else {

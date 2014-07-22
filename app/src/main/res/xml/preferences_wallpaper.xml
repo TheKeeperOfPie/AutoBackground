@@ -75,14 +75,15 @@
 			android:title="@string/use_animation"
 			android:summary="@string/use_animation_description"
 			/>
-		
-		<SeekBarPreference
-			android:key="animation_speed"
-			android:max="10"
-			android:defaultValue="1"
-			android:title="@string/animation_speed"
-			android:summary="@string/animation_speed_description"
-			/>
+
+        <cw.kop.autobackground.SeekBarPreference
+            android:key="animation_speed"
+            android:max="10"
+            android:defaultValue="1"
+            android:title="@string/animation_speed"
+            android:summary="@string/animation_speed_description"
+            android:dialogMessage="pixels per frame"
+            />
 
         <EditTextPreference
             android:key="animation_frame_rate"
@@ -90,9 +91,16 @@
             android:title="@string/animation_frame_rate"
             android:summary="@string/animation_frame_rate_description"
             android:hint="@string/animation_frame_rate_hint"
+            />
+
+        <EditTextPreference
+            android:key="animation_safety_adv"
+            android:defaultValue="50"
+            android:title="@string/animation_safety"
+            android:summary="@string/animation_safety_description"
             android:inputType="number"
             android:numeric="integer"
-            android:maxLength="2"
+            android:maxLength="3"
             />
 
 	</PreferenceCategory>	

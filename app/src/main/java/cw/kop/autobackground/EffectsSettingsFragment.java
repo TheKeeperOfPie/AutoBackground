@@ -70,9 +70,8 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
         PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_effects_parameters");
 
@@ -84,6 +83,12 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
                 effectPref.setSummary(effectPref.getTitle() + ": " + AppSettings.getEffectValue(key) + "%");
             }
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 
     }
 

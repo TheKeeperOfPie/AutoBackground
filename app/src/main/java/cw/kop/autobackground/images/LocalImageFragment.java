@@ -21,6 +21,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import cw.kop.autobackground.MainPreferences;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.SourceListFragment;
@@ -35,6 +36,7 @@ public class LocalImageFragment extends Fragment {
 
     private boolean change, setPath;
     private int position;
+    private String viewPath = "";
 
 	public LocalImageFragment() {
     }
@@ -46,6 +48,7 @@ public class LocalImageFragment extends Fragment {
         Bundle bundle = getArguments();
         change = bundle.getBoolean("change", false);
         setPath = bundle.getBoolean("set_path", false);
+        viewPath = bundle.getString("view_path", "");
         position = bundle.getInt("position", 0);
 
         filenameFilter = (new FilenameFilter() {
@@ -61,32 +64,11 @@ public class LocalImageFragment extends Fragment {
 	}
 	
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-//        int themeId;
-//
-//        if (AppSettings.getTheme() == R.style.AppLightTheme) {
-//            themeId = R.style.AppLightTheme;
-//        }
-//        else {
-//            themeId = R.style.AppDarkTheme;
-//        }
-//
-//        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), themeId);
-//
-//        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
-		ViewGroup view = (ViewGroup) inflater.inflate(R.layout.image_grid_layout, null);
+		final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.image_grid_layout, null);
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
-
-        if (AppSettings.getTheme() == R.style.AppLightTheme) {
-            imageListView.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
-        }
-        else if (AppSettings.getTheme() == R.style.AppTransparentTheme) {
-            imageListView.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
-        }
 
         TextView emptyText = new TextView(getActivity());
         emptyText.setText("Directory is empty.");
@@ -98,6 +80,15 @@ public class LocalImageFragment extends Fragment {
         emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         emptyLayout.setGravity(Gravity.TOP);
         emptyLayout.addView(emptyText);
+
+        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+            imageListView.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
+            emptyLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
+        }
+        else {
+            imageListView.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+            emptyLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+        }
 
         ((ViewGroup) imageListView.getParent()).addView(emptyLayout, 0);
 
@@ -114,7 +105,7 @@ public class LocalImageFragment extends Fragment {
                     Toast.makeText(context, "Download path set to: \n" + AppSettings.getDownloadPath(context), Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    SourceListFragment sourceListFragment = (SourceListFragment) getActivity().getFragmentManager().findFragmentByTag("website_fragment");
+                    SourceListFragment sourceListFragment = ((MainPreferences) getActivity()).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
                     if (change) {
                         sourceListFragment.setFolder(position, dir.getName(), dir.getAbsolutePath(), dir.listFiles(filenameFilter).length);
                     } else {
@@ -126,7 +117,11 @@ public class LocalImageFragment extends Fragment {
 			}
 			
 		});
-		
+
+        if (!viewPath.equals("")) {
+            useDirectoryButton.setVisibility(View.GONE);
+        }
+
 //		Button resetDirectoryButton = (Button) view.findViewById(R.id.reset_directory_button);
 //		resetDirectoryButton.setOnClickListener(new OnClickListener() {
 //
@@ -168,7 +163,11 @@ public class LocalImageFragment extends Fragment {
 		super.onActivityCreated(savedInstanceState);
 
 		dir = Environment.getExternalStorageDirectory();
-		
+
+        if (!viewPath.equals("")) {
+            dir = new File(viewPath);
+        }
+
 		if (imageAdapter == null) {
 			imageAdapter = new LocalImageAdapter(getActivity(), dir);
 		}

@@ -68,32 +68,29 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 	}
 
     @Override
-	public void onResume() {
-        super.onResume();
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
         frameRatePref.setSummary(AppSettings.getAnimationFrameRate() + " FPS");
 
         if (!AppSettings.useAdvanced()) {
             ((PreferenceCategory) findPreference("title_animation_settings")).removePreference(frameRatePref);
+            ((PreferenceCategory) findPreference("title_animation_settings")).removePreference(findPreference("animation_safety_adv"));
         }
 
         if (AppSettings.getIntervalDuration() > 0) {
             intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
         }
+    }
+
+    @Override
+	public void onResume() {
+        super.onResume();
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         
     }
 	
 	private void showDialogIntervalMenu() {
-
-//        int themeId;
-//
-//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-//            themeId = R.style.LightDialogTheme;
-//        }
-//        else {
-//            themeId = R.style.DarkDialogTheme;
-//        }
 
         AppSettings.setIntervalDuration(0);
 
@@ -155,15 +152,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 	}
 
     private void showDialogIntervalForInput() {
-
-//        int themeId;
-//
-//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-//            themeId = R.style.LightDialogTheme;
-//        }
-//        else {
-//            themeId = R.style.DarkDialogTheme;
-//        }
 
         AppSettings.setIntervalDuration(0);
 

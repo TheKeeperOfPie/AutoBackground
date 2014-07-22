@@ -1,7 +1,6 @@
 package cw.kop.autobackground;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -30,9 +29,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.preference.PreferenceManager;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
@@ -52,9 +49,7 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -88,12 +83,17 @@ public class LiveWallpaperService extends GLWallpaperService {
     public static final String GAME_TILE5 = "GAME_TILE5";
     public static final String GAME_TILE6 = "GAME_TILE6";
     public static final String GAME_TILE7 = "GAME_TILE7";
-    public static final int NUM_TO_WIN = 4;
+    public static final String GAME_TILE8 = "GAME_TILE8";
+    public static final String GAME_TILE9 = "GAME_TILE9";
+    public static final int NUM_TO_WIN = 5;
     private ArrayList<Bitmap> tileBitmaps = new ArrayList<Bitmap>();
     private ArrayList<Integer> tileOrder= new ArrayList<Integer>();
+    private ArrayList<Integer> usedTiles = new ArrayList<Integer>();
     private int lastTile = 6;
     private int numFlipped = 0;
-    private int tileSucesses = 0;
+    private int tileWins = 0;
+    private boolean gameSet = false;
+    private int[] tileIds;
 
     private PendingIntent pendingToastIntent;
     private PendingIntent pendingCopyIntent;
@@ -112,6 +112,8 @@ public class LiveWallpaperService extends GLWallpaperService {
     private PendingIntent pendingTile5;
     private PendingIntent pendingTile6;
     private PendingIntent pendingTile7;
+    private PendingIntent pendingTile8;
+    private PendingIntent pendingTile9;
 
     private Handler handler;
     private Notification.Builder notificationBuilder;
@@ -139,7 +141,6 @@ public class LiveWallpaperService extends GLWallpaperService {
         appContext = getApplicationContext();
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         AppSettings.setPrefs(prefs);
-        Downloader.getNextImage(appContext);
 
         Intent downloadIntent = new Intent();
         downloadIntent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
@@ -201,6 +202,8 @@ public class LiveWallpaperService extends GLWallpaperService {
         intentFilter.addAction(LiveWallpaperService.GAME_TILE5);
         intentFilter.addAction(LiveWallpaperService.GAME_TILE6);
         intentFilter.addAction(LiveWallpaperService.GAME_TILE7);
+        intentFilter.addAction(LiveWallpaperService.GAME_TILE8);
+        intentFilter.addAction(LiveWallpaperService.GAME_TILE9);
 
         registerReceiver(serviceReceiver, intentFilter);
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -276,6 +279,13 @@ public class LiveWallpaperService extends GLWallpaperService {
             else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE7)) {
                 calculateGameTiles(7);
             }
+            else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE8)) {
+                calculateGameTiles(8);
+            }
+            else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE9)) {
+                calculateGameTiles(9);
+            }
+
             Log.i("Receiver", "ServiceReceived");
         }
     };
@@ -446,17 +456,30 @@ public class LiveWallpaperService extends GLWallpaperService {
             coloredImageThree.setBounds(0, 0, coloredImageThree.getIntrinsicWidth(), coloredImageThree.getIntrinsicHeight());
             coloredImageThree.draw(canvasThree);
 
-            if (AppSettings.useNotificationGame()) {
-                setupGameTiles();
+            if (AppSettings.useNotificationGame() && setupGameTiles()) {
                 bigView = new RemoteViews(getPackageName(), R.layout.notification_game);
-                bigView.setOnClickPendingIntent(R.id.notification_game_tile_0, pendingTile0);
-                bigView.setOnClickPendingIntent(R.id.notification_game_tile_1, pendingTile1);
-                bigView.setOnClickPendingIntent(R.id.notification_game_tile_2, pendingTile2);
-                bigView.setOnClickPendingIntent(R.id.notification_game_tile_3, pendingTile3);
-                bigView.setOnClickPendingIntent(R.id.notification_game_tile_4, pendingTile4);
-                bigView.setOnClickPendingIntent(R.id.notification_game_tile_5, pendingTile5);
-                bigView.setOnClickPendingIntent(R.id.notification_game_tile_6, pendingTile6);
-                bigView.setOnClickPendingIntent(R.id.notification_game_tile_7, pendingTile7);
+                tileIds = new int[] {
+                        R.id.notification_game_tile_0,
+                        R.id.notification_game_tile_1,
+                        R.id.notification_game_tile_2,
+                        R.id.notification_game_tile_3,
+                        R.id.notification_game_tile_4,
+                        R.id.notification_game_tile_5,
+                        R.id.notification_game_tile_6,
+                        R.id.notification_game_tile_7,
+                        R.id.notification_game_tile_8,
+                        R.id.notification_game_tile_9
+                };
+                bigView.setOnClickPendingIntent(tileIds[0], pendingTile0);
+                bigView.setOnClickPendingIntent(tileIds[1], pendingTile1);
+                bigView.setOnClickPendingIntent(tileIds[2], pendingTile2);
+                bigView.setOnClickPendingIntent(tileIds[3], pendingTile3);
+                bigView.setOnClickPendingIntent(tileIds[4], pendingTile4);
+                bigView.setOnClickPendingIntent(tileIds[5], pendingTile5);
+                bigView.setOnClickPendingIntent(tileIds[6], pendingTile6);
+                bigView.setOnClickPendingIntent(tileIds[7], pendingTile7);
+                bigView.setOnClickPendingIntent(tileIds[8], pendingTile8);
+                bigView.setOnClickPendingIntent(tileIds[9], pendingTile9);
             }
             else {
                 bigView = new RemoteViews(getPackageName(), R.layout.notification_big_layout);
@@ -491,7 +514,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             notificationBuilder  = new Notification.Builder(this)
                     .setContent(normalView)
                     .setContentIntent(pendingAppIntent)
-                    .setSmallIcon(R.drawable.ic_action_picture_dark)
+                    .setSmallIcon(R.drawable.app_icon_grayscale)
                     .setOngoing(true);
 
             Notification notification;
@@ -580,86 +603,66 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     private void calculateGameTiles(final int tile) {
 
-        numFlipped++;
+        Log.i(TAG, "Game set: " + gameSet);
 
-        if (numFlipped > 0) {
-            flipTile(tile);
-        }
+        if (gameSet && tileOrder.size() == (NUM_TO_WIN * 2) && tileBitmaps.size() == NUM_TO_WIN) {
 
-        if (numFlipped == 2 && lastTile < 8) {
-            if (tileOrder.get(tile) == tileOrder.get(lastTile)) {
-                setTileImage(tile, R.drawable.icon_blank);
-                setTileImage(lastTile, R.drawable.icon_blank);
-                tileSucesses++;
-            }
-            else {
-                setTileImage(tile, R.drawable.ic_action_picture_dark);
-                setTileImage(lastTile, R.drawable.ic_action_picture_dark);
+
+            if (numFlipped < 2 && !usedTiles.contains(tile) && lastTile != tile) {
+                flipTile(tile);
+                numFlipped++;
             }
 
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Notification notification;
-
-                    if (Build.VERSION.SDK_INT >= 16) {
-                        notificationBuilder.setPriority(Notification.PRIORITY_MAX);
-                        notification = notificationBuilder.build();
-                        notification.bigContentView = bigView;
-                    }
-                    else {
-                        notification = notificationBuilder.getNotification();
-                    }
-                    notificationManager.notify(0, notification);
+            if (numFlipped == 2 && tile != lastTile) {
+                if (tileOrder.get(tile) == tileOrder.get(lastTile)) {
+                    setTileImage(tile, R.drawable.icon_blank);
+                    setTileImage(lastTile, R.drawable.icon_blank);
+                    usedTiles.add(tile);
+                    usedTiles.add(lastTile);
+                    tileWins++;
+                } else {
+                    setTileImage(tile, R.drawable.ic_action_picture_dark);
+                    setTileImage(lastTile, R.drawable.ic_action_picture_dark);
                 }
-            }, 750);
 
-            lastTile = 8;
-            numFlipped = 0;
-        }
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Notification notification;
 
-        if (tileSucesses == NUM_TO_WIN) {
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    startNotification(true);
-                    tileSucesses = 0;
-                    lastTile = 8;
-                }
-            }, 2000);
-        }
-        else {
-            lastTile = tile;
+                        if (Build.VERSION.SDK_INT >= 16) {
+                            notificationBuilder.setPriority(Notification.PRIORITY_MAX);
+                            notification = notificationBuilder.build();
+                            notification.bigContentView = bigView;
+                        } else {
+                            notification = notificationBuilder.getNotification();
+                        }
+                        notificationManager.notify(0, notification);
+                    }
+                }, 425);
+
+                lastTile = NUM_TO_WIN * 2;
+                numFlipped = 0;
+            }
+
+            if (numFlipped > 0 && lastTile != tile && !usedTiles.contains(tile)) {
+                lastTile = tile;
+            }
+
+            if (tileWins == NUM_TO_WIN) {
+                gameSet = false;
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        flipAllTiles();
+                    }
+                }, 500);
+            }
         }
     }
 
     private void flipTile(int tile) {
-        switch (tile) {
-            case 0:
-                bigView.setImageViewBitmap(R.id.notification_game_tile_0, tileBitmaps.get(tileOrder.get(0)));
-                break;
-            case 1:
-                bigView.setImageViewBitmap(R.id.notification_game_tile_1, tileBitmaps.get(tileOrder.get(1)));
-                break;
-            case 2:
-                bigView.setImageViewBitmap(R.id.notification_game_tile_2, tileBitmaps.get(tileOrder.get(2)));
-                break;
-            case 3:
-                bigView.setImageViewBitmap(R.id.notification_game_tile_3, tileBitmaps.get(tileOrder.get(3)));
-                break;
-            case 4:
-                bigView.setImageViewBitmap(R.id.notification_game_tile_4, tileBitmaps.get(tileOrder.get(4)));
-                break;
-            case 5:
-                bigView.setImageViewBitmap(R.id.notification_game_tile_5, tileBitmaps.get(tileOrder.get(5)));
-                break;
-            case 6:
-                bigView.setImageViewBitmap(R.id.notification_game_tile_6, tileBitmaps.get(tileOrder.get(6)));
-                break;
-            case 7:
-                bigView.setImageViewBitmap(R.id.notification_game_tile_7, tileBitmaps.get(tileOrder.get(7)));
-                break;
-        }
+        bigView.setImageViewBitmap(tileIds[tile], tileBitmaps.get(tileOrder.get(tile)));
 
         Notification notification;
 
@@ -674,70 +677,91 @@ public class LiveWallpaperService extends GLWallpaperService {
         notificationManager.notify(0, notification);
     }
 
+    private void flipAllTiles() {
+
+        for (int i = 0; i < tileIds.length; i ++) {
+            bigView.setImageViewBitmap(tileIds[i], tileBitmaps.get(tileOrder.get(i)));
+        }
+
+        Notification notification;
+
+        if (Build.VERSION.SDK_INT >= 16) {
+            notificationBuilder.setPriority(Notification.PRIORITY_MAX);
+            notification = notificationBuilder.build();
+            notification.bigContentView = bigView;
+        }
+        else {
+            notification = notificationBuilder.getNotification();
+        }
+        notificationManager.notify(0, notification);
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Log.i(TAG, "POSTED");
+                startNotification(true);
+                tileWins = 0;
+                usedTiles.clear();
+            }
+        }, 2000);
+    }
+
     private void setTileImage(int tile, int drawable) {
 
-        switch (tile) {
-            case 0:
-                bigView.setImageViewResource(R.id.notification_game_tile_0, drawable);
-                break;
-            case 1:
-                bigView.setImageViewResource(R.id.notification_game_tile_1, drawable);
-                break;
-            case 2:
-                bigView.setImageViewResource(R.id.notification_game_tile_2, drawable);
-                break;
-            case 3:
-                bigView.setImageViewResource(R.id.notification_game_tile_3, drawable);
-                break;
-            case 4:
-                bigView.setImageViewResource(R.id.notification_game_tile_4, drawable);
-                break;
-            case 5:
-                bigView.setImageViewResource(R.id.notification_game_tile_5, drawable);
-                break;
-            case 6:
-                bigView.setImageViewResource(R.id.notification_game_tile_6, drawable);
-                break;
-            case 7:
-                bigView.setImageViewResource(R.id.notification_game_tile_7, drawable);
-                break;
-        }
+        bigView.setImageViewResource(tileIds[tile], drawable);
 
     }
 
-    private void setupGameTiles() {
+    private boolean setupGameTiles() {
 
         ArrayList<File> bitmapFiles = new ArrayList<File>();
         bitmapFiles.addAll(Downloader.getBitmapList(appContext));
-        Collections.shuffle(bitmapFiles);
 
-        int imageWidth = appContext.getResources().getDisplayMetrics().widthPixels / NUM_TO_WIN;
-        int imageHeight = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 76, appContext.getResources().getDisplayMetrics()));
+        if (bitmapFiles.size() >= NUM_TO_WIN) {
+            Collections.shuffle(bitmapFiles);
 
-        Picasso.with(appContext).load(bitmapFiles.get(0)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget0);
-        Picasso.with(appContext).load(bitmapFiles.get(1)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget1);
-        Picasso.with(appContext).load(bitmapFiles.get(2)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget2);
-        Picasso.with(appContext).load(bitmapFiles.get(3)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget3);
+            int imageWidth = appContext.getResources().getDisplayMetrics().widthPixels / NUM_TO_WIN;
+            int imageHeight = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 76, appContext.getResources().getDisplayMetrics()));
 
+            tileBitmaps.clear();
+
+            Picasso.with(appContext).load(bitmapFiles.get(0)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget0);
+            Picasso.with(appContext).load(bitmapFiles.get(1)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget1);
+            Picasso.with(appContext).load(bitmapFiles.get(2)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget2);
+            Picasso.with(appContext).load(bitmapFiles.get(3)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget3);
+            Picasso.with(appContext).load(bitmapFiles.get(4)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget4);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void setTileOrder() {
+        if (tileBitmaps.size() == NUM_TO_WIN) {
+
+            List<Integer> randomList = new ArrayList<Integer>();
+
+            for (int i =0; i < NUM_TO_WIN; i++) {
+                randomList.add(i);
+                randomList.add(i);
+            }
+
+            Collections.shuffle(randomList);
+
+            tileOrder.clear();
+
+            for (int i = 0; i < NUM_TO_WIN * 2; i ++) {
+                tileOrder.add(randomList.get(i));
+            }
+            gameSet = true;
+        }
     }
 
     private Target tileTarget0 = new Target() {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
             tileBitmaps.add(bitmap);
-            if (tileBitmaps.size() == NUM_TO_WIN) {
-
-                Log.i(TAG, "Game bitmaps loaded");
-
-                List<Integer> randomList = new ArrayList<Integer>();
-                randomList.addAll(Arrays.asList(0, 0, 1, 1, 2, 2, 3, 3));
-                Collections.shuffle(randomList);
-
-                for (int i = 0; i < 8; i ++) {
-                    tileOrder.add(randomList.get(i));
-                }
-
-            }
+            setTileOrder();
         }
 
         @Override
@@ -755,17 +779,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
             tileBitmaps.add(bitmap);
-            if (tileBitmaps.size() == NUM_TO_WIN) {
-
-                List<Integer> randomList = new ArrayList<Integer>();
-                randomList.addAll(Arrays.asList(0, 0, 1, 1, 2, 2, 3, 3));
-                Collections.shuffle(randomList);
-
-                for (int i = 0; i < 8; i ++) {
-                    tileOrder.add(randomList.get(i));
-                }
-
-            }
+            setTileOrder();
         }
 
         @Override
@@ -783,19 +797,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
             tileBitmaps.add(bitmap);
-            if (tileBitmaps.size() == NUM_TO_WIN) {
-
-                Log.i(TAG, "Game bitmaps loaded");
-
-                List<Integer> randomList = new ArrayList<Integer>();
-                randomList.addAll(Arrays.asList(0, 0, 1, 1, 2, 2, 3, 3));
-                Collections.shuffle(randomList);
-
-                for (int i = 0; i < 8; i ++) {
-                    tileOrder.add(randomList.get(i));
-                }
-
-            }
+            setTileOrder();
         }
 
         @Override
@@ -813,19 +815,25 @@ public class LiveWallpaperService extends GLWallpaperService {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
             tileBitmaps.add(bitmap);
-            if (tileBitmaps.size() == NUM_TO_WIN) {
+            setTileOrder();
+        }
 
-                Log.i(TAG, "Game bitmaps loaded");
+        @Override
+        public void onBitmapFailed(Drawable drawable) {
 
-                List<Integer> randomList = new ArrayList<Integer>();
-                randomList.addAll(Arrays.asList(0, 0, 1, 1, 2, 2, 3, 3));
-                Collections.shuffle(randomList);
+        }
 
-                for (int i = 0; i < 8; i ++) {
-                    tileOrder.add(randomList.get(i));
-                }
+        @Override
+        public void onPrepareLoad(Drawable drawable) {
 
-            }
+        }
+    };
+
+    private Target tileTarget4 = new Target() {
+        @Override
+        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
+            tileBitmaps.add(bitmap);
+            setTileOrder();
         }
 
         @Override
@@ -841,29 +849,35 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     private void createGameIntents() {
 
-        Intent intent0 = new Intent(LiveWallpaperService.GAME_TILE0);
-        pendingTile0 = PendingIntent.getBroadcast(this, 0, intent0, 0);
+        Intent tileIntent0 = new Intent(LiveWallpaperService.GAME_TILE0);
+        pendingTile0 = PendingIntent.getBroadcast(this, 0, tileIntent0, 0);
 
-        Intent intent1 = new Intent(LiveWallpaperService.GAME_TILE1);
-        pendingTile1 = PendingIntent.getBroadcast(this, 0, intent1, 0);
+        Intent tileIntent1 = new Intent(LiveWallpaperService.GAME_TILE1);
+        pendingTile1 = PendingIntent.getBroadcast(this, 0, tileIntent1, 0);
 
-        Intent intent2 = new Intent(LiveWallpaperService.GAME_TILE2);
-        pendingTile2 = PendingIntent.getBroadcast(this, 0, intent2, 0);
+        Intent tileIntent2 = new Intent(LiveWallpaperService.GAME_TILE2);
+        pendingTile2 = PendingIntent.getBroadcast(this, 0, tileIntent2, 0);
 
-        Intent intent3 = new Intent(LiveWallpaperService.GAME_TILE3);
-        pendingTile3 = PendingIntent.getBroadcast(this, 0, intent3, 0);
+        Intent tileIntent3 = new Intent(LiveWallpaperService.GAME_TILE3);
+        pendingTile3 = PendingIntent.getBroadcast(this, 0, tileIntent3, 0);
 
-        Intent intent4 = new Intent(LiveWallpaperService.GAME_TILE4);
-        pendingTile4 = PendingIntent.getBroadcast(this, 0, intent4, 0);
+        Intent tileIntent4 = new Intent(LiveWallpaperService.GAME_TILE4);
+        pendingTile4 = PendingIntent.getBroadcast(this, 0, tileIntent4, 0);
 
-        Intent intent5 = new Intent(LiveWallpaperService.GAME_TILE5);
-        pendingTile5 = PendingIntent.getBroadcast(this, 0, intent5, 0);
+        Intent tileIntent5 = new Intent(LiveWallpaperService.GAME_TILE5);
+        pendingTile5 = PendingIntent.getBroadcast(this, 0, tileIntent5, 0);
 
-        Intent intent6 = new Intent(LiveWallpaperService.GAME_TILE6);
-        pendingTile6 = PendingIntent.getBroadcast(this, 0, intent6, 0);
+        Intent tileIntent6 = new Intent(LiveWallpaperService.GAME_TILE6);
+        pendingTile6 = PendingIntent.getBroadcast(this, 0, tileIntent6, 0);
 
-        Intent intent7 = new Intent(LiveWallpaperService.GAME_TILE7);
-        pendingTile7 = PendingIntent.getBroadcast(this, 0, intent7, 0);
+        Intent tileIntent7 = new Intent(LiveWallpaperService.GAME_TILE7);
+        pendingTile7 = PendingIntent.getBroadcast(this, 0, tileIntent7, 0);
+
+        Intent tileIntent8 = new Intent(LiveWallpaperService.GAME_TILE8);
+        pendingTile8 = PendingIntent.getBroadcast(this, 0, tileIntent8, 0);
+
+        Intent tileIntent9 = new Intent(LiveWallpaperService.GAME_TILE9);
+        pendingTile9 = PendingIntent.getBroadcast(this, 0, tileIntent9, 0);
 
     }
 
@@ -1334,7 +1348,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     }
 
-                    if (animated) {
+                    if (animated && (bitmapWidth - renderScreenWidth) > AppSettings.getAnimationSafety()) {
                         if (animationX < (-bitmapWidth + renderScreenWidth + animationModifier)) {
                             animationModifier = -Math.abs(animationModifier);
                         }

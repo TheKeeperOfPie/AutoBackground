@@ -42,14 +42,17 @@
     <string name="use_animation_description">Animate Wallpaper</string>
     <string name="animation_speed">Animation Speed</string>
     <string name="animation_speed_description">Speed of scrolling</string>
+    <string name="animation_speed_hint">pixels per frame</string>
     <string name="animation_frame_rate">Frame Rate</string>
     <string name="animation_frame_rate_description">Rate of rendering</string>
     <string name="animation_frame_rate_hint">Frames per second</string>
+    <string name="animation_safety">Animation Safety</string>
+    <string name="animation_safety_description">Side buffer for animation in pixels</string>
 
     <string name="add_source">Add New Source</string>
     <string name="source_title">Title</string>
     <string name="website_url">URL</string>
-    <string name="num_images">Number of images to download</string>
+    <string name="num_images"># of images to download</string>
     <string name="sort_sources">Sort Sources</string>
     
     <string name="ok_button">OK</string>
@@ -61,8 +64,6 @@
     
     <string name="use_timer">Download Timer</string>
     <string name="use_timer_description">Download interval</string>
-    <string name="use_timer_adv">Download Timer</string>
-    <string name="use_timer_description_adv">Interval in minutes</string>
     <string name="use_wifi">Use WiFi</string>
     <string name="use_wifi_description">Allow download on WiFi</string>
     <string name="use_data">Use Mobile Data</string>
@@ -332,7 +333,8 @@
         <item>Number of Images</item>
     </string-array>
 
-    <string-array name="website_entry_menu">
+    <string-array name="source_edit_menu">
+        <item>View Images</item>
     	<item>Edit</item>
     	<item>Delete</item>
 	</string-array>

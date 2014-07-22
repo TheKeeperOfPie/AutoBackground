@@ -88,15 +88,6 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     private void showThemeDialogMenu() {
 
-//        int themeId;
-//
-//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-//            themeId = R.style.LightDialogTheme;
-//        }
-//        else {
-//            themeId = R.style.DarkDialogTheme;
-//        }
-
         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
 
         dialog.setItems(R.array.theme_entry_menu, new DialogInterface.OnClickListener() {
@@ -134,15 +125,6 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
     }
 
     private void showToastDialog() {
-
-//        int themeId;
-//
-//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-//            themeId = R.style.LightDialogTheme;
-//        }
-//        else {
-//            themeId = R.style.DarkDialogTheme;
-//        }
 
         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
 
