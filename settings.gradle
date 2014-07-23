@@ -1,3 +1,2 @@
 include ':app'
-include ':libraries:showcaseview'
 include ':libraries:colorpickerpreference'

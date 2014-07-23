@@ -54,6 +54,8 @@
     <string name="website_url">URL</string>
     <string name="num_images"># of images to download</string>
     <string name="sort_sources">Sort Sources</string>
+    <string name="download_wallpaper">Download Images</string>
+    <string name="cycle_wallpaper">Cycle Wallpaper</string>
     
     <string name="ok_button">OK</string>
     <string name="cancel_button">Cancel</string>
@@ -104,6 +106,9 @@
     <string name="reset_effects">Reset Effects</string>
     <string name="reset_effects_description">Reset to default values</string>
 
+    <string name="duotone_color_one">Color 1</string>
+    <string name="duotone_color_two">Color 2</string>
+
     <string name="effect_auto_fix">Auto Fix</string>
     <string name="effect_auto_fix_description">Auto Fix Image</string>
     <string name="effect_brightness">Brightness</string>
@@ -114,6 +119,8 @@
     <string name="effect_cross_process_description">Cross process effect</string>
     <string name="effect_documentary">Documentary Effect</string>
     <string name="effect_documentary_description">Black and white effect</string>
+    <string name="effect_duotone">Dual Tone</string>
+    <string name="effect_duotone_description">Show image with two color tones</string>
     <string name="effect_fill_light">Fill Light Effect</string>
     <string name="effect_fill_light_description">Contrast of image</string>
     <string name="effect_fisheye">Fisheye Effect</string>
@@ -160,6 +167,8 @@
     <string name="fill_notification_image_description">Fill notification icon with image</string>
     <string name="use_pin_indicator">Show Pin Indicator</string>
     <string name="use_pin_indicator_description">Show a pin overlay in the notification when image is pinned</string>
+    <string name="history_size">Previous History Size</string>
+    <string name="history_size_description">Number of images to store in previous buffer</string>
     <string name="show_tutorial_notification">Reshow Notification Tutorial</string>
     <string name="show_tutorial_notification_description">Click to reshow notification tutorial screen</string>
 

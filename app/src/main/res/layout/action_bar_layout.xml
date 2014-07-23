@@ -45,4 +45,11 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
 
+    <View
+        android:id="@+id/download_target"
+        android:layout_width="1px"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        />
+
 </RelativeLayout>

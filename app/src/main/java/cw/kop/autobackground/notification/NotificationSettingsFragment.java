@@ -384,37 +384,29 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private int getWhiteDrawable(int drawable) {
 
-        if (drawable == R.drawable.ic_action_copy) {
-            return R.drawable.ic_action_copy_dark;
-        }
-        else if (drawable == R.drawable.ic_action_refresh) {
-            return R.drawable.ic_action_refresh_dark;
-        }
-        else if (drawable == R.drawable.ic_action_discard) {
-            return R.drawable.ic_action_discard_dark;
-        }
-        else if (drawable == R.drawable.ic_action_picture) {
-            return R.drawable.ic_action_picture_dark;
-        }
-        else if (drawable == R.drawable.ic_action_make_available_offline) {
-            return R.drawable.ic_action_make_available_offline_dark;
-        }
-        else if (drawable == R.drawable.ic_action_back) {
-            return R.drawable.ic_action_back_dark;
-        }
-        else if (drawable == R.drawable.ic_action_share) {
-            return R.drawable.ic_action_share_dark;
-        }
-        else if (drawable == R.drawable.ic_action_backspace) {
-            return R.drawable.ic_action_backspace_dark;
-        }
-        else {
-            return drawable;
+        switch (drawable) {
+            case R.drawable.ic_action_copy:
+                return R.drawable.ic_action_copy_dark;
+            case R.drawable.ic_action_refresh:
+                return R.drawable.ic_action_refresh_dark;
+            case R.drawable.ic_action_discard:
+                return R.drawable.ic_action_discard_dark;
+            case R.drawable.ic_action_picture:
+                return R.drawable.ic_action_picture_dark;
+            case R.drawable.ic_action_make_available_offline:
+                return R.drawable.ic_action_make_available_offline_dark;
+            case R.drawable.ic_action_back:
+                return R.drawable.ic_action_back_dark;
+            case R.drawable.ic_action_share:
+                return R.drawable.ic_action_share_dark;
+            case R.drawable.ic_action_backspace:
+                return R.drawable.ic_action_backspace_dark;
+            default:
+                return drawable;
         }
     }
 
     private void clearHighlights() {
-
         notificationIconHighlight.setVisibility(View.GONE);
         notificationPreviewHighlight.setVisibility(View.GONE);
         notificationTitleHighlight.setVisibility(View.GONE);
@@ -422,7 +414,6 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         optionOneHighlight.setVisibility(View.GONE);
         optionTwoHighlight.setVisibility(View.GONE);
         optionThreeHighlight.setVisibility(View.GONE);
-
         recyclerView.setVisibility(View.GONE);
         preferenceList.setVisibility(View.VISIBLE);
     }

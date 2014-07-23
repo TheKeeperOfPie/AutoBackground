@@ -4,17 +4,24 @@
     >
 
     <item
-        android:id="@+id/sort_sources"
-        android:icon="@drawable/ic_action_storage_dark"
-        android:title="@string/sort_sources"
+        android:id="@+id/download_wallpaper"
+        android:icon="?attr/ic_action_download"
+        android:title="@string/download_wallpaper"
         android:showAsAction="always"
         />
 
     <item
-        android:id="@+id/add_source"
-        android:icon="@drawable/ic_action_new_dark"
-        android:title="@string/add_source"
+        android:id="@+id/cycle_wallpaper"
+        android:icon="?attr/ic_action_refresh"
+        android:title="@string/cycle_wallpaper"
         android:showAsAction="always"
+        />
+
+    <item
+        android:id="@+id/sort_sources"
+        android:icon="?attr/ic_action_storage"
+        android:title="@string/sort_sources"
+        android:showAsAction="ifRoom"
         />
 
 </menu>

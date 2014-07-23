@@ -192,15 +192,6 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
     private void showDialogTimerForInput() {
 
-//        int themeId;
-//
-//        if(AppSettings.getTheme() == R.style.FragmentLightTheme) {
-//            themeId = R.style.LightDialogTheme;
-//        }
-//        else {
-//            themeId = R.style.DarkDialogTheme;
-//        }
-
         AppSettings.setTimerDuration(0);
 
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
@@ -264,10 +255,8 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         super.onActivityCreated(savedInstanceState);
 
         if (!AppSettings.useAdvanced()) {
-            SwitchPreference experimentalPref = (SwitchPreference) findPreference("use_experimental_downloader_adv");
-            ((PreferenceCategory) findPreference("title_download_settings")).removePreference(experimentalPref);
-            EditTextPreference prefixPref = (EditTextPreference) findPreference("image_prefix_adv");
-            ((PreferenceCategory) findPreference("title_download_settings")).removePreference(prefixPref);
+            ((PreferenceCategory) findPreference("title_download_settings")).removePreference(findPreference("use_experimental_downloader_adv"));
+            ((PreferenceCategory) findPreference("title_download_settings")).removePreference(findPreference("image_prefix_adv"));
         }
 
         EditTextPreference widthPref = (EditTextPreference) findPreference("user_width");

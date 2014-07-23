@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Set;
 
 import cw.kop.autobackground.settings.AppSettings;
-import cw.kop.autobackground.sources.SourceListFragment;
 
 public class Downloader {
 
@@ -112,19 +111,19 @@ public class Downloader {
         List<File> bitmaps = new ArrayList<File>();
         File root = new File(cacheDir);
 
-        for (File file : root.listFiles()) {
-            if (file.exists() && file.isDirectory()) {
-                bitmaps.addAll(Arrays.asList(file.listFiles(fileFilter)));
-            }
-        }
-
-        bitmaps.addAll(Arrays.asList(root.listFiles(fileFilter)));
-
         for (int i = 0; i < AppSettings.getNumSources(); i++) {
 
-            if (AppSettings.getSourceType(i).equals("folder") && AppSettings.useSource(i)) {
-                bitmaps.addAll(Arrays.asList(new File(AppSettings.getSourceData(i)).listFiles(fileFilter)));
-                Log.i(TAG, "Added folder");
+            if (AppSettings.getSourceType(i).equals(AppSettings.WEBSITE)) {
+                File folder = new File(cacheDir + "/" + AppSettings.getSourceTitle(i) + AppSettings.getImagePrefix());
+                if (folder.exists() && folder.isDirectory()) {
+                    bitmaps.addAll(Arrays.asList(folder.listFiles(fileFilter)));
+                }
+            }
+            else if (AppSettings.getSourceType(i).equals(AppSettings.FOLDER)) {
+                File folder = new File(AppSettings.getSourceData(i));
+                if (folder.exists() && folder.isDirectory()) {
+                    bitmaps.addAll(Arrays.asList(folder.listFiles(fileFilter)));
+                }
             }
 
         }

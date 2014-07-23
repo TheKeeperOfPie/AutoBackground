@@ -103,6 +103,12 @@
             android:summary="@string/effect_documentary_description"
             />
 
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="effect_duotone_switch"
+            android:title="@string/effect_duotone"
+            android:summary="@string/effect_duotone_description"
+            />
+
         <cw.kop.autobackground.EffectPreference
             android:key="effect_fill_light"
             android:max="100"

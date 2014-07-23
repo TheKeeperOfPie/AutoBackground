@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:id="@+id/color_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal"
+        >
+
+        <Button
+            android:id="@+id/color_one_button"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:text="@string/duotone_color_one"
+            android:background="@color/DARK_GRAY_OPAQUE"
+            />
+
+        <Button
+            android:id="@+id/color_two_button"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:text="@string/duotone_color_two"
+            android:background="@color/DARK_GRAY_OPAQUE"
+            />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/color_one_button_highlights"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_below="@id/color_buttons"
+        android:orientation="horizontal"
+        >
+
+        <View
+            android:id="@+id/color_one_button_highlight"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/BLUE_OPAQUE"
+            />
+
+        <View
+            android:id="@+id/color_two_button_highlight"
+            android:layout_width="0px"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/BLUE_OPAQUE"
+            android:visibility="invisible"
+            />
+
+    </LinearLayout>
+
+    <afzkl.development.colorpickerview.view.ColorPickerView
+        android:id="@+id/duotone_color_picker_one"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/color_one_button_highlights"
+        />
+
+    <afzkl.development.colorpickerview.view.ColorPickerView
+        android:id="@+id/duotone_color_picker_two"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/color_one_button_highlights"
+        android:visibility="gone"
+        />
+
+</RelativeLayout>

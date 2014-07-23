@@ -24,41 +24,23 @@
         />
 
     <Button
-        android:id="@+id/download_button"
+        android:id="@+id/set_button"
         android:layout_above="@id/webview"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="@color/DARK_GRAY_OPAQUE"
         />
 
-    <View
-        android:id="@+id/source_divider_1"
-        android:layout_above="@id/download_button"
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        />
-
-    <Button
-        android:id="@+id/refresh_button"
-        android:layout_above="@id/source_divider_1"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/DARK_GRAY_OPAQUE"
-        />
-
-    <View
-        android:id="@+id/source_divider_2"
-        android:layout_above="@id/refresh_button"
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        />
-
-    <Button
-        android:id="@+id/set_button"
-        android:layout_above="@id/source_divider_2"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/DARK_GRAY_OPAQUE"
+    <ImageButton
+        android:id="@+id/floating_button"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom|right"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="?attr/floating_button"
         />
 
 </RelativeLayout>

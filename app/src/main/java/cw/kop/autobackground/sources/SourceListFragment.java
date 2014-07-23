@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -25,8 +26,10 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,9 +52,8 @@ public class SourceListFragment extends ListFragment {
 	private SourceListAdapter listAdapter;
     private Context context;
     private Button setButton;
-    private Button downloadButton;
+    private ImageButton addButton;
     private WebView webView;
-    private boolean isDownloading = false;
     private String baseUrl;
 
     private ShowcaseView tutorialPromptView;
@@ -60,7 +62,9 @@ public class SourceListFragment extends ListFragment {
     private ShowcaseView downloadTutorial;
     private ShowcaseView setTutorial;
     private ShowcaseView settingsTutorial;
+    private RelativeLayout.LayoutParams buttonParams;
     private boolean setShown = false;
+    private boolean isDownloading = false;
 
 	public SourceListFragment() {
 	}
@@ -68,16 +72,12 @@ public class SourceListFragment extends ListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		setHasOptionsMenu(true);
-
 	}
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-
 		inflater.inflate(R.menu.source_actions, menu);
-
 		super.onCreateOptionsMenu(menu, inflater);
 	}
 
@@ -86,24 +86,102 @@ public class SourceListFragment extends ListFragment {
         super.onAttach(activity);
         context = getActivity();
     }
-	
-	@Override
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        View view = inflater.inflate(R.layout.fragment_sources, container, false);
+
+        buttonParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        buttonParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        buttonParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        buttonParams.setMargins(0, 0, 0, Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, context.getResources().getDisplayMetrics())));
+
+        String ua = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36";
+        webView = (WebView) view.findViewById(R.id.webview);
+        webView.getSettings().setUserAgentString(ua);
+
+        addButton = (ImageButton) view.findViewById(R.id.floating_button);
+        addButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                showSourceMenu();
+            }
+
+        });
+
+        setButton = (Button) view.findViewById(R.id.set_button);
+        setButton.setText("Set Wallpaper");
+        setButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if (setTutorial != null) {
+                    hide(setTutorial);
+                    showTutorial(5);
+                }
+                setWallpaper();
+            }
+
+        });
+
+        return view;
+    }
+
+    @Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
             case android.R.id.home:
                 hide(settingsTutorial);
                 showTutorial(6);
                 return true;
-			case R.id.add_source:
-				showSourceMenu();
-				return true;
             case R.id.sort_sources:
                 showSourceSortMenu();
+                return true;
+            case R.id.cycle_wallpaper:
+                cycleWallpaper();
+                if (AppSettings.useToast()) {
+                    Toast.makeText(context, "Cycling wallpaper...", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            case R.id.download_wallpaper:
+                if (downloadTutorial != null) {
+                    hide(downloadTutorial);
+                    showTutorial(4);
+                    Log.i("WLF", "Showing 4");
+                }
+                if (!isDownloading) {
+                    listAdapter.saveData();
+                    if (AppSettings.useExperimentalDownloader()){
+                        getHtml();
+                    }
+                    else {
+                        Downloader.download(context);
+                    }
+                } else {
+                    Log.i("MP", "isDownloading");
+                }
                 return true;
 			default:
 			    return super.onOptionsItemSelected(item);
 		}
 	}
+
+    private void showImageFragment(boolean change, boolean setPath, String viewPath, int position) {
+        LocalImageFragment localImageFragment = new LocalImageFragment();
+        Bundle arguments = new Bundle();
+        arguments.putBoolean("change", change);
+        arguments.putBoolean("set_path", setPath);
+        arguments.putString("view_path", viewPath);
+        arguments.putInt("position", position);
+        localImageFragment.setArguments(arguments);
+
+        getFragmentManager().beginTransaction()
+                .add(R.id.content_frame, localImageFragment, "image_fragment")
+                .addToBackStack(null)
+                .commit();
+    }
 
     private void showSourceMenu() {
         AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
@@ -117,20 +195,10 @@ public class SourceListFragment extends ListFragment {
                         showDialogForInput();
                         break;
                     case 1:
-                        LocalImageFragment localImageFragment = new LocalImageFragment();
-                        Bundle arguments = new Bundle();
-                        arguments.putBoolean("change", false);
-                        arguments.putBoolean("set_path", false);
-                        localImageFragment.setArguments(arguments);
-
-                        getFragmentManager().beginTransaction()
-                                .add(R.id.content_frame, localImageFragment, "image_fragment")
-                                .addToBackStack(null)
-                                .commit();
+                        showImageFragment(false, false, "", 0);
                         break;
                     default:
                 }
-
             }
         });
 
@@ -268,6 +336,9 @@ public class SourceListFragment extends ListFragment {
 	        		}
 	        		
 	        		if (listAdapter.setItem(position, AppSettings.WEBSITE, sourceTitle.getText().toString(), sourceData.getText().toString(), Boolean.valueOf(clickedItem.get("use")), sourceNum.getText().toString())) {
+                        if (AppSettings.getSourceTitle(position).equals(sourceTitle.getText().toString().replaceAll(" ", ""))) {
+                            AppSettings.setSourceSet(sourceTitle.getText().toString().replaceAll(" ", ""), new HashSet<String>());
+                        }
                         listAdapter.saveData();
                     }
                     else {
@@ -294,41 +365,19 @@ public class SourceListFragment extends ListFragment {
                     case 0:
                         String directory;
                         if (listAdapter.getItem(position).get("type").equals(AppSettings.WEBSITE)) {
-                            directory = AppSettings.getDownloadPath(context) + "/" + AppSettings.getSourceTitle(position);
+                            directory = AppSettings.getDownloadPath(context) + "/" + AppSettings.getSourceTitle(position) + AppSettings.getImagePrefix();
                         }
                         else {
                             directory = AppSettings.getSourceData(position);
                         }
-                        LocalImageFragment localImageFragmentView = new LocalImageFragment();
-                        Bundle argumentsView = new Bundle();
-                        argumentsView.putBoolean("change", false);
-                        argumentsView.putBoolean("set_path", false);
-                        argumentsView.putString("view_path", directory);
-                        argumentsView.putInt("position", position);
-                        localImageFragmentView.setArguments(argumentsView);
-
-                        getFragmentManager().beginTransaction()
-                                .add(R.id.content_frame, localImageFragmentView, "image_fragment")
-                                .addToBackStack(null)
-                                .commit();
-
+                        showImageFragment(false, false, directory, 0);
                         break;
 					case 1:
                         if (listAdapter.getItem(position).get("type").equals(AppSettings.WEBSITE)) {
                             showDialogForChange(position);
                         }
                         else if(listAdapter.getItem(position).get("type").equals(AppSettings.FOLDER)) {
-                            LocalImageFragment localImageFragmentEdit = new LocalImageFragment();
-                            Bundle argumentsEdit = new Bundle();
-                            argumentsEdit.putBoolean("change", true);
-                            argumentsEdit.putBoolean("set_path", false);
-                            argumentsEdit.putInt("position", position);
-                            localImageFragmentEdit.setArguments(argumentsEdit);
-
-                            getFragmentManager().beginTransaction()
-                                    .add(R.id.content_frame, localImageFragmentEdit, "image_fragment")
-                                    .addToBackStack(null)
-                                    .commit();
+                            showImageFragment(true, false, "", 0);
                         }
 						break;
 					case 2:
@@ -378,75 +427,7 @@ public class SourceListFragment extends ListFragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
-        View view = inflater.inflate(R.layout.fragment_websites, container, false);
-
-        String ua = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36";
-        webView = (WebView) view.findViewById(R.id.webview);
-        webView.getSettings().setUserAgentString(ua);
-
-        setButton = (Button) view.findViewById(R.id.set_button);
-        setButton.setText("Set Wallpaper");
-        setButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                if (setTutorial != null) {
-                    hide(setTutorial);
-                    showTutorial(5);
-                }
-                setWallpaper();
-            }
-
-        });
-
-        downloadButton = (Button) view.findViewById(R.id.download_button);
-        downloadButton.setText("Download Wallpaper");
-        downloadButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                if (downloadTutorial != null) {
-                    hide(downloadTutorial);
-                    showTutorial(4);
-                    Log.i("WLF", "Showing 4");
-                }
-                if (!isDownloading) {
-                    listAdapter.saveData();
-                    if (AppSettings.useExperimentalDownloader()){
-                        getHtml();
-                    }
-                    else {
-                        Downloader.download(context);
-                    }
-                } else {
-                    Log.i("MP", "isDownloading");
-                }
-            }
-
-        });
-
-        Button refreshButton = (Button) view.findViewById(R.id.refresh_button);
-        refreshButton.setText("Cycle Wallpaper");
-        refreshButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                cycleWallpaper();
-                if (AppSettings.useToast()) {
-                    Toast.makeText(context, "Cycling...", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-        });
-
-		return view;
-	}
-
-	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onActivityCreated(savedInstanceState);
 		
 		if (listAdapter == null) {
@@ -529,6 +510,7 @@ public class SourceListFragment extends ListFragment {
                             }
                         })
                         .build();
+                tutorialPromptView.setButtonPosition(buttonParams);
                 break;
             case 1:
                 View.OnClickListener websiteListListener = new View.OnClickListener() {
@@ -550,6 +532,7 @@ public class SourceListFragment extends ListFragment {
                     .setOnClickListener(websiteListListener)
                     .setTarget((new ViewTarget(getActivity().getActionBar().getCustomView().findViewById(R.id.action_bar_title))))
                     .build();
+                websiteListTutorial.setButtonPosition(buttonParams);
                 break;
             case 2:
                 View.OnClickListener addWebsiteListener = new View.OnClickListener() {
@@ -561,7 +544,7 @@ public class SourceListFragment extends ListFragment {
                     }
                 };
 
-                ShowcaseView.Builder addWebsiteBuilder = new ShowcaseView.Builder(getActivity())
+                addWebsiteTutorial = new ShowcaseView.Builder(getActivity())
                         .setContentTitle("Adding Websites")
                         .setContentText(
                                 "To add a new website entry, \n" +
@@ -575,13 +558,10 @@ public class SourceListFragment extends ListFragment {
                                 "of some landscape photos \n" +
                                 "taken by Kai Lehnberg.")
                         .setStyle(R.style.ShowcaseStyle)
-                        .setOnClickListener(addWebsiteListener);
-
-                if (android.os.Build.VERSION.SDK_INT < 20) {
-                    addWebsiteBuilder.setTarget(new ActionItemTarget(getActivity(), R.id.add_source));
-                }
-
-                addWebsiteTutorial = addWebsiteBuilder.build();
+                        .setOnClickListener(addWebsiteListener)
+                        .setTarget(new ViewTarget(addButton))
+                        .build();
+                addWebsiteTutorial.setButtonPosition(buttonParams);
                 break;
             case 3:
                 View.OnClickListener downloadListener = new View.OnClickListener() {
@@ -598,9 +578,10 @@ public class SourceListFragment extends ListFragment {
                                 "click this download button to start \n" +
                                 "downloading some images.")
                         .setStyle(R.style.ShowcaseStyle)
-                        .setTarget(new ViewTarget(downloadButton))
+                        .setTarget(new ViewTarget(getActivity().getActionBar().getCustomView().findViewById(R.id.download_target)))
                         .setOnClickListener(downloadListener)
                         .build();
+                downloadTutorial.setButtonPosition(buttonParams);
                 break;
             case 4:
                 View.OnClickListener setListener = new View.OnClickListener() {
@@ -623,6 +604,7 @@ public class SourceListFragment extends ListFragment {
                             .setTarget(new ViewTarget(setButton))
                             .setOnClickListener(setListener)
                             .build();
+                    setTutorial.setButtonPosition(buttonParams);
                     setShown = true;
                 }
                 else {
@@ -650,6 +632,7 @@ public class SourceListFragment extends ListFragment {
                         .setOnClickListener(settingsListener)
                         .setTarget((new ViewTarget(getActivity().getActionBar().getCustomView().findViewById(R.id.drawer_indicator))))
                         .build();
+                settingsTutorial.setButtonPosition(buttonParams);
                 break;
             case 6:
                 AppSettings.setTutorial(false, "source");
@@ -663,9 +646,7 @@ public class SourceListFragment extends ListFragment {
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-
 		showDialogMenu(position);
-		
 	}
 
     protected void setWallpaper() {
@@ -675,7 +656,6 @@ public class SourceListFragment extends ListFragment {
         final String p = LiveWallpaperService.class.getPackage().getName();
         final String c = LiveWallpaperService.class.getCanonicalName();
         i.putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, new ComponentName(p, c));
-
         startActivityForResult(i, 0);
     }
 
@@ -684,7 +664,6 @@ public class SourceListFragment extends ListFragment {
         Intent intent = new Intent();
         intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-
         context.sendBroadcast(intent);
     }
 
@@ -712,11 +691,8 @@ public class SourceListFragment extends ListFragment {
         }
 
         if (AppSettings.useSourceTutorial() && tutorialPromptView == null) {
-
             Log.i("WLF", "Showing tutorial");
-
             showTutorial(0);
-
         }
 	}
 

@@ -8,8 +8,8 @@ android {
         applicationId "cw.kop.autobackground"
         minSdkVersion 14
         targetSdkVersion 19
-        versionCode 16
-        versionName "0.6.5"
+        versionCode 17
+        versionName "0.6.6"
     }
     buildTypes {
         release {
@@ -19,10 +19,18 @@ android {
     }
 }
 
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile project(':libraries:showcaseview')
+    compile project(':libraries:colorpickerpreference')
+    compile 'com.github.amlcurran.showcaseview:library:5.0.0-SNAPSHOT@aar'
     compile 'com.android.support:recyclerview-v7:21.0.0-rc1'
     compile 'com.android.support:support-v4:+'
-    compile project(':libraries:colorpickerpreference')
+    compile group:'com.squareup.picasso', name:'picasso', version:'2.3.3'
 }
