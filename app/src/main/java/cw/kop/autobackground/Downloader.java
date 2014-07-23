@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.SourceListFragment;
 
 public class Downloader {
 
@@ -90,7 +91,11 @@ public class Downloader {
             Log.i("Downloader", "Already downloading");
         }
 	}
-	
+
+    public static void cancel() {
+        imageAsyncTask.cancel(false);
+    }
+
 	public static List<File> getBitmapList(Context appContext) {
 		
 		if (fileFilter == null) {
@@ -468,6 +473,10 @@ public class Downloader {
                     if (imageList.size() > 0) {
                         while (num < (AppSettings.getSourceNum(index) + stored) && count < imageList.size()) {
 
+                            if (isCancelled()) {
+                                return null;
+                            }
+
                             String randLink = imageList.get(count);
 
                             boolean oldLink = usedLinks.contains(randLink);
@@ -646,8 +655,21 @@ public class Downloader {
 
             }
 		}
-	    
-	    @Override
+
+        @Override
+        protected void onCancelled(Void aVoid) {
+            super.onCancelled(aVoid);
+            notificationManager.cancel(NOTIFICATION_ID);
+
+            SourceListFragment sourceListFragment = ((MainPreferences) context).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+            if (sourceListFragment != null ) {
+                sourceListFragment.resetDownload();
+            }
+
+            context = null;
+        }
+
+        @Override
 	    protected void onPostExecute(Void result) {
 
             if (useNotification) {
@@ -683,9 +705,14 @@ public class Downloader {
             cycleIntent.setAction(LiveWallpaperService.CYCLE_IMAGE);
             cycleIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
             context.sendBroadcast(cycleIntent);
-			
-			context = null;
-			
+
+            SourceListFragment sourceListFragment = ((MainPreferences) context).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+            if (sourceListFragment != null ) {
+                sourceListFragment.resetDownload();
+            }
+
+            context = null;
+
 	    	Log.i(TAG, "Download Finished");
 	    }
 	}

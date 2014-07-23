@@ -9,7 +9,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -27,6 +26,7 @@ import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -35,7 +35,6 @@ import android.widget.Toast;
 
 import com.github.amlcurran.showcaseview.OnShowcaseEventListener;
 import com.github.amlcurran.showcaseview.ShowcaseView;
-import com.github.amlcurran.showcaseview.targets.ActionItemTarget;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
 import java.util.HashMap;
@@ -51,14 +50,15 @@ public class SourceListFragment extends ListFragment {
 
 	private SourceListAdapter listAdapter;
     private Context context;
+    private Menu menu;
     private Button setButton;
     private ImageButton addButton;
     private WebView webView;
     private String baseUrl;
 
     private ShowcaseView tutorialPromptView;
-    private ShowcaseView websiteListTutorial;
-    private ShowcaseView addWebsiteTutorial;
+    private ShowcaseView sourceListTutorial;
+    private ShowcaseView addSourceTutorial;
     private ShowcaseView downloadTutorial;
     private ShowcaseView setTutorial;
     private ShowcaseView settingsTutorial;
@@ -79,6 +79,7 @@ public class SourceListFragment extends ListFragment {
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		inflater.inflate(R.menu.source_actions, menu);
 		super.onCreateOptionsMenu(menu, inflater);
+        this.menu = menu;
 	}
 
     @Override
@@ -146,27 +147,74 @@ public class SourceListFragment extends ListFragment {
                 }
                 return true;
             case R.id.download_wallpaper:
-                if (downloadTutorial != null) {
-                    hide(downloadTutorial);
-                    showTutorial(4);
-                    Log.i("WLF", "Showing 4");
-                }
-                if (!isDownloading) {
-                    listAdapter.saveData();
-                    if (AppSettings.useExperimentalDownloader()){
-                        getHtml();
-                    }
-                    else {
-                        Downloader.download(context);
-                    }
-                } else {
-                    Log.i("MP", "isDownloading");
-                }
+                startDownload();
                 return true;
 			default:
 			    return super.onOptionsItemSelected(item);
 		}
 	}
+
+    private void startDownload() {
+        if (downloadTutorial != null) {
+            hide(downloadTutorial);
+            showTutorial(4);
+            Log.i("WLF", "Showing 4");
+        }
+        if (!isDownloading) {
+            listAdapter.saveData();
+            isDownloading = true;
+            if (AppSettings.useExperimentalDownloader()){
+                getHtml();
+            }
+            else {
+                Downloader.download(getActivity());
+            }
+
+            if (AppSettings.getTheme() == R.style.AppLightTheme) {
+                menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_cancel));
+            }
+            else {
+                menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_cancel_dark));
+            }
+        }
+        else {
+            Log.i("MP", "isDownloading");
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+
+            dialogBuilder.setTitle("Cancel download?");
+
+            dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                    Downloader.cancel();
+                    if (AppSettings.getTheme() == R.style.AppLightTheme) {
+                        menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_download));
+                    }
+                    else {
+                        menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_download_dark));
+                    }
+                    isDownloading = false;
+                }
+            });
+            dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                }
+            });
+
+            dialogBuilder.show();
+        }
+    }
+
+    public void resetDownload() {
+        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+            menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_download));
+        }
+        else {
+            menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_download_dark));
+        }
+        isDownloading = false;
+    }
 
     private void showImageFragment(boolean change, boolean setPath, String viewPath, int position) {
         LocalImageFragment localImageFragment = new LocalImageFragment();
@@ -285,7 +333,7 @@ public class SourceListFragment extends ListFragment {
 	        		if (listAdapter.addItem(AppSettings.WEBSITE, sourceTitle.getText().toString(), sourceData.getText().toString(), true, sourceNum.getText().toString())) {
                         listAdapter.saveData();
                         AppSettings.setSourceSet(sourceTitle.getText().toString().replaceAll(" ", ""), new HashSet<String>());
-                        hide(addWebsiteTutorial);
+                        hide(addSourceTutorial);
                     }
                     else {
                         Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
@@ -493,7 +541,7 @@ public class SourceListFragment extends ListFragment {
                         .setShowcaseEventListener(new OnShowcaseEventListener() {
                             @Override
                             public void onShowcaseViewHide(ShowcaseView showcaseView) {
-                                if (websiteListTutorial == null) {
+                                if (sourceListTutorial == null) {
                                     AppSettings.setTutorial(false, "source");
                                     tutorialPromptView = null;
                                 }
@@ -516,13 +564,13 @@ public class SourceListFragment extends ListFragment {
                 View.OnClickListener websiteListListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        hide(websiteListTutorial);
+                        hide(sourceListTutorial);
                         showTutorial(2);
-                        websiteListTutorial = null;
+                        sourceListTutorial = null;
                     }
                 };
 
-                websiteListTutorial = new  ShowcaseView.Builder(getActivity())
+                sourceListTutorial = new  ShowcaseView.Builder(getActivity())
                     .setContentTitle("Sources List")
                     .setContentText("This is a list of your sources. \n" +
                             "These can include both sources and your \n" +
@@ -532,19 +580,19 @@ public class SourceListFragment extends ListFragment {
                     .setOnClickListener(websiteListListener)
                     .setTarget((new ViewTarget(getActivity().getActionBar().getCustomView().findViewById(R.id.action_bar_title))))
                     .build();
-                websiteListTutorial.setButtonPosition(buttonParams);
+                sourceListTutorial.setButtonPosition(buttonParams);
                 break;
             case 2:
                 View.OnClickListener addWebsiteListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        hide(addWebsiteTutorial);
+                        hide(addSourceTutorial);
                         showTutorial(3);
-                        addWebsiteTutorial = null;
+                        addSourceTutorial = null;
                     }
                 };
 
-                addWebsiteTutorial = new ShowcaseView.Builder(getActivity())
+                addSourceTutorial = new ShowcaseView.Builder(getActivity())
                         .setContentTitle("Adding Websites")
                         .setContentText(
                                 "To add a new website entry, \n" +
@@ -561,7 +609,7 @@ public class SourceListFragment extends ListFragment {
                         .setOnClickListener(addWebsiteListener)
                         .setTarget(new ViewTarget(addButton))
                         .build();
-                addWebsiteTutorial.setButtonPosition(buttonParams);
+                addSourceTutorial.setButtonPosition(buttonParams);
                 break;
             case 3:
                 View.OnClickListener downloadListener = new View.OnClickListener() {

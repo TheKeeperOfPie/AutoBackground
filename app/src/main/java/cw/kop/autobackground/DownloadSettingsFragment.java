@@ -82,25 +82,6 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             }
         });
 
-        Preference pathPref = findPreference("download_path");
-        pathPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                LocalImageFragment localImageFragment = new LocalImageFragment();
-                Bundle arguments = new Bundle();
-                arguments.putBoolean("change", true);
-                arguments.putBoolean("set_path", true);
-                arguments.putInt("position", 0);
-                localImageFragment.setArguments(arguments);
-
-                getFragmentManager().beginTransaction()
-                        .add(R.id.content_frame, localImageFragment, "image_fragment")
-                        .addToBackStack(null)
-                        .commit();
-                return false;
-            }
-        });
-
         EditTextPreference prefixPref = (EditTextPreference) findPreference("image_prefix_adv");
         prefixPref.setSummary("Prefix: " + AppSettings.getImagePrefix());
 
@@ -311,6 +292,22 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 				}
 				Log.i("DSF", "Alarm Set: " + AppSettings.useTimer());
 			}
+
+            if (key.equals("use_download_path") && AppSettings.useDownloadPath()) {
+
+                LocalImageFragment localImageFragment = new LocalImageFragment();
+                Bundle arguments = new Bundle();
+                arguments.putBoolean("change", true);
+                arguments.putBoolean("set_path", true);
+                arguments.putInt("position", 0);
+                localImageFragment.setArguments(arguments);
+
+                getFragmentManager().beginTransaction()
+                        .add(R.id.content_frame, localImageFragment, "image_fragment")
+                        .addToBackStack(null)
+                        .commit();
+            }
+
 		}
 		
 		

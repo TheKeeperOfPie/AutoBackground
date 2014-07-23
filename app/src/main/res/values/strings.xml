@@ -76,8 +76,8 @@
     <string name="use_high_quality_description">Download high quality images</string>
     <string name="force_download">Force Images</string>
     <string name="force_download_description">Attempt to force download</string>
-    <string name="download_path">External Download Path</string>
-    <string name="download_path_description">Set folder for downloaded images</string>
+    <string name="use_download_path">External Download Path</string>
+    <string name="use_download_path_description">Set folder for downloaded images</string>
     <string name="keep_images">Keep Images</string>
     <string name="keep_images_description">Keep all images in cache</string>
     <string name="delete_old_images">Delete Old</string>

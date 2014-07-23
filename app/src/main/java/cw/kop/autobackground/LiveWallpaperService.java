@@ -12,6 +12,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -30,6 +32,7 @@ import android.opengl.GLUtils;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
@@ -911,15 +914,25 @@ public class LiveWallpaperService extends GLWallpaperService {
                     notifyChangeImage();
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.SHARE_IMAGE)) {
+                    Uri uri = FileProvider.getUriForFile(context, "cw.kop.fileprovider", Downloader.getCurrentBitmapFile());
+
                     Intent shareIntent = new Intent();
                     shareIntent.setAction(Intent.ACTION_SEND);
                     shareIntent.setType("image/*");
-                    shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(Downloader.getCurrentBitmapFile()));
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    shareIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    List<ResolveInfo> resInfoList = context.getPackageManager().queryIntentActivities(shareIntent, PackageManager.MATCH_DEFAULT_ONLY);
+                    for (ResolveInfo resolveInfo : resInfoList) {
+                        String packageName = resolveInfo.activityInfo.packageName;
+                        context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    }
                     shareIntent = Intent.createChooser(shareIntent, "Share Image");
                     shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(shareIntent);
                     Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
                     context.sendBroadcast(closeDrawer);
+                    context.revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.UPDATE_WALLPAPER)) {
                     if (AppSettings.forceInterval()) {

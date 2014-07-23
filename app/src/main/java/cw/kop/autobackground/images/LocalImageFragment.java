@@ -3,8 +3,14 @@ package cw.kop.autobackground.images;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.content.FileProvider;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -20,13 +26,15 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.List;
 
+import cw.kop.autobackground.Downloader;
 import cw.kop.autobackground.MainPreferences;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.SourceListFragment;
 
-public class LocalImageFragment extends Fragment {
+public class LocalImageFragment extends Fragment implements ListView.OnItemClickListener {
 
 	private Context context;
 	private LocalImageAdapter imageAdapter;
@@ -121,21 +129,6 @@ public class LocalImageFragment extends Fragment {
         if (!viewPath.equals("")) {
             useDirectoryButton.setVisibility(View.GONE);
         }
-
-//		Button resetDirectoryButton = (Button) view.findViewById(R.id.reset_directory_button);
-//		resetDirectoryButton.setOnClickListener(new OnClickListener() {
-//
-//            @Override
-//            public void onClick(View v) {
-//                AppSettings.setDownloadPath(context.getCacheDir().getAbsolutePath());
-//                if (AppSettings.useToast()) {
-//                    Toast.makeText(context, "Reset directory", Toast.LENGTH_SHORT).show();
-//                }
-//                imageAdapter.setFinished(true);
-//                getActivity().onBackPressed();
-//            }
-//
-//        });
 		
 		return view;
 	}
@@ -185,6 +178,32 @@ public class LocalImageFragment extends Fragment {
             }
         });
 
+        imageListView.setOnItemClickListener(this);
 	}
-	
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        if (imageAdapter.getItem(position).getName().contains(".png") || imageAdapter.getItem(position).getName().contains(".jpg")) {
+
+            Uri uri = FileProvider.getUriForFile(context, "cw.kop.fileprovider", imageAdapter.getItem(position));
+
+            Intent shareIntent = new Intent();
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.setType("image/*");
+            shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            shareIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            List<ResolveInfo> resInfoList = context.getPackageManager().queryIntentActivities(shareIntent, PackageManager.MATCH_DEFAULT_ONLY);
+            for (ResolveInfo resolveInfo : resInfoList) {
+                String packageName = resolveInfo.activityInfo.packageName;
+                context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }
+            shareIntent = Intent.createChooser(shareIntent, "Share Image");
+            shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(shareIntent);
+            context.revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+
+    }
 }

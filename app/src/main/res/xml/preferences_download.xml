@@ -69,10 +69,11 @@
 		    android:summary="@string/force_download_description"
          	/>
 
-        <Preference
-            android:key="download_path"
-            android:title="@string/download_path"
-            android:summary="@string/download_path_description"
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_download_path"
+            android:defaultValue="false"
+            android:title="@string/use_download_path"
+            android:summary="@string/use_download_path_description"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
