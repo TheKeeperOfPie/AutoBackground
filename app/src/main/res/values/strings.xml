@@ -183,16 +183,16 @@
     <string name="about_libraries_description">The following libraries were used in the creation
         of this application. Click on their entries to check them out.</string>
     <string name="about_library_jsoup">Jsoup Library</string>
-    <string name="about_library_jsoup_description">Used to download and parse html.
+    <string name="about_library_jsoup_description">Used to download and parse html.\n
         Copyright © 2009 - 2013 Jonathan Hedley (jonathan@hedley.net)</string>
     <string name="about_library_showcaseview">ShowcaseView Library</string>
-    <string name="about_library_showcaseview_description">Used to create the fancy tutorials.
+    <string name="about_library_showcaseview_description">Used to create the fancy tutorials.\n
         Copyright Alex Curran (+Alex) © 2012. All rights reserved.</string>
     <string name="about_library_picasso">Picasso Library</string>
-    <string name="about_library_picasso_description">Used to efficiently load some of the images.
+    <string name="about_library_picasso_description">Used to efficiently load some of the images.\n
         Copyright 2013 Square, Inc.</string>
     <string name="about_library_colorpickerview">ColorPickerView Library</string>
-    <string name="about_library_colorpickerview_description">Used to provide color options.
+    <string name="about_library_colorpickerview_description">Used to provide color options.\n
         Copyright © 2010 Daniel Nilsson</string>
 
     <string name="about_self_copyright">Copyright © 2014 Winson Chiu</string>

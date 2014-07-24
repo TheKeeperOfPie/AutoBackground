@@ -466,7 +466,7 @@ public class SourceListFragment extends ListFragment {
 		setListAdapter(listAdapter);
         
 		TextView emptyText = new TextView(getActivity());
-		emptyText.setText("List is empty. Please add new website entry.");
+		emptyText.setText("List is empty. Please add a new source entry.");
 		emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
         emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
