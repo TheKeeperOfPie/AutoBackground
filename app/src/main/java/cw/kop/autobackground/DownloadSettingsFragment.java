@@ -244,6 +244,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             preferenceCategory.removePreference(findPreference("delete_old"));
             preferenceCategory.removePreference(findPreference("use_download_path"));
             preferenceCategory.removePreference(findPreference("use_high_quality"));
+            preferenceCategory.removePreference(findPreference("reset_on_manual_download"));
         }
 
         EditTextPreference widthPref = (EditTextPreference) findPreference("user_width");

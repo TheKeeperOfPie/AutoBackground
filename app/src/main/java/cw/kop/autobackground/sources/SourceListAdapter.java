@@ -106,26 +106,27 @@ public class SourceListAdapter extends BaseAdapter {
 
         HashMap<String, String> changedItem = listData.get(position);
 
-        if (!changedItem.get("title").equals(title)) {
-            if (titles.contains(title)) {
+        if (!changedItem.get("title").replaceAll(" ", "").equals(title.replaceAll(" ", ""))) {
+            if (titles.contains(title.replaceAll(" ", ""))) {
                 return false;
             }
         }
 
+        titles.remove(changedItem.get("title").replaceAll(" ", ""));
         changedItem.put("type", type);
 		changedItem.put("title", title);
 		changedItem.put("data", data);
 		changedItem.put("num", "" + num);
 		changedItem.put("use", "" + use);
 		listData.set(position, changedItem);
-        titles.add(title);
+        titles.add(title.replaceAll(" ", ""));
 		notifyDataSetChanged();
         return true;
 	}
 	
 	public boolean addItem(String type, String title, String data, boolean use, String num) {
 
-        if (titles.contains(title)) {
+        if (titles.contains(title.replaceAll(" ", ""))) {
             return false;
         }
 
@@ -136,7 +137,7 @@ public class SourceListAdapter extends BaseAdapter {
 		newItem.put("num", "" + num);
 		newItem.put("use", "" + use);
 		listData.add(newItem);
-        titles.add(title);
+        titles.add(title.replaceAll(" ", ""));
 		notifyDataSetChanged();
 
 		Log.i("WLA", "listData" + listData.size());
@@ -144,7 +145,7 @@ public class SourceListAdapter extends BaseAdapter {
 	}
 	
 	public void removeItem(int position) {
-        titles.remove(listData.get(position).get("title"));
+        titles.remove(listData.get(position).get("title").replaceAll(" ", ""));
 		listData.remove(position);
 		notifyDataSetChanged();
 	}

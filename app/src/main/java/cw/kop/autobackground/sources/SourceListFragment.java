@@ -2,8 +2,10 @@ package cw.kop.autobackground.sources;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.ListFragment;
+import android.app.PendingIntent;
 import android.app.WallpaperManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -156,6 +158,17 @@ public class SourceListFragment extends ListFragment {
             else {
                 downloadButton.setImageResource(R.drawable.ic_action_cancel_dark);
             }
+
+            if (AppSettings.resetOnManualDownload() && AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
+                Intent intent = new Intent();
+                intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
+                intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+                AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                alarmManager.cancel(pendingIntent);
+                alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + AppSettings.getTimerDuration(), AppSettings.getTimerDuration(), pendingIntent);
+            }
+
         }
         else {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
@@ -348,10 +361,15 @@ public class SourceListFragment extends ListFragment {
 		sourceTitle.setText(clickedItem.get("title"));
 		sourceData.setText(clickedItem.get("data"));
 		sourceNum.setText(clickedItem.get("num"));
-		
+
+        final String previousTitle = AppSettings.getSourceTitle(position);
+
         dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
 	        public void onClick(DialogInterface dialog, int id) {
-	        	if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals("")){
+
+                String newTitle = sourceTitle.getText().toString();
+
+	        	if (!sourceData.getText().toString().equals("") && !newTitle.equals("")){
 	        		
 	        		if (!sourceData.getText().toString().contains("http")) {
 	        			sourceData.setText("http://" + sourceData.getText().toString());
@@ -361,9 +379,10 @@ public class SourceListFragment extends ListFragment {
 	        			sourceNum.setText("1");
 	        		}
 	        		
-	        		if (listAdapter.setItem(position, AppSettings.WEBSITE, sourceTitle.getText().toString(), sourceData.getText().toString(), Boolean.valueOf(clickedItem.get("use")), sourceNum.getText().toString())) {
-                        if (AppSettings.getSourceTitle(position).equals(sourceTitle.getText().toString().replaceAll(" ", ""))) {
-                            AppSettings.setSourceSet(sourceTitle.getText().toString().replaceAll(" ", ""), new HashSet<String>());
+	        		if (listAdapter.setItem(position, AppSettings.WEBSITE, newTitle, sourceData.getText().toString(), Boolean.valueOf(clickedItem.get("use")), sourceNum.getText().toString())) {
+                        if (!previousTitle.equals(newTitle)) {
+                            AppSettings.setSourceSet(newTitle, new HashSet<String>());
+                            Downloader.renameFiles(context, previousTitle, newTitle);
                         }
                         listAdapter.saveData();
                     }
@@ -391,7 +410,7 @@ public class SourceListFragment extends ListFragment {
                     case 0:
                         String directory;
                         if (listAdapter.getItem(position).get("type").equals(AppSettings.WEBSITE)) {
-                            directory = AppSettings.getDownloadPath(context) + "/" + AppSettings.getSourceTitle(position) + AppSettings.getImagePrefix();
+                            directory = AppSettings.getDownloadPath(context) + "/" + AppSettings.getSourceTitleTrimmed(position) + AppSettings.getImagePrefix();
                         }
                         else {
                             directory = AppSettings.getSourceData(position);

@@ -67,6 +67,8 @@
     
     <string name="use_timer">Download Timer</string>
     <string name="use_timer_description">Download interval</string>
+    <string name="reset_on_manual_download">Reset on Download</string>
+    <string name="reset_on_manual_download_description">Reset timer on manual download</string>
     <string name="use_wifi">Use WiFi</string>
     <string name="use_wifi_description">Allow download on WiFi</string>
     <string name="use_data">Use Mobile Data</string>

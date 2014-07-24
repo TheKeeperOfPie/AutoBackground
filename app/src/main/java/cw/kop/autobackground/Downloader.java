@@ -120,11 +120,13 @@ public class Downloader {
         List<File> bitmaps = new ArrayList<File>();
         File root = new File(cacheDir);
 
+        Log.i(TAG, "Use source 1: " + AppSettings.useSource(1));
+
         for (int i = 0; i < AppSettings.getNumSources(); i++) {
 
             if (AppSettings.useSource(i)) {
                 if (AppSettings.getSourceType(i).equals(AppSettings.WEBSITE)) {
-                    File folder = new File(cacheDir + "/" + AppSettings.getSourceTitle(i) + AppSettings.getImagePrefix());
+                    File folder = new File(cacheDir + "/" + AppSettings.getSourceTitleTrimmed(i) + AppSettings.getImagePrefix());
                     if (folder.exists() && folder.isDirectory()) {
                         bitmaps.addAll(Arrays.asList(folder.listFiles(fileFilter)));
                     }
@@ -135,10 +137,6 @@ public class Downloader {
                     }
                 }
             }
-        }
-
-        if (bitmaps.size() == 0) {
-            Toast.makeText(appContext, "No images available", Toast.LENGTH_SHORT).show();
         }
 
         Log.i(TAG, "Bitmap list size: " + bitmaps.size());
@@ -160,7 +158,43 @@ public class Downloader {
 	public static File getCurrentBitmapFile() {
 		return currentBitmapFile;
 	}
-	
+
+    public static void renameFiles(Context appContext, String previousName, String newName) {
+
+        if (fileFilter == null) {
+            fileFilter = (new FilenameFilter() {
+
+                @Override
+                public boolean accept(File dir, String filename) {
+                    if (filename.endsWith(".jpg") || filename.endsWith(".png")) {
+                        return true;
+                    }
+                    return false;
+                }
+            });
+        }
+        String previousPrefix = previousName.replaceAll(" ", "") + AppSettings.getImagePrefix();
+        String newPrefix = newName.replaceAll(" ", "") + AppSettings.getImagePrefix();
+        String cacheDir = AppSettings.getDownloadPath(appContext);
+        String newFileName = cacheDir + "/" + newName.replaceAll(" ", "") + AppSettings.getImagePrefix();
+
+        File oldFolder = new File(cacheDir + "/" + previousPrefix);
+        File[] fileList = oldFolder.listFiles(fileFilter);
+
+        File newFolder = new File(cacheDir + "/" + newPrefix);
+        newFolder.mkdir();
+
+        if (fileList != null && fileList.length > 0) {
+            for (int i = 0; i < fileList.length; i++) {
+                if (fileList[i].getName().contains(previousPrefix)) {
+                    fileList[i].renameTo(new File(newFileName + "/" + newPrefix + i + ".png"));
+                }
+            }
+        }
+        oldFolder.delete();
+
+    }
+
 	public static void deleteCurrentBitmap() {
 		currentBitmapFile.delete();
 	}
@@ -178,7 +212,7 @@ public class Downloader {
 
     public static void deleteBitmaps(Context appContext, int position) {
 
-        File folder = new File(AppSettings.getDownloadPath(appContext) + "/" + AppSettings.getSourceTitle(position) + AppSettings.getImagePrefix());
+        File folder = new File(AppSettings.getDownloadPath(appContext) + "/" + AppSettings.getSourceTitleTrimmed(position) + AppSettings.getImagePrefix());
 
         AppSettings.setSourceSet(AppSettings.getSourceTitle(position), new HashSet<String>());
 
@@ -361,9 +395,11 @@ public class Downloader {
             if (!url.contains("http")) {
                 url = "http:" + url;
             }
+            Log.i(TAG, "URL: " + url);
             if (link.attr("width") != null && !link.attr("width").equals("")) {
                 try {
                     if (Integer.parseInt(link.attr("width")) < AppSettings.getWidth() || Integer.parseInt(link.attr("height")) < AppSettings.getHeight()) {
+                        Log.i(TAG, "Skipped due to width/height" + link.attr("width") + "/" + link.attr("height"));
                         continue;
                     }
                 }
@@ -372,14 +408,17 @@ public class Downloader {
             }
             if (url.contains(".png")) {
                 links.add(url);
+                Log.i(TAG, "Added: " + url);
             }
             else if (url.contains(".jpg")) {
                 links.add(url);
+                Log.i(TAG, "Added: " + url);
             }
             else if (AppSettings.forceDownload() && url.length() > 5 && (url.contains(".com") || url.contains(".org") || url.contains(".net"))) {
                 links.add(url + ".png");
                 links.add(url + ".jpg");
                 links.add(url);
+                Log.i(TAG, "Added: " + url);
             }
         }
         return links;
@@ -455,6 +494,7 @@ public class Downloader {
                     Set<String> imageLinks = new HashSet<String>();
                     List<String> imageList = new ArrayList<String>();
                     imageLinks.addAll(compileImageLinks(linkDoc, "a", "href"));
+                    imageLinks.addAll(compileImageLinks(linkDoc, "img", "href"));
                     imageLinks.addAll(compileImageLinks(linkDoc, "img", "src"));
                     imageList.addAll(imageLinks);
                     Collections.shuffle(imageList);
@@ -463,12 +503,13 @@ public class Downloader {
                     int num = stored;
                     int count = 0;
                     String title = AppSettings.getSourceTitle(index);
+                    String titleTrimmed = AppSettings.getSourceTitleTrimmed(index);
 
                     if (AppSettings.checkDuplicates()) {
-                        usedLinks.addAll(AppSettings.getSourceSet(AppSettings.getSourceTitle(index)));
+                        usedLinks.addAll(AppSettings.getSourceSet(title));
                     }
 
-                    File file = new File(downloadCacheDir + "/" + title + AppSettings.getImagePrefix());
+                    File file = new File(downloadCacheDir + "/" + titleTrimmed + AppSettings.getImagePrefix());
 
                     if (!file.exists() || !file.isDirectory()) {
                         file.mkdir();
@@ -486,7 +527,7 @@ public class Downloader {
                             boolean oldLink = usedLinks.contains(randLink);
 
                             if (!oldLink) {
-                                if (getImage(randLink, downloadCacheDir, title, num)) {
+                                if (getImage(randLink, downloadCacheDir, titleTrimmed, num)) {
                                     usedLinks.add(randLink);
                                     newLinks.add(randLink);
                                     num++;
@@ -500,15 +541,15 @@ public class Downloader {
                     int imagesDownloaded = num - stored;
 
                     AppSettings.setSourceNumStored(index, num);
-                    AppSettings.setSourceSet(AppSettings.getSourceTitle(index), usedLinks);
+                    AppSettings.setSourceSet(title, usedLinks);
 
                     publishProgress("", "" + AppSettings.getSourceNum(index));
 
-                    imageDetails += AppSettings.getSourceTitle(index) + ": " + imagesDownloaded + " images;break;";
+                    imageDetails += title + ": " + imagesDownloaded + " images;break;";
 
                     if (imagesDownloaded < AppSettings.getSourceNum(index)) {
                         publishProgress("Not enough photos from " + AppSettings.getSourceData(index) +
-                                "Try lowering the resolution or changing sources." +
+                                " Try lowering the resolution or changing sources. " +
                                 "There may also have been too many duplicates.");
                     }
 

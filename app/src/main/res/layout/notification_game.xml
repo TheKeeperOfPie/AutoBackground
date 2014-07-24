@@ -67,7 +67,7 @@
 
         <ImageView
             android:id="@+id/notification_game_tile_0"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_width="0px"
             android:layout_weight="1"
             android:scaleType="fitCenter"
@@ -78,7 +78,7 @@
 
         <ImageView
             android:id="@+id/notification_game_tile_1"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_width="0px"
             android:layout_weight="1"
             android:scaleType="fitCenter"
@@ -89,7 +89,7 @@
 
         <ImageView
             android:id="@+id/notification_game_tile_2"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_width="0px"
             android:layout_weight="1"
             android:scaleType="fitCenter"
@@ -100,7 +100,7 @@
 
         <ImageView
             android:id="@+id/notification_game_tile_3"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_width="0px"
             android:layout_weight="1"
             android:scaleType="fitCenter"
@@ -111,7 +111,7 @@
 
         <ImageView
             android:id="@+id/notification_game_tile_4"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_width="0px"
             android:layout_weight="1"
             android:scaleType="fitCenter"
@@ -132,7 +132,7 @@
 
         <ImageView
             android:id="@+id/notification_game_tile_5"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_width="0px"
             android:layout_weight="1"
             android:scaleType="fitCenter"
@@ -144,7 +144,7 @@
 
         <ImageView
             android:id="@+id/notification_game_tile_6"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_width="0px"
             android:layout_weight="1"
             android:scaleType="fitCenter"
@@ -156,7 +156,7 @@
 
         <ImageView
             android:id="@+id/notification_game_tile_7"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_width="0px"
             android:layout_weight="1"
             android:scaleType="fitCenter"
@@ -167,7 +167,7 @@
 
         <ImageView
             android:id="@+id/notification_game_tile_8"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_width="0px"
             android:layout_weight="1"
             android:scaleType="fitCenter"
@@ -178,7 +178,7 @@
 
         <ImageView
             android:id="@+id/notification_game_tile_9"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_width="0px"
             android:layout_weight="1"
             android:scaleType="fitCenter"

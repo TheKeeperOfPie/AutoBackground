@@ -28,6 +28,7 @@
         android:layout_above="@id/webview"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/WHITE_OPAQUE"
         android:background="@color/DARK_GRAY_OPAQUE"
         />
 

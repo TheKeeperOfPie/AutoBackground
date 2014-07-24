@@ -112,10 +112,14 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                 }
                 else {
                     SourceListFragment sourceListFragment = ((MainActivity) getActivity()).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+                    int numImages = 0;
+                    if (dir.listFiles(filenameFilter) != null) {
+                        numImages =  dir.listFiles(filenameFilter).length;
+                    }
                     if (change) {
-                        sourceListFragment.setFolder(position, dir.getName(), dir.getAbsolutePath(), dir.listFiles(filenameFilter).length);
+                        sourceListFragment.setFolder(position, dir.getName(), dir.getAbsolutePath(), numImages);
                     } else {
-                        sourceListFragment.addFolder(dir.getName(), dir.getAbsolutePath(), dir.listFiles(filenameFilter).length);
+                        sourceListFragment.addFolder(dir.getName(), dir.getAbsolutePath(), numImages);
                     }
                 }
                 imageAdapter.setFinished(true);

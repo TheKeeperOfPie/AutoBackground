@@ -22,7 +22,6 @@ import cw.kop.autobackground.settings.AppSettings;
 public class AboutFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener {
 
     private Context context;
-    private int gameCount = 0;
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,32 +53,6 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
                 dialog.show();
 
                 return false;
-            }
-        });
-
-        Preference gamePref = findPreference("about_self_copyright");
-        gamePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-
-                gameCount++;
-
-                if (gameCount > 4) {
-                    gameCount = 0;
-                    AppSettings.setUseNotificationGame(!AppSettings.useNotificationGame());
-                    if (AppSettings.useNotificationGame()) {
-                        Toast.makeText(context, "Game has been activated", Toast.LENGTH_SHORT).show();
-                    }
-                    else {
-                        Toast.makeText(context, "Game has been deactivated", Toast.LENGTH_SHORT).show();
-                    }
-                    Intent intent = new Intent();
-                    intent.setAction(LiveWallpaperService.UPDATE_NOTIFICATION);
-                    intent.putExtra("use", true);
-                    context.sendBroadcast(intent);
-                }
-
-                return true;
             }
         });
 

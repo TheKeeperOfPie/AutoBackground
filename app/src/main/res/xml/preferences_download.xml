@@ -33,7 +33,14 @@
     		android:dialogTitle="@string/use_timer"
 		    android:summary="@string/use_timer_description"
     		/>
-	    
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="reset_on_manual_download"
+            android:defaultValue="false"
+            android:title="@string/reset_on_manual_download"
+            android:summary="@string/reset_on_manual_download_description"
+            />
+
         <cw.kop.autobackground.CustomSwitchPreference
 		    android:key="use_wifi"
     		android:defaultValue="true"

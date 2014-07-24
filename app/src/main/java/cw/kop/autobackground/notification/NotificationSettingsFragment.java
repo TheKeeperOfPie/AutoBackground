@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.TypedArray;
 import android.database.Cursor;
 import android.graphics.PorterDuff;
@@ -14,6 +15,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.SwitchPreference;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -29,6 +31,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
@@ -46,7 +49,7 @@ import cw.kop.autobackground.settings.AppSettings;
 /**
  * Created by TheKeeperOfPie on 7/17/2014.
  */
-public class NotificationSettingsFragment extends PreferenceFragment implements View.OnClickListener {
+public class NotificationSettingsFragment extends PreferenceFragment implements View.OnClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
     private final static long CONVERT_MILLES_TO_MIN = 60000;
     private static final int SELECT_PHOTO = 4;
@@ -300,8 +303,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     @Override
     public void onResume() {
         super.onResume();
-
+        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         if (AppSettings.useNotificationTutorial()) {
+
             previewTutorial = new ShowcaseView.Builder(getActivity())
                     .setContentTitle("Notification Customization")
                     .setContentText("This is where you can change \n" +
@@ -325,7 +329,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     @Override
     public void onPause() {
         super.onPause();
-
+        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         Intent intent = new Intent();
         intent.setAction(LiveWallpaperService.UPDATE_NOTIFICATION);
         intent.putExtra("use", true);
@@ -872,4 +876,17 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     }
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
+        if (key.equals("use_notification_game")) {
+            if (AppSettings.useNotificationGame()) {
+                if (Downloader.getBitmapList(context).size() < 5) {
+                    Toast.makeText(context, "Not enough images for game", Toast.LENGTH_SHORT).show();
+                    ((SwitchPreference) findPreference("use_notification_game")).setChecked(false);
+                }
+            }
+        }
+
+    }
 }

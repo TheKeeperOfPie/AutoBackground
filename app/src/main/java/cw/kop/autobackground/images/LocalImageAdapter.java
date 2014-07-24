@@ -170,12 +170,6 @@ public class LocalImageAdapter extends BaseAdapter {
 			notifyDataSetChanged();
 		}
 		
-//		if (selectedFile != null && selectedFile.isDirectory() && selectedFile.list() != null && selectedFile.list().length == 0) {
-//            if (AppSettings.useToast()) {
-//                Toast.makeText(mainActivity.getApplicationContext(), "No files in this folder", Toast.LENGTH_SHORT).show();
-//            }
-//		}
-		
 	}
 	
 	public void setFinished(boolean end) {

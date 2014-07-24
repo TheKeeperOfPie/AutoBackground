@@ -15,7 +15,7 @@
     <!-- Application theme. -->
     <!-- All customizations that are NOT specific to a particular API-level can go here. -->
 
-    <style name="AppLightTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
+    <style name="AppLightTheme" parent="@android:style/Theme.Holo.Light">
         <item name="android:windowBackground">@color/WHITE_OPAQUE</item>
         <item name="android:listViewStyle">@style/LightListView</item>
         <item name="android:editTextStyle">@style/LightEditText</item>
@@ -36,7 +36,7 @@
         <item name="floating_button">@drawable/floating_button</item>
     </style>
 
-    <style name="AppDarkTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
+    <style name="AppDarkTheme" parent="@android:style/Theme.Holo">
         <item name="android:windowBackground">@color/BLACK_OPAQUE</item>
         <item name="android:listViewStyle">@style/DarkListView</item>
         <item name="android:editTextStyle">@style/DarkEditText</item>
@@ -56,7 +56,7 @@
         <item name="floating_button">@drawable/floating_button_dark</item>
     </style>
 
-    <style name="AppTransparentTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
+    <style name="AppTransparentTheme" parent="@android:style/Theme.Holo">
         <item name="android:windowBackground">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:listViewStyle">@style/TransparentListView</item>
         <item name="android:editTextStyle">@style/DarkEditText</item>
