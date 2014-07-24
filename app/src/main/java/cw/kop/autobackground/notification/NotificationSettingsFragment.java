@@ -56,6 +56,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     private RecyclerView recyclerView;
     private RelativeLayout notificationPreview;
     private ImageView notificationIcon;
+    private ImageView notificationIconActionIndicator;
     private ImageView notificationIconHighlight;
     private TextView notificationTitle;
     private TextView notificationSummary;
@@ -118,6 +119,8 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             notificationIcon.setImageResource(AppSettings.getNotificationIcon());
         }
 
+        notificationIconActionIndicator.setImageResource(AppSettings.getNotificationIconActionDrawable());
+
         notificationPreview.setBackgroundColor(AppSettings.getNotificationColor());
 
 
@@ -174,7 +177,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         notificationPreview = (RelativeLayout) view.findViewById(R.id.notification_preview);
 
         notificationIcon = (ImageView) view.findViewById(R.id.notification_options_icon);
-
+        notificationIconActionIndicator = (ImageView) view.findViewById(R.id.notification_icon_action_indicator);
         notificationIconHighlight = (ImageView) view.findViewById(R.id.notification_icon_highlight);
 
         notificationTitle = (TextView) view.findViewById(R.id.notification_options_title);
@@ -218,6 +221,41 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+        Preference iconActionPref = findPreference("notification_icon_action");
+        iconActionPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+
+                dialogBuilder.setTitle("Choose icon action:");
+
+                dialogBuilder.setItems(R.array.notification_options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String[] actionsArray = getResources().getStringArray(R.array.notification_options);
+
+                        AppSettings.setNotificationIconAction(actionsArray[which]);
+
+                        TypedArray drawables = getResources().obtainTypedArray(R.array.notification_options_icons);
+
+                        if (actionsArray[which].equals("None")) {
+                            notificationIconActionIndicator.setImageResource(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
+                            AppSettings.setNotificationIconActionDrawable(R.color.TRANSPARENT_BACKGROUND);
+                        }
+                        else {
+                            notificationIconActionIndicator.setImageResource(drawables.getResourceId(which, R.color.TRANSPARENT_BACKGROUND));
+                            AppSettings.setNotificationIconActionDrawable(drawables.getResourceId(which, R.color.TRANSPARENT_BACKGROUND));
+                        }
+
+                    }
+                });
+
+                dialogBuilder.show();
+
+                return true;
+            }
+        });
 
         Preference tutorialPref = findPreference("show_tutorial_notification");
         tutorialPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -433,7 +471,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         ArrayList<NotificationOptionData> optionsList = new ArrayList<NotificationOptionData>();
 
         for (int i = 0; i < iconTitles.length; i++) {
-            optionsList.add(new NotificationOptionData(iconTitles[i], iconSummaries[i], iconIcons.getResourceId(i, -1), iconSummaries[i]));
+            optionsList.add(new NotificationOptionData(iconTitles[i], iconSummaries[i], iconIcons.getResourceId(i, R.color.TRANSPARENT_BACKGROUND), iconSummaries[i]));
         }
 
         RecyclerViewListClickListener listener = new RecyclerViewListClickListener() {
@@ -523,7 +561,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         ArrayList<NotificationOptionData> optionsList = new ArrayList<NotificationOptionData>();
 
         for (int i = 0; i < titleTitles.length; i++) {
-            optionsList.add(new NotificationOptionData(titleTitles[i], titleSummaries[i], titlesIcons.getResourceId(i, -1), titleSummaries[i]));
+            optionsList.add(new NotificationOptionData(titleTitles[i], titleSummaries[i], titlesIcons.getResourceId(i, R.color.TRANSPARENT_BACKGROUND), titleSummaries[i]));
         }
 
         RecyclerViewListClickListener listener = new RecyclerViewListClickListener() {
@@ -576,7 +614,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         ArrayList<NotificationOptionData> optionsList = new ArrayList<NotificationOptionData>();
 
         for (int i = 0; i < optionsTitles.length; i++) {
-            optionsList.add(new NotificationOptionData(optionsTitles[i], optionsSummaries[i], optionsIcons.getResourceId(i, -1), optionsTitles[i]));
+            optionsList.add(new NotificationOptionData(optionsTitles[i], optionsSummaries[i], optionsIcons.getResourceId(i, R.color.TRANSPARENT_BACKGROUND), optionsTitles[i]));
         }
 
         RecyclerViewListClickListener listener = new RecyclerViewListClickListener() {

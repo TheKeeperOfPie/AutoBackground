@@ -235,9 +235,15 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        ((PreferenceCategory) findPreference("title_download_settings")).removePreference(findPreference("use_experimental_downloader_adv"));
+
         if (!AppSettings.useAdvanced()) {
-            ((PreferenceCategory) findPreference("title_download_settings")).removePreference(findPreference("use_experimental_downloader_adv"));
-            ((PreferenceCategory) findPreference("title_download_settings")).removePreference(findPreference("image_prefix_adv"));
+            PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_download_settings");
+            preferenceCategory.removePreference(findPreference("image_prefix_adv"));
+            preferenceCategory.removePreference(findPreference("check_duplicates"));
+            preferenceCategory.removePreference(findPreference("delete_old"));
+            preferenceCategory.removePreference(findPreference("use_download_path"));
+            preferenceCategory.removePreference(findPreference("use_high_quality"));
         }
 
         EditTextPreference widthPref = (EditTextPreference) findPreference("user_width");

@@ -15,10 +15,23 @@
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_notification_game"
+            android:defaultValue="false"
+            android:title="@string/use_notification_game"
+            android:summary="@string/use_notification_game_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
             android:key="fill_notification_image"
             android:defaultValue="true"
             android:title="@string/fill_notification_image"
             android:summary="@string/fill_notification_image_description"
+            />
+
+        <Preference
+            android:key="notification_icon_action"
+            android:title="@string/notification_icon_action"
+            android:summary="@string/notification_icon_action_description"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference

@@ -186,7 +186,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         shareIntent.setAction(LiveWallpaperService.SHARE_IMAGE);
         pendingShareIntent = PendingIntent.getBroadcast(this, 0, shareIntent, 0);
 
-        Intent appIntent = new Intent(this, MainPreferences.class);
+        Intent appIntent = new Intent(this, MainActivity.class);
         pendingAppIntent = PendingIntent.getActivity(this, 0, appIntent, 0);
 
         createGameIntents();
@@ -317,11 +317,21 @@ public class LiveWallpaperService extends GLWallpaperService {
                     layerDrawable.draw(canvas);
 
                     normalView.setImageViewBitmap(R.id.notification_icon, mutableBitmap);
-                    bigView.setImageViewBitmap(R.id.notification_big_icon, mutableBitmap);
+                    if (Build.VERSION.SDK_INT >= 16) {
+                        bigView.setImageViewBitmap(R.id.notification_big_icon, mutableBitmap);
+                    }
+                    else {
+                        notificationBuilder.setLargeIcon(mutableBitmap);
+                    }
                 }
                 else {
                     normalView.setImageViewBitmap(R.id.notification_icon, bitmap);
-                    bigView.setImageViewBitmap(R.id.notification_big_icon, bitmap);
+                    if (Build.VERSION.SDK_INT >= 16) {
+                        bigView.setImageViewBitmap(R.id.notification_big_icon, bitmap);
+                    }
+                    else {
+                        notificationBuilder.setLargeIcon(bitmap);
+                    }
                 }
 
                 pushNotification();
@@ -360,8 +370,13 @@ public class LiveWallpaperService extends GLWallpaperService {
             if (AppSettings.getNotificationTitle().equals("Location") && Downloader.getBitmapLocation() != null) {
                 normalView.setTextViewText(R.id.notification_title, Downloader.getBitmapLocation());
                 normalView.setOnClickPendingIntent(R.id.notification_title, pendingToastIntent);
-                bigView.setTextViewText(R.id.notification_big_title, Downloader.getBitmapLocation());
-                bigView.setOnClickPendingIntent(R.id.notification_big_title, pendingToastIntent);
+                if (Build.VERSION.SDK_INT >= 16) {
+                    bigView.setTextViewText(R.id.notification_big_title, Downloader.getBitmapLocation());
+                    bigView.setOnClickPendingIntent(R.id.notification_big_title, pendingToastIntent);
+                }
+                else {
+                    notificationBuilder.setContentTitle(Downloader.getBitmapLocation());
+                }
             } else {
                 normalView.setOnClickPendingIntent(R.id.notification_title, null);
                 bigView.setOnClickPendingIntent(R.id.notification_big_title, null);
@@ -370,8 +385,13 @@ public class LiveWallpaperService extends GLWallpaperService {
             if (AppSettings.getNotificationSummary().equals("Location") && Downloader.getBitmapLocation() != null) {
                 normalView.setTextViewText(R.id.notification_summary, Downloader.getBitmapLocation());
                 normalView.setOnClickPendingIntent(R.id.notification_summary, pendingToastIntent);
-                bigView.setTextViewText(R.id.notification_big_summary, Downloader.getBitmapLocation());
-                bigView.setOnClickPendingIntent(R.id.notification_big_summary, pendingToastIntent);
+                if (Build.VERSION.SDK_INT >= 16) {
+                    bigView.setTextViewText(R.id.notification_big_summary, Downloader.getBitmapLocation());
+                    bigView.setOnClickPendingIntent(R.id.notification_big_summary, pendingToastIntent);
+                }
+                else {
+                    notificationBuilder.setContentText(Downloader.getBitmapLocation());
+                }
             } else {
                 normalView.setOnClickPendingIntent(R.id.notification_summary, null);
                 bigView.setOnClickPendingIntent(R.id.notification_big_summary, null);
@@ -400,8 +420,13 @@ public class LiveWallpaperService extends GLWallpaperService {
                     layerDrawable.setBounds(0, 0, layers[0].getIntrinsicWidth(), layers[0].getIntrinsicHeight());
                     layerDrawable.draw(canvas);
 
-                    normalView.setImageViewBitmap(R.id.notification_icon, mutableBitmap);
-                    bigView.setImageViewBitmap(R.id.notification_big_icon, mutableBitmap);
+                        normalView.setImageViewBitmap(R.id.notification_icon, mutableBitmap);
+                    if (Build.VERSION.SDK_INT >= 16) {
+                        bigView.setImageViewBitmap(R.id.notification_big_icon, mutableBitmap);
+                    }
+                    else {
+                        notificationBuilder.setLargeIcon(mutableBitmap);
+                    }
                 } else {
                     normalView.setImageViewResource(R.id.notification_icon, drawable);
                     bigView.setImageViewResource(R.id.notification_big_icon, drawable);
@@ -492,14 +517,9 @@ public class LiveWallpaperService extends GLWallpaperService {
             bigView.setTextViewText(R.id.notification_button_three_text, AppSettings.getNotificationOptionTitle(2));
             bigView.setInt(R.id.notification_button_three_text, "setTextColor", AppSettings.getNotificationOptionColor(2));
 
-            if (getIntentForNotification(AppSettings.getNotificationOptionTitle(0)) != null) {
-                bigView.setOnClickPendingIntent(R.id.notification_button_one, getIntentForNotification(AppSettings.getNotificationOptionTitle(0)));
-            }
-            if (getIntentForNotification(AppSettings.getNotificationOptionTitle(1)) != null) {
-                bigView.setOnClickPendingIntent(R.id.notification_button_two, getIntentForNotification(AppSettings.getNotificationOptionTitle(1)));
-            }
-            if (getIntentForNotification(AppSettings.getNotificationOptionTitle(2)) != null) {
-                bigView.setOnClickPendingIntent(R.id.notification_button_three, getIntentForNotification(AppSettings.getNotificationOptionTitle(2)));
+            if (getIntentForNotification(AppSettings.getNotificationIconAction()) != null) {
+                normalView.setOnClickPendingIntent(R.id.notification_icon, getIntentForNotification(AppSettings.getNotificationIconAction()));
+                bigView.setOnClickPendingIntent(R.id.notification_big_icon, getIntentForNotification(AppSettings.getNotificationIconAction()));
             }
 
             notificationBuilder  = new Notification.Builder(this)
@@ -507,6 +527,31 @@ public class LiveWallpaperService extends GLWallpaperService {
                     .setContentIntent(pendingAppIntent)
                     .setSmallIcon(R.drawable.app_icon_grayscale)
                     .setOngoing(true);
+
+            if (Build.VERSION.SDK_INT >= 16) {
+                if (AppSettings.useNotificationGame()) {
+                    notificationBuilder.setPriority(Notification.PRIORITY_MAX);
+                }
+                else {
+                    notificationBuilder.setPriority(Notification.PRIORITY_MIN);
+                }
+                if (getIntentForNotification(AppSettings.getNotificationOptionTitle(0)) != null) {
+                    bigView.setOnClickPendingIntent(R.id.notification_button_one, getIntentForNotification(AppSettings.getNotificationOptionTitle(0)));
+                }
+                if (getIntentForNotification(AppSettings.getNotificationOptionTitle(1)) != null) {
+                    bigView.setOnClickPendingIntent(R.id.notification_button_two, getIntentForNotification(AppSettings.getNotificationOptionTitle(1)));
+                }
+                if (getIntentForNotification(AppSettings.getNotificationOptionTitle(2)) != null) {
+                    bigView.setOnClickPendingIntent(R.id.notification_button_three, getIntentForNotification(AppSettings.getNotificationOptionTitle(2)));
+                }
+            }
+            else {
+                notificationBuilder.setContentTitle(AppSettings.getNotificationTitle());
+                notificationBuilder.setContentText(AppSettings.getNotificationSummary());
+                notificationBuilder.addAction(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(0)), AppSettings.getNotificationOptionTitle(0), getIntentForNotification(AppSettings.getNotificationOptionTitle(0)));
+                notificationBuilder.addAction(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(1)), AppSettings.getNotificationOptionTitle(1), getIntentForNotification(AppSettings.getNotificationOptionTitle(1)));
+                notificationBuilder.addAction(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(2)), AppSettings.getNotificationOptionTitle(2), getIntentForNotification(AppSettings.getNotificationOptionTitle(2)));
+            }
 
             pushNotification();
 
@@ -570,6 +615,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     }
 
     private void calculateGameTiles(final int tile) {
+
         if (gameSet && tileOrder.size() == (NUM_TO_WIN * 2) && tileBitmaps.size() == NUM_TO_WIN) {
 
             if (!usedTiles.contains(tile) && lastTile != tile) {
@@ -694,6 +740,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
             tileBitmaps.add(bitmap);
             setTileOrder();
+
         }
 
         @Override
@@ -1180,11 +1227,13 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     Log.i(TAG, "Applied image effects");
                     GLES20.glDeleteTextures(1, textureNames, 2);
+                    Log.i(TAG, "Deleted texture: " + textureNames[2]);
 
-                }
+                    if (!toFade) {
+                        GLES20.glDeleteTextures(1, textureNames, 1);
+                        Log.i(TAG, "Deleted texture: " + textureNames[1]);
+                    }
 
-                if (!toFade) {
-                    GLES20.glDeleteTextures(1, textureNames, 1);
                 }
 
                 GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
@@ -1320,7 +1369,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 renderScreenWidth = width;
                 renderScreenHeight = height;
 
-                for(int i=0;i<16;i++)
+                for(int i=0; i<16; i++)
                 {
                     matrixProjection[i] = 0.0f;
                     matrixView[i] = 0.0f;
@@ -1477,6 +1526,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
                 GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, scaled, 0);
+                Log.i(TAG, "Bind texture: " + textureNames[0]);
 
                 if (AppSettings.useEffects()) {
                     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[2]);
@@ -1487,10 +1537,13 @@ public class LiveWallpaperService extends GLWallpaperService {
                     GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
                     GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, scaled, 0);
+                    Log.i(TAG, "Bind texture: " + textureNames[2]);
                     toEffect = true;
                 }
 
                 bitmap.recycle();
+
+
 
                 if (AppSettings.useFade() && isVisible()) {
                     Log.i(TAG, "Fade set");
@@ -1498,6 +1551,10 @@ public class LiveWallpaperService extends GLWallpaperService {
                     setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
                 }
                 else if (isVisible()) {
+                    if (!toEffect) {
+                        GLES20.glDeleteTextures(1, textureNames, 1);
+                        Log.i(TAG, "Deleted texture: " + textureNames[1]);
+                    }
                     Log.i(TAG, "Syncing textures");
                     offset = newOffset;
                     render();
@@ -1545,141 +1602,28 @@ public class LiveWallpaperService extends GLWallpaperService {
             private void initEffects(int texture) {
 
                 Random random = new Random();
-                if (random.nextDouble() > AppSettings.getEffectsFrequency()) {
-                    toastEffect("Not applied", "");
-                    return;
-                }
 
                 if (effectFactory == null) {
                     effectFactory = effectContext.getFactory();
                 }
 
-                Effect effect;
+                boolean randomApplied = false;
 
-                if (AppSettings.useRandomEffects()) {
-                    applyRandomEffects(AppSettings.getRandomEffect(), texture);
+                if (random.nextDouble() > AppSettings.getRandomEffectsFrequency()) {
+                    if (AppSettings.useRandomEffects()) {
+                        applyRandomEffects(AppSettings.getRandomEffect(), texture);
+                        randomApplied = true;
+                        if (AppSettings.useEffectsOverride()) {
+                            applyManualEffects(texture);
+                        }
+                    }
                 }
 
-                if (!AppSettings.useRandomEffects() || AppSettings.useEffectsOverride()) {
-                    if (AppSettings.getAutoFixEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_AUTOFIX)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_AUTOFIX);
-                        effect.setParameter("scale", AppSettings.getAutoFixEffect());
-                        applyEffect(effect, texture);
-                        toastEffect("Auto Fix", "Value:" + AppSettings.getAutoFixEffect());
-                    }
-
-                    if (AppSettings.getBrightnessEffect() != 1.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_BRIGHTNESS)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_BRIGHTNESS);
-                        effect.setParameter("brightness", AppSettings.getBrightnessEffect());
-                        applyEffect(effect, texture);
-                        toastEffect("Brightness", "Value:" + AppSettings.getBrightnessEffect());
-                    }
-
-                    if (AppSettings.getContrastEffect() != 1.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_CONTRAST)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_CONTRAST);
-                        effect.setParameter("contrast", AppSettings.getContrastEffect());
-                        applyEffect(effect, texture);
-                        toastEffect("Contrast", "Value:" + AppSettings.getContrastEffect());
-                    }
-
-                    if (AppSettings.getCrossProcessEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_CROSSPROCESS)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_CROSSPROCESS);
-                        applyEffect(effect, texture);
-                        toastEffect("Cross Process", "");
-                    }
-
-                    if (AppSettings.getDocumentaryEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_DOCUMENTARY)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_DOCUMENTARY);
-                        applyEffect(effect, texture);
-                        toastEffect("Documentary", "");
-                    }
-
-                    if (AppSettings.getDuotoneEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_DUOTONE)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
-                        effect.setParameter("first_color", AppSettings.getDuotoneColor(1));
-                        effect.setParameter("second_color", AppSettings.getDuotoneColor(2));
-                        applyEffect(effect, texture);
-                        toastEffect("Dual Tone", "\nColor 1: " + AppSettings.getDuotoneColor(1) + "\nColor 2: " + AppSettings.getDuotoneColor(2));
-                    }
-
-                    if (AppSettings.getFillLightEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_FILLLIGHT)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_FILLLIGHT);
-                        effect.setParameter("strength", AppSettings.getFillLightEffect());
-                        applyEffect(effect, texture);
-                        toastEffect("Fill Light", "Value:" + AppSettings.getFillLightEffect());
-                    }
-
-                    if (AppSettings.getFisheyeEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_FISHEYE)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_FISHEYE);
-                        effect.setParameter("scale", AppSettings.getFisheyeEffect());
-                        applyEffect(effect, texture);
-                        toastEffect("Fisheye", "Value:" + AppSettings.getFisheyeEffect());
-                    }
-
-                    if (AppSettings.getGrainEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_GRAIN)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAIN);
-                        effect.setParameter("strength", AppSettings.getGrainEffect());
-                        applyEffect(effect, texture);
-                        toastEffect("Grain", "Value:" + AppSettings.getGrainEffect());
-                    }
-
-                    if (AppSettings.getGrayscaleEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_GRAYSCALE)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAYSCALE);
-                        applyEffect(effect, texture);
-                        toastEffect("Grayscale", "");
-                    }
-
-                    if (AppSettings.getLomoishEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_LOMOISH)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_LOMOISH);
-                        applyEffect(effect, texture);
-                        toastEffect("Lomoish", "");
-                    }
-
-                    if (AppSettings.getNegativeEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_NEGATIVE)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_NEGATIVE);
-                        applyEffect(effect, texture);
-                        toastEffect("Negaative", "");
-                    }
-
-                    if (AppSettings.getPosterizeEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_POSTERIZE)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_POSTERIZE);
-                        applyEffect(effect, texture);
-                        toastEffect("Posterize", "");
-                    }
-
-                    if (AppSettings.getSaturateEffect() != 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_SATURATE)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_SATURATE);
-                        effect.setParameter("scale", AppSettings.getSaturateEffect());
-                        applyEffect(effect, texture);
-                        toastEffect("Saturate", "Value:" + AppSettings.getSaturateEffect());
-                    }
-
-                    if (AppSettings.getSepiaEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_SEPIA)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_SEPIA);
-                        applyEffect(effect, texture);
-                        toastEffect("Sepia", "Value:");
-                    }
-
-                    if (AppSettings.getSharpenEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_SHARPEN)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_SHARPEN);
-                        effect.setParameter("scale", AppSettings.getSharpenEffect());
-                        applyEffect(effect, texture);
-                        toastEffect("Sharpen", "Value:" + AppSettings.getSharpenEffect());
-                    }
-
-                    if (AppSettings.getTemperatureEffect() != 0.5f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_TEMPERATURE)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_TEMPERATURE);
-                        effect.setParameter("scale", AppSettings.getTemperatureEffect());
-                        applyEffect(effect, texture);
-                        toastEffect("Temperature", "Value:" + AppSettings.getTemperatureEffect());
-                    }
-
-                    if (AppSettings.getVignetteEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_VIGNETTE)) {
-                        effect = effectFactory.createEffect(EffectFactory.EFFECT_VIGNETTE);
-                        effect.setParameter("scale", AppSettings.getVignetteEffect());
-                        applyEffect(effect, texture);
-                        toastEffect("Vignette", "Value:" + AppSettings.getVignetteEffect());
-                    }
+                if (random.nextDouble() > AppSettings.getEffectsFrequency()) {
+                    toastEffect("Not applied", "");
+                }
+                else if (!randomApplied) {
+                    applyManualEffects(texture);
                 }
             }
 
@@ -1691,6 +1635,131 @@ public class LiveWallpaperService extends GLWallpaperService {
                 setEffect.apply(textureNames[texture], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[2]);
                 setEffect.release();
 
+            }
+
+            private void applyManualEffects(int texture){
+
+                Effect effect;
+
+                if (AppSettings.getAutoFixEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_AUTOFIX)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_AUTOFIX);
+                    effect.setParameter("scale", AppSettings.getAutoFixEffect());
+                    applyEffect(effect, texture);
+                    toastEffect("Auto Fix", "Value:" + AppSettings.getAutoFixEffect());
+                }
+
+                if (AppSettings.getBrightnessEffect() != 1.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_BRIGHTNESS)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_BRIGHTNESS);
+                    effect.setParameter("brightness", AppSettings.getBrightnessEffect());
+                    applyEffect(effect, texture);
+                    toastEffect("Brightness", "Value:" + AppSettings.getBrightnessEffect());
+                }
+
+                if (AppSettings.getContrastEffect() != 1.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_CONTRAST)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_CONTRAST);
+                    effect.setParameter("contrast", AppSettings.getContrastEffect());
+                    applyEffect(effect, texture);
+                    toastEffect("Contrast", "Value:" + AppSettings.getContrastEffect());
+                }
+
+                if (AppSettings.getCrossProcessEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_CROSSPROCESS)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_CROSSPROCESS);
+                    applyEffect(effect, texture);
+                    toastEffect("Cross Process", "");
+                }
+
+                if (AppSettings.getDocumentaryEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_DOCUMENTARY)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_DOCUMENTARY);
+                    applyEffect(effect, texture);
+                    toastEffect("Documentary", "");
+                }
+
+                if (AppSettings.getDuotoneEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_DUOTONE)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                    effect.setParameter("first_color", AppSettings.getDuotoneColor(1));
+                    effect.setParameter("second_color", AppSettings.getDuotoneColor(2));
+                    applyEffect(effect, texture);
+                    toastEffect("Dual Tone", "\nColor 1: " + AppSettings.getDuotoneColor(1) + "\nColor 2: " + AppSettings.getDuotoneColor(2));
+                }
+
+                if (AppSettings.getFillLightEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_FILLLIGHT)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_FILLLIGHT);
+                    effect.setParameter("strength", AppSettings.getFillLightEffect());
+                    applyEffect(effect, texture);
+                    toastEffect("Fill Light", "Value:" + AppSettings.getFillLightEffect());
+                }
+
+                if (AppSettings.getFisheyeEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_FISHEYE)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_FISHEYE);
+                    effect.setParameter("scale", AppSettings.getFisheyeEffect());
+                    applyEffect(effect, texture);
+                    toastEffect("Fisheye", "Value:" + AppSettings.getFisheyeEffect());
+                }
+
+                if (AppSettings.getGrainEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_GRAIN)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAIN);
+                    effect.setParameter("strength", AppSettings.getGrainEffect());
+                    applyEffect(effect, texture);
+                    toastEffect("Grain", "Value:" + AppSettings.getGrainEffect());
+                }
+
+                if (AppSettings.getGrayscaleEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_GRAYSCALE)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAYSCALE);
+                    applyEffect(effect, texture);
+                    toastEffect("Grayscale", "");
+                }
+
+                if (AppSettings.getLomoishEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_LOMOISH)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_LOMOISH);
+                    applyEffect(effect, texture);
+                    toastEffect("Lomoish", "");
+                }
+
+                if (AppSettings.getNegativeEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_NEGATIVE)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_NEGATIVE);
+                    applyEffect(effect, texture);
+                    toastEffect("Negaative", "");
+                }
+
+                if (AppSettings.getPosterizeEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_POSTERIZE)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_POSTERIZE);
+                    applyEffect(effect, texture);
+                    toastEffect("Posterize", "");
+                }
+
+                if (AppSettings.getSaturateEffect() != 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_SATURATE)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_SATURATE);
+                    effect.setParameter("scale", AppSettings.getSaturateEffect());
+                    applyEffect(effect, texture);
+                    toastEffect("Saturate", "Value:" + AppSettings.getSaturateEffect());
+                }
+
+                if (AppSettings.getSepiaEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_SEPIA)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_SEPIA);
+                    applyEffect(effect, texture);
+                    toastEffect("Sepia", "Value:");
+                }
+
+                if (AppSettings.getSharpenEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_SHARPEN)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_SHARPEN);
+                    effect.setParameter("scale", AppSettings.getSharpenEffect());
+                    applyEffect(effect, texture);
+                    toastEffect("Sharpen", "Value:" + AppSettings.getSharpenEffect());
+                }
+
+                if (AppSettings.getTemperatureEffect() != 0.5f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_TEMPERATURE)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_TEMPERATURE);
+                    effect.setParameter("scale", AppSettings.getTemperatureEffect());
+                    applyEffect(effect, texture);
+                    toastEffect("Temperature", "Value:" + AppSettings.getTemperatureEffect());
+                }
+
+                if (AppSettings.getVignetteEffect() > 0.0f && EffectFactory.isEffectSupported(EffectFactory.EFFECT_VIGNETTE)) {
+                    effect = effectFactory.createEffect(EffectFactory.EFFECT_VIGNETTE);
+                    effect.setParameter("scale", AppSettings.getVignetteEffect());
+                    applyEffect(effect, texture);
+                    toastEffect("Vignette", "Value:" + AppSettings.getVignetteEffect());
+                }
             }
 
             private void applyRandomEffects(String randomEffect, int texture) {

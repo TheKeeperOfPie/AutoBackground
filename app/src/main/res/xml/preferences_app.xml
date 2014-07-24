@@ -2,6 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     
 	<PreferenceCategory
+        android:key="title_app_settings"
 		android:title="@string/title_app_settings"
 		>
 

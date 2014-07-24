@@ -24,6 +24,14 @@
             android:summary="@string/effects_frequency_description"
             />
 
+        <cw.kop.autobackground.EffectPreference
+            android:key="random_effects_frequency"
+            android:max="100"
+            android:defaultValue="100"
+            android:title="@string/random_effects_frequency"
+            android:summary="@string/random_effects_frequency_description"
+            />
+
         <cw.kop.autobackground.CustomSwitchPreference
             android:key="use_effects_override"
             android:defaultValue="false"

@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.content.FileProvider;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -28,8 +27,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.List;
 
-import cw.kop.autobackground.Downloader;
-import cw.kop.autobackground.MainPreferences;
+import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.SourceListFragment;
@@ -113,7 +111,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                     Toast.makeText(context, "Download path set to: \n" + AppSettings.getDownloadPath(context), Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    SourceListFragment sourceListFragment = ((MainPreferences) getActivity()).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+                    SourceListFragment sourceListFragment = ((MainActivity) getActivity()).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
                     if (change) {
                         sourceListFragment.setFolder(position, dir.getName(), dir.getAbsolutePath(), dir.listFiles(filenameFilter).length);
                     } else {
@@ -166,19 +164,22 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 		}
 
         imageListView.setAdapter(imageAdapter);
-        imageListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            	
-				File selectedFile = imageAdapter.getItem(position);
-				
-				if (selectedFile.isDirectory()) {
-					imageAdapter.setDirectory(selectedFile);
-				}
-            }
-        });
+        if (!viewPath.equals("")) {
+            imageListView.setOnItemClickListener(this);
+        }
+        else {
+            imageListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-        imageListView.setOnItemClickListener(this);
+                    File selectedFile = imageAdapter.getItem(position);
+
+                    if (selectedFile.isDirectory()) {
+                        imageAdapter.setDirectory(selectedFile);
+                    }
+                }
+            });
+        }
 	}
 
     @Override

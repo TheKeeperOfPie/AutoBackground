@@ -15,9 +15,6 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
@@ -50,11 +47,12 @@ public class SourceListFragment extends ListFragment {
 
 	private SourceListAdapter listAdapter;
     private Context context;
-    private Menu menu;
     private Button setButton;
     private ImageButton addButton;
     private WebView webView;
     private String baseUrl;
+    private ImageView downloadButton;
+    private ImageView sortButton;
 
     private ShowcaseView tutorialPromptView;
     private ShowcaseView sourceListTutorial;
@@ -72,14 +70,6 @@ public class SourceListFragment extends ListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setHasOptionsMenu(true);
-	}
-
-	@Override
-	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.source_actions, menu);
-		super.onCreateOptionsMenu(menu, inflater);
-        this.menu = menu;
 	}
 
     @Override
@@ -127,58 +117,47 @@ public class SourceListFragment extends ListFragment {
 
         });
 
+        downloadButton = (ImageView) getActivity().getActionBar().getCustomView().findViewById(R.id.download_wallpaper);
+        downloadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startDownload();
+            }
+        });
+
+        sortButton = (ImageView) getActivity().getActionBar().getCustomView().findViewById(R.id.sort_sources);
+        sortButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showSourceSortMenu();
+            }
+        });
+
+        if (AppSettings.getTheme() != R.style.AppLightTheme) {
+            sortButton.setImageResource(R.drawable.ic_action_storage_dark);
+        }
+
         return view;
     }
-
-    @Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-            case android.R.id.home:
-                hide(settingsTutorial);
-                showTutorial(6);
-                return true;
-            case R.id.sort_sources:
-                showSourceSortMenu();
-                return true;
-            case R.id.cycle_wallpaper:
-                cycleWallpaper();
-                if (AppSettings.useToast()) {
-                    Toast.makeText(context, "Cycling wallpaper...", Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            case R.id.download_wallpaper:
-                startDownload();
-                return true;
-			default:
-			    return super.onOptionsItemSelected(item);
-		}
-	}
 
     private void startDownload() {
         if (downloadTutorial != null) {
             hide(downloadTutorial);
             showTutorial(4);
-            Log.i("WLF", "Showing 4");
         }
         if (!isDownloading) {
             listAdapter.saveData();
             isDownloading = true;
-            if (AppSettings.useExperimentalDownloader()){
-                getHtml();
-            }
-            else {
-                Downloader.download(getActivity());
-            }
+            Downloader.download(context);
 
             if (AppSettings.getTheme() == R.style.AppLightTheme) {
-                menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_cancel));
+                downloadButton.setImageResource(R.drawable.ic_action_cancel);
             }
             else {
-                menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_cancel_dark));
+                downloadButton.setImageResource(R.drawable.ic_action_cancel_dark);
             }
         }
         else {
-            Log.i("MP", "isDownloading");
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
 
             dialogBuilder.setTitle("Cancel download?");
@@ -187,13 +166,8 @@ public class SourceListFragment extends ListFragment {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
                     Downloader.cancel();
-                    if (AppSettings.getTheme() == R.style.AppLightTheme) {
-                        menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_download));
-                    }
-                    else {
-                        menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_download_dark));
-                    }
                     isDownloading = false;
+                    resetActionBarDownload();
                 }
             });
             dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
@@ -206,14 +180,18 @@ public class SourceListFragment extends ListFragment {
         }
     }
 
-    public void resetDownload() {
+    public void resetActionBarDownload() {
         if (AppSettings.getTheme() == R.style.AppLightTheme) {
-            menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_download));
+            downloadButton.setImageResource(R.drawable.ic_action_download);
         }
         else {
-            menu.getItem(0).setIcon(getResources().getDrawable(R.drawable.ic_action_download_dark));
+            downloadButton.setImageResource(R.drawable.ic_action_download_dark);
         }
+    }
+
+    public void resetDownload() {
         isDownloading = false;
+        resetActionBarDownload();
     }
 
     private void showImageFragment(boolean change, boolean setPath, String viewPath, int position) {
@@ -254,7 +232,7 @@ public class SourceListFragment extends ListFragment {
     }
 
     private void showSourceSortMenu() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
 
         dialog.setTitle("Sort by:");
 
@@ -524,6 +502,7 @@ public class SourceListFragment extends ListFragment {
                     public void onClick(View v) {
                         showTutorial(1);
                         hide(tutorialPromptView);
+                        tutorialPromptView = null;
                     }
                 };
                 tutorialPromptView = new ShowcaseView.Builder(getActivity())
@@ -626,7 +605,7 @@ public class SourceListFragment extends ListFragment {
                                 "click this download button to start \n" +
                                 "downloading some images.")
                         .setStyle(R.style.ShowcaseStyle)
-                        .setTarget(new ViewTarget(getActivity().getActionBar().getCustomView().findViewById(R.id.download_target)))
+                        .setTarget(new ViewTarget(downloadButton))
                         .setOnClickListener(downloadListener)
                         .build();
                 downloadTutorial.setButtonPosition(buttonParams);
@@ -707,14 +686,6 @@ public class SourceListFragment extends ListFragment {
         startActivityForResult(i, 0);
     }
 
-    protected void cycleWallpaper() {
-
-        Intent intent = new Intent();
-        intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
-        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-        context.sendBroadcast(intent);
-    }
-
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
@@ -725,11 +696,13 @@ public class SourceListFragment extends ListFragment {
 	public void onPause() {
 		super.onPause();
 		listAdapter.saveData();
+        sortButton.setVisibility(View.GONE);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
+        sortButton.setVisibility(View.VISIBLE);
 
         if (isServiceRunning(LiveWallpaperService.class.getName())) {
             setButton.setVisibility(View.GONE);

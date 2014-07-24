@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -18,7 +19,7 @@ import android.widget.Toast;
 
 import cw.kop.autobackground.settings.AppSettings;
 
-public class AboutFragment extends PreferenceFragment{
+public class AboutFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener {
 
     private Context context;
     private int gameCount = 0;
@@ -82,6 +83,11 @@ public class AboutFragment extends PreferenceFragment{
             }
         });
 
+        findPreference("about_library_jsoup").setOnPreferenceClickListener(this);
+        findPreference("about_library_showcaseview").setOnPreferenceClickListener(this);
+        findPreference("about_library_picasso").setOnPreferenceClickListener(this);
+        findPreference("about_library_colorpickerview").setOnPreferenceClickListener(this);
+
         final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
 
         LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
@@ -95,5 +101,37 @@ public class AboutFragment extends PreferenceFragment{
         context = getActivity();
     }
 
+
+    @Override
+    public boolean onPreferenceClick(Preference preference) {
+
+        String key = preference.getKey();
+        Intent intent = null;
+
+        if (key.equals("about_library_jsoup")) {
+            intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("http://jsoup.org/"));
+        }
+        else if (key.equals("about_library_showcaseview")) {
+            intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("http://amlcurran.github.io/ShowcaseView/"));
+        }
+        else if (key.equals("about_library_picasso")) {
+            intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("http://square.github.io/picasso/"));
+        }
+        else if (key.equals("about_library_colorpickerview")) {
+            intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("https://code.google.com/p/color-picker-view/"));
+        }
+
+
+        if (intent != null) {
+            context.startActivity(intent);
+            return true;
+        }
+
+        return false;
+    }
 }
 

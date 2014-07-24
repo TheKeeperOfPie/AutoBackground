@@ -23,6 +23,21 @@
             android:contentDescription="@string/notification_content_description"
             />
 
+
+        <ImageView
+            android:id="@+id/notification_icon_action_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/notification_options_icon"
+            android:layout_alignBottom="@id/notification_options_icon"
+            android:layout_alignLeft="@id/notification_options_icon"
+            android:layout_alignRight="@id/notification_options_icon"
+            android:src="@color/TRANSPARENT_BACKGROUND"
+            android:contentDescription="@string/notification_highlight"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            />
+
         <ImageView
             android:id="@+id/notification_icon_highlight"
             android:layout_width="wrap_content"

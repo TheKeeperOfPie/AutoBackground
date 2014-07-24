@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.util.Log;
@@ -86,6 +87,14 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 		context = getActivity();
 	}
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_app_settings");
+        preferenceCategory.removePreference(findPreference("force_multipane"));
+    }
+
     private void showThemeDialogMenu() {
 
         AlertDialog.Builder dialog = new AlertDialog.Builder(context);
@@ -111,7 +120,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                 String themeName = getResources().getResourceName(AppSettings.getTheme());
                 themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("App") + 3, themeName.indexOf("Theme")));
 
-                Intent intent = new Intent(context, MainPreferences.class);
+                Intent intent = new Intent(context, MainActivity.class);
                 intent.putExtra("fragment", 5);
                 context.startActivity(intent);
 

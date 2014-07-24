@@ -19,6 +19,7 @@
     <string name="title_app_settings">Application Settings</string>
     <string name="title_animation_settings">Animation Settings</string>
     <string name="title_about">About Application</string>
+    <string name="title_about_libraries">Used Libraries</string>
     
     <string name="user_width">Image Width</string>
     <string name="user_width_description">Minimum width of image</string>
@@ -93,10 +94,12 @@
 
     <string name="use_effects">Use Effects</string>
     <string name="use_effects_description">Use image effects</string>
-    <string name="effects_frequency">Effect Frequency</string>
-    <string name="effects_frequency_description">Chance of applying effect</string>
+    <string name="effects_frequency">Manual Frequency</string>
+    <string name="effects_frequency_description">Chance of applying manual effects</string>
+    <string name="random_effects_frequency">Random Frequency</string>
+    <string name="random_effects_frequency_description">Chance of applying random effects</string>
     <string name="use_effects_override">Manual Override</string>
-    <string name="use_effects_override_description">Force apply manual effects</string>
+    <string name="use_effects_override_description">Force apply manual effects over random effects</string>
     <string name="use_random_effects">Random Effects</string>
     <string name="use_random_effects_description">Apply random effects</string>
     <string name="use_duotone_gray">Dual Tone Gray</string>
@@ -162,9 +165,13 @@
     <string name="notification_instructions">How to Customize</string>
     <string name="notification_instructions_description">Simply click one of the parts of the notification above to view that part\'s settings</string>
     <string name="use_notification">Use Notification</string>
-    <string name="use_notification_description">Show a persistent notification</string>
+    <string name="use_notification_description">Show a persistent notification, some options require Android 4.1+</string>
+    <string name="use_notification_game">Notification Game</string>
+    <string name="use_notification_game_description">Show a matching game in notification</string>
     <string name="fill_notification_image">Fill Image</string>
     <string name="fill_notification_image_description">Fill notification icon with image</string>
+    <string name="notification_icon_action">Icon Action</string>
+    <string name="notification_icon_action_description">Custom action on icon click</string>
     <string name="use_pin_indicator">Show Pin Indicator</string>
     <string name="use_pin_indicator_description">Show a pin overlay in the notification when image is pinned</string>
     <string name="history_size">Previous History Size</string>
@@ -184,6 +191,9 @@
     <string name="about_library_picasso">Picasso Library</string>
     <string name="about_library_picasso_description">Used to efficiently load some of the images.
         Copyright 2013 Square, Inc.</string>
+    <string name="about_library_colorpickerview">ColorPickerView Library</string>
+    <string name="about_library_colorpickerview_description">Used to provide color options.
+        Copyright © 2010 Daniel Nilsson</string>
 
     <string name="about_self_copyright">Copyright © 2014 Winson Chiu</string>
     <string name="about_self_copyright_description">Copyright © 2014 Winson Chiu</string>

@@ -68,7 +68,7 @@ public class SourceListAdapter extends BaseAdapter {
 		TextView title = (TextView) view.findViewById(R.id.title_text);
 		TextView summary = (TextView) view.findViewById(R.id.summary_text);
 		TextView num = (TextView) view.findViewById(R.id.num_text);
-		final Switch useBox = (Switch) view.findViewById(R.id.use_website_checkbox);
+		final Switch useBox = (Switch) view.findViewById(R.id.use_source_checkbox);
 		useBox.setTag(position);
 		
 		useBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {

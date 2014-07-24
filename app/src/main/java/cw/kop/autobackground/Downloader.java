@@ -76,6 +76,10 @@ public class Downloader {
                 if (AppSettings.useToast()) {
                     Toast.makeText(appContext, "No connection available,\ncheck Download Settings", Toast.LENGTH_SHORT).show();
                 }
+                SourceListFragment sourceListFragment = ((MainActivity) appContext).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+                if (sourceListFragment != null ) {
+                    sourceListFragment.resetDownload();
+                }
                 return;
             }
             imageAsyncTask = new RetrieveImageTask(appContext);
@@ -118,19 +122,19 @@ public class Downloader {
 
         for (int i = 0; i < AppSettings.getNumSources(); i++) {
 
-            if (AppSettings.getSourceType(i).equals(AppSettings.WEBSITE)) {
-                File folder = new File(cacheDir + "/" + AppSettings.getSourceTitle(i) + AppSettings.getImagePrefix());
-                if (folder.exists() && folder.isDirectory()) {
-                    bitmaps.addAll(Arrays.asList(folder.listFiles(fileFilter)));
+            if (AppSettings.useSource(i)) {
+                if (AppSettings.getSourceType(i).equals(AppSettings.WEBSITE)) {
+                    File folder = new File(cacheDir + "/" + AppSettings.getSourceTitle(i) + AppSettings.getImagePrefix());
+                    if (folder.exists() && folder.isDirectory()) {
+                        bitmaps.addAll(Arrays.asList(folder.listFiles(fileFilter)));
+                    }
+                } else if (AppSettings.getSourceType(i).equals(AppSettings.FOLDER)) {
+                    File folder = new File(AppSettings.getSourceData(i));
+                    if (folder.exists() && folder.isDirectory()) {
+                        bitmaps.addAll(Arrays.asList(folder.listFiles(fileFilter)));
+                    }
                 }
             }
-            else if (AppSettings.getSourceType(i).equals(AppSettings.FOLDER)) {
-                File folder = new File(AppSettings.getSourceData(i));
-                if (folder.exists() && folder.isDirectory()) {
-                    bitmaps.addAll(Arrays.asList(folder.listFiles(fileFilter)));
-                }
-            }
-
         }
 
         if (bitmaps.size() == 0) {
@@ -503,8 +507,8 @@ public class Downloader {
                     imageDetails += AppSettings.getSourceTitle(index) + ": " + imagesDownloaded + " images;break;";
 
                     if (imagesDownloaded < AppSettings.getSourceNum(index)) {
-                        publishProgress("Not enough photos from " + AppSettings.getSourceData(index) + ".\n" +
-                                "Try lowering the resolution or changing sources.\n" +
+                        publishProgress("Not enough photos from " + AppSettings.getSourceData(index) +
+                                "Try lowering the resolution or changing sources." +
                                 "There may also have been too many duplicates.");
                     }
 
@@ -661,7 +665,7 @@ public class Downloader {
             super.onCancelled(aVoid);
             notificationManager.cancel(NOTIFICATION_ID);
 
-            SourceListFragment sourceListFragment = ((MainPreferences) context).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+            SourceListFragment sourceListFragment = ((MainActivity) context).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
             if (sourceListFragment != null ) {
                 sourceListFragment.resetDownload();
             }
@@ -681,6 +685,7 @@ public class Downloader {
                 Notification notification;
 
                 if (Build.VERSION.SDK_INT >= 16) {
+                    notifyComplete.setPriority(Notification.PRIORITY_MIN);
                     Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
                     inboxStyle.setBigContentTitle("Downloaded Image Details:");
 
@@ -706,7 +711,7 @@ public class Downloader {
             cycleIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
             context.sendBroadcast(cycleIntent);
 
-            SourceListFragment sourceListFragment = ((MainPreferences) context).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+            SourceListFragment sourceListFragment = ((MainActivity) context).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
             if (sourceListFragment != null ) {
                 sourceListFragment.resetDownload();
             }

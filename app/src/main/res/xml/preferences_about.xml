@@ -10,13 +10,42 @@
             android:summary="@string/about_self_copyright_description"
             />
 
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/title_about_libraries">
+
+        <Preference
+            android:key="about_library_jsoup"
+            android:title="@string/about_library_jsoup"
+            android:summary="@string/about_library_jsoup_description"
+            />
+
+        <Preference
+            android:key="about_library_showcaseview"
+            android:title="@string/about_library_showcaseview"
+            android:summary="@string/about_library_showcaseview_description"
+            />
+
+        <Preference
+            android:key="about_library_picasso"
+            android:title="@string/about_library_picasso"
+            android:summary="@string/about_library_picasso_description"
+            />
+
+        <Preference
+            android:key="about_library_colorpickerview"
+            android:title="@string/about_library_colorpickerview"
+            android:summary="@string/about_library_colorpickerview_description"
+            />
+
         <Preference
             android:key="about_copyright"
             android:title="@string/about_copyright"
             android:summary="@string/about_copyright_description"
             />
 
-
     </PreferenceCategory>
+
     
 </PreferenceScreen>

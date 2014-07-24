@@ -29,6 +29,7 @@
         <item name="android:alertDialogTheme">@style/LightDialogTheme</item>
         <item name="android:popupMenuStyle">@style/LightPopup</item>
         <item name="android:seekBarStyle">@style/LightSeekBar</item>
+
         <item name="ic_action_download">@drawable/ic_action_download</item>
         <item name="ic_action_refresh">@drawable/ic_action_refresh</item>
         <item name="ic_action_storage">@drawable/ic_action_storage</item>
@@ -48,6 +49,7 @@
         <item name="android:listSeparatorTextViewStyle">@style/DarkListSeparator</item>>
         <item name="android:alertDialogTheme">@style/DarkDialogTheme</item>
         <item name="android:popupMenuStyle">@style/DarkPopup</item>
+
         <item name="ic_action_download">@drawable/ic_action_download_dark</item>
         <item name="ic_action_refresh">@drawable/ic_action_refresh_dark</item>
         <item name="ic_action_storage">@drawable/ic_action_storage_dark</item>
@@ -69,10 +71,22 @@
         <item name="android:listSeparatorTextViewStyle">@style/DarkListSeparator</item>>
         <item name="android:alertDialogTheme">@style/DarkDialogTheme</item>
         <item name="android:popupMenuStyle">@style/DarkPopup</item>
+
         <item name="ic_action_download">@drawable/ic_action_download_dark</item>
         <item name="ic_action_refresh">@drawable/ic_action_refresh_dark</item>
         <item name="ic_action_storage">@drawable/ic_action_storage_dark</item>
         <item name="floating_button">@drawable/floating_button_dark</item>
+    </style>
+
+    <style name="LightSwitch" parent="@android:style/TextAppearance.Holo.Small">
+        <item name="android:textColor">@color/BLUE_OPAQUE</item>
+        <item name="android:textColorHint">@color/BLUE_OPAQUE</item>
+        <item name="android:textColorHighlight">@color/BLUE_OPAQUE</item>
+        <item name="android:textColorLink">@color/BLUE_OPAQUE</item>
+    </style>
+
+    <style name="DarkSwitch" parent="@android:style/TextAppearance.Holo.Small">
+        <item name="android:textColor">@color/BLUE_OPAQUE</item>
     </style>
 
     <style name="LightPopup" parent="@android:style/Widget.Holo.Spinner">

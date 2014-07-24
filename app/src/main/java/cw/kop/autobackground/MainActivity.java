@@ -2,6 +2,7 @@ package cw.kop.autobackground;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.drawable.GradientDrawable;
@@ -24,7 +25,7 @@ import cw.kop.autobackground.notification.NotificationSettingsFragment;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.SourceListFragment;
 
-public class MainPreferences extends Activity {
+public class MainActivity extends Activity {
 
 	public static SharedPreferences prefs;
 
@@ -38,7 +39,7 @@ public class MainPreferences extends Activity {
 
     public SourceListFragment websiteFragment;
 
-    public MainPreferences() {
+    public MainActivity() {
     }
 
     @Override
@@ -127,6 +128,38 @@ public class MainPreferences extends Activity {
                 }
             }
         });
+
+        TextView actionBarTitle = (TextView) actionBarView.findViewById(R.id.action_bar_title);
+        actionBarTitle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (drawerLayout.isDrawerOpen(drawerList)) {
+                    drawerLayout.closeDrawer(drawerList);
+                }
+                else {
+                    drawerLayout.openDrawer(drawerList);
+                }
+            }
+        });
+
+        ImageView downloadButton = (ImageView) actionBarView.findViewById(R.id.download_wallpaper);
+
+        ImageView cycleButton = (ImageView) actionBarView.findViewById(R.id.cycle_wallpaper);
+        cycleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cycleWallpaper();
+                if (AppSettings.useToast()) {
+                    Toast.makeText(getApplicationContext(), "Cycling wallpaper...", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        if (AppSettings.getTheme() != R.style.AppLightTheme) {
+            downloadButton.setImageResource(R.drawable.ic_action_download_dark);
+            cycleButton.setImageResource(R.drawable.ic_action_refresh_dark);
+            drawerIndicator.setImageResource(R.drawable.ic_drawer_dark);
+        }
 
         actionBar.setCustomView(actionBarView);
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
@@ -280,6 +313,13 @@ public class MainPreferences extends Activity {
             super.onBackPressed();
         }
 
+    }
+
+    protected void cycleWallpaper() {
+        Intent intent = new Intent();
+        intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
+        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        sendBroadcast(intent);
     }
 
     @Override

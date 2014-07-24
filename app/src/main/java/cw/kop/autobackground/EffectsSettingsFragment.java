@@ -78,10 +78,18 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_effects_parameters");
+        if (!AppSettings.useAdvanced()) {
 
-        for(int i = 0; i < preferenceCategory.getPreferenceCount(); i++) {
-            String key = preferenceCategory.getPreference(i).getKey();
+            PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_effects_settings");
+
+            preferenceCategory.removePreference(findPreference("use_effects_override"));
+            preferenceCategory.removePreference(findPreference("use_toast_effects"));
+        }
+
+        PreferenceCategory parametersCategory = (PreferenceCategory) findPreference("title_effects_parameters");
+
+        for(int i = 0; i < parametersCategory.getPreferenceCount(); i++) {
+            String key = parametersCategory.getPreference(i).getKey();
 
             if(key != null && !key.contains("switch")) {
                 EffectPreference effectPref = (EffectPreference) findPreference(key);
@@ -90,58 +98,58 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
         }
 
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_AUTOFIX)) {
-            preferenceCategory.removePreference(findPreference("effect_auto_fix"));
+            parametersCategory.removePreference(findPreference("effect_auto_fix"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_BRIGHTNESS)) {
-            preferenceCategory.removePreference(findPreference("effect_brightness"));
+            parametersCategory.removePreference(findPreference("effect_brightness"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_CONTRAST)) {
-            preferenceCategory.removePreference(findPreference("effect_contrast"));
+            parametersCategory.removePreference(findPreference("effect_contrast"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_CROSSPROCESS)) {
-            preferenceCategory.removePreference(findPreference("effect_cross_process_switch"));
+            parametersCategory.removePreference(findPreference("effect_cross_process_switch"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_DOCUMENTARY)) {
-            preferenceCategory.removePreference(findPreference("effect_documentary_switch"));
+            parametersCategory.removePreference(findPreference("effect_documentary_switch"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_DUOTONE)) {
-            preferenceCategory.removePreference(findPreference("effect_duotone_switch"));
+            parametersCategory.removePreference(findPreference("effect_duotone_switch"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_FILLLIGHT)) {
-            preferenceCategory.removePreference(findPreference("effect_fill_light"));
+            parametersCategory.removePreference(findPreference("effect_fill_light"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_FISHEYE)) {
-            preferenceCategory.removePreference(findPreference("effect_fisheye"));
+            parametersCategory.removePreference(findPreference("effect_fisheye"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_GRAIN)) {
-            preferenceCategory.removePreference(findPreference("effect_grain"));
+            parametersCategory.removePreference(findPreference("effect_grain"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_GRAYSCALE)) {
-            preferenceCategory.removePreference(findPreference("effect_grayscale_switch"));
+            parametersCategory.removePreference(findPreference("effect_grayscale_switch"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_LOMOISH)) {
-            preferenceCategory.removePreference(findPreference("effect_lomoish_switch"));
+            parametersCategory.removePreference(findPreference("effect_lomoish_switch"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_NEGATIVE)) {
-            preferenceCategory.removePreference(findPreference("effect_negative_switch"));
+            parametersCategory.removePreference(findPreference("effect_negative_switch"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_POSTERIZE)) {
-            preferenceCategory.removePreference(findPreference("effect_posterize_switch"));
+            parametersCategory.removePreference(findPreference("effect_posterize_switch"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_SATURATE)) {
-            preferenceCategory.removePreference(findPreference("effect_saturate"));
+            parametersCategory.removePreference(findPreference("effect_saturate"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_SEPIA)) {
-            preferenceCategory.removePreference(findPreference("effect_sepia_switch"));
+            parametersCategory.removePreference(findPreference("effect_sepia_switch"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_SHARPEN)) {
-            preferenceCategory.removePreference(findPreference("effect_sharpen"));
+            parametersCategory.removePreference(findPreference("effect_sharpen"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_TEMPERATURE)) {
-            preferenceCategory.removePreference(findPreference("effect_temperature"));
+            parametersCategory.removePreference(findPreference("effect_temperature"));
         }
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_VIGNETTE)) {
-            preferenceCategory.removePreference(findPreference("effect_vignette"));
+            parametersCategory.removePreference(findPreference("effect_vignette"));
         }
     }
 
