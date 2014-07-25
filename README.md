@@ -58,6 +58,7 @@ Downloader
 - Image Height : Height in pixels used as the minimum possible width when downloading images, does not affect user added folders nor already cached images
 - Download Timer:
     - On: Will download a new set of images every amount of user specified time, default 2 days, should not wake device to download
+- Start Time: Time at which download timer will first start and repeat from thereafter
     - Off: Will not download new images, must be downloaded manually
 - Use WiFi:
     - On: Will attempt to download if device is connected to WiFi
@@ -135,7 +136,7 @@ Notification:
 - Previous History Size: Number of files to store in app of image history to be used with Previous action
 - Reshow Notification Tutorial - Reshows overlaid tutorial
 
-Notification Options:
+Notification Options
 --------------
 
 - Icon:
@@ -152,4 +153,24 @@ Notification Options:
     - Copy: Copies image URL found using image title, or image location of file
     - Cycle: Broadcasts cycle intent to wallpaper causing it to cycle, resets update interval change if queued
     - Delete: Permanently deletes the stored image file, does not correct for indexes, leaving blank space in files (not in rotation)
-    - Open: Broadcasts intent to open current image file in gallery, due to limitations with cache read permissions, current image is copied into external storage and opened from there
+    - Open: Broadcasts intent to open current image file in gallery
+    - Pin: Pins current wallpaper image, keeping it pinned for the specified duration
+    - Previous: Moves backwards in image history to display previous image, does not save current image into buffer
+    - Share: Opens up a default sharing menu for the current image file
+    - None: Shows and does nothing
+
+Application
+--------------
+
+- Use Toasts:
+    - On: Will show various Toast messages to notify user
+    - Off: Will not show Toast messages
+- Change Theme:
+    - Light: White background theme with black text, buttons still have white text
+    - Dark: Black background theme with white text
+    - Transparent: Transparent background theme with white text, small radius shadow applied to text
+- Advanced Settings:
+    - On: Shows various advanced settings
+    - Off: Does not show advanced settings, still technically enabled, so if changed and then hidden, advanced settings still apply
+- Reset Settings: Clears app SharedPreferences to default settings
+- Reshow Source List Tutorial: Reshows the source tutorial on revisiting the source list
