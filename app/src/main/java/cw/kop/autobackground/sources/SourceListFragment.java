@@ -495,6 +495,8 @@ public class SourceListFragment extends ListFragment {
 
 		getListView().setEmptyView(emptyLayout);
         getListView().setDividerHeight(1);
+
+        listAdapter.updateNum();
 		
 	}
 

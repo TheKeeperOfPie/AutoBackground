@@ -60,13 +60,10 @@ public class Downloader {
             NetworkInfo wifi = connect.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
             NetworkInfo mobile = connect.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
-            Log.i(TAG, "Wifi: " + wifi.isConnected());
-            Log.i(TAG, "Mobile data: " + mobile.isConnected());
-
-            if (wifi.isConnected() && AppSettings.useWifi()) {
+            if (wifi != null && wifi.isConnected() && AppSettings.useWifi()) {
 
             }
-            else if (mobile.isConnected() && AppSettings.useMobile()) {
+            else if (mobile != null && mobile.isConnected() && AppSettings.useMobile()) {
 
             }
             else {

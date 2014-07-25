@@ -13,6 +13,9 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,12 +31,20 @@ public class SourceListAdapter extends BaseAdapter {
     private ArrayList<HashMap<String, String>> listData;
     private HashSet<String> titles;
     private static LayoutInflater inflater = null;
+    private FilenameFilter fileFilter;
 	
 	public SourceListAdapter(Activity activity) {
 		mainActivity = activity;
 		listData = new ArrayList<HashMap<String, String>>();
         titles = new HashSet<String>();
 		inflater = (LayoutInflater)mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        fileFilter = (new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String filename) {
+                return filename.endsWith(".jpg") || filename.endsWith(".png");
+            }
+        });
 	}
 
 	@Override
@@ -149,6 +160,18 @@ public class SourceListAdapter extends BaseAdapter {
 		listData.remove(position);
 		notifyDataSetChanged();
 	}
+
+    public void updateNum() {
+
+        for (HashMap<String, String> hashMap : listData) {
+            if (hashMap.get("type").equals(AppSettings.FOLDER)) {
+                File file = new File(hashMap.get("data"));
+                hashMap.put("num", "" + file.listFiles(fileFilter).length);
+            }
+        }
+        notifyDataSetChanged();
+        saveData();
+    }
 
     public void sortData(final String key) {
 
