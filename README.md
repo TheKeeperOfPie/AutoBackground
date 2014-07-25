@@ -152,4 +152,4 @@ Notification Options:
     - Copy: Copies image URL found using image title, or image location of file
     - Cycle: Broadcasts cycle intent to wallpaper causing it to cycle, resets update interval change if queued
     - Delete: Permanently deletes the stored image file, does not correct for indexes, leaving blank space in files (not in rotation)
-    - Open: Broadcasts intent to open current image file in gallery
+    - Open: Broadcasts intent to open current image file in gallery, due to limitations with cache read permissions, current image is copied into external storage and opened from there
