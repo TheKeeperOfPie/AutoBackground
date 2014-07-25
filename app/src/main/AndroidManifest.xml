@@ -32,16 +32,6 @@
         android:largeHeap="true"
         >
 
-        <provider
-            android:name="android.support.v4.content.FileProvider"
-            android:authorities="cw.kop.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
-
         <service
             android:name="cw.kop.autobackground.LiveWallpaperService"
             android:enabled="true"

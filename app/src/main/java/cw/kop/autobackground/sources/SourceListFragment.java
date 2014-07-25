@@ -200,6 +200,7 @@ public class SourceListFragment extends ListFragment {
         else {
             downloadButton.setImageResource(R.drawable.ic_action_download_dark);
         }
+        downloadButton.postInvalidate();
     }
 
     public void resetDownload() {
@@ -410,12 +411,12 @@ public class SourceListFragment extends ListFragment {
                     case 0:
                         String directory;
                         if (listAdapter.getItem(position).get("type").equals(AppSettings.WEBSITE)) {
-                            directory = AppSettings.getDownloadPath(context) + "/" + AppSettings.getSourceTitleTrimmed(position) + AppSettings.getImagePrefix();
+                            directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitleTrimmed(position) + AppSettings.getImagePrefix();
                         }
                         else {
                             directory = AppSettings.getSourceData(position);
                         }
-                        showImageFragment(false, false, directory, 0);
+                        showImageFragment(false, false, directory, position);
                         break;
 					case 1:
                         if (listAdapter.getItem(position).get("type").equals(AppSettings.WEBSITE)) {
@@ -716,12 +717,14 @@ public class SourceListFragment extends ListFragment {
 		super.onPause();
 		listAdapter.saveData();
         sortButton.setVisibility(View.GONE);
+        downloadButton.setVisibility(View.GONE);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
         sortButton.setVisibility(View.VISIBLE);
+        downloadButton.setVisibility(View.VISIBLE);
 
         if (isServiceRunning(LiveWallpaperService.class.getName())) {
             setButton.setVisibility(View.GONE);

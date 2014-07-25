@@ -16,10 +16,10 @@ import cw.kop.autobackground.R;
  */
 public class NotificationListAdapter extends RecyclerView.Adapter<NotificationListAdapter.ViewHolder>{
 
-    public ViewHolder viewHolder;
-    public List<NotificationOptionData> optionsList;
-    public RecyclerViewListClickListener listClickListener;
-    int optionPosition;
+    private ViewHolder viewHolder;
+    private List<NotificationOptionData> optionsList;
+    private RecyclerViewListClickListener listClickListener;
+    private int optionPosition;
 
     public NotificationListAdapter(List<NotificationOptionData> options, int position, RecyclerViewListClickListener listener) {
         optionsList = options;

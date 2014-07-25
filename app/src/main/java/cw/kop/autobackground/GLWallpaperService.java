@@ -58,11 +58,6 @@ public abstract class GLWallpaperService extends WallpaperService {
             glSurfaceView.setPreserveEGLContextOnPause(preserve);
         }
 
-        @Override
-        public void onVisibilityChanged(boolean visible) {
-            super.onVisibilityChanged(visible);
-        }
-
         public void pause() {
             if (rendererHasBeenSet) {
                 glSurfaceView.onPause();

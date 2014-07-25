@@ -172,8 +172,8 @@ public class LocalImageAdapter extends BaseAdapter {
 		
 	}
 	
-	public void setFinished(boolean end) {
-		finish = end;
+	public void setFinished() {
+		finish = true;
 	}
 
 	public Boolean backDirectory() {

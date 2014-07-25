@@ -332,7 +332,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         Intent intent = new Intent();
         intent.setAction(LiveWallpaperService.UPDATE_NOTIFICATION);
-        intent.putExtra("use", true);
+        intent.putExtra("use", AppSettings.useNotification());
         context.sendBroadcast(intent);
     }
 

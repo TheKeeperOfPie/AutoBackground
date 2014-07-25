@@ -1,7 +1,6 @@
 package cw.kop.autobackground;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -23,7 +22,7 @@ public class EffectPreference extends DialogPreference {
 
     private static final String androidNamespace = "http://schemas.android.com/apk/res/android";
 
-    private Context appContext;
+    private final Context appContext;
     private NumberPicker valuePicker;
 
     private String key;
@@ -82,20 +81,6 @@ public class EffectPreference extends DialogPreference {
         containerLayout.addView(defaultButton, defaultParams);
 
         return containerLayout;
-    }
-    @Override
-    protected void onBindDialogView(View v) {
-        super.onBindDialogView(v);
-    }
-    @Override
-    protected void onSetInitialValue(boolean restore, Object defaultValue)
-    {
-        super.onSetInitialValue(restore, defaultValue);
-    }
-
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        super.onDismiss(dialog);
     }
 
     @Override

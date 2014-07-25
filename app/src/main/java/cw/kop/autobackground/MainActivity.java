@@ -27,7 +27,7 @@ import cw.kop.autobackground.sources.SourceListFragment;
 
 public class MainActivity extends Activity {
 
-	public static SharedPreferences prefs;
+	private static SharedPreferences prefs;
 
     private ActionBarDrawerToggle drawerToggle;
     private String[] fragmentList;
@@ -107,12 +107,7 @@ public class MainActivity extends Activity {
         drawerIndicator.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (drawerLayout.isDrawerOpen(drawerList)) {
-                    drawerLayout.closeDrawer(drawerList);
-                }
-                else {
-                    drawerLayout.openDrawer(drawerList);
-                }
+                toggleDrawer();
             }
         });
 
@@ -120,12 +115,7 @@ public class MainActivity extends Activity {
         actionBarIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (drawerLayout.isDrawerOpen(drawerList)) {
-                    drawerLayout.closeDrawer(drawerList);
-                }
-                else {
-                    drawerLayout.openDrawer(drawerList);
-                }
+                toggleDrawer();
             }
         });
 
@@ -133,12 +123,7 @@ public class MainActivity extends Activity {
         actionBarTitle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (drawerLayout.isDrawerOpen(drawerList)) {
-                    drawerLayout.closeDrawer(drawerList);
-                }
-                else {
-                    drawerLayout.openDrawer(drawerList);
-                }
+                toggleDrawer();
             }
         });
 
@@ -219,6 +204,21 @@ public class MainActivity extends Activity {
         drawerToggle.syncState();
     }
 
+    private void toggleDrawer() {
+        LocalImageFragment localImageFragment = (LocalImageFragment) getFragmentManager().findFragmentByTag("image_fragment");
+        if (localImageFragment != null) {
+            onBackPressed();
+            Log.i("MA", "onBackPressed()");
+        }
+        if (drawerLayout.isDrawerOpen(drawerList)) {
+            drawerLayout.closeDrawer(drawerList);
+        }
+        else {
+            drawerLayout.openDrawer(drawerList);
+        }
+
+    }
+
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -288,10 +288,7 @@ public class MainActivity extends Activity {
         Log.i("MP", "Item pressed: " + item.getItemId());
 
         if (getFragmentManager().findFragmentByTag("image_fragment") == null && drawerToggle.onOptionsItemSelected(item)) {
-            if (item.getItemId() == android.R.id.home) {
-                return super.onOptionsItemSelected(item);
-            }
-            return true;
+            return item.getItemId() != android.R.id.home || super.onOptionsItemSelected(item);
         }
         else if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
             getFragmentManager().popBackStack();
@@ -315,7 +312,7 @@ public class MainActivity extends Activity {
 
     }
 
-    protected void cycleWallpaper() {
+    private void cycleWallpaper() {
         Intent intent = new Intent();
         intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
@@ -331,16 +328,5 @@ public class MainActivity extends Activity {
             Log.i("MP", "Home null");
         }
 	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-	}
-
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-	}
-
 
 }

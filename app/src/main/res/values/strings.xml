@@ -79,7 +79,7 @@
     <string name="use_high_quality_description">Download high quality images</string>
     <string name="force_download">Force Images</string>
     <string name="force_download_description">Attempt to force download</string>
-    <string name="use_download_path">External Download Path</string>
+    <string name="use_download_path">Custom Download Path</string>
     <string name="use_download_path_description">Set folder for downloaded images</string>
     <string name="keep_images">Keep Images</string>
     <string name="keep_images_description">Keep all images in cache</string>
@@ -182,20 +182,15 @@
     <string name="show_tutorial_notification_description">Click to reshow notification tutorial screen</string>
 
     <string name="about_libraries">Used Libraries</string>
-    <string name="about_libraries_description">The following libraries were used in the creation
-        of this application. Click on their entries to check them out.</string>
+    <string name="about_libraries_description">The following libraries were used in the creation of this application. Click on their entries to check them out.</string>
     <string name="about_library_jsoup">Jsoup Library</string>
-    <string name="about_library_jsoup_description">Used to download and parse html.\n
-        Copyright © 2009 - 2013 Jonathan Hedley (jonathan@hedley.net)</string>
+    <string name="about_library_jsoup_description">Used to download and parse html.\nCopyright © 2009 – 2013 Jonathan Hedley (jonathan@hedley.net)</string>
     <string name="about_library_showcaseview">ShowcaseView Library</string>
-    <string name="about_library_showcaseview_description">Used to create the fancy tutorials.\n
-        Copyright Alex Curran (+Alex) © 2012. All rights reserved.</string>
+    <string name="about_library_showcaseview_description">Used to create the fancy tutorials.\nCopyright Alex Curran (+Alex) © 2012. All rights reserved.</string>
     <string name="about_library_picasso">Picasso Library</string>
-    <string name="about_library_picasso_description">Used to efficiently load some of the images.\n
-        Copyright 2013 Square, Inc.</string>
+    <string name="about_library_picasso_description">Used to efficiently load some of the images.\nCopyright 2013 Square, Inc.</string>
     <string name="about_library_colorpickerview">ColorPickerView Library</string>
-    <string name="about_library_colorpickerview_description">Used to provide color options.\n
-        Copyright © 2010 Daniel Nilsson</string>
+    <string name="about_library_colorpickerview_description">Used to provide color options.\nCopyright © 2010 Daniel Nilsson</string>
 
     <string name="about_self_copyright">Copyright © 2014 Winson Chiu</string>
     <string name="about_self_copyright_description">Copyright © 2014 Winson Chiu</string>

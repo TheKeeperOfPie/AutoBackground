@@ -12,8 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -32,7 +30,6 @@ import android.opengl.GLUtils;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
@@ -63,7 +60,7 @@ import cw.kop.autobackground.settings.AppSettings;
 public class LiveWallpaperService extends GLWallpaperService {
 
     public static SharedPreferences prefs;
-    public static final int NOTIFICATION_ID = 0;
+    private static final int NOTIFICATION_ID = 0;
     private static final String TAG = "LiveWallpaperService";
     public static final String UPDATE_NOTIFICATION = "UPDATE_NOTIFICATION";
     public static final String DOWNLOAD_WALLPAPER = "DOWNLOAD_WALLPAPER";
@@ -937,10 +934,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                     loadNextImage();
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.OPEN_IMAGE)) {
+
                     Intent galleryIntent = new Intent();
                     galleryIntent.setAction(Intent.ACTION_VIEW);
+                    galleryIntent.setDataAndType(Uri.fromFile(Downloader.getCurrentBitmapFile()), "image/*");
+                    galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
                     galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    galleryIntent.setDataAndType(Uri.parse("file://" + Downloader.getCurrentBitmapFile()), "image/*");
                     context.startActivity(galleryIntent);
                     Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
                     context.sendBroadcast(closeDrawer);
@@ -964,25 +963,15 @@ public class LiveWallpaperService extends GLWallpaperService {
                     notifyChangeImage();
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.SHARE_IMAGE)) {
-                    Uri uri = FileProvider.getUriForFile(context, "cw.kop.fileprovider", Downloader.getCurrentBitmapFile());
-
                     Intent shareIntent = new Intent();
                     shareIntent.setAction(Intent.ACTION_SEND);
                     shareIntent.setType("image/*");
-                    shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
-                    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    shareIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                    List<ResolveInfo> resInfoList = context.getPackageManager().queryIntentActivities(shareIntent, PackageManager.MATCH_DEFAULT_ONLY);
-                    for (ResolveInfo resolveInfo : resInfoList) {
-                        String packageName = resolveInfo.activityInfo.packageName;
-                        context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    }
+                    shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(Downloader.getCurrentBitmapFile()));
                     shareIntent = Intent.createChooser(shareIntent, "Share Image");
                     shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(shareIntent);
                     Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
                     context.sendBroadcast(closeDrawer);
-                    context.revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.UPDATE_WALLPAPER)) {
                     if (AppSettings.forceInterval()) {
@@ -1088,7 +1077,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                             @Override
                             public void run() {
-                                renderer.setBitmap(bitmap, true);
+                                renderer.setBitmap(bitmap);
                             }
                         });
 
@@ -1138,7 +1127,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                             @Override
                             public void run() {
-                                renderer.setBitmap(bitmap, true);
+                                renderer.setBitmap(bitmap);
                             }
                         });
 
@@ -1316,8 +1305,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     android.opengl.Matrix.setIdentityM(transMatrix, 0);
                     android.opengl.Matrix.translateM(transMatrix, 0, offset, 0, 0);
                     renderImage();
-                    Log.i(TAG, "Render texture: " + textureNames[0]);
-                    Log.i(TAG, "Max texture size: " + maxTextureSize[0]);
 
                 }
             }
@@ -1500,7 +1487,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             }
 
-            public void setBitmap(Bitmap bitmap, boolean fade) {
+            public void setBitmap(Bitmap bitmap) {
 
                 int storeId = textureNames[0];
                 textureNames[0] = textureNames[1];
@@ -1571,7 +1558,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 int bitWidth = bitmap.getWidth();
                 int bitHeight = bitmap.getHeight();
 
-                if (bitWidth > 0 && bitHeight > 0) {
+                if (bitWidth > 0 && bitHeight > 0 && maxTextureSize[0] > 0) {
                     float scaleWidth = renderScreenWidth / bitWidth;
                     float scaleHeight = renderScreenHeight / bitHeight;
 
@@ -1629,7 +1616,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 boolean randomApplied = false;
 
-                if (random.nextDouble() > AppSettings.getRandomEffectsFrequency()) {
+                if (random.nextDouble() <= AppSettings.getRandomEffectsFrequency()) {
                     if (AppSettings.useRandomEffects()) {
                         applyRandomEffects(AppSettings.getRandomEffect(), texture);
                         randomApplied = true;

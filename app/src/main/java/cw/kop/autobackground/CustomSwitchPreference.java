@@ -10,7 +10,7 @@ import android.util.AttributeSet;
 
 public class CustomSwitchPreference extends SwitchPreference {
 
-    private Context context;
+    private final Context context;
 
     public CustomSwitchPreference(Context context) {
         super(context, null);

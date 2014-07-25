@@ -56,7 +56,8 @@
         <item name="floating_button">@drawable/floating_button_dark</item>
     </style>
 
-    <style name="AppTransparentTheme" parent="@android:style/Theme.Holo">
+    <style name="AppTransparentTheme" parent="@android:style/Theme.DeviceDefault.Wallpaper">
+        <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:windowBackground">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:listViewStyle">@style/TransparentListView</item>
         <item name="android:editTextStyle">@style/DarkEditText</item>
@@ -119,17 +120,22 @@
 
     <style name="LightListView" parent="android:style/Widget.Holo.Light.ListView">
         <item name="android:textColor">@color/BLACK_OPAQUE</item>
-        <item name="android:divider">@color/BLACK_OPAQUE</item>
+        <item name="android:divider">@drawable/menu_dropdown_panel</item>
+        <item name="android:dividerHeight">1px</item>
 	</style>
 
     <style name="DarkListView" parent="android:style/Widget.Holo.ListView">
         <item name="android:textColor">@color/WHITE_OPAQUE</item>
         <item name="android:divider">@color/WHITE_OPAQUE</item>
+        <item name="android:dividerHeight">1px</item>
     </style>
 
     <style name="TransparentListView" parent="android:style/Widget.Holo.ListView">
+        <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
+        <item name="android:windowBackground">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:textColor">@color/WHITE_OPAQUE</item>
         <item name="android:divider">@color/WHITE_OPAQUE</item>
+        <item name="android:dividerHeight">1px</item>
     </style>
 
     <style name="LightActionBar" parent="android:Widget.Holo.Light.ActionBar">

@@ -5,8 +5,8 @@ package cw.kop.autobackground.notification;
  */
 public class NotificationOptionData {
 
-    String title, summary, setting;
-    int drawable;
+    private String title, summary, setting;
+    private int drawable;
 
 
     public NotificationOptionData(String title, String summary, int drawable, String setting) {

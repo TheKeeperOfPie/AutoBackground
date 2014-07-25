@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -41,9 +42,7 @@ public class NavListAdapter extends BaseAdapter {
     public NavListAdapter(Activity activity, String[] nameArray) {
         mainActivity = activity;
         fragmentList = new ArrayList<String>();
-        for (String name : nameArray) {
-            fragmentList.add(name);
-        }
+        Collections.addAll(fragmentList, nameArray);
         inflater = (LayoutInflater)mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 

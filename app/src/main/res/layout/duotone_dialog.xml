@@ -16,22 +16,26 @@
         >
 
         <Button
+            style="?android:attr/buttonBarButtonStyle"
             android:id="@+id/color_one_button"
             android:layout_width="0px"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textAppearance="?android:textAppearanceMedium"
             android:text="@string/duotone_color_one"
+            android:textColor="@color/WHITE_OPAQUE"
             android:background="@color/DARK_GRAY_OPAQUE"
             />
 
         <Button
+            style="?android:attr/buttonBarButtonStyle"
             android:id="@+id/color_two_button"
             android:layout_width="0px"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textAppearance="?android:textAppearanceMedium"
             android:text="@string/duotone_color_two"
+            android:textColor="@color/WHITE_OPAQUE"
             android:background="@color/DARK_GRAY_OPAQUE"
             />
 

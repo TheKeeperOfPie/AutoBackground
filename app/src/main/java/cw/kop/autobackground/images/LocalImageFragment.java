@@ -4,12 +4,9 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.content.FileProvider;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -25,7 +22,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.List;
 
 import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
@@ -37,7 +33,6 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 	private Context context;
 	private LocalImageAdapter imageAdapter;
     private ListView imageListView;
-	private File dir;
     private FilenameFilter filenameFilter;
 
     private boolean change, setPath;
@@ -61,10 +56,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 
             @Override
             public boolean accept(File dir, String filename) {
-                if (filename.endsWith(".jpg") || filename.endsWith(".png")) {
-                    return true;
-                }
-                return false;
+                return filename.endsWith(".jpg") || filename.endsWith(".png");
             }
         });
 	}
@@ -72,7 +64,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-		final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.image_grid_layout, null);
+		final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.image_grid_layout, container);
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
 
@@ -108,7 +100,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 				File dir = imageAdapter.getDirectory();
                 if (setPath) {
                     AppSettings.setDownloadPath(dir.getAbsolutePath());
-                    Toast.makeText(context, "Download path set to: \n" + AppSettings.getDownloadPath(context), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Download path set to: \n" + AppSettings.getDownloadPath(), Toast.LENGTH_SHORT).show();
                 }
                 else {
                     SourceListFragment sourceListFragment = ((MainActivity) getActivity()).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
@@ -122,7 +114,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                         sourceListFragment.addFolder(dir.getName(), dir.getAbsolutePath(), numImages);
                     }
                 }
-                imageAdapter.setFinished(true);
+                imageAdapter.setFinished();
                 getActivity().onBackPressed();
 			}
 			
@@ -141,12 +133,6 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 		context = getActivity();
 	}
 
-    @Override
-    public void onResume() {
-        super.onResume();
-
-    }
-
     public boolean onBackPressed() {
 
         return imageAdapter.backDirectory();
@@ -157,7 +143,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		dir = Environment.getExternalStorageDirectory();
+        File dir = Environment.getExternalStorageDirectory();
 
         if (!viewPath.equals("")) {
             dir = new File(viewPath);
@@ -187,27 +173,17 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 	}
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
 
-        if (imageAdapter.getItem(position).getName().contains(".png") || imageAdapter.getItem(position).getName().contains(".jpg")) {
+        if (imageAdapter.getItem(positionInList).getName().contains(".png") || imageAdapter.getItem(positionInList).getName().contains(".jpg")) {
 
-            Uri uri = FileProvider.getUriForFile(context, "cw.kop.fileprovider", imageAdapter.getItem(position));
 
-            Intent shareIntent = new Intent();
-            shareIntent.setAction(Intent.ACTION_SEND);
-            shareIntent.setType("image/*");
-            shareIntent.putExtra(Intent.EXTRA_STREAM, uri);
-            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            shareIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            List<ResolveInfo> resInfoList = context.getPackageManager().queryIntentActivities(shareIntent, PackageManager.MATCH_DEFAULT_ONLY);
-            for (ResolveInfo resolveInfo : resInfoList) {
-                String packageName = resolveInfo.activityInfo.packageName;
-                context.grantUriPermission(packageName, uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            }
-            shareIntent = Intent.createChooser(shareIntent, "Share Image");
-            shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(shareIntent);
-            context.revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Intent galleryIntent = new Intent();
+            galleryIntent.setAction(Intent.ACTION_VIEW);
+            galleryIntent.setDataAndType(Uri.fromFile(imageAdapter.getItem(positionInList)), "image/*");
+            galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
+            galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(galleryIntent);
         }
 
     }

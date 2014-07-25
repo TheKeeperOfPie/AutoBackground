@@ -6,21 +6,13 @@
     android:background="@color/BLUE_OPAQUE"
    	>
 
-    <!--<Button-->
-        <!--android:id="@+id/reset_directory_button"-->
-        <!--android:text="@string/reset_directory_button"-->
-        <!--android:layout_alignParentBottom="true"-->
-        <!--android:layout_width="fill_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:textSize="18sp"-->
-        <!--/>-->
-
     <Button
         android:id="@+id/use_directory_button"
         android:text="@string/use_directory_button"
         android:layout_alignParentBottom="true"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:textColor="@color/WHITE_OPAQUE"
         android:background="@color/DARK_GRAY_OPAQUE"
         />
 

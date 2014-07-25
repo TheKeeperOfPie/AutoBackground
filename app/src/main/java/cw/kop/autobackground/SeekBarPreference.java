@@ -18,7 +18,7 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
     private static final String namespace = "http://schemas.android.com/apk/res/android";
 
     private SeekBar seekBar;
-    private TextView valueTextView, suffixTextView;
+    private TextView valueTextView;
     private Context context;
 
     private String suffix;
@@ -46,7 +46,7 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
         valueTextView.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 14, context.getResources().getDisplayMetrics()));
         layout.addView(valueTextView, params);
 
-        suffixTextView = new TextView(context);
+        TextView suffixTextView = new TextView(context);
         suffixTextView.setGravity(Gravity.CENTER_HORIZONTAL);
         suffixTextView.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 8, context.getResources().getDisplayMetrics()));
         suffixTextView.setText(suffix);
