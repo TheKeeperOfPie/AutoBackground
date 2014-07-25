@@ -117,3 +117,39 @@ Effects
 - Reset Effects: Causes all manual parameters and settings to be changed to defaults
 
 Notification:
+--------------
+
+- Use Notification:
+    - On: Enables notification, color options will only be available on Android API level 16+ (4.1+)
+    - Off: Disables notification
+- Notification Game:
+    - On: Creates a 5 wide by 2 high image matching game in expanded notification, changes notification priority to Notification.PRIORITY_MAX
+    - Off: Disables image matching game
+- Fill Image:
+    - On: Causes image to be center cropped to fill notification icon
+    - Off: Image will be scaled and fit entirely within notification icon, letterboxing if necessary
+- Icon Action: Applies a custom action to the notification icon
+- Show Pin Indicator:
+    - On: Pinning image will cause pin icon to overlay notification icon
+    - Off: Disables any notification that image was pinned
+- Previous History Size: Number of files to store in app of image history to be used with Previous action
+- Reshow Notification Tutorial - Reshows overlaid tutorial
+
+Notification Options:
+--------------
+
+- Icon:
+    - Application: Uses AutoBackground app icon
+    - Image: Uses currently set image from wallpaper
+    - Custom: Uses a custom file provided by user, does not check if file is moved
+    - None: Shows nothing
+- Title/Summary:
+    - Application: Shows application name (AutoBackground)
+    - Location: Shows URL or storage location of current wallpaper image
+    - Custom: Shows user provided text string
+    - None: Shows nothing
+- Buttons:
+    - Copy: Copies image URL found using image title, or image location of file
+    - Cycle: Broadcasts cycle intent to wallpaper causing it to cycle, resets update interval change if queued
+    - Delete: Permanently deletes the stored image file, does not correct for indexes, leaving blank space in files (not in rotation)
+    - Open: Broadcasts intent to open current image file in gallery
