@@ -90,3 +90,30 @@ Downloader
 - Image Prefix: Changes prefix applied to folders and images after source title and before image index, change will prevent folders with previous prefix to be read (recommend change on clean install and before adding any sources)
 
 Effects
+--------------
+
+- Use Effects:
+    - On: Enables effects
+    - Off: Disables all effects
+- Manual Frequency: Percentage chance of applying manual effects to image
+- Random Frequency Percentage change of applying random effects to image
+- Manual Override:
+    - On: Causes manual effects to be applied on top of any random effects
+    - Off: Manual effects will not apply when random effect is triggered
+- Random Effects:
+    - On: Enables chosen random effects
+    - Off: Disables random effects
+    - Completely Random: Chooses random effect with random but normalized parameters to apply on image, only applies a single effect per image
+    - Filter Effects: Chooses random filter to apply to image
+    - Dual Tone Random: Chooses 2 random hexcodes, one dark, one bright, to apply to image using duotone effect
+    - Dual Tone Warm: Chooses 2 random warm hexcode colors, one dark, one bright, to apply to image using duotone effect
+    - Dual Tone Cool: Chooses 2 random cool hexcode colors, one dark, one bright, to apply to image using duotone effect
+- Dual Tone Gray:
+    - On: Forces dark color in Dual Tone random effects to be a gray color to improve contrast
+    - Off: Default Dual Tone behavior
+- Toast Effects:
+    - On: Displays a Toast message with applied effect and its parameters when effect is applied, can be multiple messages
+    - Off: Does not notify of applied effects
+- Reset Effects: Causes all manual parameters and settings to be changed to defaults
+
+Notification:
