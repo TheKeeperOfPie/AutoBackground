@@ -60,7 +60,14 @@
 	
 	<PreferenceCategory
         android:key="title_animation_settings"
-	    android:title="@string/title_animation_settings">	
+	    android:title="@string/title_animation_settings">
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="force_parallax"
+            android:defaultValue="true"
+            android:title="@string/force_parallax"
+            android:summary="@string/force_parallax_description"
+            />
 
         <cw.kop.autobackground.CustomSwitchPreference
             android:key="use_fade"

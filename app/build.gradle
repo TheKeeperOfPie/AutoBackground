@@ -8,8 +8,8 @@ android {
         applicationId "cw.kop.autobackground"
         minSdkVersion 14
         targetSdkVersion 19
-        versionCode 23
-        versionName "0.9.9"
+        versionCode 26
+        versionName "0.9.9.1"
     }
     buildTypes {
         release {

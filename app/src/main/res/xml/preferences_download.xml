@@ -34,6 +34,12 @@
 		    android:summary="@string/use_timer_description"
     		/>
 
+        <Preference
+            android:key="timer_time"
+            android:title="@string/timer_time"
+            android:summary="@string/timer_time_description"
+            />
+
         <cw.kop.autobackground.CustomSwitchPreference
             android:key="reset_on_manual_download"
             android:defaultValue="false"

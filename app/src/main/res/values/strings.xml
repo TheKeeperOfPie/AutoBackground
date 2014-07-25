@@ -20,11 +20,7 @@
     <string name="title_animation_settings">Animation Settings</string>
     <string name="title_about">About Application</string>
     <string name="title_about_libraries">Used Libraries</string>
-    
-    <string name="user_width">Image Width</string>
-    <string name="user_width_description">Minimum width of image</string>
-    <string name="user_height">Image Height</string>
-    <string name="user_height_description">Minimum height of image</string>
+
     <string name="fill_images">Fill Images</string>
     <string name="fill_images_description">Fill screen with image</string>
     <string name="shuffle_images">Shuffle Images</string>
@@ -37,6 +33,8 @@
     <string name="on_return_description">New image on return</string>
     <string name="double_tap">Double Tap Gesture</string>
     <string name="double_tap_description">Change on double tap</string>
+    <string name="force_parallax">Parallax Scrolling</string>
+    <string name="force_parallax_description">Reverse direction image moves on swipe</string>
     <string name="use_fade">Use Fade</string>
     <string name="use_fade_description">Fade between images</string>
     <string name="use_animation">Use Animation</string>
@@ -64,9 +62,15 @@
     <string name="no_button">No</string>
     <string name="use_directory_button">Use Directory</string>
     <string name="reset_directory_button">Reset Directory</string>
-    
+
+    <string name="user_width">Image Width</string>
+    <string name="user_width_description">Minimum width of image</string>
+    <string name="user_height">Image Height</string>
+    <string name="user_height_description">Minimum height of image</string>
     <string name="use_timer">Download Timer</string>
     <string name="use_timer_description">Download interval</string>
+    <string name="timer_time">Start Time</string>
+    <string name="timer_time_description">Time to begin download timer</string>
     <string name="reset_on_manual_download">Reset on Download</string>
     <string name="reset_on_manual_download_description">Reset timer on manual download</string>
     <string name="use_wifi">Use WiFi</string>

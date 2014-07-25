@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
@@ -22,8 +23,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
+import java.util.Calendar;
 import java.util.HashSet;
 
 import cw.kop.autobackground.images.LocalImageFragment;
@@ -84,6 +87,27 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         EditTextPreference prefixPref = (EditTextPreference) findPreference("image_prefix_adv");
         prefixPref.setSummary("Prefix: " + AppSettings.getImagePrefix());
+
+        Preference timePref = findPreference("timer_time");
+        timePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                TimePickerDialog timeDialog;
+                timeDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                        AppSettings.setTimerHour(selectedHour);
+                        AppSettings.setTimerMinute(selectedMinute);
+                        setDownloadAlarm();
+                    }
+                }, AppSettings.getTimerHour(), AppSettings.getTimerMinute(), true);
+                timeDialog.setTitle("Select Time");
+                timeDialog.show();
+
+                return true;
+            }
+        });
 
         final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
 
@@ -224,7 +248,19 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 	private void setDownloadAlarm() {
 		
 		if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
-			alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + AppSettings.getTimerDuration(), AppSettings.getTimerDuration(), pendingIntent);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(System.currentTimeMillis());
+            calendar.set(Calendar.HOUR_OF_DAY, AppSettings.getTimerHour());
+            calendar.set(Calendar.MINUTE, AppSettings.getTimerMinute());
+
+            alarmManager.cancel(pendingIntent);
+
+            if (calendar.getTimeInMillis() > System.currentTimeMillis()) {
+                alarmManager.setInexactRepeating(AlarmManager.RTC, calendar.getTimeInMillis(), AppSettings.getTimerDuration(), pendingIntent);
+            }
+            else {
+                alarmManager.setInexactRepeating(AlarmManager.RTC, calendar.getTimeInMillis() + AlarmManager.INTERVAL_DAY, AppSettings.getTimerDuration(), pendingIntent);
+            }
 		}
 		else {
 			alarmManager.cancel(pendingIntent);

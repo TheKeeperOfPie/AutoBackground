@@ -120,7 +120,7 @@
 
     <style name="LightListView" parent="android:style/Widget.Holo.Light.ListView">
         <item name="android:textColor">@color/BLACK_OPAQUE</item>
-        <item name="android:divider">@drawable/menu_dropdown_panel</item>
+        <item name="android:divider">@color/BLACK_OPAQUE</item>
         <item name="android:dividerHeight">1px</item>
 	</style>
 

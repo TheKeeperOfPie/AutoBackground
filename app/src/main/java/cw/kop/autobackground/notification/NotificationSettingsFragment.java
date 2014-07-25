@@ -275,6 +275,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                         .setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
+                                hide(previewTutorial);
                                 AppSettings.setTutorial(false, "notification");
                             }
                         })
@@ -306,22 +307,48 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         if (AppSettings.useNotificationTutorial()) {
 
-            previewTutorial = new ShowcaseView.Builder(getActivity())
-                    .setContentTitle("Notification Customization")
-                    .setContentText("This is where you can change \n" +
-                            "how the persistent notification looks. \n" +
-                            "To customize a part, simply click on it \n" +
-                            "inside this preview.")
-                    .setStyle(R.style.ShowcaseStyle)
-                    .setTarget(new ViewTarget(notificationPreview))
-                    .setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            hide(previewTutorial);
-                            AppSettings.setTutorial(false, "notification");
-                        }
-                    })
-                    .build();
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+
+            dialogBuilder.setMessage("Show Notification Tutorial?");
+
+            dialogBuilder.setPositiveButton(R.string.yes_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                    previewTutorial = new ShowcaseView.Builder(getActivity())
+                            .setContentTitle("Notification Customization")
+                            .setContentText("This is where you can change \n" +
+                                    "how the persistent notification looks. \n" +
+                                    "To customize a part, simply click on it \n" +
+                                    "inside this preview.")
+                            .setStyle(R.style.ShowcaseStyle)
+                            .setTarget(new ViewTarget(notificationPreview))
+                            .setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    hide(previewTutorial);
+                                }
+                            })
+                            .build();
+                }
+            });
+
+            dialogBuilder.setNegativeButton(R.string.no_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                }
+            });
+
+            AlertDialog dialog = dialogBuilder.create();
+
+            dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    AppSettings.setTutorial(false, "notification");
+                }
+            });
+
+            dialog.show();
+
         }
 
     }

@@ -172,9 +172,6 @@ public class MainActivity extends Activity {
 
         drawerLayout.setDrawerListener(drawerToggle);
 
-		Downloader.setNewTask(getApplicationContext());
-
-
         if (websiteFragment == null) {
             websiteFragment = new SourceListFragment();
         }

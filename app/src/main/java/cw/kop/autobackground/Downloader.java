@@ -44,22 +44,16 @@ public class Downloader {
     private static final String TAG = "Downloader";
 	private static FilenameFilter fileFilter = null;
     private static int randIndex = 0;
-    private static boolean isDownloading = false;
+    public static boolean isDownloading = false;
 	
 	private static RetrieveImageTask imageAsyncTask;
 	
 	public Downloader() {
 	}
-
-	public static void setNewTask(Context appContext) {
-		
-		imageAsyncTask = new RetrieveImageTask(appContext);
-		
-	}
 	
-	public static void download(Context appContext) {
+	public static boolean download(Context appContext) {
 
-        if (imageAsyncTask != null && imageAsyncTask.getStatus() != AsyncTask.Status.RUNNING) {
+        if (!isDownloading) {
             isDownloading = true;
             ConnectivityManager connect = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -87,19 +81,21 @@ public class Downloader {
                 }
                 catch (ClassCastException e) {
                 }
-                return;
+                return false;
             }
             imageAsyncTask = new RetrieveImageTask(appContext);
             imageAsyncTask.execute();
             if (AppSettings.useToast()) {
                 Toast.makeText(appContext, "Downloading images", Toast.LENGTH_SHORT).show();
             }
+            return true;
         }
         else {
             if (AppSettings.useToast()) {
                 Toast.makeText(appContext, "Already downloading", Toast.LENGTH_SHORT).show();
             }
             Log.i("Downloader", "Already downloading");
+            return false;
         }
 	}
 
@@ -424,7 +420,7 @@ public class Downloader {
 		private Document linkDoc;
 		private Context context;
 		private String imageDetails = "";
-        private NotificationManager notificationManager;
+        private NotificationManager notificationManager = null;
         private Notification.Builder notifyProgress;
         private int totalTarget = 0;
         private int totalDownloaded = 0;
@@ -441,7 +437,6 @@ public class Downloader {
 
             if (useNotification) {
                 notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
                 notifyProgress = new Notification.Builder(context)
                         .setContentTitle("AutoBackground")
                         .setContentText("Downloading images...")
@@ -708,14 +703,21 @@ public class Downloader {
         @Override
         protected void onCancelled(Void aVoid) {
             super.onCancelled(aVoid);
-            notificationManager.cancel(NOTIFICATION_ID);
+            if (notificationManager != null) {
+                notificationManager.cancel(NOTIFICATION_ID);
+            }
 
-            SourceListFragment sourceListFragment = ((MainActivity) context).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
-            if (sourceListFragment != null ) {
-                sourceListFragment.resetDownload();
+            try {
+                SourceListFragment sourceListFragment = ((MainActivity) context).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+                if (sourceListFragment != null) {
+                    sourceListFragment.resetDownload();
+                }
+            }
+            catch (ClassCastException e) {
             }
 
             context = null;
+            isDownloading = false;
         }
 
         @Override
@@ -768,6 +770,7 @@ public class Downloader {
             context = null;
 
 	    	Log.i(TAG, "Download Finished");
+            isDownloading = false;
 	    }
 	}
 	

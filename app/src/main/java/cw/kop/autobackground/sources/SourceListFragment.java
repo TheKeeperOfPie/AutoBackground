@@ -64,7 +64,7 @@ public class SourceListFragment extends ListFragment {
     private ShowcaseView settingsTutorial;
     private RelativeLayout.LayoutParams buttonParams;
     private boolean setShown = false;
-    private boolean isDownloading = false;
+    private boolean tutorialShowing = false;
 
 	public SourceListFragment() {
 	}
@@ -112,7 +112,7 @@ public class SourceListFragment extends ListFragment {
             public void onClick(View v) {
                 if (setTutorial != null) {
                     hide(setTutorial);
-                    showTutorial(5);
+                    showTutorial(4);
                 }
                 setWallpaper();
             }
@@ -143,15 +143,12 @@ public class SourceListFragment extends ListFragment {
     }
 
     private void startDownload() {
+        listAdapter.saveData();
         if (downloadTutorial != null) {
             hide(downloadTutorial);
-            showTutorial(4);
+            showTutorial(3);
         }
-        if (!isDownloading) {
-            listAdapter.saveData();
-            isDownloading = true;
-            Downloader.download(context);
-
+        if (Downloader.download(context)) {
             if (AppSettings.getTheme() == R.style.AppLightTheme) {
                 downloadButton.setImageResource(R.drawable.ic_action_cancel);
             }
@@ -179,7 +176,6 @@ public class SourceListFragment extends ListFragment {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
                     Downloader.cancel();
-                    isDownloading = false;
                     resetActionBarDownload();
                 }
             });
@@ -204,7 +200,6 @@ public class SourceListFragment extends ListFragment {
     }
 
     public void resetDownload() {
-        isDownloading = false;
         resetActionBarDownload();
     }
 
@@ -511,61 +506,15 @@ public class SourceListFragment extends ListFragment {
 
     private void showTutorial(int page) {
 
-        if (!AppSettings.useSourceTutorial()) {
-            return;
-        }
-
         switch (page) {
             case 0:
-                View.OnClickListener tutorialPromptListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        showTutorial(1);
-                        hide(tutorialPromptView);
-                        tutorialPromptView = null;
-                    }
-                };
-                tutorialPromptView = new ShowcaseView.Builder(getActivity())
-                        .setContentTitle("Welcome to AutoBackground")
-                        .setContentText("If you would like to go through \n" +
-                                "a quick tutorial, hit the OK button. \n" +
-                                "\n" +
-                                "If not, just click anywhere else. \n" +
-                                "\n" +
-                                "You are always able to reshow this \n" +
-                                "tutorial in the Application Settings.")
-                        .setStyle(R.style.ShowcaseStyle)
-                        .setOnClickListener(tutorialPromptListener)
-                        .hideOnTouchOutside()
-                        .setShowcaseEventListener(new OnShowcaseEventListener() {
-                            @Override
-                            public void onShowcaseViewHide(ShowcaseView showcaseView) {
-                                if (sourceListTutorial == null) {
-                                    AppSettings.setTutorial(false, "source");
-                                    tutorialPromptView = null;
-                                }
-                            }
-
-                            @Override
-                            public void onShowcaseViewDidHide(ShowcaseView showcaseView) {
-
-                            }
-
-                            @Override
-                            public void onShowcaseViewShow(ShowcaseView showcaseView) {
-
-                            }
-                        })
-                        .build();
-                tutorialPromptView.setButtonPosition(buttonParams);
-                break;
-            case 1:
                 View.OnClickListener websiteListListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         hide(sourceListTutorial);
-                        showTutorial(2);
+                        showTutorial(1);
                         sourceListTutorial = null;
+                        Log.i("SLF", "Shown");
                     }
                 };
 
@@ -581,12 +530,12 @@ public class SourceListFragment extends ListFragment {
                     .build();
                 sourceListTutorial.setButtonPosition(buttonParams);
                 break;
-            case 2:
+            case 1:
                 View.OnClickListener addWebsiteListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         hide(addSourceTutorial);
-                        showTutorial(3);
+                        showTutorial(2);
                         addSourceTutorial = null;
                     }
                 };
@@ -610,12 +559,12 @@ public class SourceListFragment extends ListFragment {
                         .build();
                 addSourceTutorial.setButtonPosition(buttonParams);
                 break;
-            case 3:
+            case 2:
                 View.OnClickListener downloadListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         hide(downloadTutorial);
-                        showTutorial(4);
+                        showTutorial(3);
                         downloadTutorial = null;
                     }
                 };
@@ -630,12 +579,12 @@ public class SourceListFragment extends ListFragment {
                         .build();
                 downloadTutorial.setButtonPosition(buttonParams);
                 break;
-            case 4:
+            case 3:
                 View.OnClickListener setListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         hide(setTutorial);
-                        showTutorial(5);
+                        showTutorial(4);
                         setTutorial = null;
                     }
                 };
@@ -655,10 +604,10 @@ public class SourceListFragment extends ListFragment {
                     setShown = true;
                 }
                 else {
-                    showTutorial(5);
+                    showTutorial(4);
                 }
                 break;
-            case 5:
+            case 4:
                 if (setShown) {
                     hide(setTutorial);
                 }
@@ -666,7 +615,7 @@ public class SourceListFragment extends ListFragment {
                     @Override
                     public void onClick(View v) {
                         hide(settingsTutorial);
-                        showTutorial(6);
+                        showTutorial(5);
                         settingsTutorial = null;
                     }
                 };
@@ -681,7 +630,7 @@ public class SourceListFragment extends ListFragment {
                         .build();
                 settingsTutorial.setButtonPosition(buttonParams);
                 break;
-            case 6:
+            case 5:
                 AppSettings.setTutorial(false, "source");
                 break;
             default:
@@ -726,6 +675,18 @@ public class SourceListFragment extends ListFragment {
         sortButton.setVisibility(View.VISIBLE);
         downloadButton.setVisibility(View.VISIBLE);
 
+        if (Downloader.isDownloading) {
+            if (AppSettings.getTheme() == R.style.AppLightTheme) {
+                downloadButton.setImageResource(R.drawable.ic_action_cancel);
+            }
+            else {
+                downloadButton.setImageResource(R.drawable.ic_action_cancel_dark);
+            }
+        }
+        else {
+            resetActionBarDownload();
+        }
+
         if (isServiceRunning(LiveWallpaperService.class.getName())) {
             setButton.setVisibility(View.GONE);
         }
@@ -733,9 +694,37 @@ public class SourceListFragment extends ListFragment {
             setButton.setVisibility(View.VISIBLE);
         }
 
-        if (AppSettings.useSourceTutorial() && tutorialPromptView == null) {
+        if (AppSettings.useSourceTutorial() && sourceListTutorial == null && !tutorialShowing) {
             Log.i("WLF", "Showing tutorial");
-            showTutorial(0);
+            tutorialShowing = true;
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+
+            dialogBuilder.setMessage("Show Sources Tutorial?");
+
+            dialogBuilder.setPositiveButton(R.string.yes_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                    showTutorial(0);
+                }
+            });
+
+            dialogBuilder.setNegativeButton(R.string.no_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int id) {
+                }
+            });
+
+            AlertDialog dialog = dialogBuilder.create();
+
+            dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    AppSettings.setTutorial(false, "source");
+                    tutorialShowing = false;
+                }
+            });
+
+            dialog.show();
         }
 	}
 
@@ -750,8 +739,6 @@ public class SourceListFragment extends ListFragment {
     }
 
     public void getHtml() {
-
-        isDownloading = true;
 
         final Handler handler = new Handler();
 
@@ -827,7 +814,6 @@ public class SourceListFragment extends ListFragment {
                         });
                     }
                 }
-                isDownloading = false;
             }
         });
         thread.start();

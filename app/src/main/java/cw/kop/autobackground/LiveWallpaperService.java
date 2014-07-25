@@ -48,6 +48,7 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -188,8 +189,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         createGameIntents();
 
-        Downloader.setNewTask(getApplicationContext());
-
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(LiveWallpaperService.UPDATE_NOTIFICATION);
         intentFilter.addAction(LiveWallpaperService.COPY_IMAGE);
@@ -219,7 +218,20 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     private void startAlarms() {
         if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0 && PendingIntent.getBroadcast(getApplicationContext(), 0, new Intent(LiveWallpaperService.DOWNLOAD_WALLPAPER), PendingIntent.FLAG_NO_CREATE) != null) {
-            alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + AppSettings.getTimerDuration(), AppSettings.getTimerDuration(), pendingDownloadIntent);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(System.currentTimeMillis());
+            calendar.set(Calendar.HOUR_OF_DAY, AppSettings.getTimerHour());
+            calendar.set(Calendar.MINUTE, AppSettings.getTimerMinute());
+
+            alarmManager.cancel(pendingDownloadIntent);
+
+            if (calendar.getTimeInMillis() > System.currentTimeMillis()) {
+                alarmManager.setInexactRepeating(AlarmManager.RTC, calendar.getTimeInMillis(), AppSettings.getTimerDuration(), pendingDownloadIntent);
+            }
+            else {
+                alarmManager.setInexactRepeating(AlarmManager.RTC, calendar.getTimeInMillis() + AlarmManager.INTERVAL_DAY, AppSettings.getTimerDuration(), pendingDownloadIntent);
+            }
         }
         if (AppSettings.useInterval() && AppSettings.getIntervalDuration() > 0 && PendingIntent.getBroadcast(getApplicationContext(), 0, new Intent(LiveWallpaperService.UPDATE_WALLPAPER), PendingIntent.FLAG_NO_CREATE) != null) {
             alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + AppSettings.getIntervalDuration(), AppSettings.getIntervalDuration(), pendingIntervalIntent);
@@ -1449,8 +1461,14 @@ public class LiveWallpaperService extends GLWallpaperService {
             }
 
             public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep, int xPixels, int yPixels) {
-                offset = (renderScreenWidth - bitmapWidth) * (xOffset);
-                this.xOffset = xOffset;
+                if (AppSettings.forceParallax()) {
+                    offset = (renderScreenWidth - bitmapWidth) * (1 - xOffset);
+                    this.xOffset = 1 - xOffset;
+                }
+                else {
+                    offset = (renderScreenWidth - bitmapWidth) * (xOffset);
+                    this.xOffset = xOffset;
+                }
             }
 
             public void setupContainer(float width, float height) {
