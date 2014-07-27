@@ -41,6 +41,9 @@ Wallpaper
     - On: Will cycle wallpaper on a double tap gesture on app or on wallpaper
     - Off: Will not cycle on double tap
 
+- Parallax Scroll:
+    - On: Internally forces wallpaper to scroll in opposite direction
+    - Off: Defaults to normal scroll dictated by launcher
 - Use Fade:
     - On: Will cause a fade between images, done by overlapping two OpenGL textures with one texture increasing alpha and the other decreasing, upon finishing will delete old texture, does not animate while fading
     - Off: Will not fade, uses a stark cut into the new image
