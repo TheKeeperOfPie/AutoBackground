@@ -29,21 +29,36 @@
         android:hint="@string/source_title"
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
-    
+
+    <TextView
+        android:id="@+id/source_data_prefix"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/source_data"
+        android:layout_alignLeft="@+id/source_title"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginBottom="8dp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        />
+
     <EditText
         android:id="@+id/source_data"
         android:inputType="textUri"
-    	android:layout_below="@id/source_title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/source_title"
+        android:layout_toRightOf="@+id/source_data_prefix"
         android:layout_marginTop="4dp"
-        android:layout_marginLeft="4dp"
+        android:layout_marginLeft="0dp"
         android:layout_marginRight="4dp"
         android:layout_marginBottom="4dp"
         android:hint="@string/website_url"
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
-    
+
     <EditText
         android:id="@+id/source_num"
         android:inputType="number"

@@ -45,6 +45,12 @@
             android:summary="@string/show_tutorial_source_description"
             />
 
+        <Preference
+            android:key="reset_version_update"
+            android:title="@string/app_name"
+            android:summary="@string/app_name"
+            />
+
 	</PreferenceCategory>
 
 </PreferenceScreen>

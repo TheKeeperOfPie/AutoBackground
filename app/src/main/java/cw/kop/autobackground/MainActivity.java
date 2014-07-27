@@ -185,14 +185,6 @@ public class MainActivity extends Activity {
             selectItem(0);
         }
 
-        if (bundle != null && bundle.getBoolean("download")) {
-            websiteFragment.getHtml();
-            if (AppSettings.useToast()) {
-                Toast.makeText(getApplicationContext(), "Downloading images", Toast.LENGTH_SHORT).show();
-            }
-            Log.i("MP", "Called getHtml()");
-        }
-
     }
 
     @Override

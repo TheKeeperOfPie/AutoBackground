@@ -18,6 +18,7 @@
     <string name="title_notification_settings">Notification Settings</string>
     <string name="title_app_settings">Application Settings</string>
     <string name="title_animation_settings">Animation Settings</string>
+    <string name="title_gesture_settings">Gesture Settings</string>
     <string name="title_about">About Application</string>
     <string name="title_about_libraries">Used Libraries</string>
 
@@ -33,8 +34,6 @@
     <string name="on_return_description">New image on return</string>
     <string name="double_tap">Double Tap Gesture</string>
     <string name="double_tap_description">Change on double tap</string>
-    <string name="force_parallax">Parallax Scrolling</string>
-    <string name="force_parallax_description">Reverse direction image moves on swipe</string>
     <string name="use_fade">Use Fade</string>
     <string name="use_fade_description">Fade between images</string>
     <string name="use_animation">Use Animation</string>
@@ -47,6 +46,16 @@
     <string name="animation_frame_rate_hint">Frames per second</string>
     <string name="animation_safety">Animation Safety</string>
     <string name="animation_safety_description">Side buffer for animation in pixels</string>
+    <string name="use_scrolling">Use Scrolling</string>
+    <string name="use_scrolling_description">Enable wallpaper scrolling with homescreen</string>
+    <string name="force_parallax">Parallax Scrolling</string>
+    <string name="force_parallax_description">Reverse direction image moves on swipe</string>
+    <string name="use_drag">Use Drag</string>
+    <string name="use_drag_description">Activate drag gesture, 1 finger to scroll normally, 2 fingers to scroll without moving homescreen</string>
+    <string name="reverse_drag">Reverse Drag</string>
+    <string name="reverse_drag_description">Reverse direction of image movement</string>
+    <string name="use_scale">Use Zoom</string>
+    <string name="use_scale_description">Pinch to scale from bottom left corner, drag enabled and higher resolution images recommended</string>
 
     <string name="add_source">Add New Source</string>
     <string name="source_title">Title</string>
@@ -77,6 +86,8 @@
     <string name="use_wifi_description">Allow download on WiFi</string>
     <string name="use_data">Use Mobile Data</string>
     <string name="use_data_description">Allow download on mobile</string>
+    <string name="download_on_connection">Reattempt Download</string>
+    <string name="download_on_connection_description">Will retry download on connection obtained if timer is missed</string>
     <string name="use_download_notification">Download notification</string>
     <string name="use_download_notification_description">Notify on download completed</string>
     <string name="use_high_quality">High Quality</string>
@@ -344,6 +355,8 @@
     <string-array name="source_menu">
         <item>Website</item>
         <item>Folder</item>
+        <item>Imgur Subreddit</item>
+        <item>Imgur Album</item>
     </string-array>
 
     <string-array name="source_sort_menu">
@@ -356,7 +369,7 @@
     <string-array name="source_edit_menu">
         <item>View Images</item>
     	<item>Edit</item>
-    	<item>Delete</item>
+    	<item>Delete Source</item>
 	</string-array>
 	
 	<string-array name="interval_entry_menu">

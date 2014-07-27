@@ -12,16 +12,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.JavascriptInterface;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -32,14 +28,22 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.amlcurran.showcaseview.OnShowcaseEventListener;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.message.BasicNameValuePair;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import cw.kop.autobackground.Downloader;
+import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.images.LocalImageFragment;
@@ -51,12 +55,9 @@ public class SourceListFragment extends ListFragment {
     private Context context;
     private Button setButton;
     private ImageButton addButton;
-    private WebView webView;
-    private String baseUrl;
     private ImageView downloadButton;
     private ImageView sortButton;
 
-    private ShowcaseView tutorialPromptView;
     private ShowcaseView sourceListTutorial;
     private ShowcaseView addSourceTutorial;
     private ShowcaseView downloadTutorial;
@@ -89,10 +90,6 @@ public class SourceListFragment extends ListFragment {
         buttonParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
         buttonParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         buttonParams.setMargins(0, 0, 0, Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, context.getResources().getDisplayMetrics())));
-
-        String ua = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36";
-        webView = (WebView) view.findViewById(R.id.webview);
-        webView.getSettings().setUserAgentString(ua);
 
         addButton = (ImageButton) view.findViewById(R.id.floating_button);
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -132,6 +129,15 @@ public class SourceListFragment extends ListFragment {
             @Override
             public void onClick(View v) {
                 showSourceSortMenu();
+            }
+        });
+
+        Button testButton = (Button) view.findViewById(R.id.test_button);
+        testButton.setText("Test Button");
+        testButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showImgurDialog();
             }
         });
 
@@ -175,7 +181,7 @@ public class SourceListFragment extends ListFragment {
             dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
-                    Downloader.cancel();
+                    Downloader.cancel(getActivity());
                     resetActionBarDownload();
                 }
             });
@@ -227,10 +233,34 @@ public class SourceListFragment extends ListFragment {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0:
-                        showDialogForInput();
+                        showInputDialog(AppSettings.WEBSITE,
+                                "",
+                                "",
+                                "",
+                                "",
+                                "Enter website:",
+                                -1);
                         break;
                     case 1:
                         showImageFragment(false, false, "", 0);
+                        break;
+                    case 2:
+                        showInputDialog(AppSettings.IMGUR,
+                                "",
+                                "imgur.com/r/",
+                                "",
+                                "",
+                                "Enter Imgur subreddit:",
+                                -1);
+                        break;
+                    case 3:
+                        showInputDialog(AppSettings.IMGUR,
+                                "",
+                                "imgur.com/a/",
+                                "",
+                                "",
+                                "Enter Imgur album:",
+                                -1);
                         break;
                     default:
                 }
@@ -290,7 +320,76 @@ public class SourceListFragment extends ListFragment {
         }
     }
 
-	private void showDialogForInput() {
+    private void showInputDialog(final String type, String title, final String prefix, String data, String num, String mainTitle, final int position) {
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+
+        View dialogView = View.inflate(context, R.layout.add_source_dialog, null);
+
+        dialog.setView(dialogView);
+
+        final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
+        final TextView sourcePrefix = (TextView) dialogView.findViewById(R.id.source_data_prefix);
+        final EditText sourceData = (EditText) dialogView.findViewById(R.id.source_data);
+        final EditText sourceNum = (EditText) dialogView.findViewById(R.id.source_num);
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+
+        dialogTitle.setText(mainTitle);
+        sourceTitle.setText(title);
+        sourcePrefix.setText(prefix);
+        sourceData.setText(data);
+        sourceNum.setText(num);
+
+
+        dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals("")){
+
+                    if (sourceNum.getText().toString().equals("")) {
+                        sourceNum.setText("1");
+                    }
+
+                    String newTitle = sourceTitle.getText().toString();
+                    String data = prefix + sourceData.getText().toString();
+
+                    if (!data.contains("http")) {
+                        data = "http://" + data;
+                    }
+
+                    if (position >= 0) {
+                        String previousTitle = AppSettings.getSourceTitle(position);
+                        if (listAdapter.setItem(position, type, newTitle, data, AppSettings.useSource(position), sourceNum.getText().toString())) {
+                            if (!previousTitle.equals(newTitle)) {
+                                AppSettings.setSourceSet(newTitle, AppSettings.getSourceSet(previousTitle));
+                                Downloader.renameFiles(context, previousTitle, newTitle);
+                            }
+                            listAdapter.saveData();
+                        }
+                        else {
+                            Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    else {
+                        if (listAdapter.addItem(type, newTitle, data, true, sourceNum.getText().toString())) {
+                            listAdapter.saveData();
+                            AppSettings.setSourceSet(newTitle, new HashSet<String>());
+                            hide(addSourceTutorial);
+                        }
+                        else {
+                            Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            }
+        });
+        dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+            }
+        });
+        dialog.show();
+    }
+
+	private void showWebsiteInputDialog() {
 
 		AlertDialog.Builder dialog = new AlertDialog.Builder(context);
 
@@ -335,7 +434,7 @@ public class SourceListFragment extends ListFragment {
 	    dialog.show();
 	}
 	
-	private void showDialogForChange(final int position) {
+	private void showWebsiteChangeDialog(final int position) {
 		
 		final HashMap<String, String> clickedItem = listAdapter.getItem(position);
 		
@@ -377,7 +476,7 @@ public class SourceListFragment extends ListFragment {
 	        		
 	        		if (listAdapter.setItem(position, AppSettings.WEBSITE, newTitle, sourceData.getText().toString(), Boolean.valueOf(clickedItem.get("use")), sourceNum.getText().toString())) {
                         if (!previousTitle.equals(newTitle)) {
-                            AppSettings.setSourceSet(newTitle, new HashSet<String>());
+                            AppSettings.setSourceSet(newTitle, AppSettings.getSourceSet(previousTitle));
                             Downloader.renameFiles(context, previousTitle, newTitle);
                         }
                         listAdapter.saveData();
@@ -394,7 +493,51 @@ public class SourceListFragment extends ListFragment {
         });
 	    dialog.show();
 	}
-	
+
+    private void showImgurDialog() {
+
+        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+
+        View dialogView = View.inflate(context, R.layout.add_source_dialog, null);
+
+        dialog.setView(dialogView);
+
+        final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
+        final TextView sourcePrefix = (TextView) dialogView.findViewById(R.id.source_data_prefix);
+        final EditText sourceData = (EditText) dialogView.findViewById(R.id.source_data);
+        final EditText sourceNum = (EditText) dialogView.findViewById(R.id.source_num);
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+
+        dialogTitle.setText("Enter Imgur URL:");
+        sourcePrefix.setText(" imgur.com/");
+
+        dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals("")){
+
+                    if (sourceNum.getText().toString().equals("")) {
+                        sourceNum.setText("1");
+                    }
+
+                    if (listAdapter.addItem(AppSettings.IMGUR, sourceTitle.getText().toString(), "https://imgur.com/" + sourceData.getText().toString(), true, sourceNum.getText().toString())) {
+                        listAdapter.saveData();
+                        AppSettings.setSourceSet(sourceTitle.getText().toString().replaceAll(" ", ""), new HashSet<String>());
+                        hide(addSourceTutorial);
+                    }
+                    else {
+                        Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
+        dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+            }
+        });
+        dialog.show();
+
+    }
+
 	private void showDialogMenu(final int position) {
 		AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
 		
@@ -402,11 +545,13 @@ public class SourceListFragment extends ListFragment {
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
+                HashMap<String, String> item = listAdapter.getItem(position);
+                String type = item.get("type");
 				switch (which) {
                     case 0:
                         String directory;
-                        if (listAdapter.getItem(position).get("type").equals(AppSettings.WEBSITE)) {
-                            directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitleTrimmed(position) + AppSettings.getImagePrefix();
+                        if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR)) {
+                            directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(position) + " " + AppSettings.getImagePrefix();
                         }
                         else {
                             directory = AppSettings.getSourceData(position);
@@ -414,15 +559,30 @@ public class SourceListFragment extends ListFragment {
                         showImageFragment(false, false, directory, position);
                         break;
 					case 1:
-                        if (listAdapter.getItem(position).get("type").equals(AppSettings.WEBSITE)) {
-                            showDialogForChange(position);
+                        if (type.equals(AppSettings.WEBSITE)) {
+                            showInputDialog(AppSettings.WEBSITE,
+                                    AppSettings.getSourceTitle(position),
+                                    "",
+                                    AppSettings.getSourceData(position),
+                                    "" + AppSettings.getSourceNum(position),
+                                    "Enter website:",
+                                    position);
                         }
-                        else if(listAdapter.getItem(position).get("type").equals(AppSettings.FOLDER)) {
+                        else if (type.equals(AppSettings.IMGUR)) {
+                            showInputDialog(AppSettings.IMGUR,
+                                    AppSettings.getSourceTitle(position),
+                                    "imgur.com/",
+                                    AppSettings.getSourceData(position).substring(AppSettings.getSourceData(position).indexOf("imgur.com/")),
+                                    "" + AppSettings.getSourceNum(position),
+                                    "Enter Imgur source:",
+                                    position);
+                        }
+                        else if (type.equals(AppSettings.FOLDER)) {
                             showImageFragment(true, false, "", 0);
                         }
 						break;
 					case 2:
-                        if (listAdapter.getItem(position).get("type").equals(AppSettings.WEBSITE)) {
+                        if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR)) {
                             listAdapter.saveData();
                             AlertDialog.Builder deleteDialog = new AlertDialog.Builder(context);
 
@@ -458,6 +618,7 @@ public class SourceListFragment extends ListFragment {
                             listAdapter.removeItem(position);
                             listAdapter.saveData();
                         }
+                        break;
 					default:
 				}
 				
@@ -738,91 +899,6 @@ public class SourceListFragment extends ListFragment {
             }
         }
         return false;
-    }
-
-    public void getHtml() {
-
-        final Handler handler = new Handler();
-
-        Thread thread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                Log.i("MP", "Test1");
-
-                for (int i = 0; i < AppSettings.getNumSources(); i++) {
-
-                    Log.i("MP", "Test2");
-
-                    final int index = i;
-
-                    if (AppSettings.useSource(i)) {
-
-                        handler.post(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                Log.i("MP", "Test3");
-
-                                String url = AppSettings.getSourceData(index);
-
-                                if (url.contains(".com")) {
-                                    baseUrl = url.substring(0, url.indexOf(".com") + 4);
-                                }
-                                else if (url.contains(".net")) {
-                                    baseUrl = url.substring(0, url.indexOf(".net") + 4);
-                                }
-                                else {
-                                    baseUrl = url;
-                                }
-
-                                class MyJavaScriptInterface {
-
-                                    @JavascriptInterface
-                                    public void showHTML(String html) {
-                                        Downloader.setHtml(html, context.getCacheDir().getAbsolutePath(), index, getBaseUrl(), context);
-                                        Log.i("MP", "Written html");
-                                    }
-                                }
-
-
-                                webView.addJavascriptInterface(new MyJavaScriptInterface(), "HTMLOUT");
-
-
-                                webView.setWebViewClient(new WebViewClient() {
-
-                                    @Override
-                                    public void onPageFinished(WebView view, String url) {
-
-                                        webView.postDelayed(new Runnable() {
-
-                                            @Override
-                                            public void run() {
-                                                webView.loadUrl("javascript:HTMLOUT.showHTML(document.documentElement.outerHTML);");
-                                            }
-                                        }, 15000);
-                                    }
-                                });
-                                if (AppSettings.useToast()) {
-                                    Toast.makeText(context, "Loading page", Toast.LENGTH_SHORT).show();
-                                }
-
-                                webView.getSettings().setJavaScriptEnabled(true);
-
-                                webView.loadUrl(url);
-
-                                Log.i("MP", "WebView finished");
-                            }
-                        });
-                    }
-                }
-            }
-        });
-        thread.start();
-    }
-
-    private String getBaseUrl() {
-        return baseUrl;
     }
 
 }

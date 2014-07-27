@@ -62,6 +62,13 @@
          	/>
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:key="download_on_connection"
+            android:defaultValue="true"
+            android:title="@string/download_on_connection"
+            android:summary="@string/download_on_connection_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
             android:key="use_download_notification"
             android:defaultValue="true"
             android:title="@string/use_download_notification"

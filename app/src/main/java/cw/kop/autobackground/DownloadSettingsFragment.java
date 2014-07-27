@@ -29,6 +29,7 @@ import android.widget.Toast;
 import java.util.Calendar;
 import java.util.HashSet;
 
+import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -261,6 +262,8 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             else {
                 alarmManager.setInexactRepeating(AlarmManager.RTC, calendar.getTimeInMillis() + AlarmManager.INTERVAL_DAY, AppSettings.getTimerDuration(), pendingIntent);
             }
+
+            Log.i("DSF", "Alarm set");
 		}
 		else {
 			alarmManager.cancel(pendingIntent);

@@ -71,6 +71,15 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
             }
         });
 
+        Preference resetVersionPref = findPreference("reset_version_update");
+        resetVersionPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                AppSettings.setVersionUpdate(true);
+                return true;
+            }
+        });
+
         toastPref = (SwitchPreference) findPreference("use_toast");
 
         final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());

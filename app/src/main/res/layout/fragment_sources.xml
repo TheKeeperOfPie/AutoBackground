@@ -14,20 +14,20 @@
         android:drawSelectorOnTop="false" >
     </ListView>
 
-    <WebView
-        android:id="@+id/webview"
-        android:layout_below="@android:id/list"
-        android:layout_width="match_parent"
-        android:layout_height="1px"
+    <Button
+        android:id="@+id/test_button"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:focusable="false"
+        android:textColor="@color/WHITE_OPAQUE"
+        android:background="@color/DARK_GRAY_OPAQUE"
         />
 
     <Button
         android:id="@+id/set_button"
-        android:layout_above="@id/webview"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:textColor="@color/WHITE_OPAQUE"
         android:background="@color/DARK_GRAY_OPAQUE"
         />

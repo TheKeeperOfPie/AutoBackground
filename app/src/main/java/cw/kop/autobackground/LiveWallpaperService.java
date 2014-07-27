@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -23,6 +24,8 @@ import android.graphics.drawable.LayerDrawable;
 import android.media.effect.Effect;
 import android.media.effect.EffectContext;
 import android.media.effect.EffectFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -30,10 +33,12 @@ import android.opengl.GLUtils;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.widget.RemoteViews;
 import android.widget.Toast;
@@ -56,6 +61,7 @@ import java.util.Random;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.settings.AppSettings;
 
 public class LiveWallpaperService extends GLWallpaperService {
@@ -142,6 +148,8 @@ public class LiveWallpaperService extends GLWallpaperService {
         appContext = getApplicationContext();
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         AppSettings.setPrefs(prefs);
+
+        AppSettings.versionUpdate();
 
         Intent downloadIntent = new Intent();
         downloadIntent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
@@ -884,7 +892,11 @@ public class LiveWallpaperService extends GLWallpaperService {
         private int[] maxTextureSize = new int[]{0};
         private boolean toChange = false;
         private boolean animated = false;
+        private boolean draggable = false;
+        private boolean twoFingerTouch = false;
         private GestureDetector gestureDetector;
+        private ScaleGestureDetector scaleGestureDetector;
+        private float scaleFactor = 1.f;
         private List<File> previousBitmaps = new ArrayList<File>();
         private long pinReleaseTime;
 
@@ -897,7 +909,32 @@ public class LiveWallpaperService extends GLWallpaperService {
                     loadNextImage();
                     return true;
                 }
+
+                @Override
+                public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                    if (draggable) {
+                        renderer.onSwipe(distanceX, distanceY);
+                        render();
+
+                        return twoFingerTouch || super.onScroll(e1, e2, distanceX, distanceY);
+                    }
+                    return super.onScroll(e1, e2, distanceX, distanceY);
+                }
+
+
             });
+
+            scaleGestureDetector = new ScaleGestureDetector(appContext, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                @Override
+                public boolean onScale(ScaleGestureDetector detector) {
+                    scaleFactor *= detector.getScaleFactor();
+                    scaleFactor = Math.max(1.0f, Math.min(scaleFactor, 5.0f));
+
+                    render();
+                    return true;
+                }
+            });
+
             pinReleaseTime = System.currentTimeMillis();
         }
 
@@ -921,6 +958,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                 intentFilter.addAction(LiveWallpaperService.PIN_IMAGE);
                 intentFilter.addAction(LiveWallpaperService.SHARE_IMAGE);
                 registerReceiver(updateReceiver, intentFilter);
+//                IntentFilter musicFilter = new IntentFilter();
+//                musicFilter.addAction("com.android.music.metachanged");
+//                musicFilter.addAction("com.android.music.playstatechanged");
+//                musicFilter.addAction("com.android.music.playbackcomplete");
+//                musicFilter.addAction("com.android.music.queuechanged");
+//                registerReceiver(musicReciever, musicFilter);
                 Log.i(TAG, "Registered");
             }
         }
@@ -997,22 +1040,103 @@ public class LiveWallpaperService extends GLWallpaperService {
             }
         };
 
-        @Override
-        public void onTouchEvent(MotionEvent event) {
-            if (AppSettings.useDoubleTap()) {
-                gestureDetector.onTouchEvent(event);
-            }
-        }
-
-        private final Runnable drawRunnable = new Runnable() {
+        private final BroadcastReceiver networkReceiver = new BroadcastReceiver() {
             @Override
-            public void run() {
-                render();
+            public void onReceive(Context context, Intent intent) {
+                ConnectivityManager conn =  (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo networkInfo = conn.getActiveNetworkInfo();
+
+                if (networkInfo != null && networkInfo.isConnected()) {
+
+                    if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && AppSettings.useWifi()) {
+                        Downloader.download(appContext);
+                        unregisterReceiver(networkReceiver);
+                    }
+                    else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE && AppSettings.useMobile()) {
+                        Downloader.download(appContext);
+                        unregisterReceiver(networkReceiver);
+                    }
+
+                }
             }
         };
 
+//        private final BroadcastReceiver musicReciever = new BroadcastReceiver() {
+//            @Override
+//            public void onReceive(Context context, Intent intent) {
+//                String action = intent.getAction();
+//                String cmd = intent.getStringExtra("command");
+//                Log.i(TAG, "musicReceiver: " + action + " / " + cmd);
+//                String artist = intent.getStringExtra("artist");
+//                String album = intent.getStringExtra("album");
+//                String track = intent.getStringExtra("track");
+//                Log.i(TAG, "Music: " + artist + ": " + album + ": " + track);
+//                String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
+//
+//                String[] projection = {
+//                        MediaStore.Audio.Media._ID,
+//                        MediaStore.Audio.AlbumColumns.ALBUM_ART
+//                        MediaStore.Audio.Media.ARTIST,
+//                        MediaStore.Audio.Media.TITLE,
+//                        MediaStore.Audio.Media.DATA,
+//                        MediaStore.Audio.Media.DISPLAY_NAME,
+//                        MediaStore.Audio.Media.DURATION
+//                };
+//
+//                Cursor cursor =  getApplicationContext().getContentResolver().query(
+//                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+//                        projection,
+//                        selection,
+//                        null,
+//                        null);
+//
+//                List<String> songs = new ArrayList<String>();
+//                while(cursor.moveToNext()) {
+//                    songs.add(cursor.getString(0) + "||"
+//                            + cursor.getString(1) + "||");
+//                            + cursor.getString(2) + "||"
+//                            + cursor.getString(3) + "||"
+//                            + cursor.getString(4) + "||"
+//                            + cursor.getString(5));
+//                }
+//
+//                for (String musicData : songs) {
+//                    Log.i(TAG, musicData);
+//                }
+//
+//            }
+//        };
+
+        @Override
+        public void onTouchEvent(MotionEvent event) {
+            if (AppSettings.useDoubleTap() || AppSettings.useDrag()) {
+                twoFingerTouch = event.getPointerCount() == 2;
+                gestureDetector.onTouchEvent(event);
+                if (AppSettings.useScale()) {
+                    scaleGestureDetector.onTouchEvent(event);
+                }
+            }
+        }
+
         private void getNewImages() {
-            Downloader.download(getApplicationContext());
+            ConnectivityManager connect = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            NetworkInfo wifi = connect.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            NetworkInfo mobile = connect.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+            if (wifi != null && wifi.isConnected() && AppSettings.useWifi()) {
+                Downloader.download(getApplicationContext());
+            }
+            else if (mobile != null && mobile.isConnected() && AppSettings.useMobile()) {
+                Downloader.download(getApplicationContext());
+            }
+            else if ((AppSettings.useWifi() || AppSettings.useMobile()) && AppSettings.useDownloadOnConnection()) {
+                IntentFilter intentFilter = new IntentFilter();
+                intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+                registerReceiver(networkReceiver, intentFilter);
+                Log.i(TAG, "Will download on connection");
+            }
+
         }
 
         public void onDestroy() {
@@ -1024,6 +1148,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             renderer = null;
             if (!isPreview()){
                 unregisterReceiver(updateReceiver);
+                unregisterReceiver(networkReceiver);
             }
         }
 
@@ -1047,9 +1172,11 @@ public class LiveWallpaperService extends GLWallpaperService {
         @Override
         public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep, int xPixels, int yPixels) {
             super.onOffsetsChanged(xOffset, yOffset, xStep, yStep, xPixels, yPixels);
-            if (!animated && renderer != null) {
-                this.renderer.onOffsetsChanged(xOffset, yOffset, xStep, yStep, xPixels, yPixels);
-                handler.post(drawRunnable);
+            if (renderer != null && AppSettings.useScrolling()) {
+                if (!animated) {
+                    this.renderer.onOffsetsChanged(xOffset, yOffset, xStep, yStep, xPixels, yPixels);
+                    render();
+                }
             }
         }
 
@@ -1113,6 +1240,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 @Override
                 public void run() {
 
+                    draggable = AppSettings.useDrag();
                     animated = AppSettings.useAnimation();
                     renderer.animationModifier = AppSettings.getAnimationSpeed();
                     renderer.targetFrameTime = 1000 / AppSettings.getAnimationFrameRate();
@@ -1193,9 +1321,10 @@ public class LiveWallpaperService extends GLWallpaperService {
             private float bitmapHeight;
             private float oldBitmapWidth;
             private float oldBitmapHeight;
-            private float offset = 0f;
-            private float newOffset = 0f;
-            private float xOffset = 0f;
+            private float offsetX = 0f;
+            private float offsetY = 0f;
+            private float newOffsetX = 0f;
+            private float rawOffsetX = 0f;
 
             private float animationModifier = 0.0f;
             private float animationX = 0.0f;
@@ -1257,7 +1386,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[1]);
                     android.opengl.Matrix.setIdentityM(transMatrix, 0);
-                    android.opengl.Matrix.translateM(transMatrix, 0, offset, 0, 0);
+                    android.opengl.Matrix.translateM(transMatrix, 0, offsetX, offsetY, 0);
 
                     renderImage();
 
@@ -1268,7 +1397,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
                     android.opengl.Matrix.setIdentityM(transMatrix, 0);
-                    android.opengl.Matrix.translateM(transMatrix, 0, newOffset, 0, 0);
+                    android.opengl.Matrix.translateM(transMatrix, 0, newOffsetX, offsetY, 0);
 
                     renderImage();
 
@@ -1278,8 +1407,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                         toFade = false;
                         fadeInAlpha = 0.0f;
                         fadeOutAlpha = 1.0f;
-                        offset = newOffset;
-                        animationX = (int) offset;
+                        offsetX = newOffsetX;
+                        animationX = (int) offsetX;
                         render();
 
                         if (!animated) {
@@ -1309,13 +1438,29 @@ public class LiveWallpaperService extends GLWallpaperService {
                             animationModifier = Math.abs(animationModifier);
                         }
                         animationX -= animationModifier;
-                        offset = animationX;
-                        newOffset -= animationModifier;
+                        offsetX = animationX;
+                        newOffsetX -= animationModifier;
                     }
+
+                    if (offsetX < (-bitmapWidth + renderScreenWidth / scaleFactor)) {
+                        offsetX = -bitmapWidth + renderScreenWidth / scaleFactor;
+                    }
+                    else if (offsetX > 0) {
+                        offsetX = 0;
+                    }
+
+                    if (offsetY < (-bitmapHeight + renderScreenHeight / scaleFactor)) {
+                        offsetY = -bitmapHeight + renderScreenHeight / scaleFactor;
+                    }
+                    else if (offsetY > 0) {
+                        offsetY = 0;
+                    }
+
+                    android.opengl.Matrix.orthoM(matrixProjection, 0, 0, renderScreenWidth/scaleFactor, 0, renderScreenHeight/scaleFactor, 0, 10f);
 
                     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
                     android.opengl.Matrix.setIdentityM(transMatrix, 0);
-                    android.opengl.Matrix.translateM(transMatrix, 0, offset, 0, 0);
+                    android.opengl.Matrix.translateM(transMatrix, 0, offsetX, offsetY, 0f);
                     renderImage();
 
                 }
@@ -1381,7 +1526,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     matrixProjectionAndView[i] = 0.0f;
                 }
 
-                android.opengl.Matrix.orthoM(matrixProjection, 0, 0f, width, 0.0f, height, 0, 50);
+                android.opengl.Matrix.orthoM(matrixProjection, 0, 0f, renderScreenWidth/scaleFactor, 0.0f, renderScreenHeight/scaleFactor, 0, 10f);
 
                 // Set the camera position (View matrix)
                 android.opengl.Matrix.setLookAtM(matrixView, 0, 0f, 0f, 1f, 0f, 0f, 0.0f, 0f, 1f, 0.0f);
@@ -1437,7 +1582,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     Log.i(TAG, "Fade reset");
                     fadeInAlpha = 0.0f;
                     fadeOutAlpha = 1.0f;
-                    offset = newOffset;
+                    offsetX = newOffsetX;
                     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
                     toFade = false;
                 }
@@ -1457,17 +1602,47 @@ public class LiveWallpaperService extends GLWallpaperService {
                     toEffect = true;
                 }
 
+                if (!AppSettings.useScale()) {
+                    scaleFactor = 1.0f;
+                }
+
                 Log.i(TAG, "onSurfaceCreated");
             }
 
             public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep, int xPixels, int yPixels) {
-                if (AppSettings.forceParallax()) {
-                    offset = (renderScreenWidth - bitmapWidth) * (1 - xOffset);
-                    this.xOffset = 1 - xOffset;
+                if (AppSettings.forceParallax() && !draggable) {
+                    offsetX = (renderScreenWidth - bitmapWidth) * (1 - xOffset);
+                    this.rawOffsetX = 1 - xOffset;
                 }
-                else {
-                    offset = (renderScreenWidth - bitmapWidth) * (xOffset);
-                    this.xOffset = xOffset;
+                else if (!draggable) {
+                    offsetX = (renderScreenWidth - bitmapWidth) * (xOffset);
+                    this.rawOffsetX = xOffset;
+                }
+            }
+
+            public void onSwipe(float xMovement, float yMovement) {
+                if (!toFade) {
+                    if (AppSettings.reverseDrag()) {
+                        if (offsetX + xMovement > -bitmapWidth * scaleFactor + renderScreenWidth && offsetX + xMovement < 0) {
+                            offsetX += xMovement;
+                        }
+                        if (offsetY - yMovement > -bitmapHeight * scaleFactor + renderScreenHeight && offsetY - yMovement < 0) {
+                            offsetY -= yMovement;
+                        }
+                        Log.i(TAG, "offsetX: " + offsetX + " offsetY: " + offsetY);
+                        Log.i(TAG, "offsetY: " + offsetY + " - yMovement: " + yMovement + " > " + (-bitmapHeight * scaleFactor + renderScreenHeight));
+                    }
+                    else {
+                        if (offsetX - xMovement > (-bitmapWidth + renderScreenWidth/scaleFactor) && offsetX - xMovement < 0) {
+                            offsetX -= xMovement;
+                        }
+                        if (offsetY + yMovement > (-bitmapHeight + renderScreenHeight/scaleFactor) && offsetY + yMovement < 0) {
+                            offsetY += yMovement;
+                        }
+                        Log.i(TAG, "Check 1: " + (offsetY + yMovement / scaleFactor));
+                        Log.i(TAG, "Check 2: " + (-bitmapHeight * scaleFactor + renderScreenHeight));
+                        Log.i(TAG, "offsetX: " + offsetX + " offsetY: " + offsetY);
+                    }
                 }
             }
 
@@ -1513,16 +1688,26 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 Log.i(TAG, "startWidth: " + bitmap.getWidth() + " startHeight: " + bitmap.getHeight());
 
-                Bitmap scaled = scaleBitmap(bitmap);
+                if (AppSettings.useScale()) {
+                    if (bitmap.getWidth() < renderScreenWidth ||
+                            bitmap.getWidth() > maxTextureSize [0] ||
+                            bitmap.getHeight() < renderScreenHeight ||
+                            bitmap.getHeight() > maxTextureSize[0]) {
+                        bitmap = scaleBitmap(bitmap);
+                    }
+                }
+                else {
+                    bitmap = scaleBitmap(bitmap);
+                }
 
                 oldBitmapWidth = bitmapWidth;
                 oldBitmapHeight = bitmapHeight;
-                bitmapWidth = scaled.getWidth();
-                bitmapHeight = scaled.getHeight();
+                bitmapWidth = bitmap.getWidth();
+                bitmapHeight = bitmap.getHeight();
 
-                newOffset = xOffset * (renderScreenWidth - bitmapWidth);
+                newOffsetX = rawOffsetX * (renderScreenWidth - bitmapWidth);
 
-                Log.i(TAG, "scaledWidth: " + scaled.getWidth() + " scaledHeight: " + scaled.getHeight());
+                Log.i(TAG, "scaledWidth: " + bitmap.getWidth() + " scaledHeight: " + bitmap.getHeight());
 
                 setupContainer(bitmapWidth, bitmapHeight);
 
@@ -1536,7 +1721,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
                 GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
-                GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, scaled, 0);
+                GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
                 Log.i(TAG, "Bind texture: " + textureNames[0]);
 
                 if (AppSettings.useEffects()) {
@@ -1547,7 +1732,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
                     GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
-                    GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, scaled, 0);
+                    GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
                     Log.i(TAG, "Bind texture: " + textureNames[2]);
                     toEffect = true;
                 }
@@ -1566,7 +1751,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         Log.i(TAG, "Deleted texture: " + textureNames[1]);
                     }
                     Log.i(TAG, "Syncing textures");
-                    offset = newOffset;
+                    offsetX = newOffsetX;
                     render();
                 }
 

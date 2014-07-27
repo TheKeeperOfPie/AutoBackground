@@ -143,7 +143,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-        File dir = Environment.getExternalStorageDirectory();
+        File dir = new File("/");
 
         if (!viewPath.equals("")) {
             dir = new File(viewPath);
