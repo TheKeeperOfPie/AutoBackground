@@ -15,15 +15,6 @@
     </ListView>
 
     <Button
-        android:id="@+id/test_button"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:textColor="@color/WHITE_OPAQUE"
-        android:background="@color/DARK_GRAY_OPAQUE"
-        />
-
-    <Button
         android:id="@+id/set_button"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

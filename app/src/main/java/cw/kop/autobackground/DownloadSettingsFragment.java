@@ -168,8 +168,6 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 						break;
 					default:
 				}
-				
-				Log.i("DSF", "Alarm Set: " + AppSettings.getTimerDuration());
 
 		        if (AppSettings.getTimerDuration() > 0) {
 		            timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
@@ -263,7 +261,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 alarmManager.setInexactRepeating(AlarmManager.RTC, calendar.getTimeInMillis() + AlarmManager.INTERVAL_DAY, AppSettings.getTimerDuration(), pendingIntent);
             }
 
-            Log.i("DSF", "Alarm set");
+            Log.i("DSF", "Alarm Set: " + AppSettings.getTimerDuration());
 		}
 		else {
 			alarmManager.cancel(pendingIntent);
@@ -282,6 +280,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             preferenceCategory.removePreference(findPreference("check_duplicates"));
             preferenceCategory.removePreference(findPreference("delete_old"));
             preferenceCategory.removePreference(findPreference("use_download_path"));
+            preferenceCategory.removePreference(findPreference("force_download"));
             preferenceCategory.removePreference(findPreference("use_high_quality"));
             preferenceCategory.removePreference(findPreference("reset_on_manual_download"));
         }

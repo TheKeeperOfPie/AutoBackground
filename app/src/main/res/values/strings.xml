@@ -22,6 +22,8 @@
     <string name="title_about">About Application</string>
     <string name="title_about_libraries">Used Libraries</string>
 
+    <string name="preserve_context">Preserve Context</string>
+    <string name="preserve_context_description">Hold image texture in RAM to prevent reloading on return</string>
     <string name="fill_images">Fill Images</string>
     <string name="fill_images_description">Fill screen with image</string>
     <string name="shuffle_images">Shuffle Images</string>
@@ -37,9 +39,9 @@
     <string name="use_fade">Use Fade</string>
     <string name="use_fade_description">Fade between images</string>
     <string name="use_animation">Use Animation</string>
-    <string name="use_animation_description">Animate Wallpaper</string>
+    <string name="use_animation_description">Wallpaper panning animation</string>
     <string name="animation_speed">Animation Speed</string>
-    <string name="animation_speed_description">Speed of scrolling</string>
+    <string name="animation_speed_description">Speed of pan animation</string>
     <string name="animation_speed_hint">pixels per frame</string>
     <string name="animation_frame_rate">Frame Rate</string>
     <string name="animation_frame_rate_description">Rate of rendering</string>
@@ -49,13 +51,13 @@
     <string name="use_scrolling">Use Scrolling</string>
     <string name="use_scrolling_description">Enable wallpaper scrolling with homescreen</string>
     <string name="force_parallax">Parallax Scrolling</string>
-    <string name="force_parallax_description">Reverse direction image moves on swipe</string>
+    <string name="force_parallax_description">Reverse direction of wallpaper scrolling</string>
     <string name="use_drag">Use Drag</string>
-    <string name="use_drag_description">Activate drag gesture, 1 finger to scroll normally, 2 fingers to scroll without moving homescreen</string>
+    <string name="use_drag_description">Drag with 2 fingers to move image around, disables scrolling with homescreen</string>
     <string name="reverse_drag">Reverse Drag</string>
     <string name="reverse_drag_description">Reverse direction of image movement</string>
     <string name="use_scale">Use Zoom</string>
-    <string name="use_scale_description">Pinch to scale from bottom left corner, drag enabled and higher resolution images recommended</string>
+    <string name="use_scale_description">Pinch to scale from bottom left corner, recommended to also enable drag, alters scaling of image to provide full resolution</string>
 
     <string name="add_source">Add New Source</string>
     <string name="source_title">Title</string>
@@ -321,7 +323,7 @@
         <item>Copy the current image\'s URL, or location, to your clipboard</item>
         <item>Cycle to the next wallpaper</item>
         <item>Delete the currently displayed image from storage</item>
-        <item>Open current image in gallery</item>
+        <item>Open current image link or location</item>
         <item>Pin the current image for a certain amount of time</item>
         <item>Go back to the previous image</item>
         <item>Share the image URL</item>

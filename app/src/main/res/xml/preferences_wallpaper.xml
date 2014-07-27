@@ -5,6 +5,13 @@
 		android:title="@string/title_wallpaper_settings"
 		>
 
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="preserve_context"
+            android:defaultValue="true"
+            android:title="@string/preserve_context"
+            android:summary="@string/preserve_context_description"
+            />
+
 		<cw.kop.autobackground.CustomSwitchPreference
 			android:key="fill_images"
 			android:defaultValue="true"

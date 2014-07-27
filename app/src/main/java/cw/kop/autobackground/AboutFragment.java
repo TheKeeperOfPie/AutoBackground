@@ -55,6 +55,7 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
             }
         });
 
+        findPreference("about_self_copyright").setOnPreferenceClickListener(this);
         findPreference("about_library_jsoup").setOnPreferenceClickListener(this);
         findPreference("about_library_showcaseview").setOnPreferenceClickListener(this);
         findPreference("about_library_picasso").setOnPreferenceClickListener(this);
@@ -80,7 +81,11 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
         String key = preference.getKey();
         Intent intent = null;
 
-        if (key.equals("about_library_jsoup")) {
+        if (key.equals("about_self_copyright")) {
+            intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("https://github.com/TheKeeperOfPie/AutoBackground"));
+        }
+        else if (key.equals("about_library_jsoup")) {
             intent = new Intent(Intent.ACTION_VIEW);
             intent.setData(Uri.parse("http://jsoup.org/"));
         }

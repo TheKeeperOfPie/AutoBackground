@@ -41,9 +41,9 @@ import java.io.File;
 import java.util.ArrayList;
 
 import afzkl.development.colorpickerview.view.ColorPickerView;
-import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.settings.AppSettings;
 
 /**

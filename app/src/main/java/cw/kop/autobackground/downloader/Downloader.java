@@ -17,7 +17,6 @@ import android.widget.Toast;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
@@ -263,6 +262,33 @@ public class Downloader {
         return bitmap;
     }
 
+    public static Bitmap getCurrentImage(Context appContext) {
+        Bitmap bitmap = null;
+        if (currentBitmapFile != null && currentBitmapFile.exists()) {
+
+            try {
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                if (!AppSettings.useHighQuality()) {
+                    options.inPreferredConfig = Bitmap.Config.RGB_565;
+                }
+
+                bitmap = BitmapFactory.decodeFile(currentBitmapFile.getAbsolutePath(), options);
+            }
+            catch (OutOfMemoryError e) {
+                if (AppSettings.useToast()) {
+                    Toast.makeText(appContext, "Out of memory error", Toast.LENGTH_SHORT).show();
+                }
+                return null;
+            }
+
+        }
+        else {
+            Log.i("TAG", "No image");
+            return null;
+        }
+        return bitmap;
+    }
+
 	public static Bitmap getNextImage(Context appContext) {
 		
     	List<File> images = getBitmapList(appContext);
@@ -281,7 +307,10 @@ public class Downloader {
 		if (randIndex >= images.size()) {
 			randIndex -= images.size();
 		}
-		
+		else if (randIndex < 0) {
+            randIndex += images.size();
+        }
+
 		if (images.size() > 0 && randIndex < images.size()) {
 			currentBitmapFile = images.get(randIndex);
 		}
@@ -314,6 +343,10 @@ public class Downloader {
 		return bitmap;
 		
 	}
+
+    public static void decreaseIndex() {
+        randIndex--;
+    }
 
     protected static List<String> compileLinks(Document doc, String tag, String attr, String baseUrl) {
 
@@ -467,6 +500,9 @@ public class Downloader {
 
                     publishProgress("", "" + totalTarget);
 
+                    if (imagesDownloaded == 0) {
+                        publishProgress("Error with " + title + " source. No images downloaded.");
+                    }
                     if (imagesDownloaded < AppSettings.getSourceNum(index)) {
                         publishProgress("Not enough photos from " + AppSettings.getSourceData(index) +
                                 " Try lowering the resolution or changing sources. " +
@@ -623,12 +659,13 @@ public class Downloader {
                     if (isSubreddit) {
                         String subredditPage = imageObject.getString("reddit_comments");
                         if (subredditPage != null && !subredditPage.equals("")) {
-                            imagePages.add("https://reddit.com/" + subredditPage);
+                            imagePages.add("http://reddit.com" + subredditPage);
                         }
                         else {
                             imagePages.add(imageObject.getString("link"));
                         }
                     }
+
                 }
 
                 Log.i(TAG, "imageList size: " + imageList.size());

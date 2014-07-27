@@ -11,6 +11,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.TypedValue;
@@ -31,21 +32,12 @@ import android.widget.Toast;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.message.BasicNameValuePair;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
-import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -129,15 +121,6 @@ public class SourceListFragment extends ListFragment {
             @Override
             public void onClick(View v) {
                 showSourceSortMenu();
-            }
-        });
-
-        Button testButton = (Button) view.findViewById(R.id.test_button);
-        testButton.setText("Test Button");
-        testButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showImgurDialog();
             }
         });
 
@@ -389,158 +372,12 @@ public class SourceListFragment extends ListFragment {
         dialog.show();
     }
 
-	private void showWebsiteInputDialog() {
-
-		AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-
-        View dialogView = View.inflate(context, R.layout.add_source_dialog, null);
-		
-		dialog.setView(dialogView);
-
-		final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
-		final EditText sourceData = (EditText) dialogView.findViewById(R.id.source_data);
-		final EditText sourceNum = (EditText) dialogView.findViewById(R.id.source_num);
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-
-        dialogTitle.setText("Enter website:");
-
-        dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
-	        public void onClick(DialogInterface dialog, int id) {
-	        	if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals("")){
-	        		
-	        		if (!sourceData.getText().toString().contains("http")) {
-	        			sourceData.setText("http://" + sourceData.getText().toString());
-	        		}
-	        		
-	        		if (sourceNum.getText().toString().equals("")) {
-	        			sourceNum.setText("1");
-	        		}
-	        		
-	        		if (listAdapter.addItem(AppSettings.WEBSITE, sourceTitle.getText().toString(), sourceData.getText().toString(), true, sourceNum.getText().toString())) {
-                        listAdapter.saveData();
-                        AppSettings.setSourceSet(sourceTitle.getText().toString().replaceAll(" ", ""), new HashSet<String>());
-                        hide(addSourceTutorial);
-                    }
-                    else {
-                        Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
-                    }
-	        	}
-	        }
-        });
-        dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-	        public void onClick(DialogInterface dialog, int id) {
-		    }
-        });
-	    dialog.show();
-	}
-	
-	private void showWebsiteChangeDialog(final int position) {
-		
-		final HashMap<String, String> clickedItem = listAdapter.getItem(position);
-		
-		AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
-		
-		LayoutInflater inflater = getActivity().getLayoutInflater();
-		
-		View dialogView = inflater.inflate(R.layout.add_source_dialog, null);
-		
-		dialog.setView(dialogView);
-
-		final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
-		final EditText sourceData = (EditText) dialogView.findViewById(R.id.source_data);
-		final EditText sourceNum = (EditText) dialogView.findViewById(R.id.source_num);
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-
-        dialogTitle.setText("Enter website:");
-		
-		sourceTitle.setText(clickedItem.get("title"));
-		sourceData.setText(clickedItem.get("data"));
-		sourceNum.setText(clickedItem.get("num"));
-
-        final String previousTitle = AppSettings.getSourceTitle(position);
-
-        dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
-	        public void onClick(DialogInterface dialog, int id) {
-
-                String newTitle = sourceTitle.getText().toString();
-
-	        	if (!sourceData.getText().toString().equals("") && !newTitle.equals("")){
-	        		
-	        		if (!sourceData.getText().toString().contains("http")) {
-	        			sourceData.setText("http://" + sourceData.getText().toString());
-	        		}
-	        		
-	        		if (sourceNum.getText().toString().equals("")) {
-	        			sourceNum.setText("1");
-	        		}
-	        		
-	        		if (listAdapter.setItem(position, AppSettings.WEBSITE, newTitle, sourceData.getText().toString(), Boolean.valueOf(clickedItem.get("use")), sourceNum.getText().toString())) {
-                        if (!previousTitle.equals(newTitle)) {
-                            AppSettings.setSourceSet(newTitle, AppSettings.getSourceSet(previousTitle));
-                            Downloader.renameFiles(context, previousTitle, newTitle);
-                        }
-                        listAdapter.saveData();
-                    }
-                    else {
-                        Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
-                    }
-	        	}
-	        }
-        });
-        dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-	        public void onClick(DialogInterface dialog, int id) {
-		    }
-        });
-	    dialog.show();
-	}
-
-    private void showImgurDialog() {
-
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-
-        View dialogView = View.inflate(context, R.layout.add_source_dialog, null);
-
-        dialog.setView(dialogView);
-
-        final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
-        final TextView sourcePrefix = (TextView) dialogView.findViewById(R.id.source_data_prefix);
-        final EditText sourceData = (EditText) dialogView.findViewById(R.id.source_data);
-        final EditText sourceNum = (EditText) dialogView.findViewById(R.id.source_num);
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-
-        dialogTitle.setText("Enter Imgur URL:");
-        sourcePrefix.setText(" imgur.com/");
-
-        dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals("")){
-
-                    if (sourceNum.getText().toString().equals("")) {
-                        sourceNum.setText("1");
-                    }
-
-                    if (listAdapter.addItem(AppSettings.IMGUR, sourceTitle.getText().toString(), "https://imgur.com/" + sourceData.getText().toString(), true, sourceNum.getText().toString())) {
-                        listAdapter.saveData();
-                        AppSettings.setSourceSet(sourceTitle.getText().toString().replaceAll(" ", ""), new HashSet<String>());
-                        hide(addSourceTutorial);
-                    }
-                    else {
-                        Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        });
-        dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-            }
-        });
-        dialog.show();
-
-    }
-
 	private void showDialogMenu(final int position) {
 		AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
-		
+
+        listAdapter.saveData();
+        dialog.setTitle(AppSettings.getSourceTitle(position));
+
 		dialog.setItems(R.array.source_edit_menu, new DialogInterface.OnClickListener() {
 			
 			@Override
@@ -569,10 +406,19 @@ public class SourceListFragment extends ListFragment {
                                     position);
                         }
                         else if (type.equals(AppSettings.IMGUR)) {
+                            String prefix = "";
+                            String data = AppSettings.getSourceData(position);
+                            if (data.contains("imgur.com/a/")) {
+                                prefix = "imgur.com/a/";
+                            }
+                            else if (data.contains("imgur.com/r/")) {
+                                prefix = "imgur.com/r/";
+                            }
+
                             showInputDialog(AppSettings.IMGUR,
                                     AppSettings.getSourceTitle(position),
-                                    "imgur.com/",
-                                    AppSettings.getSourceData(position).substring(AppSettings.getSourceData(position).indexOf("imgur.com/")),
+                                    prefix,
+                                    data.substring(data.indexOf(prefix) + prefix.length()),
                                     "" + AppSettings.getSourceNum(position),
                                     "Enter Imgur source:",
                                     position);
@@ -811,10 +657,15 @@ public class SourceListFragment extends ListFragment {
     protected void setWallpaper() {
 
         final Intent i = new Intent();
-        i.setAction(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER);
-        final String p = LiveWallpaperService.class.getPackage().getName();
-        final String c = LiveWallpaperService.class.getCanonicalName();
-        i.putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, new ComponentName(p, c));
+        if (Build.VERSION.SDK_INT >= 16) {
+            i.setAction(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER);
+            final String p = LiveWallpaperService.class.getPackage().getName();
+            final String c = LiveWallpaperService.class.getCanonicalName();
+            i.putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, new ComponentName(p, c));
+        } else {
+            i.setAction(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER);
+        }
+
         startActivityForResult(i, 0);
     }
 
