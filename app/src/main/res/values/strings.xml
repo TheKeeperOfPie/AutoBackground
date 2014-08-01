@@ -34,6 +34,8 @@
     <string name="force_interval_description">Force change on interval</string>
     <string name="on_return">Change on Return</string>
     <string name="on_return_description">New image on return</string>
+    <string name="when_locked">Change When Locked</string>
+    <string name="when_locked_description">Change image even if phone is locked, does not wake device</string>
     <string name="double_tap">Double Tap Gesture</string>
     <string name="double_tap_description">Change on double tap</string>
     <string name="use_fade">Use Fade</string>
@@ -42,7 +44,9 @@
     <string name="use_animation_description">Wallpaper panning animation</string>
     <string name="animation_speed">Animation Speed</string>
     <string name="animation_speed_description">Speed of pan animation</string>
-    <string name="animation_speed_hint">pixels per frame</string>
+    <string name="animation_speed_hint">pixels per frame</string>>
+    <string name="scale_animation_speed">Scale Speed</string>
+    <string name="scale_animation_speed_description">Adjust animation speed for zoom feature</string>
     <string name="animation_frame_rate">Frame Rate</string>
     <string name="animation_frame_rate_description">Rate of rendering</string>
     <string name="animation_frame_rate_hint">Frames per second</string>

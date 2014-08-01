@@ -111,13 +111,13 @@ public class MainActivity extends Activity {
             }
         });
 
-        ImageView actionBarIcon = (ImageView) actionBarView.findViewById(R.id.action_bar_icon);
-        actionBarIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleDrawer();
-            }
-        });
+//        ImageView actionBarIcon = (ImageView) actionBarView.findViewById(R.id.action_bar_icon);
+//        actionBarIcon.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                toggleDrawer();
+//            }
+//        });
 
         TextView actionBarTitle = (TextView) actionBarView.findViewById(R.id.action_bar_title);
         actionBarTitle.setOnClickListener(new View.OnClickListener() {
@@ -143,7 +143,7 @@ public class MainActivity extends Activity {
         if (AppSettings.getTheme() != R.style.AppLightTheme) {
             downloadButton.setImageResource(R.drawable.ic_action_download_dark);
             cycleButton.setImageResource(R.drawable.ic_action_refresh_dark);
-            drawerIndicator.setImageResource(R.drawable.ic_drawer_dark);
+            drawerIndicator.setImageResource(R.drawable.drawer_menu_dark);
         }
 
         actionBar.setCustomView(actionBarView);
@@ -152,7 +152,7 @@ public class MainActivity extends Activity {
         drawerToggle = new ActionBarDrawerToggle(
                 this,
                 drawerLayout,
-                R.drawable.ic_drawer_dark,
+                R.drawable.drawer_menu,
                 R.string.drawer_open,
                 R.string.drawer_close) {
 

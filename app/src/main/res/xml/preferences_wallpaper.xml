@@ -51,9 +51,15 @@
 			android:key="on_return"
 			android:defaultValue="true"
 			android:title="@string/on_return"
-			android:dialogTitle="@string/on_return"
 			android:summary="@string/on_return_description"
 			/>
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="when_locked"
+            android:defaultValue="true"
+            android:title="@string/when_locked"
+            android:summary="@string/when_locked_description"
+            />
 		
 	</PreferenceCategory>
 	
@@ -77,11 +83,18 @@
 
         <cw.kop.autobackground.SeekBarPreference
             android:key="animation_speed"
-            android:max="10"
+            android:max="50"
             android:defaultValue="1"
             android:title="@string/animation_speed"
             android:summary="@string/animation_speed_description"
             android:dialogMessage="pixels per frame"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="scale_animation_speed"
+            android:defaultValue="true"
+            android:title="@string/scale_animation_speed"
+            android:summary="@string/scale_animation_speed_description"
             />
 
         <EditTextPreference

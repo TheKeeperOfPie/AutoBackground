@@ -581,7 +581,13 @@ public class SourceListFragment extends ListFragment {
                         .setContentTitle("Downloading Images")
                         .setContentText("Once you have a website entered, \n" +
                                 "click this download button to start \n" +
-                                "downloading some images.")
+                                "downloading some images. \n" +
+                                "\n" +
+                                "The app will only use WiFi to \n" +
+                                "download as a default. If you \n" +
+                                "wish to change this setting, \n" +
+                                "go into the Downloader settings \n" +
+                                "and enable mobile data.")
                         .setStyle(R.style.ShowcaseStyle)
                         .setTarget(new ViewTarget(downloadButton))
                         .setOnClickListener(downloadListener)

@@ -289,7 +289,7 @@ public class Downloader {
         return bitmap;
     }
 
-	public static Bitmap getNextImage(Context appContext) {
+	public static File getNextImage(Context appContext) {
 		
     	List<File> images = getBitmapList(appContext);
 
@@ -317,31 +317,7 @@ public class Downloader {
 
         Log.i("RandIndex", "" + randIndex);
 
-		if (currentBitmapFile != null && currentBitmapFile.exists()) {
-
-			try {
-				BitmapFactory.Options options = new BitmapFactory.Options();
-				if (!AppSettings.useHighQuality()) {
-					options.inPreferredConfig = Bitmap.Config.RGB_565;
-				}
-				
-				bitmap = BitmapFactory.decodeFile(currentBitmapFile.getAbsolutePath(), options);
-			}
-			catch (OutOfMemoryError e) {
-                if (AppSettings.useToast()) {
-                    Toast.makeText(appContext, "Out of memory error", Toast.LENGTH_SHORT).show();
-                }
-                return null;
-			}
-			
-		}
-		else {
-			Log.i("TAG", "No image");
-			return null;
-		}
-		
-		return bitmap;
-		
+        return currentBitmapFile;
 	}
 
     public static void decreaseIndex() {
@@ -501,11 +477,11 @@ public class Downloader {
                     publishProgress("", "" + totalTarget);
 
                     if (imagesDownloaded == 0) {
-                        publishProgress("Error with " + title + " source. No images downloaded.");
+                        publishProgress("No images downloaded from " + title);
                     }
                     if (imagesDownloaded < AppSettings.getSourceNum(index)) {
-                        publishProgress("Not enough photos from " + AppSettings.getSourceData(index) +
-                                " Try lowering the resolution or changing sources. " +
+                        publishProgress("Not enough photos from " + AppSettings.getSourceData(index) + " " +
+                                "Try lowering the resolution or changing sources. " +
                                 "There may also have been too many duplicates.");
                     }
 

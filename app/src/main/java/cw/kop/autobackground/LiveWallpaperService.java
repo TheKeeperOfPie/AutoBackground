@@ -2,6 +2,7 @@ package cw.kop.autobackground;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -898,7 +899,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         private List<File> previousBitmaps = new ArrayList<File>();
         private long pinReleaseTime;
         private boolean downloadOnConnection = false;
-        private float storeHeight = 1;
+        private KeyguardManager keyguardManager;
 
         public GLWallpaperEngine() {
             super();
@@ -957,6 +958,8 @@ public class LiveWallpaperService extends GLWallpaperService {
             setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
             if (!isPreview()){
+                keyguardManager = (KeyguardManager) appContext.getSystemService(Context.KEYGUARD_SERVICE);
+
                 IntentFilter intentFilter = new IntentFilter();
                 intentFilter.addAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
                 intentFilter.addAction(LiveWallpaperService.CYCLE_IMAGE);
@@ -1198,12 +1201,14 @@ public class LiveWallpaperService extends GLWallpaperService {
                     setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                 }
 
-                if (toChange) {
-                    loadNextImage();
-                    toChange = false;
-                }
-                else if (AppSettings.changeOnReturn()) {
-                    loadNextImage();
+                if (!keyguardManager.inKeyguardRestrictedInputMode() || AppSettings.changeWhenLocked()) {
+                    if (toChange) {
+                        loadNextImage();
+                        toChange = false;
+                    }
+                    else if (AppSettings.changeOnReturn()) {
+                        loadNextImage();
+                    }
                 }
             }
             else {
@@ -1240,26 +1245,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     System.gc();
-                    final Bitmap bitmap = Downloader.getCurrentImage(appContext);
 
-                    if (bitmap != null && renderer != null) {
+                    Picasso.with(LiveWallpaperService.this).load(Downloader.getCurrentBitmapFile()).into(setImageTarget);
 
-                        if (AppSettings.useNotification()) {
-                            notifyChangeImage();
-                        }
-
-                        addEvent(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                renderer.setCurrentBitmap(bitmap);
-                            }
-                        });
-
-                    }
-                    else if (bitmap == null && Downloader.getCurrentBitmapFile() != null) {
-                        Toast.makeText(appContext, "Decoding error, file " + Downloader.getCurrentBitmapFile().getName() + " may be corrupted", Toast.LENGTH_LONG).show();
-                    }
                 }
             });
         }
@@ -1283,28 +1271,10 @@ public class LiveWallpaperService extends GLWallpaperService {
                         setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                     }
 
-                    final Bitmap bitmap = Downloader.getBitmap(previousBitmaps.get(0), getApplicationContext());
+                    Picasso.with(LiveWallpaperService.this).load(previousBitmaps.get(0)).into(setImageTarget);
+
                     if (!AppSettings.shuffleImages()) {
                         Downloader.decreaseIndex();
-                    }
-
-                    if (bitmap != null && renderer != null) {
-
-                        if (AppSettings.useNotification()) {
-                            notifyChangeImage();
-                        }
-
-                        addEvent(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                renderer.setBitmap(bitmap);
-                            }
-                        });
-
-                    }
-                    else if (bitmap == null && previousBitmaps.get(0) != null) {
-                        Toast.makeText(appContext, "Decoding error, file " + previousBitmaps.get(0).getName() + " may be corrupted", Toast.LENGTH_LONG).show();
                     }
 
                     previousBitmaps.remove(0);
@@ -1336,26 +1306,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                     previousBitmaps.add(0, Downloader.getCurrentBitmapFile());
 
                     System.gc();
-                    final Bitmap bitmap = Downloader.getNextImage(getApplicationContext());
 
-                    if (bitmap != null && renderer != null) {
-
-                        if (AppSettings.useNotification()) {
-                            notifyChangeImage();
-                        }
-
-                        addEvent(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                renderer.setBitmap(bitmap);
-                            }
-                        });
-
-                    }
-                    else if (bitmap == null && Downloader.getCurrentBitmapFile() != null) {
-                        Toast.makeText(appContext, "Decoding error, file " + Downloader.getCurrentBitmapFile().getName() + " may be corrupted", Toast.LENGTH_LONG).show();
-                    }
+                    Picasso.with(LiveWallpaperService.this).load(Downloader.getNextImage(LiveWallpaperService.this)).into(setImageTarget);
 
                     if (previousBitmaps.size() > AppSettings.getHistorySize()) {
                         previousBitmaps.remove(previousBitmaps.size() - 1);
@@ -1365,13 +1317,48 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         }
 
+        private Target setImageTarget = new Target() {
+            @Override
+            public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
+
+                if (bitmap != null && renderer != null) {
+
+                    if (AppSettings.useNotification()) {
+                        notifyChangeImage();
+                    }
+
+                    addEvent(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            renderer.setBitmap(bitmap);
+                        }
+                    });
+
+                }
+                else if (bitmap == null && Downloader.getCurrentBitmapFile() != null) {
+                    Toast.makeText(LiveWallpaperService.this, "Decoding error, file " + Downloader.getCurrentBitmapFile().getName() + " may be corrupted", Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+            }
+        };
+
         private void toastEffect(final String effectName, final String effectValue) {
             if (AppSettings.useToast() && AppSettings.useToastEffects()) {
                 handler.post(new Runnable() {
 
                     @Override
                     public void run() {
-                        Toast.makeText(appContext, "Effect applied: " + effectName + " " + effectValue, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LiveWallpaperService.this, "Effect applied: " + effectName + " " + effectValue, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
@@ -1532,9 +1519,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                         else if (animationX > animationModifier) {
                             animationModifier = Math.abs(animationModifier);
                         }
-                        animationX -= animationModifier;
+                        animationX -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifier / scaleFactor) : animationModifier);
                         offsetX = animationX;
-                        newOffsetX -= animationModifier;
+                        newOffsetX -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifier / scaleFactor) : animationModifier);
                     }
 
                     if (offsetX < (-bitmapWidth + renderScreenWidth / scaleFactor)) {
@@ -1698,7 +1685,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     fadeInAlpha = 0.0f;
                     fadeOutAlpha = 1.0f;
                     offsetX = newOffsetX;
-                    offsetY = 0;
+                    offsetY = newOffsetY;
                     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
                     toFade = false;
                 }
@@ -1811,78 +1798,20 @@ public class LiveWallpaperService extends GLWallpaperService {
             }
 
             public void setCurrentBitmap(Bitmap bitmap) {
-                bitmap = scaleBitmap(bitmap);
-
-                bitmapWidth = bitmap.getWidth();
-                bitmapHeight = bitmap.getHeight();
-
-                newOffsetX = rawOffsetX * (renderScreenWidth - bitmapWidth);
-                newOffsetY = -(bitmapHeight - renderScreenHeight) / 2;
-
-                setupContainer(bitmapWidth, bitmapHeight);
-
-                GLES20.glDeleteTextures(1, textureNames, 0);
-                GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
-
-                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-
-                GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-                bitmap.recycle();
-                Log.i(TAG, "Bitmap set");
-
-            }
-
-            public void setBitmap(Bitmap bitmap) {
-
-                int storeId = textureNames[0];
-                textureNames[0] = textureNames[1];
-                textureNames[1] = storeId;
-
-                Log.i(TAG, "startWidth: " + bitmap.getWidth() + " startHeight: " + bitmap.getHeight());
-
-                if (AppSettings.useScale()) {
-                    if (bitmap.getWidth() < renderScreenWidth ||
-                            bitmap.getWidth() > maxTextureSize [0] ||
-                            bitmap.getHeight() < renderScreenHeight ||
-                            bitmap.getHeight() > maxTextureSize[0]) {
-                        bitmap = scaleBitmap(bitmap);
-                    }
-                }
-                else {
+                try {
                     bitmap = scaleBitmap(bitmap);
-                }
 
-                oldBitmapWidth = bitmapWidth;
-                oldBitmapHeight = bitmapHeight;
-                bitmapWidth = bitmap.getWidth();
-                bitmapHeight = bitmap.getHeight();
+                    bitmapWidth = bitmap.getWidth();
+                    bitmapHeight = bitmap.getHeight();
 
+                    newOffsetX = rawOffsetX * (renderScreenWidth - bitmapWidth);
+                    newOffsetY = -(bitmapHeight - renderScreenHeight) / 2;
 
-                newOffsetX = rawOffsetX * (renderScreenWidth - bitmapWidth);
-                newOffsetY = -(bitmapHeight - renderScreenHeight) / 2;
+                    setupContainer(bitmapWidth, bitmapHeight);
 
-                Log.i(TAG, "scaledWidth: " + bitmap.getWidth() + " scaledHeight: " + bitmap.getHeight());
-
-                setupContainer(bitmapWidth, bitmapHeight);
-
-                GLES20.glDeleteTextures(1, textureNames, 0);
-                GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
-
-                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-                GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-
-                GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-                Log.i(TAG, "Bind texture: " + textureNames[0]);
-
-                if (AppSettings.useEffects()) {
-                    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[2]);
+                    GLES20.glDeleteTextures(1, textureNames, 0);
+                    GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+                    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
 
                     GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
                     GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
@@ -1890,27 +1819,93 @@ public class LiveWallpaperService extends GLWallpaperService {
                     GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
 
                     GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-                    Log.i(TAG, "Bind texture: " + textureNames[2]);
-                    toEffect = true;
+                    bitmap.recycle();
+                    Log.i(TAG, "Bitmap set");
+                }
+                catch (IllegalArgumentException e) {
+                    Toast.makeText(LiveWallpaperService.this, "Error loading next image", Toast.LENGTH_SHORT).show();
                 }
 
-                bitmap.recycle();
-                System.gc();
+            }
 
-                if (AppSettings.useFade() && isVisible()) {
-                    Log.i(TAG, "Fade set");
-                    toFade = true;
-                    setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-                }
-                else if (isVisible()) {
-                    if (!toEffect) {
-                        GLES20.glDeleteTextures(1, textureNames, 1);
-                        Log.i(TAG, "Deleted texture: " + textureNames[1]);
+            public void setBitmap(Bitmap bitmap) {
+
+                try {
+                    int storeId = textureNames[0];
+                    textureNames[0] = textureNames[1];
+                    textureNames[1] = storeId;
+
+                    Log.i(TAG, "startWidth: " + bitmap.getWidth() + " startHeight: " + bitmap.getHeight());
+
+                    if (AppSettings.useScale()) {
+                        if (bitmap.getWidth() < renderScreenWidth ||
+                                bitmap.getWidth() > maxTextureSize[0] ||
+                                bitmap.getHeight() < renderScreenHeight ||
+                                bitmap.getHeight() > maxTextureSize[0]) {
+                            bitmap = scaleBitmap(bitmap);
+                        }
+                    } else {
+                        bitmap = scaleBitmap(bitmap);
                     }
-                    Log.i(TAG, "Syncing textures");
-                    offsetX = newOffsetX;
-                    scaleFactor = 1.0f;
-                    render();
+
+                    oldBitmapWidth = bitmapWidth;
+                    oldBitmapHeight = bitmapHeight;
+                    bitmapWidth = bitmap.getWidth();
+                    bitmapHeight = bitmap.getHeight();
+
+
+                    newOffsetX = rawOffsetX * (renderScreenWidth - bitmapWidth);
+                    newOffsetY = -(bitmapHeight - renderScreenHeight) / 2;
+
+                    Log.i(TAG, "scaledWidth: " + bitmap.getWidth() + " scaledHeight: " + bitmap.getHeight());
+
+                    setupContainer(bitmapWidth, bitmapHeight);
+
+                    GLES20.glDeleteTextures(1, textureNames, 0);
+                    GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+                    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
+
+                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+
+                    GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+                    Log.i(TAG, "Bind texture: " + textureNames[0]);
+
+                    if (AppSettings.useEffects()) {
+                        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[2]);
+
+                        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+                        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+                        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+                        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+
+                        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+                        Log.i(TAG, "Bind texture: " + textureNames[2]);
+                        toEffect = true;
+                    }
+
+                    bitmap.recycle();
+                    System.gc();
+
+                    if (AppSettings.useFade() && isVisible()) {
+                        Log.i(TAG, "Fade set");
+                        toFade = true;
+                        setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+                    } else if (isVisible()) {
+                        if (!toEffect) {
+                            GLES20.glDeleteTextures(1, textureNames, 1);
+                            Log.i(TAG, "Deleted texture: " + textureNames[1]);
+                        }
+                        Log.i(TAG, "Syncing textures");
+                        offsetX = newOffsetX;
+                        scaleFactor = 1.0f;
+                        render();
+                    }
+                }
+                catch (IllegalArgumentException e) {
+                    Log.i(TAG, "Error loading next image");
                 }
 
             }
@@ -2136,13 +2131,13 @@ public class LiveWallpaperService extends GLWallpaperService {
                 Effect effect;
 
                 if (randomEffect.equals("Completely Random")) {
-                    String[] effectsList = appContext.getResources().getStringArray(R.array.effects_list);
-                    String[] effectParameters = appContext.getResources().getStringArray(R.array.effects_list_parameters);
+                    String[] effectsList = LiveWallpaperService.this.getResources().getStringArray(R.array.effects_list);
+                    String[] effectParameters = LiveWallpaperService.this.getResources().getStringArray(R.array.effects_list_parameters);
 
                     int index = (int) (Math.random() * effectsList.length);
                     String effectName = effectsList[index];
                     String parameter = effectParameters[index];
-                    float value = 3.0f;
+                    float value = 0.0f;
 
                     effect = effectFactory.createEffect(effectName);
                     if (effectsList[index].equals("android.media.effect.effects.SaturateEffect")) {
@@ -2159,14 +2154,14 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     if (EffectFactory.isEffectSupported(effectName)) {
-                        if (value < 3.0f) {
+                        if (value != 0.0f) {
                             effect.setParameter(parameter, value);
                         }
                         applyEffect(effect, texture);
                     }
 
                     Log.i(TAG, "Effect applied: " + effectsList[index]);
-                    toastEffect(effectName.substring(effectName.indexOf("effects.") + 8), "");
+                    toastEffect(effectName.substring(effectName.indexOf("effects.") + 8), ((value != 0.0f) ? "Value:" + value : ""));
                 }
                 else if (randomEffect.equals("Filter Effects")){
                     String[] filtersList = appContext.getResources().getStringArray(R.array.effects_filters_list);
