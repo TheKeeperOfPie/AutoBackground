@@ -46,7 +46,14 @@
 			android:dialogTitle="@string/force_interval"
 			android:summary="@string/force_interval_description"
 			/>
-  
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="reset_on_manual_cycle"
+            android:defaultValue="false"
+            android:title="@string/reset_on_manual_cycle"
+            android:summary="@string/reset_on_manual_cycle_description"
+            />
+
 		<cw.kop.autobackground.CustomSwitchPreference
 			android:key="on_return"
 			android:defaultValue="true"

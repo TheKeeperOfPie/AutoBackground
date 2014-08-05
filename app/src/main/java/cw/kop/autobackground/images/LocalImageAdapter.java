@@ -76,7 +76,7 @@ public class LocalImageAdapter extends BaseAdapter {
 			TextView fileSummary = (TextView) view.findViewById(R.id.file_summary);
 			ImageView fileImage = (ImageView) view.findViewById(R.id.file_image);
 			
-			if (file.getName().contains(".jpg") || file.getName().contains(".png")) {
+			if (file.getName().contains(".png") || file.getName().contains(".jpg") || file.getName().contains(".jpeg")) {
 				Picasso.with(mainActivity.getApplicationContext())
 					.load(file)
                     .resize(screenWidth, imageHeight)
@@ -112,9 +112,7 @@ public class LocalImageAdapter extends BaseAdapter {
 			fileSummary.setText("" + (file.length() / BYTE_TO_MEBIBYTE) + " MiB");
 			return view;
 		}
-		else {
-			return convertView;
-		}
+        return null;
 	}
 
 	public void addItem(File file) {

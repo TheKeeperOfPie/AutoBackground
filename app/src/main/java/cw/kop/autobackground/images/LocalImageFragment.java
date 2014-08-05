@@ -55,7 +55,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 
             @Override
             public boolean accept(File dir, String filename) {
-                return filename.endsWith(".jpg") || filename.endsWith(".png");
+                return filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg");
             }
         });
 	}
@@ -102,15 +102,15 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                     Toast.makeText(context, "Download path set to: \n" + AppSettings.getDownloadPath(), Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    SourceListFragment sourceListFragment = ((MainActivity) getActivity()).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+                    SourceListFragment sourceListFragment = ((MainActivity) getActivity()).sourceListFragment; //.getFragmentManager().findFragmentByTag("source_fragment");
                     int numImages = 0;
                     if (dir.listFiles(filenameFilter) != null) {
                         numImages =  dir.listFiles(filenameFilter).length;
                     }
                     if (change) {
-                        sourceListFragment.setFolder(position, dir.getName(), dir.getAbsolutePath(), numImages);
+                        sourceListFragment.setEntry(position, AppSettings.FOLDER, dir.getName(), dir.getAbsolutePath(), "" + numImages);
                     } else {
-                        sourceListFragment.addFolder(dir.getName(), dir.getAbsolutePath(), numImages);
+                        sourceListFragment.addEntry(AppSettings.FOLDER, dir.getName(), dir.getAbsolutePath(), "" + numImages);
                     }
                 }
                 imageAdapter.setFinished();
@@ -174,9 +174,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
 
-        if (imageAdapter.getItem(positionInList).getName().contains(".png") || imageAdapter.getItem(positionInList).getName().contains(".jpg")) {
-
-
+        if (imageAdapter.getItem(positionInList).getName().contains(".png") || imageAdapter.getItem(positionInList).getName().contains(".jpg") || imageAdapter.getItem(positionInList).getName().contains(".jpeg")) {
             Intent galleryIntent = new Intent();
             galleryIntent.setAction(Intent.ACTION_VIEW);
             galleryIntent.setDataAndType(Uri.fromFile(imageAdapter.getItem(positionInList)), "image/*");

@@ -1,5 +1,6 @@
 package cw.kop.autobackground.sources;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
@@ -11,8 +12,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -31,13 +35,36 @@ import android.widget.Toast;
 
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
+import com.google.android.gms.auth.GoogleAuthException;
+import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.auth.UserRecoverableAuthException;
 
+import org.apache.http.HttpConnection;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import cw.kop.autobackground.LiveWallpaperService;
+import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.downloader.Downloader;
+import cw.kop.autobackground.images.AlbumFragment;
 import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -45,6 +72,7 @@ public class SourceListFragment extends ListFragment {
 
 	private SourceListAdapter listAdapter;
     private Context context;
+    private Handler handler;
     private Button setButton;
     private ImageButton addButton;
     private ImageView downloadButton;
@@ -65,6 +93,7 @@ public class SourceListFragment extends ListFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        handler = new Handler();
 	}
 
     @Override
@@ -126,6 +155,7 @@ public class SourceListFragment extends ListFragment {
 
         if (AppSettings.getTheme() != R.style.AppLightTheme) {
             sortButton.setImageResource(R.drawable.ic_action_storage_dark);
+            addButton.setImageResource(R.drawable.floating_button_dark);
         }
 
         return view;
@@ -207,6 +237,78 @@ public class SourceListFragment extends ListFragment {
                 .commit();
     }
 
+    private void showAlbumFragment(String type, int position, ArrayList<String> names, ArrayList<String> images, ArrayList<String> links, ArrayList<String> nums) {
+        AlbumFragment albumFragment = new AlbumFragment();
+        Bundle arguments = new Bundle();
+        arguments.putString("type", type);
+        arguments.putInt("position", position);
+        arguments.putStringArrayList("album_names", names);
+        arguments.putStringArrayList("album_images", images);
+        arguments.putStringArrayList("album_links", links);
+        arguments.putStringArrayList("album_nums", nums);
+        albumFragment.setArguments(arguments);
+
+        getFragmentManager().beginTransaction()
+                .add(R.id.content_frame, albumFragment, "album_fragment")
+                .addToBackStack(null)
+                .commit();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int responseCode, Intent intent) {
+        if (requestCode == GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN) {
+            if (responseCode == Activity.RESULT_OK) {
+                final String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                AppSettings.setGoogleAccountName(accountName);
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        try {
+                            String authToken = GoogleAuthUtil.getToken(context, accountName, "oauth2:https://picasaweb.google.com/data/");
+                            AppSettings.setGoogleAccountToken(authToken);
+                            AppSettings.setGoogleAccount(true);
+                            new PicasaAlbumTask(-1).execute();
+                        } catch (IOException transientEx) {
+                            return null;
+                        } catch (UserRecoverableAuthException e) {
+                            e.printStackTrace();
+                            startActivityForResult(e.getIntent(), GoogleAccount.GOOGLE_AUTH_CODE);
+                            return null;
+                        } catch (GoogleAuthException authEx) {
+                            return null;
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        return null;
+                    }
+                }.execute();
+            }
+        }
+        if (requestCode == GoogleAccount.GOOGLE_AUTH_CODE) {
+            if (responseCode == Activity.RESULT_OK) {
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        try {
+                            String authToken = GoogleAuthUtil.getToken(context, AppSettings.getGoogleAccountName(), "oauth2:https://picasaweb.google.com/data/");
+                            AppSettings.setGoogleAccountToken(authToken);
+                            Log.i("MA", "GOOGLE_AUTH_CODE Token: " + authToken);
+                        } catch (IOException transientEx) {
+                            return null;
+                        } catch (UserRecoverableAuthException e) {
+                            return null;
+                        } catch (GoogleAuthException authEx) {
+                            return null;
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        return null;
+                    }
+                }.execute();
+            }
+        }
+    }
+
     private void showSourceMenu() {
         AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
 
@@ -244,6 +346,14 @@ public class SourceListFragment extends ListFragment {
                                 "",
                                 "Enter Imgur album:",
                                 -1);
+                        break;
+                    case 4:
+                        if (AppSettings.getGoogleAccountName().equals("")) {
+                            startActivityForResult(GoogleAccount.getPickerIntent(), GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
+                        }
+                        else {
+                            new PicasaAlbumTask(-1).execute();
+                        }
                         break;
                     default:
                 }
@@ -284,8 +394,8 @@ public class SourceListFragment extends ListFragment {
         dialog.show();
     }
 
-    public void addFolder(String title, String path, int num) {
-        if (listAdapter.addItem(AppSettings.FOLDER, title, path, true, "" + num)) {
+    public void addEntry(String type, String title, String data, String num) {
+        if (listAdapter.addItem(type, title, data, true, num)) {
             listAdapter.saveData();
         }
         else {
@@ -294,8 +404,8 @@ public class SourceListFragment extends ListFragment {
 
     }
 
-    public void setFolder(int position, String title, String path, int num) {
-        if (listAdapter.setItem(position, AppSettings.FOLDER, title, path, true, "" + num)) {
+    public void setEntry(int position, String type, String title, String path, String num) {
+        if (listAdapter.setItem(position, AppSettings.FOLDER, title, path, true, num)) {
             listAdapter.saveData();
         }
         else {
@@ -387,7 +497,7 @@ public class SourceListFragment extends ListFragment {
 				switch (which) {
                     case 0:
                         String directory;
-                        if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR)) {
+                        if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR) || type.equals(AppSettings.PICASA)) {
                             directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(position) + " " + AppSettings.getImagePrefix();
                         }
                         else {
@@ -423,12 +533,15 @@ public class SourceListFragment extends ListFragment {
                                     "Enter Imgur source:",
                                     position);
                         }
+                        else if (type.equals(AppSettings.PICASA)) {
+                            new PicasaAlbumTask(position).execute();
+                        }
                         else if (type.equals(AppSettings.FOLDER)) {
                             showImageFragment(true, false, "", 0);
                         }
 						break;
 					case 2:
-                        if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR)) {
+                        if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR) || type.equals(AppSettings.PICASA)) {
                             listAdapter.saveData();
                             AlertDialog.Builder deleteDialog = new AlertDialog.Builder(context);
 
@@ -756,6 +869,81 @@ public class SourceListFragment extends ListFragment {
             }
         }
         return false;
+    }
+
+    class PicasaAlbumTask extends AsyncTask<Void, String, Void> {
+
+        int changePosition;
+        ArrayList<String> albumNames = new ArrayList<String>();
+        ArrayList<String> albumImageLinks = new ArrayList<String>();
+        ArrayList<String> albumLinks = new ArrayList<String>();
+        ArrayList<String> albumNums = new ArrayList<String>();
+
+        public PicasaAlbumTask(int position) {
+            changePosition = position;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            Toast.makeText(context, values[0], Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            publishProgress("Loading albums...");
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/user/" + AppSettings.getGoogleAccountName());
+            httpGet.setHeader("Authorization", "OAuth " + AppSettings.getGoogleAccountToken());
+            httpGet.setHeader("X-GData-Client", AppSettings.PICASA_CLIENT_ID);
+            httpGet.setHeader("GData-Version", "2");
+
+            InputStream inputStream = null;
+            BufferedReader reader = null;
+            String result = null;
+            try {
+                inputStream = httpClient.execute(httpGet).getEntity().getContent();
+                reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                StringBuilder stringBuilder = new StringBuilder();
+
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    stringBuilder.append(line + "\n");
+                }
+                result = stringBuilder.toString();
+
+            } catch (Exception e) {
+            }
+            finally {
+                try {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            Document albumDoc = Jsoup.parse(result);
+
+            for (Element link : albumDoc.select("entry")) {
+                albumNames.add(link.select("title").text());
+                albumImageLinks.add(link.select("media|group").select("media|content").attr("url"));
+                albumLinks.add(link.select("id").text().replace("entry", "feed"));
+                albumNums.add(link.select("gphoto|numphotos").text());
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            showAlbumFragment(AppSettings.PICASA, changePosition, albumNames, albumImageLinks, albumLinks, albumNums);
+        }
     }
 
 }

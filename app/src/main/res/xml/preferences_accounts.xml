@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:key="title_app_settings"
+        android:title="@string/title_app_settings"
+        >
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_google_account"
+            android:defaultValue="false"
+            android:title="@string/use_google_account"
+            android:summary="@string/use_google_account_description"
+            />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

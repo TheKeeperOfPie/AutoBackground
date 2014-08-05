@@ -86,7 +86,7 @@ public class Downloader {
                     Toast.makeText(appContext, "No connection available,\ncheck Download Settings", Toast.LENGTH_SHORT).show();
                 }
                 try {
-                    SourceListFragment sourceListFragment = ((MainActivity) appContext).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+                    SourceListFragment sourceListFragment = ((MainActivity) appContext).sourceListFragment; //.getFragmentManager().findFragmentByTag("source_fragment");
                     if (sourceListFragment != null) {
                         sourceListFragment.resetDownload();
                     }
@@ -110,7 +110,7 @@ public class Downloader {
     public static void cancel(Context appContext) {
         if (imageAsyncTask != null) {
             imageAsyncTask.cancel(false);
-            SourceListFragment sourceListFragment = ((MainActivity) appContext).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+            SourceListFragment sourceListFragment = ((MainActivity) appContext).sourceListFragment; //.getFragmentManager().findFragmentByTag("source_fragment");
             if (sourceListFragment != null) {
                 sourceListFragment.resetDownload();
             }
@@ -125,7 +125,7 @@ public class Downloader {
 
 				@Override
 				public boolean accept(File dir, String filename) {
-                    return filename.endsWith(".jpg") || filename.endsWith(".png");
+                    return filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg");
                 }
 			});
 		}
@@ -138,7 +138,7 @@ public class Downloader {
 
             if (AppSettings.useSource(i)) {
                 String type = AppSettings.getSourceType(i);
-                if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR)) {
+                if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR) || type.equals(AppSettings.PICASA)) {
                     File folder = new File(cacheDir + "/" + AppSettings.getSourceTitle(i) + " " + AppSettings.getImagePrefix());
                     if (folder.exists() && folder.isDirectory()) {
                         bitmaps.addAll(Arrays.asList(folder.listFiles(fileFilter)));
@@ -179,7 +179,7 @@ public class Downloader {
 
                 @Override
                 public boolean accept(File dir, String filename) {
-                    if (filename.endsWith(".jpg") || filename.endsWith(".png")) {
+                    if (filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg")) {
                         return true;
                     }
                     return false;
@@ -363,10 +363,7 @@ public class Downloader {
                 catch (NumberFormatException e) {
                 }
             }
-            if (url.contains(".png")) {
-                links.add(url);
-            }
-            else if (url.contains(".jpg")) {
+            if (url.contains(".png") || url.contains(".jpg") || url.contains(".jpeg")) {
                 links.add(url);
             }
             else if (AppSettings.forceDownload() && url.length() > 5 && (url.contains(".com") || url.contains(".org") || url.contains(".net"))) {
@@ -382,7 +379,6 @@ public class Downloader {
 
 		private String downloadCacheDir;
 		private static final String TAG = "DownloaderAsyncTask";
-		private Document linkDoc;
 		private Context context;
 		private String imageDetails = "";
         private NotificationManager notificationManager = null;
@@ -471,6 +467,11 @@ public class Downloader {
                             return null;
                         }
                     }
+                    else if (AppSettings.getSourceType(index).equals(AppSettings.PICASA)) {
+                        if (!downloadPicasa(AppSettings.getSourceData(index), index)) {
+                            return null;
+                        }
+                    }
 
                     totalTarget += AppSettings.getSourceNum(index);
 
@@ -508,7 +509,7 @@ public class Downloader {
             Set<String> imageLinks = new HashSet<String>();
             List<String> imageList = new ArrayList<String>();
 
-            linkDoc = Jsoup.connect(url)
+            Document linkDoc = Jsoup.connect(url)
                     .userAgent("Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36")
                     .referrer("http://www.google.com")
                     .get();
@@ -559,8 +560,6 @@ public class Downloader {
         }
 
         private boolean downloadImgur(String url, int index) {
-
-
             boolean isSubreddit = url.contains("imgur.com/r/");
             boolean isAlbum = url.contains("imgur.com/a/");
             String apiUrl = url;
@@ -588,13 +587,14 @@ public class Downloader {
                 httpGet.setHeader("Content-type", "application/json");
 
                 InputStream inputStream = null;
+                BufferedReader reader = null;
                 String result = null;
                 try {
                     HttpResponse response = httpClient.execute(httpGet);
                     HttpEntity entity = response.getEntity();
 
                     inputStream = entity.getContent();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                    reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
                     StringBuilder stringBuilder = new StringBuilder();
 
                     String line = null;
@@ -604,13 +604,17 @@ public class Downloader {
                     result = stringBuilder.toString();
                 } catch (Exception e) {
                     return true;
-                } finally {
+                }
+                finally {
                     try {
                         if (inputStream != null) {
                             inputStream.close();
                         }
-                    } catch (Exception e) {
-                        return true;
+                        if (reader != null) {
+                            reader.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
 
@@ -688,6 +692,97 @@ public class Downloader {
             return true;
         }
 
+        private boolean downloadPicasa(String url, int index) {
+            try {
+                DefaultHttpClient httpClient = new DefaultHttpClient();
+                HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/user/" + AppSettings.getGoogleAccountName() + "/albumid/6043504875137421169" + "?imgmax=d");
+                httpGet.setHeader("Authorization", "OAuth " + AppSettings.getGoogleAccountToken());
+                httpGet.setHeader("X-GData-Client", AppSettings.PICASA_CLIENT_ID);
+                httpGet.setHeader("GData-Version", "2");
+
+                InputStream inputStream = null;
+                BufferedReader reader = null;
+                String result = null;
+                try {
+                    HttpResponse response = httpClient.execute(httpGet);
+                    HttpEntity entity = response.getEntity();
+
+                    inputStream = entity.getContent();
+                    reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                    StringBuilder stringBuilder = new StringBuilder();
+
+                    String line = null;
+                    while ((line = reader.readLine()) != null) {
+                        stringBuilder.append(line + "\n");
+                    }
+                    result = stringBuilder.toString();
+                }
+                catch (Exception e) {
+                    return true;
+                }
+                finally {
+                    try {
+                        if (inputStream != null) {
+                            inputStream.close();
+                        }
+                        if (reader != null) {
+                            reader.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                Document linkDoc = Jsoup.parse(result);
+
+                List<String> imageList = new ArrayList<String>();
+
+                for (Element link : linkDoc.select("media|group")) {
+                    imageList.add(link.select("media|content").attr("url"));
+                }
+
+                String dir = AppSettings.getDownloadPath();
+                String title = AppSettings.getSourceTitle(index);
+                int stored = AppSettings.getSourceNumStored(index);
+                int num = stored;
+
+                if (imageList.size() > 0) {
+                    int count = 0;
+                    while (num < (AppSettings.getSourceNum(index) + stored) && count < imageList.size()) {
+
+                        if (isCancelled()) {
+                            return false;
+                        }
+
+                        String link = imageList.get(count);
+                        if (!usedLinks.contains(link)) {
+                            Bitmap bitmap = getImage(link);
+                            Log.i(TAG, "Link: " + link);
+                            if (bitmap != null) {
+                                writeToFile(bitmap, link, dir, title, num++);
+                                Log.i(TAG, "Link: " + link);
+                                usedLinks.add(link);
+                                publishProgress("", "" + (totalTarget + num - stored));
+                            }
+                        }
+                        count++;
+                    }
+                }
+
+                imagesDownloaded = num - stored;
+
+                imageDetails += title + ": " + imagesDownloaded + " images;break;";
+
+                AppSettings.setSourceNumStored(index, num);
+                AppSettings.setSourceSet(title, usedLinks);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return true;
+        }
+
         private Bitmap getImage(String url) {
 
             if (Patterns.WEB_URL.matcher(url).matches()) {
@@ -748,6 +843,7 @@ public class Downloader {
                     Bitmap bitmap = BitmapFactory.decodeStream(input, null, options);
 
                     if (bitmap == null) {
+                        Log.i(TAG, "Null bitmap");
                         return null;
                     }
                     return bitmap;
@@ -763,6 +859,7 @@ public class Downloader {
                     e.printStackTrace();
                 }
             }
+            Log.i(TAG, "Possible malformed URL");
             return null;
         }
 
@@ -836,7 +933,7 @@ public class Downloader {
             }
 
             try {
-                SourceListFragment sourceListFragment = ((MainActivity) context).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+                SourceListFragment sourceListFragment = ((MainActivity) context).sourceListFragment; //.getFragmentManager().findFragmentByTag("source_fragment");
                 if (sourceListFragment != null) {
                     sourceListFragment.resetDownload();
                 }
@@ -887,7 +984,7 @@ public class Downloader {
             context.sendBroadcast(cycleIntent);
 
             try {
-                SourceListFragment sourceListFragment = ((MainActivity) context).websiteFragment; //.getFragmentManager().findFragmentByTag("website_fragment");
+                SourceListFragment sourceListFragment = ((MainActivity) context).sourceListFragment; //.getFragmentManager().findFragmentByTag("source_fragment");
                 if (sourceListFragment != null) {
                     sourceListFragment.resetDownload();
                 }

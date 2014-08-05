@@ -41,7 +41,7 @@ public class SourceListAdapter extends BaseAdapter {
 
             @Override
             public boolean accept(File dir, String filename) {
-                return filename.endsWith(".jpg") || filename.endsWith(".png");
+                return filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg");
             }
         });
 	}

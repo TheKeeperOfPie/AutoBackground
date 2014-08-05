@@ -32,6 +32,8 @@
     <string name="use_interval_description">Change image after certain period</string>
     <string name="force_interval">Force Interval</string>
     <string name="force_interval_description">Force change on interval</string>
+    <string name="reset_on_manual_cycle">Reset On Cycle</string>
+    <string name="reset_on_manual_cycle_description">Reset timer on manual cycle</string>
     <string name="on_return">Change on Return</string>
     <string name="on_return_description">New image on return</string>
     <string name="when_locked">Change When Locked</string>
@@ -86,7 +88,7 @@
     <string name="use_timer_description">Download interval</string>
     <string name="timer_time">Start Time</string>
     <string name="timer_time_description">Time to begin download timer</string>
-    <string name="reset_on_manual_download">Reset on Download</string>
+    <string name="reset_on_manual_download">Reset On Download</string>
     <string name="reset_on_manual_download_description">Reset timer on manual download</string>
     <string name="use_wifi">Use WiFi</string>
     <string name="use_wifi_description">Allow download on WiFi</string>
@@ -114,6 +116,9 @@
     <string name="image_prefix_description">Prefix for file name</string>
     <string name="use_experimental_downloader">Experimental Downloader</string>
     <string name="use_experimental_downloader_description">Include JavaScript generated websites</string>
+
+    <string name="use_google_account">Google Account</string>
+    <string name="use_google_account_description">Connect a Google account</string>
 
     <string name="use_effects">Use Effects</string>
     <string name="use_effects_description">Use image effects</string>
@@ -342,6 +347,7 @@
         <item>Sources</item>
         <item>Wallpaper</item>
         <item>Downloader</item>
+        <item>Accounts</item>
         <item>Effects</item>
         <item>Notification</item>
         <item>Application</item>
@@ -352,6 +358,7 @@
         <item>Edit website entries</item>
         <item>Change settings for wallpaper</item>
         <item>Change settings for downloading</item>
+        <item>Connect accounts</item>
         <item>Change image effects</item>
         <item>Change notification look</item>
         <item>Various settings for app</item>
@@ -363,6 +370,7 @@
         <item>Folder</item>
         <item>Imgur Subreddit</item>
         <item>Imgur Album</item>
+        <item>Google+ Album</item>
     </string-array>
 
     <string-array name="source_sort_menu">

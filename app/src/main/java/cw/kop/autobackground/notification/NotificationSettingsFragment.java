@@ -94,28 +94,19 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+
         if (AppSettings.useNotificationIconFile()) {
             Log.i("NSF", "Loading file");
             File image = new File(AppSettings.getNotificationIconFile());
 
             if (image.exists() && image.isFile()) {
-                if (AppSettings.fillNotificationImage()) {
-                    Picasso.with(context).load(image).fit().centerCrop().into(notificationIcon);
-                }
-                else {
-                    Picasso.with(context).load(image).into(notificationIcon);
-                }
+                Picasso.with(context).load(image).fit().centerCrop().into(notificationIcon);
                 Log.i("NSF", "Loading custom image");
             }
 
         }
         else if (Downloader.getCurrentBitmapFile() != null && (AppSettings.getNotificationIcon() == R.drawable.ic_action_picture || AppSettings.getNotificationIcon() == R.drawable.ic_action_picture_dark)) {
-            if (AppSettings.fillNotificationImage()) {
-                Picasso.with(context).load(Downloader.getCurrentBitmapFile()).fit().centerCrop().into(notificationIcon);
-            }
-            else {
-                Picasso.with(context).load(Downloader.getCurrentBitmapFile()).into(notificationIcon);
-            }
+            Picasso.with(context).load(Downloader.getCurrentBitmapFile()).fit().centerCrop().into(notificationIcon);
         }
         else {
             Log.i("NSF", "Loading default image");

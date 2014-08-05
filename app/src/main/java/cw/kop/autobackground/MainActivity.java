@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import cw.kop.autobackground.images.AlbumFragment;
 import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.notification.NotificationSettingsFragment;
 import cw.kop.autobackground.settings.AppSettings;
@@ -34,10 +35,8 @@ public class MainActivity extends Activity {
     private DrawerLayout drawerLayout;
     private ListView drawerList;
     private TextView actionBarTitle;
-
     private CharSequence mTitle;
-
-    public SourceListFragment websiteFragment;
+    public SourceListFragment sourceListFragment;
 
     public MainActivity() {
     }
@@ -111,14 +110,6 @@ public class MainActivity extends Activity {
             }
         });
 
-//        ImageView actionBarIcon = (ImageView) actionBarView.findViewById(R.id.action_bar_icon);
-//        actionBarIcon.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                toggleDrawer();
-//            }
-//        });
-
         TextView actionBarTitle = (TextView) actionBarView.findViewById(R.id.action_bar_title);
         actionBarTitle.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -172,8 +163,8 @@ public class MainActivity extends Activity {
 
         drawerLayout.setDrawerListener(drawerToggle);
 
-        if (websiteFragment == null) {
-            websiteFragment = new SourceListFragment();
+        if (sourceListFragment == null) {
+            sourceListFragment = new SourceListFragment();
         }
 
         Bundle bundle = getIntent().getExtras();
@@ -193,12 +184,21 @@ public class MainActivity extends Activity {
         drawerToggle.syncState();
     }
 
+    protected void onStart() {
+        super.onStart();
+    }
+
+    protected void onStop() {
+        super.onStop();
+    }
+
     private void toggleDrawer() {
         LocalImageFragment localImageFragment = (LocalImageFragment) getFragmentManager().findFragmentByTag("image_fragment");
-        if (localImageFragment != null) {
+        AlbumFragment albumFragment = (AlbumFragment) getFragmentManager().findFragmentByTag("album_fragment");
+        if (localImageFragment != null || albumFragment != null) {
             onBackPressed();
-            Log.i("MA", "onBackPressed()");
         }
+
         if (drawerLayout.isDrawerOpen(drawerList)) {
             drawerLayout.closeDrawer(drawerList);
         }
@@ -221,7 +221,7 @@ public class MainActivity extends Activity {
 
             case 0:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, websiteFragment, "website_fragment")
+                        .replace(R.id.content_frame, sourceListFragment, "source_fragment")
                         .commit();
                 break;
             case 1:
@@ -236,20 +236,25 @@ public class MainActivity extends Activity {
                 break;
             case 3:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new EffectsSettingsFragment())
+                        .replace(R.id.content_frame, new AccountSettingsFragment())
                         .commit();
                 break;
             case 4:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new NotificationSettingsFragment())
+                        .replace(R.id.content_frame, new EffectsSettingsFragment())
                         .commit();
                 break;
             case 5:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new AppSettingsFragment())
+                        .replace(R.id.content_frame, new NotificationSettingsFragment())
                         .commit();
                 break;
             case 6:
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.content_frame, new AppSettingsFragment())
+                        .commit();
+                break;
+            case 7:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.content_frame, new AboutFragment())
                         .commit();
