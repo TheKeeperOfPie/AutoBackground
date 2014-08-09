@@ -16,7 +16,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -39,10 +38,6 @@ import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 
-import org.apache.http.HttpConnection;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -57,10 +52,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 import cw.kop.autobackground.LiveWallpaperService;
-import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.downloader.Downloader;
@@ -209,13 +202,18 @@ public class SourceListFragment extends ListFragment {
     }
 
     public void resetActionBarDownload() {
-        if (AppSettings.getTheme() == R.style.AppLightTheme) {
-            downloadButton.setImageResource(R.drawable.ic_action_download);
-        }
-        else {
-            downloadButton.setImageResource(R.drawable.ic_action_download_dark);
-        }
-        downloadButton.postInvalidate();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (AppSettings.getTheme() == R.style.AppLightTheme) {
+                    downloadButton.setImageResource(R.drawable.ic_action_download);
+                }
+                else {
+                    downloadButton.setImageResource(R.drawable.ic_action_download_dark);
+                }
+                downloadButton.postInvalidate();
+            }
+        });
     }
 
     public void resetDownload() {
@@ -292,7 +290,8 @@ public class SourceListFragment extends ListFragment {
                         try {
                             String authToken = GoogleAuthUtil.getToken(context, AppSettings.getGoogleAccountName(), "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
-                            Log.i("MA", "GOOGLE_AUTH_CODE Token: " + authToken);
+                            AppSettings.setGoogleAccount(true);
+                            new PicasaAlbumTask(-1).execute();
                         } catch (IOException transientEx) {
                             return null;
                         } catch (UserRecoverableAuthException e) {
@@ -405,7 +404,7 @@ public class SourceListFragment extends ListFragment {
     }
 
     public void setEntry(int position, String type, String title, String path, String num) {
-        if (listAdapter.setItem(position, AppSettings.FOLDER, title, path, true, num)) {
+        if (listAdapter.setItem(position, type, title, path, true, num)) {
             listAdapter.saveData();
         }
         else {
@@ -892,9 +891,21 @@ public class SourceListFragment extends ListFragment {
         @Override
         protected Void doInBackground(Void... params) {
             publishProgress("Loading albums...");
+            String authToken = null;
+            try {
+                authToken = GoogleAuthUtil.getToken(context, AppSettings.getGoogleAccountName(), "oauth2:https://picasaweb.google.com/data/");
+            } catch (IOException e) {
+                publishProgress("Error loading albums");
+                return null;
+            } catch (GoogleAuthException e) {
+                publishProgress("Error loading albums");
+                return null;
+            }
+            AppSettings.setGoogleAccountToken(authToken);
+
             HttpClient httpClient = new DefaultHttpClient();
             HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/user/" + AppSettings.getGoogleAccountName());
-            httpGet.setHeader("Authorization", "OAuth " + AppSettings.getGoogleAccountToken());
+            httpGet.setHeader("Authorization", "OAuth " +authToken);
             httpGet.setHeader("X-GData-Client", AppSettings.PICASA_CLIENT_ID);
             httpGet.setHeader("GData-Version", "2");
 

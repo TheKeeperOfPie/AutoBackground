@@ -1,8 +1,6 @@
 package cw.kop.autobackground.images;
 
-import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,9 +11,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 import cw.kop.autobackground.R;
 
@@ -61,10 +57,8 @@ public class AlbumAdapter extends BaseAdapter {
             View view = convertView;
 
             if (convertView == null) {
-                Log.i("AA", "Try inflate");
                 LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 view = inflater.inflate(R.layout.album_list_cell, null);
-                Log.i("AA", "Finished inflate");
             }
 
             ImageView icon = (ImageView) view.findViewById(R.id.album_image);

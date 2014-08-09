@@ -165,7 +165,9 @@ public class SourceListAdapter extends BaseAdapter {
         for (HashMap<String, String> hashMap : listData) {
             if (hashMap.get("type").equals(AppSettings.FOLDER)) {
                 File file = new File(hashMap.get("data"));
-                hashMap.put("num", "" + file.listFiles(fileFilter).length);
+                if (file.exists() && file.isDirectory()) {
+                    hashMap.put("num", "" + file.listFiles(fileFilter).length);
+                }
             }
         }
         notifyDataSetChanged();

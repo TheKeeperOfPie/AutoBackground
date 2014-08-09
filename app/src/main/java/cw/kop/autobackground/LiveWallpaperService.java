@@ -315,9 +315,11 @@ public class LiveWallpaperService extends GLWallpaperService {
         @Override
         public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
 
-            Thread thread = new Thread(new Runnable() {
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
+
+                    notificationManager.cancel(NOTIFICATION_ID);
 
                     if (notificationBuilder != null && notificationManager != null) {
 
@@ -349,18 +351,15 @@ public class LiveWallpaperService extends GLWallpaperService {
                             normalView.setImageViewBitmap(R.id.notification_icon, bitmap);
                             if (Build.VERSION.SDK_INT >= 16) {
                                 bigView.setImageViewBitmap(R.id.notification_big_icon, bitmap);
-                            }
-                            else {
+                            } else {
                                 notificationBuilder.setLargeIcon(bitmap);
                             }
                         }
-
                         pushNotification();
+
                     }
                 }
-            });
-
-            thread.start();
+            }).start();
 
         }
 
@@ -413,6 +412,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 else {
                     notificationBuilder.setLargeIcon(mutableBitmap);
                 }
+                pushNotification();
             }
             else {
                 normalView.setImageViewBitmap(R.id.notification_icon, bitmap);
@@ -423,13 +423,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                     notificationBuilder.setLargeIcon(bitmap);
                 }
             }
-
-            handler.postDelayed(new Runnable() {
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
                     pushNotification();
                 }
-            }, 500);
+            }).start();
         }
     }
 
@@ -1153,7 +1152,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                         pinReleaseTime = 0;
                     }
                     pinned = !pinned;
-                    notifyChangeImage();
+                    if (AppSettings.useNotification()) {
+                        notifyChangeImage();
+                    }
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.SHARE_IMAGE)) {
                     Intent shareIntent = new Intent();
@@ -1377,12 +1378,14 @@ public class LiveWallpaperService extends GLWallpaperService {
                             }
                         });
 
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                notifyChangeImage();
-                            }
-                        });
+                        if (AppSettings.useNotification()) {
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    notifyChangeImage();
+                                }
+                            });
+                        }
                     }
                     catch (OutOfMemoryError e) {
                         if (AppSettings.useToast()) {
@@ -1494,12 +1497,14 @@ public class LiveWallpaperService extends GLWallpaperService {
                             }
                         });
 
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                notifyChangeImage();
-                            }
-                        });
+                        if (AppSettings.useNotification()) {
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    notifyChangeImage();
+                                }
+                            });
+                        }
 
                         if (previousBitmaps.size() > AppSettings.getHistorySize()) {
                             previousBitmaps.remove(previousBitmaps.size() - 1);
@@ -1589,8 +1594,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                 if (toEffect && effectContext != null) {
                     toEffect = false;
 
-                    initEffects(0);
+                    try {
+                        initEffects(0);
+                    }
+                    catch (RuntimeException e) {
 
+                    }
 //                    GLES20.glDeleteTextures(1, textureNames, 2);
 //                    Log.i(TAG, "Deleted texture: " + textureNames[2]);
 //
@@ -1706,6 +1715,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
             }
 
+            private void applyTransition() {
+
+
+
+            }
+
             private void renderImage() {
 
                 // get handle to vertex shader's vPosition member
@@ -1754,6 +1769,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
                 else {
                     setPreserveEGLContextOnPause(false);
+                    contextInitialized = false;
                 }
 
                 if (width != renderScreenWidth) {
@@ -1778,6 +1794,16 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 renderScreenWidth = width;
                 renderScreenHeight = height;
+
+                if (toFade) {
+                    Log.i(TAG, "Fade reset");
+                    fadeInAlpha = 0.0f;
+                    fadeOutAlpha = 1.0f;
+                    offsetX = newOffsetX;
+                    offsetY = newOffsetY;
+                    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
+                    toFade = false;
+                }
 
                 for(int i=0; i<16; i++)
                 {
@@ -1837,16 +1863,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 GLES20.glUseProgram(program);
                 GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1);
                 GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
-                if (toFade) {
-                    Log.i(TAG, "Fade reset");
-                    fadeInAlpha = 0.0f;
-                    fadeOutAlpha = 1.0f;
-                    offsetX = newOffsetX;
-                    offsetY = newOffsetY;
-                    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
-                    toFade = false;
-                }
 
                 if (animated) {
                     setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);

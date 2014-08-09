@@ -121,7 +121,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                 themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("App") + 3, themeName.indexOf("Theme")));
 
                 Intent intent = new Intent(context, MainActivity.class);
-                intent.putExtra("fragment", 5);
+                intent.putExtra("fragment", 6);
                 context.startActivity(intent);
 
                 getActivity().finish();
