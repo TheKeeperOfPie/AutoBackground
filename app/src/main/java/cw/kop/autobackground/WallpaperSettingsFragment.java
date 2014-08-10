@@ -76,6 +76,10 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         if (!AppSettings.useAdvanced()) {
             ((PreferenceCategory) findPreference("title_animation_settings")).removePreference(frameRatePref);
             ((PreferenceCategory) findPreference("title_animation_settings")).removePreference(findPreference("animation_safety_adv"));
+            ((PreferenceCategory) findPreference("title_transition_settings")).removePreference(findPreference("reverse_spin_in"));
+            ((PreferenceCategory) findPreference("title_transition_settings")).removePreference(findPreference("spin_in_angle"));
+            ((PreferenceCategory) findPreference("title_transition_settings")).removePreference(findPreference("reverse_spin_out"));
+            ((PreferenceCategory) findPreference("title_transition_settings")).removePreference(findPreference("spin_out_angle"));
         }
 
         if (AppSettings.getIntervalDuration() > 0) {

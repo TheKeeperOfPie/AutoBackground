@@ -291,8 +291,6 @@ public class Downloader {
 		
     	List<File> images = getBitmapList(appContext);
 
-		Bitmap bitmap = null;
-		
 		Log.i("Downloader", "Getting next image");
 		
 		if (!AppSettings.shuffleImages()) {

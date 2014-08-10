@@ -22,7 +22,7 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
     private Context context;
 
     private String suffix;
-    private int defaultValue, max, value = 0;
+    private int defaultValue, max, value, changedValue = 0;
 
     public SeekBarPreference(Context context, AttributeSet attrs) {
         super(context,attrs);
@@ -74,20 +74,35 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
     protected void onSetInitialValue(boolean restore, Object initial)
     {
         super.onSetInitialValue(restore, initial);
-        if (restore)
+        if (restore) {
             value = shouldPersist() ? getPersistedInt(defaultValue) : 0;
-        else
+            changedValue = shouldPersist() ? getPersistedInt(defaultValue) : 0;
+        }
+        else {
             value = (Integer) initial;
+            changedValue = (Integer) initial;
+        }
+
     }
 
     public void onProgressChanged(SeekBar seek, int value, boolean fromTouch)
     {
         valueTextView.setText("" + ((float) value / 10));
-        if (shouldPersist()) {
-            persistInt(value);
-        }
+        changedValue = value;
         callChangeListener(value);
     }
+
     public void onStartTrackingTouch(SeekBar seek) {}
     public void onStopTrackingTouch(SeekBar seek) {}
+
+    @Override
+    protected void onDialogClosed(boolean positiveResult) {
+        super.onDialogClosed(positiveResult);
+
+        if (positiveResult) {
+            if (shouldPersist()) {
+                persistInt(changedValue);
+            }
+        }
+    }
 }

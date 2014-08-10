@@ -69,10 +69,19 @@
             />
 		
 	</PreferenceCategory>
-	
-	<PreferenceCategory
-        android:key="title_animation_settings"
-	    android:title="@string/title_animation_settings">
+
+    <PreferenceCategory
+        android:key="title_transition_settings"
+        android:title="@string/title_transition_settings">
+
+        <cw.kop.autobackground.SeekBarPreference
+            android:key="transition_speed"
+            android:max="100"
+            android:defaultValue="10"
+            android:title="@string/transition_speed"
+            android:summary="@string/transition_speed_description"
+            android:dialogMessage="seconds"
+            />
 
         <cw.kop.autobackground.CustomSwitchPreference
             android:key="use_fade"
@@ -80,6 +89,95 @@
             android:title="@string/use_fade"
             android:summary="@string/use_fade_description"
             />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_overshoot"
+            android:defaultValue="false"
+            android:title="@string/use_overshoot"
+            android:summary="@string/use_overshoot_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="reverse_overshoot"
+            android:defaultValue="false"
+            android:title="@string/reverse_overshoot"
+            android:summary="@string/reverse_overshoot_description"
+            />
+
+        <cw.kop.autobackground.SeekBarPreference
+            android:key="overshoot_intensity"
+            android:max="50"
+            android:defaultValue="10"
+            android:title="@string/overshoot_intensity"
+            android:summary="@string/overshoot_intensity_description"
+            android:dialogMessage=" "
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_zoom_in"
+            android:defaultValue="false"
+            android:title="@string/use_zoom_in"
+            android:summary="@string/use_zoom_in_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_zoom_out"
+            android:defaultValue="false"
+            android:title="@string/use_zoom_out"
+            android:summary="@string/use_zoom_out_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_spin_in"
+            android:defaultValue="false"
+            android:title="@string/use_spin_in"
+            android:summary="@string/use_spin_in_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="reverse_spin_in"
+            android:defaultValue="false"
+            android:title="@string/reverse_spin_in"
+            android:summary="@string/reverse_spin_in_description"
+            />
+
+        <cw.kop.autobackground.SeekBarPreference
+            android:key="spin_in_angle"
+            android:max="7200"
+            android:defaultValue="2700"
+            android:title="@string/spin_in_angle"
+            android:summary="@string/spin_in_angle_description"
+            android:dialogMessage=" "
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_spin_out"
+            android:defaultValue="false"
+            android:title="@string/use_spin_out"
+            android:summary="@string/use_spin_out_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="reverse_spin_out"
+            android:defaultValue="false"
+            android:title="@string/reverse_spin_out"
+            android:summary="@string/reverse_spin_out_description"
+            />
+
+        <cw.kop.autobackground.SeekBarPreference
+            android:key="spin_out_angle"
+            android:max="7200"
+            android:defaultValue="2700"
+            android:title="@string/spin_out_angle"
+            android:summary="@string/spin_out_angle_description"
+            android:dialogMessage=" "
+            />
+
+    </PreferenceCategory>
+
+	<PreferenceCategory
+        android:key="title_animation_settings"
+	    android:title="@string/title_animation_settings">
 
 		<cw.kop.autobackground.CustomSwitchPreference
 			android:key="use_animation"
@@ -91,7 +189,7 @@
         <cw.kop.autobackground.SeekBarPreference
             android:key="animation_speed"
             android:max="50"
-            android:defaultValue="1"
+            android:defaultValue="10"
             android:title="@string/animation_speed"
             android:summary="@string/animation_speed_description"
             android:dialogMessage="pixels per frame"
