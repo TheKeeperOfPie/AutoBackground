@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) Winson Chiu
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cw.kop.autobackground;
 
 import android.annotation.SuppressLint;
@@ -132,7 +148,6 @@ public class LiveWallpaperService extends GLWallpaperService {
     private PendingIntent pendingDownloadIntent;
     private PendingIntent pendingIntervalIntent;
     private PendingIntent pendingAppIntent;
-    private Notification notification;
 
     private boolean pinned;
 
@@ -376,6 +391,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     private void pushNotification() {
 
+        Notification notification;
         if (Build.VERSION.SDK_INT >= 16) {
             notification = notificationBuilder.build();
             notification.bigContentView = bigView;
@@ -815,7 +831,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     private boolean setupGameTiles() {
 
         ArrayList<File> bitmapFiles = new ArrayList<File>();
-        bitmapFiles.addAll(Downloader.getBitmapList(LiveWallpaperService.this));
+        bitmapFiles.addAll(Downloader.getBitmapList());
 
         if (bitmapFiles.size() >= NUM_TO_WIN) {
             Collections.shuffle(bitmapFiles);
@@ -1370,26 +1386,30 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
 
                         System.gc();
-                        final Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
+                        try {
+                            final Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
 
-                        if (bitmap != null) {
+                            if (bitmap != null) {
 
-                            addEvent(new Runnable() {
+                                addEvent(new Runnable() {
 
-                                @Override
-                                public void run() {
-                                    renderer.setBitmap(bitmap);
-                                }
-                            });
-
-                            if (AppSettings.useNotification()) {
-                                handler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        notifyChangeImage();
+                                        renderer.setBitmap(bitmap);
                                     }
                                 });
+
+                                if (AppSettings.useNotification()) {
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            notifyChangeImage();
+                                        }
+                                    });
+                                }
                             }
+                        }
+                        catch (NullPointerException e) {
                         }
                     }
                     catch (OutOfMemoryError e) {
@@ -1430,29 +1450,33 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
 
                         System.gc();
-                        final Bitmap bitmap = BitmapFactory.decodeFile(previousBitmaps.get(0).getAbsolutePath(), options);
+                        try {
+                            final Bitmap bitmap = BitmapFactory.decodeFile(previousBitmaps.get(0).getAbsolutePath(), options);
 
-                        if (bitmap != null) {
+                            if (bitmap != null) {
 
-                            addEvent(new Runnable() {
+                                addEvent(new Runnable() {
 
-                                @Override
-                                public void run() {
-                                    renderer.setBitmap(bitmap);
+                                    @Override
+                                    public void run() {
+                                        renderer.setBitmap(bitmap);
+                                    }
+                                });
+
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        notifyChangeImage();
+                                    }
+                                });
+                                if (!AppSettings.shuffleImages()) {
+                                    Downloader.decreaseIndex();
                                 }
-                            });
 
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    notifyChangeImage();
-                                }
-                            });
-                            if (!AppSettings.shuffleImages()) {
-                                Downloader.decreaseIndex();
+                                previousBitmaps.remove(0);
                             }
-
-                            previousBitmaps.remove(0);
+                        }
+                        catch (NullPointerException e) {
                         }
                     }
                     catch (OutOfMemoryError e) {
@@ -1493,30 +1517,34 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
 
                         System.gc();
-                        final Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getNextImage(LiveWallpaperService.this).getAbsolutePath(), options);
+                        try {
+                            final Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getNextImage().getAbsolutePath(), options);
 
-                        if (bitmap != null) {
+                            if (bitmap != null) {
 
-                            addEvent(new Runnable() {
+                                addEvent(new Runnable() {
 
-                                @Override
-                                public void run() {
-                                    renderer.setBitmap(bitmap);
-                                }
-                            });
-
-                            if (AppSettings.useNotification()) {
-                                handler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        notifyChangeImage();
+                                        renderer.setBitmap(bitmap);
                                     }
                                 });
-                            }
 
-                            if (previousBitmaps.size() > AppSettings.getHistorySize()) {
-                                previousBitmaps.remove(previousBitmaps.size() - 1);
+                                if (AppSettings.useNotification()) {
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            notifyChangeImage();
+                                        }
+                                    });
+                                }
+
+                                if (previousBitmaps.size() > AppSettings.getHistorySize()) {
+                                    previousBitmaps.remove(previousBitmaps.size() - 1);
+                                }
                             }
+                        }
+                        catch (NullPointerException e) {
                         }
                     }
                     catch (OutOfMemoryError e) {
@@ -1574,7 +1602,6 @@ public class LiveWallpaperService extends GLWallpaperService {
             private float newOffsetX = 0f;
             private float newOffsetY = 0f;
             private float rawOffsetX = 0f;
-            private float rotationAngle = 0f;
 
             private float animationModifier = 0.0f;
             private float animationX = 0.0f;
@@ -1611,13 +1638,13 @@ public class LiveWallpaperService extends GLWallpaperService {
                     catch (RuntimeException e) {
 
                     }
-//                    GLES20.glDeleteTextures(1, textureNames, 2);
-//                    Log.i(TAG, "Deleted texture: " + textureNames[2]);
-//
-//                    if (!useTransition) {
-//                        GLES20.glDeleteTextures(1, textureNames, 1);
-//                        Log.i(TAG, "Deleted texture: " + textureNames[1]);
-//                    }
+                    GLES20.glDeleteTextures(1, textureNames, 2);
+                    Log.i(TAG, "Deleted texture: " + textureNames[2]);
+
+                    if (!useTransition) {
+                        GLES20.glDeleteTextures(1, textureNames, 1);
+                        Log.i(TAG, "Deleted texture: " + textureNames[1]);
+                    }
 
                     setupContainer(bitmapWidth, bitmapHeight);
 

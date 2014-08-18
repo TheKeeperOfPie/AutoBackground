@@ -1,53 +1,37 @@
+/*
+ * Copyright (C) Winson Chiu
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cw.kop.autobackground.downloader;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.util.Log;
-import android.util.Patterns;
 import android.widget.Toast;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.MainActivity;
-import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.SourceListFragment;
 
@@ -55,7 +39,6 @@ public class Downloader {
 
 	private static File currentBitmapFile = null;
     private static final String TAG = "Downloader";
-	private static FilenameFilter fileFilter = null;
     private static int randIndex = 0;
     public static boolean isDownloading = false;
 	
@@ -116,18 +99,10 @@ public class Downloader {
         isDownloading = false;
     }
 
-	public static List<File> getBitmapList(Context appContext) {
-		
-		if (fileFilter == null) {
-			fileFilter = (new FilenameFilter() {
+	public static List<File> getBitmapList() {
 
-				@Override
-				public boolean accept(File dir, String filename) {
-                    return filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg");
-                }
-			});
-		}
-		
+        FilenameFilter filenameFilter = getImageFileNameFilter();
+
 		String cacheDir = AppSettings.getDownloadPath();
 
         List<File> bitmaps = new ArrayList<File>();
@@ -139,12 +114,12 @@ public class Downloader {
                 if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR) || type.equals(AppSettings.PICASA)) {
                     File folder = new File(cacheDir + "/" + AppSettings.getSourceTitle(i) + " " + AppSettings.getImagePrefix());
                     if (folder.exists() && folder.isDirectory()) {
-                        bitmaps.addAll(Arrays.asList(folder.listFiles(fileFilter)));
+                        bitmaps.addAll(Arrays.asList(folder.listFiles(filenameFilter)));
                     }
                 } else if (AppSettings.getSourceType(i).equals(AppSettings.FOLDER)) {
                     File folder = new File(AppSettings.getSourceData(i));
                     if (folder.exists() && folder.isDirectory()) {
-                        bitmaps.addAll(Arrays.asList(folder.listFiles(fileFilter)));
+                        bitmaps.addAll(Arrays.asList(folder.listFiles(filenameFilter)));
                     }
                 }
             }
@@ -172,25 +147,15 @@ public class Downloader {
 
     public static void renameFiles(Context appContext, String previousName, String newName) {
 
-        if (fileFilter == null) {
-            fileFilter = (new FilenameFilter() {
+        FilenameFilter filenameFilter = getImageFileNameFilter();
 
-                @Override
-                public boolean accept(File dir, String filename) {
-                    if (filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg")) {
-                        return true;
-                    }
-                    return false;
-                }
-            });
-        }
         String previousPrefix = previousName + " " + AppSettings.getImagePrefix();
         String newPrefix = newName + " " + AppSettings.getImagePrefix();
         String cacheDir = AppSettings.getDownloadPath();
         String newFileName = cacheDir + "/" + newPrefix;
 
         File oldFolder = new File(cacheDir + "/" + previousPrefix);
-        File[] fileList = oldFolder.listFiles(fileFilter);
+        File[] fileList = oldFolder.listFiles(filenameFilter);
 
         File newFolder = new File(cacheDir + "/" + newPrefix);
         newFolder.mkdir();
@@ -214,7 +179,7 @@ public class Downloader {
         for (int i = 0; i < AppSettings.getNumSources(); i++) {
             AppSettings.setSourceSet(AppSettings.getSourceTitle(i), new HashSet<String>());
         }
-        for (File file : getBitmapList(appContext)) {
+        for (File file : getBitmapList()) {
             if (file.getName().contains(AppSettings.getImagePrefix())) {
                 file.delete();
             }
@@ -237,59 +202,9 @@ public class Downloader {
         }
     }
 
-    public static Bitmap getBitmap(File file, Context appContext) {
-        Bitmap bitmap = null;
-        if (file != null && file.exists()) {
-
-            try {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                if (!AppSettings.useHighQuality()) {
-                    options.inPreferredConfig = Bitmap.Config.RGB_565;
-                }
-
-                bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), options);
-                currentBitmapFile = file;
-            }
-            catch (OutOfMemoryError e) {
-                if (AppSettings.useToast()) {
-                    Toast.makeText(appContext, "Out of memory error", Toast.LENGTH_SHORT).show();
-                }
-                return null;
-            }
-        }
-        return bitmap;
-    }
-
-    public static Bitmap getCurrentImage(Context appContext) {
-        Bitmap bitmap = null;
-        if (currentBitmapFile != null && currentBitmapFile.exists()) {
-
-            try {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                if (!AppSettings.useHighQuality()) {
-                    options.inPreferredConfig = Bitmap.Config.RGB_565;
-                }
-
-                bitmap = BitmapFactory.decodeFile(currentBitmapFile.getAbsolutePath(), options);
-            }
-            catch (OutOfMemoryError e) {
-                if (AppSettings.useToast()) {
-                    Toast.makeText(appContext, "Out of memory error", Toast.LENGTH_SHORT).show();
-                }
-                return null;
-            }
-
-        }
-        else {
-            Log.i("TAG", "No image");
-            return null;
-        }
-        return bitmap;
-    }
-
-	public static File getNextImage(Context appContext) {
+	public static File getNextImage() {
 		
-    	List<File> images = getBitmapList(appContext);
+    	List<File> images = getBitmapList();
 
 		Log.i("Downloader", "Getting next image");
 		
@@ -319,5 +234,15 @@ public class Downloader {
     public static void decreaseIndex() {
         randIndex--;
     }
-	
+
+    public static FilenameFilter getImageFileNameFilter() {
+        return new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String filename) {
+                return filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg");
+            }
+        };
+    }
+
 }

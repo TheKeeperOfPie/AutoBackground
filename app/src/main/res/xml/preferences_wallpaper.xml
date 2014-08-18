@@ -106,7 +106,7 @@
 
         <cw.kop.autobackground.SeekBarPreference
             android:key="overshoot_intensity"
-            android:max="50"
+            android:max="100"
             android:defaultValue="10"
             android:title="@string/overshoot_intensity"
             android:summary="@string/overshoot_intensity_description"

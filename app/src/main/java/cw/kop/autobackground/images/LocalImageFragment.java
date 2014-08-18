@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) Winson Chiu
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cw.kop.autobackground.images;
 
 import android.app.Activity;
@@ -24,6 +40,7 @@ import java.io.FilenameFilter;
 
 import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.SourceListFragment;
 
@@ -32,9 +49,8 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 	private Context context;
 	private LocalImageAdapter imageAdapter;
     private ListView imageListView;
-    private FilenameFilter filenameFilter;
 
-    private boolean change, setPath;
+    private boolean setPath;
     private int position;
     private String viewPath = "";
 
@@ -46,18 +62,9 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 		super.onCreate(savedInstanceState);
 
         Bundle bundle = getArguments();
-        change = bundle.getBoolean("change", false);
         setPath = bundle.getBoolean("set_path", false);
         viewPath = bundle.getString("view_path", "");
         position = bundle.getInt("position", 0);
-
-        filenameFilter = (new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String filename) {
-                return filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg");
-            }
-        });
 	}
 	
 	@Override
@@ -97,6 +104,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 			@Override
 			public void onClick(View v) {
 				File dir = imageAdapter.getDirectory();
+                FilenameFilter filenameFilter = Downloader.getImageFileNameFilter();
                 if (setPath) {
                     AppSettings.setDownloadPath(dir.getAbsolutePath());
                     Toast.makeText(context, "Download path set to: \n" + AppSettings.getDownloadPath(), Toast.LENGTH_SHORT).show();
@@ -107,7 +115,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                     if (dir.listFiles(filenameFilter) != null) {
                         numImages =  dir.listFiles(filenameFilter).length;
                     }
-                    if (change) {
+                    if (position > 0) {
                         sourceListFragment.setEntry(position, AppSettings.FOLDER, dir.getName(), dir.getAbsolutePath(), "" + numImages);
                     } else {
                         sourceListFragment.addEntry(AppSettings.FOLDER, dir.getName(), dir.getAbsolutePath(), "" + numImages);

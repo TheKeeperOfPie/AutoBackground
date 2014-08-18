@@ -23,7 +23,6 @@
             android:contentDescription="@string/notification_content_description"
             />
 
-
         <ImageView
             android:id="@+id/notification_icon_action_indicator"
             android:layout_width="wrap_content"

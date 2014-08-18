@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) Winson Chiu
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cw.kop.autobackground.notification;
 
 import android.app.Activity;
@@ -46,9 +62,6 @@ import cw.kop.autobackground.R;
 import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.settings.AppSettings;
 
-/**
- * Created by TheKeeperOfPie on 7/17/2014.
- */
 public class NotificationSettingsFragment extends PreferenceFragment implements View.OnClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
     private final static long CONVERT_MILLES_TO_MIN = 60000;
@@ -65,11 +78,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     private TextView notificationSummary;
     private ImageView notificationTitleHighlight;
     private ImageView notificationSummaryHighlight;
-    private View notificationBuffer;
     private ImageView notificationPreviewHighlight;
-    private RelativeLayout optionOne;
-    private RelativeLayout optionTwo;
-    private RelativeLayout optionThree;
     private ImageView optionOneImage;
     private ImageView optionTwoImage;
     private ImageView optionThreeImage;
@@ -180,13 +189,13 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         notificationTitleHighlight = (ImageView) view.findViewById(R.id.notification_title_highlight);
         notificationSummaryHighlight = (ImageView) view.findViewById(R.id.notification_summary_highlight);
 
-        notificationBuffer = view.findViewById(R.id.notification_options_buffer);
+        View notificationBuffer = view.findViewById(R.id.notification_options_buffer);
 
         notificationPreviewHighlight = (ImageView) view.findViewById(R.id.notification_preview_highlight);
 
-        optionOne = (RelativeLayout) view.findViewById(R.id.notification_option_one);
-        optionTwo = (RelativeLayout) view.findViewById(R.id.notification_option_two);
-        optionThree = (RelativeLayout) view.findViewById(R.id.notification_option_three);
+        RelativeLayout optionOne = (RelativeLayout) view.findViewById(R.id.notification_option_one);
+        RelativeLayout optionTwo = (RelativeLayout) view.findViewById(R.id.notification_option_two);
+        RelativeLayout optionThree = (RelativeLayout) view.findViewById(R.id.notification_option_three);
 
         optionOneImage = (ImageView) view.findViewById(R.id.notification_option_one_image);
         optionTwoImage = (ImageView) view.findViewById(R.id.notification_option_two_image);
@@ -389,7 +398,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         else if (v.getId() == R.id.notification_options_icon) {
             clearHighlights();
             notificationIconHighlight.setVisibility(View.VISIBLE);
-            showIconList(6);
+            showIconList();
         }
         else if (v.getId() == R.id.notification_options_buffer) {
             clearHighlights();
@@ -478,7 +487,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         preferenceList.setVisibility(View.VISIBLE);
     }
 
-    private void showIconList(int position) {
+    private void showIconList() {
 
         String[] iconTitles = context.getResources().getStringArray(R.array.notification_icon);
         String[] iconSummaries = context.getResources().getStringArray(R.array.notification_icon_descriptions);
@@ -531,7 +540,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             }
         };
 
-        NotificationListAdapter titlesAdapter = new NotificationListAdapter(optionsList, position, listener);
+        NotificationListAdapter titlesAdapter = new NotificationListAdapter(optionsList, -1, listener);
 
         recyclerView.setAdapter(titlesAdapter);
 
@@ -899,7 +908,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
         if (key.equals("use_notification_game")) {
             if (AppSettings.useNotificationGame()) {
-                if (Downloader.getBitmapList(context).size() < 5) {
+                if (Downloader.getBitmapList().size() < 5) {
                     Toast.makeText(context, "Not enough images for game", Toast.LENGTH_SHORT).show();
                     ((SwitchPreference) findPreference("use_notification_game")).setChecked(false);
                 }

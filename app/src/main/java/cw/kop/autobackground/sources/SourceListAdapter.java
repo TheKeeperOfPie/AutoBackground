@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) Winson Chiu
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package cw.kop.autobackground.sources;
 
 import android.app.Activity;
@@ -22,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListAdapter extends BaseAdapter {
@@ -30,20 +47,12 @@ public class SourceListAdapter extends BaseAdapter {
     private ArrayList<HashMap<String, String>> listData;
     private HashSet<String> titles;
     private static LayoutInflater inflater = null;
-    private FilenameFilter fileFilter;
 	
 	public SourceListAdapter(Activity activity) {
 		mainActivity = activity;
 		listData = new ArrayList<HashMap<String, String>>();
         titles = new HashSet<String>();
 		inflater = (LayoutInflater)mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        fileFilter = (new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String filename) {
-                return filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg");
-            }
-        });
 	}
 
 	@Override
@@ -162,11 +171,13 @@ public class SourceListAdapter extends BaseAdapter {
 
     public void updateNum() {
 
+        FilenameFilter filenameFilter = Downloader.getImageFileNameFilter();
+
         for (HashMap<String, String> hashMap : listData) {
             if (hashMap.get("type").equals(AppSettings.FOLDER)) {
                 File file = new File(hashMap.get("data"));
                 if (file.exists() && file.isDirectory()) {
-                    hashMap.put("num", "" + file.listFiles(fileFilter).length);
+                    hashMap.put("num", "" + file.listFiles(filenameFilter).length);
                 }
             }
         }
