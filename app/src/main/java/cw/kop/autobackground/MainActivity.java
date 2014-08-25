@@ -132,8 +132,6 @@ public class MainActivity extends Activity {
             }
         });
 
-        ImageView downloadButton = (ImageView) actionBarView.findViewById(R.id.download_wallpaper);
-
         ImageView cycleButton = (ImageView) actionBarView.findViewById(R.id.cycle_wallpaper);
         cycleButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -144,9 +142,17 @@ public class MainActivity extends Activity {
                 }
             }
         });
+        cycleButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (AppSettings.useToast()) {
+                    Toast.makeText(getApplicationContext(), "Cycle wallpaper", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            }
+        });
 
         if (AppSettings.getTheme() != R.style.AppLightTheme) {
-            downloadButton.setImageResource(R.drawable.ic_action_download_dark);
             cycleButton.setImageResource(R.drawable.ic_action_refresh_dark);
             drawerIndicator.setImageResource(R.drawable.drawer_menu_dark);
         }
@@ -276,7 +282,7 @@ public class MainActivity extends Activity {
             default:
 
         }
-        
+
         drawerList.setItemChecked(position, true);
         setTitle(fragmentList[position]);
         drawerLayout.closeDrawer(drawerList);

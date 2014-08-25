@@ -153,6 +153,15 @@ public class SourceListFragment extends ListFragment {
                 startDownload();
             }
         });
+        downloadButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (AppSettings.useToast()) {
+                    Toast.makeText(context, "Download images", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            }
+        });
 
         sortButton = (ImageView) getActivity().getActionBar().getCustomView().findViewById(R.id.sort_sources);
         sortButton.setOnClickListener(new View.OnClickListener() {
@@ -161,10 +170,20 @@ public class SourceListFragment extends ListFragment {
                 showSourceSortMenu();
             }
         });
+        sortButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (AppSettings.useToast()) {
+                    Toast.makeText(context, "Sort sources", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            }
+        });
 
         if (AppSettings.getTheme() != R.style.AppLightTheme) {
+            downloadButton.setImageResource(R.drawable.ic_action_download_dark);
             sortButton.setImageResource(R.drawable.ic_action_storage_dark);
-            addButton.setImageResource(R.drawable.floating_button_dark);
+            addButton.setBackgroundResource(R.drawable.floating_button_dark);
         }
 
         return view;

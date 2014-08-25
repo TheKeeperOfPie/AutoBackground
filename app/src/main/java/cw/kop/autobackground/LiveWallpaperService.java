@@ -25,10 +25,13 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -38,6 +41,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.media.AudioManager;
 import android.media.effect.Effect;
 import android.media.effect.EffectContext;
 import android.media.effect.EffectFactory;
@@ -49,7 +53,9 @@ import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.os.Build;
 import android.os.Handler;
+import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.GestureDetector;
@@ -64,6 +70,10 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -1004,7 +1014,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         return new GLWallpaperEngine();
     }
 
-    class GLWallpaperEngine extends GLEngine {
+    class GLWallpaperEngine extends GLEngine implements AudioManager.OnAudioFocusChangeListener {
 
         private static final String TAG = "WallpaperEngine";
         private MyGLRenderer renderer;
@@ -1020,6 +1030,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         private List<File> previousBitmaps = new ArrayList<File>();
         private long pinReleaseTime;
         private boolean downloadOnConnection = false;
+        private boolean isPlayingMusic = false;
         private KeyguardManager keyguardManager;
 
         public GLWallpaperEngine() {
@@ -1069,6 +1080,25 @@ public class LiveWallpaperService extends GLWallpaperService {
             pinReleaseTime = System.currentTimeMillis();
         }
 
+
+        @Override
+        public void onAudioFocusChange(int focusChange) {
+            if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+                Toast.makeText(LiveWallpaperService.this, "Playing", Toast.LENGTH_SHORT).show();
+
+//                Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
+//                Uri uri = ContentUris.withAppendedId(sArtworkUri, MediaStore.Audio.Media.ALBUM_ID);
+//                ContentResolver res = LiveWallpaperService.this.getContentResolver();
+//                InputStream in = null;
+//                try {
+//                    in = res.openInputStream(uri);
+//                    Bitmap artwork = BitmapFactory.decodeStream(in);
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+            }
+        }
+
         @Override
         public void onCreate(SurfaceHolder surfaceHolder) {
             super.onCreate(surfaceHolder);
@@ -1091,12 +1121,29 @@ public class LiveWallpaperService extends GLWallpaperService {
                 intentFilter.addAction(LiveWallpaperService.PIN_IMAGE);
                 intentFilter.addAction(LiveWallpaperService.SHARE_IMAGE);
                 registerReceiver(updateReceiver, intentFilter);
-//                IntentFilter musicFilter = new IntentFilter();
+                IntentFilter musicFilter = new IntentFilter();
 //                musicFilter.addAction("com.android.music.metachanged");
 //                musicFilter.addAction("com.android.music.playstatechanged");
 //                musicFilter.addAction("com.android.music.playbackcomplete");
 //                musicFilter.addAction("com.android.music.queuechanged");
-//                registerReceiver(musicReciever, musicFilter);
+
+                musicFilter.addAction("com.android.music.metachanged");
+
+                musicFilter.addAction("com.htc.music.metachanged");
+
+                musicFilter.addAction("fm.last.android.metachanged");
+                musicFilter.addAction("com.sec.android.app.music.metachanged");
+                musicFilter.addAction("com.nullsoft.winamp.metachanged");
+                musicFilter.addAction("com.amazon.mp3.metachanged");
+                musicFilter.addAction("com.miui.player.metachanged");
+                musicFilter.addAction("com.real.IMP.metachanged");
+                musicFilter.addAction("com.sonyericsson.music.metachanged");
+                musicFilter.addAction("com.rdio.android.metachanged");
+                musicFilter.addAction("com.samsung.sec.android.MusicPlayer.metachanged");
+                musicFilter.addAction("com.andrew.apollo.metachanged");
+
+
+                registerReceiver(musicReciever, musicFilter);
                 Log.i(TAG, "Registered");
             }
         }
@@ -1120,12 +1167,28 @@ public class LiveWallpaperService extends GLWallpaperService {
                         alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + AppSettings.getIntervalDuration(), AppSettings.getIntervalDuration(), pendingIntent);
                     }
 
-                    handler.post(new Runnable(){
-                        @Override
-                        public void run() {
-                            loadNextImage();
-                        }
-                    });
+                    if (isVisible()) {
+                        loadNextImage();
+                    }
+                    else {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Downloader.getNextImage();
+                                renderer.loadCurrent = true;
+
+                                if (AppSettings.useNotification()) {
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            notifyChangeImage();
+                                        }
+                                    });
+                                }
+
+                            }
+                        }).start();
+                    }
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.DELETE_IMAGE)) {
                     Downloader.deleteCurrentBitmap();
@@ -1217,9 +1280,9 @@ public class LiveWallpaperService extends GLWallpaperService {
             }
         };
 
-//        private final BroadcastReceiver musicReciever = new BroadcastReceiver() {
-//            @Override
-//            public void onReceive(Context context, Intent intent) {
+        private final BroadcastReceiver musicReciever = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
 //                String action = intent.getAction();
 //                String cmd = intent.getStringExtra("command");
 //                Log.i(TAG, "musicReceiver: " + action + " / " + cmd);
@@ -1229,39 +1292,123 @@ public class LiveWallpaperService extends GLWallpaperService {
 //                Log.i(TAG, "Music: " + artist + ": " + album + ": " + track);
 //                String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
 //
-//                String[] projection = {
-//                        MediaStore.Audio.Media._ID,
-//                        MediaStore.Audio.AlbumColumns.ALBUM_ART
-//                        MediaStore.Audio.Media.ARTIST,
-//                        MediaStore.Audio.Media.TITLE,
-//                        MediaStore.Audio.Media.DATA,
-//                        MediaStore.Audio.Media.DISPLAY_NAME,
-//                        MediaStore.Audio.Media.DURATION
-//                };
+//                Uri mAudioUri = intent.getData();
 //
-//                Cursor cursor =  getApplicationContext().getContentResolver().query(
+//                Log.i(TAG, "Album: " + album);
+//
+//                String testTitie = "";
+//                String testAlbumId = "";
+//
+//                Long albumId = 0l;
+//
+//                String path = null;
+//                String finalPath = "";
+//
+//                //1. Try to get the album art from the MediaStore.Audio.Albums.ALBUM_ART column
+//                //Log.i(TAG, "Attempting to retrieve artwork from MediaStore ALBUM_ART column");
+//                String[] projection = new String[]{
+//                        MediaStore.Audio.Albums._ID,
+//                        MediaStore.Audio.Albums.ARTIST,
+//                        MediaStore.Audio.Albums.ALBUM,
+//                        MediaStore.Audio.Albums.ALBUM_ART};
+//
+//                Cursor cursor = getApplicationContext().getContentResolver().query(
+//                        MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+//                        projection,
+//                        MediaStore.Audio.Albums.ALBUM + " ='" + album.replaceAll("'", "''") + "'"
+//                                + " AND "
+//                                + MediaStore.Audio.Albums.ARTIST + " ='" + artist.replaceAll("'", "''") + "'",
+//                        null, null
+//                );
+//
+//                if (cursor != null && cursor.moveToFirst()) {
+//                    String artworkPath = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+//                    if (artworkPath != null) {
+//                        File file = new File(artworkPath);
+//                        if (file.exists()) {
+//                            finalPath = artworkPath;
+//                            cursor.close();
+//                        }
+//                    }
+//                }
+//
+//                if (cursor != null) {
+//                    cursor.close();
+//                }
+//
+//                //2. Try to find the artwork in the MediaStore based on the trackId instead of the albumId
+//                //Log.d(TAG, "Attempting to retrieve artwork from MediaStore _ID column");
+//                projection = new String[]{
+//                        MediaStore.Audio.Media._ID,
+//                        MediaStore.Audio.Media.DATA,
+//                        MediaStore.Audio.Media.ARTIST,
+//                        MediaStore.Audio.Media.ALBUM};
+//
+//                cursor = getApplicationContext().getContentResolver().query(
 //                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
 //                        projection,
-//                        selection,
-//                        null,
-//                        null);
+//                        MediaStore.Audio.Albums.ALBUM + " ='" + album.replaceAll("'", "''") + "'"
+//                                + " AND "
+//                                + MediaStore.Audio.Albums.ARTIST + " ='" + artist.replaceAll("'", "''") + "'",
+//                        null, null
+//                );
 //
-//                List<String> songs = new ArrayList<String>();
-//                while(cursor.moveToNext()) {
-//                    songs.add(cursor.getString(0) + "||"
-//                            + cursor.getString(1) + "||");
-//                            + cursor.getString(2) + "||"
-//                            + cursor.getString(3) + "||"
-//                            + cursor.getString(4) + "||"
-//                            + cursor.getString(5));
+//                if (cursor != null && cursor.moveToFirst()) {
+//                    int songId = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
+//                    path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+//                    Uri uri = Uri.parse("content://media/external/audio/media/" + songId + "/albumart");
+//                    ParcelFileDescriptor pfd;
+//                    try {
+//                        pfd = getApplicationContext().getContentResolver().openFileDescriptor(uri, "r");
+//                        if (pfd != null) {
+//                            finalPath = uri.toString();
+//                            cursor.close();
+//                        }
+//                    } catch (Exception ignored) {
+//                    }
+//                }
+//                if (cursor != null) {
+//                    cursor.close();
 //                }
 //
-//                for (String musicData : songs) {
-//                    Log.i(TAG, musicData);
+//                // 3. Try to find the artwork within the folder
+//                //Log.d(TAG, "Attempting to retrieve artwork from folder");
+//
+//                if (path != null) {
+//                    int lastSlash = path.lastIndexOf('/');
+//                    if (lastSlash > 0) {
+//                        ArrayList<String> paths = new ArrayList<String>();
+//                        String subString = path.substring(0, lastSlash + 1);
+//                        paths.add(subString + "AlbumArt.jpg");
+//                        paths.add(subString + "albumart.jpg");
+//                        paths.add(subString + "AlbumArt.png");
+//                        paths.add(subString + "albumart.png");
+//                        paths.add(subString + "Folder.jpg");
+//                        paths.add(subString + "folder.jpg");
+//                        paths.add(subString + "Folder.png");
+//                        paths.add(subString + "folder.png");
+//                        paths.add(subString + "Cover.jpg");
+//                        paths.add(subString + "cover.jpg");
+//                        paths.add(subString + "Cover.png");
+//                        paths.add(subString + "cover.png");
+//                        paths.add(subString + "Album.jpg");
+//                        paths.add(subString + "album.jpg");
+//                        paths.add(subString + "Album.png");
+//                        paths.add(subString + "album.png");
+//
+//                        for (String artworkPath : paths) {
+//                            File file = new File(artworkPath);
+//                            if (file.exists()) {
+//                                finalPath = artworkPath;
+//                            }
+//                        }
+//                    }
 //                }
 //
-//            }
-//        };
+//                Log.i(TAG, "Final path: " + finalPath);
+
+            }
+        };
 
         @Override
         public void onTouchEvent(MotionEvent event) {
@@ -1612,6 +1759,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             private long transitionTime;
             private int[] textureNames = new int[3];
             private boolean firstRun = true;
+            private boolean loadCurrent = false;
             private boolean toEffect = false;
             private boolean contextInitialized = false;
             private EffectContext effectContext;
@@ -1640,11 +1788,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
                     GLES20.glDeleteTextures(1, textureNames, 2);
                     Log.i(TAG, "Deleted texture: " + textureNames[2]);
-
-                    if (!useTransition) {
-                        GLES20.glDeleteTextures(1, textureNames, 1);
-                        Log.i(TAG, "Deleted texture: " + textureNames[1]);
-                    }
 
                     setupContainer(bitmapWidth, bitmapHeight);
 
@@ -1700,8 +1843,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     android.opengl.Matrix.setIdentityM(transMatrix, 0);
                     android.opengl.Matrix.translateM(transMatrix, 0, offsetX, offsetY, 0f);
                     renderImage();
-
-                    checkGLError("Render textureNames[0]");
                 }
             }
 
@@ -1875,41 +2016,30 @@ public class LiveWallpaperService extends GLWallpaperService {
                     contextInitialized = false;
                 }
 
+                if (bitmapHeight == 0) {
+                    loadNextImage();
+                }
+
                 if (width != renderScreenWidth) {
                     GLES20.glViewport(0, 0, width, height);
                     GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-                    addEvent(new Runnable() {
-                        @Override
-                        public void run() {
-                            loadCurrentImage();
-                        }
-                    });
+                    loadCurrentImage();
                 }
 
-                if (bitmapHeight == 0) {
-                    addEvent(new Runnable() {
-                        @Override
-                        public void run() {
-                            loadNextImage();
-                        }
-                    });
+                if (loadCurrent) {
+                    if (isPlayingMusic) {
+
+                    }
+                    else {
+                        loadCurrentImage();
+                    }
+                    loadCurrent = false;
                 }
 
                 renderScreenWidth = width;
                 renderScreenHeight = height;
 
-                if (useTransition) {
-                    Log.i(TAG, "Fade reset");
-                    fadeInAlpha = 0.0f;
-                    fadeOutAlpha = 1.0f;
-                    offsetX = newOffsetX;
-                    offsetY = newOffsetY;
-                    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
-                    useTransition = false;
-                }
-
-                for(int i=0; i<16; i++)
-                {
+                for (int i = 0; i < 16; i++) {
                     matrixProjection[i] = 0.0f;
                     matrixView[i] = 0.0f;
                     matrixProjectionAndView[i] = 0.0f;
@@ -1938,7 +2068,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 GLES20.glUseProgram(program);
 
                 if (firstRun) {
-
                     GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
 
                     Log.i(TAG, "First run");
@@ -1966,26 +2095,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 GLES20.glUseProgram(program);
                 GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1);
                 GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
-                if (animated) {
-                    setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-                }
-                else {
-                    setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-                }
-
-                if (animationX < renderScreenWidth - bitmapWidth) {
-                    animationX = 0;
-                }
-
-                if (AppSettings.useEffects()) {
-                    toEffect = true;
-                }
-
-                if (!AppSettings.useScale()) {
-                    scaleFactor = 1.0f;
-                    Log.i(TAG, "scaleFactor reset");
-                }
 
                 bitmapHeight = 0;
 
@@ -2042,18 +2151,10 @@ public class LiveWallpaperService extends GLWallpaperService {
             public void setupContainer(float width, float height) {
 
                 vertices = new float[] {
-                        0.0f,
-                        height,
-                        0.0f,
-                        0.0f,
-                        0.0f,
-                        0.0f,
-                        width,
-                        0.0f,
-                        0.0f,
-                        width,
-                        height,
-                        0.0f
+                        0.0f, height, 0.0f,
+                        0.0f, 0.0f, 0.0f,
+                        width, 0.0f, 0.0f,
+                        width, height, 0.0f
                 };
 
                 indices = new short[] {0, 1, 2, 0, 2, 3};
@@ -2071,37 +2172,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 drawListBuffer = dlb.asShortBuffer();
                 drawListBuffer.put(indices);
                 drawListBuffer.position(0);
-
-            }
-
-            public void setCurrentBitmap(Bitmap bitmap) {
-                try {
-                    bitmap = scaleBitmap(bitmap);
-
-                    bitmapWidth = bitmap.getWidth();
-                    bitmapHeight = bitmap.getHeight();
-
-                    newOffsetX = rawOffsetX * (renderScreenWidth - bitmapWidth);
-                    newOffsetY = -(bitmapHeight - renderScreenHeight) / 2;
-
-                    setupContainer(bitmapWidth, bitmapHeight);
-
-                    GLES20.glDeleteTextures(1, textureNames, 0);
-                    GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-                    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
-
-                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
-                    GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-
-                    GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-                    bitmap.recycle();
-                    Log.i(TAG, "Bitmap set");
-                }
-                catch (IllegalArgumentException e) {
-                    Toast.makeText(LiveWallpaperService.this, "Error loading next image", Toast.LENGTH_SHORT).show();
-                }
 
             }
 
@@ -2151,8 +2221,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                     checkGLError("Bind textureNames[0]");
                     Log.i(TAG, "Bind texture: " + textureNames[0]);
 
+                    GLES20.glDeleteTextures(1, textureNames, 2);
+
                     if (AppSettings.useEffects()) {
-                        GLES20.glDeleteTextures(1, textureNames, 2);
                         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[2]);
 
                         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
@@ -2166,33 +2237,27 @@ public class LiveWallpaperService extends GLWallpaperService {
                         toEffect = true;
                     }
 
+
+                    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
+                    Log.i(TAG, "Render texture: " + textureNames[0]);
+
                     bitmap.recycle();
                     System.gc();
 
-
-                    Log.i(TAG, "Render texture: " + textureNames[0]);
-
-                    if (isVisible()) {
-                        Log.i(TAG, "Fade set");
-                        if (AppSettings.getTransitionTime() > 0) {
-                            useTransition = true;
-                            transitionTime = System.currentTimeMillis() + AppSettings.getTransitionTime();
-                        }
+                    if (AppSettings.getTransitionTime() > 0) {
+                        useTransition = true;
+                        transitionTime = System.currentTimeMillis() + AppSettings.getTransitionTime();
                         setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-                    } else if (isVisible()) {
-                        if (!toEffect) {
-                            GLES20.glDeleteTextures(1, textureNames, 1);
-                            Log.i(TAG, "Deleted texture: " + textureNames[1]);
-                        }
-                        Log.i(TAG, "Syncing textures");
-                        offsetX = newOffsetX;
-                        scaleFactor = 1.0f;
-                        render();
+                    }
+                    else {
+                        GLES20.glDeleteTextures(1, textureNames, 1);
                     }
                 }
                 catch (IllegalArgumentException e) {
                     Log.i(TAG, "Error loading next image");
                 }
+
+                Log.i(TAG, "Set bitmap");
 
             }
 
