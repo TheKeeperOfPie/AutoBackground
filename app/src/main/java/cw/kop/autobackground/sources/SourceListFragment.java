@@ -289,7 +289,7 @@ public class SourceListFragment extends ListFragment {
     @Override
     public void onActivityResult(int requestCode, int responseCode, Intent intent) {
         if (requestCode == GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN) {
-            if (responseCode == Activity.RESULT_OK) {
+            if (intent != null && responseCode == Activity.RESULT_OK) {
                 final String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
                 AppSettings.setGoogleAccountName(accountName);
                 new AsyncTask<Void, Void, Void>() {
