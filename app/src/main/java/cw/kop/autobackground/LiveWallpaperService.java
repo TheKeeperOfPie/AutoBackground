@@ -1143,7 +1143,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 musicFilter.addAction("com.andrew.apollo.metachanged");
 
 
-                registerReceiver(musicReciever, musicFilter);
+//                registerReceiver(musicReciever, musicFilter);
                 Log.i(TAG, "Registered");
             }
         }
@@ -1283,132 +1283,137 @@ public class LiveWallpaperService extends GLWallpaperService {
         private final BroadcastReceiver musicReciever = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-//                String action = intent.getAction();
-//                String cmd = intent.getStringExtra("command");
-//                Log.i(TAG, "musicReceiver: " + action + " / " + cmd);
-//                String artist = intent.getStringExtra("artist");
-//                String album = intent.getStringExtra("album");
-//                String track = intent.getStringExtra("track");
-//                Log.i(TAG, "Music: " + artist + ": " + album + ": " + track);
-//                String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
-//
-//                Uri mAudioUri = intent.getData();
-//
-//                Log.i(TAG, "Album: " + album);
-//
-//                String testTitie = "";
-//                String testAlbumId = "";
-//
-//                Long albumId = 0l;
-//
-//                String path = null;
-//                String finalPath = "";
-//
-//                //1. Try to get the album art from the MediaStore.Audio.Albums.ALBUM_ART column
-//                //Log.i(TAG, "Attempting to retrieve artwork from MediaStore ALBUM_ART column");
-//                String[] projection = new String[]{
-//                        MediaStore.Audio.Albums._ID,
-//                        MediaStore.Audio.Albums.ARTIST,
-//                        MediaStore.Audio.Albums.ALBUM,
-//                        MediaStore.Audio.Albums.ALBUM_ART};
-//
-//                Cursor cursor = getApplicationContext().getContentResolver().query(
-//                        MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-//                        projection,
-//                        MediaStore.Audio.Albums.ALBUM + " ='" + album.replaceAll("'", "''") + "'"
-//                                + " AND "
-//                                + MediaStore.Audio.Albums.ARTIST + " ='" + artist.replaceAll("'", "''") + "'",
-//                        null, null
-//                );
-//
-//                if (cursor != null && cursor.moveToFirst()) {
-//                    String artworkPath = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
-//                    if (artworkPath != null) {
-//                        File file = new File(artworkPath);
-//                        if (file.exists()) {
-//                            finalPath = artworkPath;
-//                            cursor.close();
-//                        }
-//                    }
-//                }
-//
-//                if (cursor != null) {
-//                    cursor.close();
-//                }
-//
-//                //2. Try to find the artwork in the MediaStore based on the trackId instead of the albumId
-//                //Log.d(TAG, "Attempting to retrieve artwork from MediaStore _ID column");
-//                projection = new String[]{
-//                        MediaStore.Audio.Media._ID,
-//                        MediaStore.Audio.Media.DATA,
-//                        MediaStore.Audio.Media.ARTIST,
-//                        MediaStore.Audio.Media.ALBUM};
-//
-//                cursor = getApplicationContext().getContentResolver().query(
-//                        MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-//                        projection,
-//                        MediaStore.Audio.Albums.ALBUM + " ='" + album.replaceAll("'", "''") + "'"
-//                                + " AND "
-//                                + MediaStore.Audio.Albums.ARTIST + " ='" + artist.replaceAll("'", "''") + "'",
-//                        null, null
-//                );
-//
-//                if (cursor != null && cursor.moveToFirst()) {
-//                    int songId = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
-//                    path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-//                    Uri uri = Uri.parse("content://media/external/audio/media/" + songId + "/albumart");
-//                    ParcelFileDescriptor pfd;
-//                    try {
-//                        pfd = getApplicationContext().getContentResolver().openFileDescriptor(uri, "r");
-//                        if (pfd != null) {
-//                            finalPath = uri.toString();
-//                            cursor.close();
-//                        }
-//                    } catch (Exception ignored) {
-//                    }
-//                }
-//                if (cursor != null) {
-//                    cursor.close();
-//                }
-//
-//                // 3. Try to find the artwork within the folder
-//                //Log.d(TAG, "Attempting to retrieve artwork from folder");
-//
-//                if (path != null) {
-//                    int lastSlash = path.lastIndexOf('/');
-//                    if (lastSlash > 0) {
-//                        ArrayList<String> paths = new ArrayList<String>();
-//                        String subString = path.substring(0, lastSlash + 1);
-//                        paths.add(subString + "AlbumArt.jpg");
-//                        paths.add(subString + "albumart.jpg");
-//                        paths.add(subString + "AlbumArt.png");
-//                        paths.add(subString + "albumart.png");
-//                        paths.add(subString + "Folder.jpg");
-//                        paths.add(subString + "folder.jpg");
-//                        paths.add(subString + "Folder.png");
-//                        paths.add(subString + "folder.png");
-//                        paths.add(subString + "Cover.jpg");
-//                        paths.add(subString + "cover.jpg");
-//                        paths.add(subString + "Cover.png");
-//                        paths.add(subString + "cover.png");
-//                        paths.add(subString + "Album.jpg");
-//                        paths.add(subString + "album.jpg");
-//                        paths.add(subString + "Album.png");
-//                        paths.add(subString + "album.png");
-//
-//                        for (String artworkPath : paths) {
-//                            File file = new File(artworkPath);
-//                            if (file.exists()) {
-//                                finalPath = artworkPath;
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                Log.i(TAG, "Final path: " + finalPath);
+                String action = intent.getAction();
+                String cmd = intent.getStringExtra("command");
+                Log.i(TAG, "musicReceiver: " + action + " / " + cmd);
+                String artist = intent.getStringExtra("artist");
+                String album = intent.getStringExtra("album");
+                String track = intent.getStringExtra("track");
+                Log.i(TAG, "Music: " + artist + ": " + album + ": " + track);
+                String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
 
+                Uri mAudioUri = intent.getData();
+
+                Log.i(TAG, "Album: " + album);
+
+                String testTitie = "";
+                String testAlbumId = "";
+
+                Long albumId = 0l;
+
+                fetchAlbumArt(artist, album);
             }
         };
+
+        private void fetchAlbumArt(String artist, String album) {
+
+            String path = null;
+            String finalPath = "";
+
+            //1. Try to get the album art from the MediaStore.Audio.Albums.ALBUM_ART column
+            //Log.i(TAG, "Attempting to retrieve artwork from MediaStore ALBUM_ART column");
+            String[] projection = new String[]{
+                    MediaStore.Audio.Albums._ID,
+                    MediaStore.Audio.Albums.ARTIST,
+                    MediaStore.Audio.Albums.ALBUM,
+                    MediaStore.Audio.Albums.ALBUM_ART};
+
+            Cursor cursor = getApplicationContext().getContentResolver().query(
+                    MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
+                    projection,
+                    MediaStore.Audio.Albums.ALBUM + " ='" + album.replaceAll("'", "''") + "'"
+                            + " AND "
+                            + MediaStore.Audio.Albums.ARTIST + " ='" + artist.replaceAll("'", "''") + "'",
+                    null, null
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                String artworkPath = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+                if (artworkPath != null) {
+                    File file = new File(artworkPath);
+                    if (file.exists()) {
+                        finalPath = artworkPath;
+                        cursor.close();
+                    }
+                }
+            }
+
+            if (cursor != null) {
+                cursor.close();
+            }
+
+            //2. Try to find the artwork in the MediaStore based on the trackId instead of the albumId
+            //Log.d(TAG, "Attempting to retrieve artwork from MediaStore _ID column");
+            projection = new String[]{
+                    MediaStore.Audio.Media._ID,
+                    MediaStore.Audio.Media.DATA,
+                    MediaStore.Audio.Media.ARTIST,
+                    MediaStore.Audio.Media.ALBUM};
+
+            cursor = getApplicationContext().getContentResolver().query(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    projection,
+                    MediaStore.Audio.Albums.ALBUM + " ='" + album.replaceAll("'", "''") + "'"
+                            + " AND "
+                            + MediaStore.Audio.Albums.ARTIST + " ='" + artist.replaceAll("'", "''") + "'",
+                    null, null
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                int songId = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
+                path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+                Uri uri = Uri.parse("content://media/external/audio/media/" + songId + "/albumart");
+                ParcelFileDescriptor pfd;
+                try {
+                    pfd = getApplicationContext().getContentResolver().openFileDescriptor(uri, "r");
+                    if (pfd != null) {
+                        finalPath = uri.toString();
+                        cursor.close();
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+            if (cursor != null) {
+                cursor.close();
+            }
+
+            // 3. Try to find the artwork within the folder
+            //Log.d(TAG, "Attempting to retrieve artwork from folder");
+
+            if (path != null) {
+                int lastSlash = path.lastIndexOf('/');
+                if (lastSlash > 0) {
+                    ArrayList<String> paths = new ArrayList<String>();
+                    String subString = path.substring(0, lastSlash + 1);
+                    paths.add(subString + "AlbumArt.jpg");
+                    paths.add(subString + "albumart.jpg");
+                    paths.add(subString + "AlbumArt.png");
+                    paths.add(subString + "albumart.png");
+                    paths.add(subString + "Folder.jpg");
+                    paths.add(subString + "folder.jpg");
+                    paths.add(subString + "Folder.png");
+                    paths.add(subString + "folder.png");
+                    paths.add(subString + "Cover.jpg");
+                    paths.add(subString + "cover.jpg");
+                    paths.add(subString + "Cover.png");
+                    paths.add(subString + "cover.png");
+                    paths.add(subString + "Album.jpg");
+                    paths.add(subString + "album.jpg");
+                    paths.add(subString + "Album.png");
+                    paths.add(subString + "album.png");
+
+                    for (String artworkPath : paths) {
+                        File file = new File(artworkPath);
+                        if (file.exists()) {
+                            finalPath = artworkPath;
+                        }
+                    }
+                }
+            }
+
+            Log.i(TAG, "Final path: " + finalPath);
+
+        }
 
         @Override
         public void onTouchEvent(MotionEvent event) {
@@ -2105,13 +2110,26 @@ public class LiveWallpaperService extends GLWallpaperService {
                 if (AppSettings.forceParallax()) {
                     rawOffsetX = 1 - xOffset;
                     if (!draggable && !animated) {
-                        offsetX = (renderScreenWidth - bitmapWidth) * (1 - xOffset);
+                        if (AppSettings.useExactScrolling()) {
+                            offsetX = renderScreenWidth - xPixels;
+                            Log.i(TAG, "xPixels: " + xPixels + "offsetX: " + offsetX);
+                        }
+                        else {
+                            offsetX = (renderScreenWidth - bitmapWidth) * (1 - xOffset);
+                        }
                     }
                 }
                 else {
                     rawOffsetX = xOffset;
                     if (!draggable && !animated) {
-                        offsetX = (renderScreenWidth - bitmapWidth) * (xOffset);
+
+                        if (AppSettings.useExactScrolling()) {
+                            offsetX = xPixels;
+                            Log.i(TAG, "xPixels: " + xPixels + "offsetX: " + offsetX);
+                        }
+                        else {
+                            offsetX = (renderScreenWidth - bitmapWidth) * (xOffset);
+                        }
                     }
                 }
             }

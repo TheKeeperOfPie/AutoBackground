@@ -56,7 +56,6 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
             public boolean onPreferenceClick(Preference preference) {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(context);
 
-
                 TextView textView = new TextView(context);
                 textView.setText(context.getResources().getString(R.string.about_copyright_text));
 
@@ -127,4 +126,3 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
         return false;
     }
 }
-

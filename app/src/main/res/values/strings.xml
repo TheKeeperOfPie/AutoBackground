@@ -84,6 +84,8 @@
     <string name="double_tap_description">Change on double tap</string>
     <string name="use_scrolling">Use Scrolling</string>
     <string name="use_scrolling_description">Enable wallpaper scrolling with homescreen</string>
+    <string name="exact_scrolling">Exact Scrolling</string>
+    <string name="exact_scrolling_description">Force 1:1 wallpaper scrolling</string>
     <string name="force_parallax">Parallax Scrolling</string>
     <string name="force_parallax_description">Reverse direction of wallpaper scrolling</string>
     <string name="use_drag">Use Drag</string>
