@@ -75,7 +75,6 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
         public ImageView optionIcon;
         public TextView optionTitle;
         public TextView optionSummary;
-        public RecyclerViewListClickListener listener;
         public View rowLayout;
 
         public int position;
