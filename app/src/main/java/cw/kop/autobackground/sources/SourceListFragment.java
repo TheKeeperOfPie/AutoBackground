@@ -24,14 +24,17 @@ import android.app.AlertDialog;
 import android.app.ListFragment;
 import android.app.PendingIntent;
 import android.app.WallpaperManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -95,6 +98,13 @@ public class SourceListFragment extends ListFragment {
     private RelativeLayout.LayoutParams buttonParams;
     private boolean setShown = false;
     private boolean tutorialShowing = false;
+
+    private BroadcastReceiver downloadButtonReciever = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            resetActionBarDownload();
+        }
+    };
 
 	public SourceListFragment() {
 	}
@@ -234,25 +244,6 @@ public class SourceListFragment extends ListFragment {
 
             dialogBuilder.show();
         }
-    }
-
-    public void resetActionBarDownload() {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (AppSettings.getTheme() == R.style.AppLightTheme) {
-                    downloadButton.setImageResource(R.drawable.ic_action_download);
-                }
-                else {
-                    downloadButton.setImageResource(R.drawable.ic_action_download_dark);
-                }
-                downloadButton.postInvalidate();
-            }
-        });
-    }
-
-    public void resetDownload() {
-        resetActionBarDownload();
     }
 
     private void showImageFragment(boolean setPath, String viewPath, int position) {
@@ -828,18 +819,12 @@ public class SourceListFragment extends ListFragment {
 	}
 
 	@Override
-	public void onPause() {
-		super.onPause();
-		listAdapter.saveData();
-        sortButton.setVisibility(View.GONE);
-        downloadButton.setVisibility(View.GONE);
-	}
-
-	@Override
 	public void onResume() {
 		super.onResume();
         sortButton.setVisibility(View.VISIBLE);
         downloadButton.setVisibility(View.VISIBLE);
+
+        LocalBroadcastManager.getInstance(context).registerReceiver(downloadButtonReciever, new IntentFilter(Downloader.DOWNLOAD_TERMINATED));
 
         if (Downloader.isDownloading) {
             if (AppSettings.getTheme() == R.style.AppLightTheme) {
@@ -893,6 +878,35 @@ public class SourceListFragment extends ListFragment {
             dialog.show();
         }
 	}
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        listAdapter.saveData();
+        sortButton.setVisibility(View.GONE);
+        downloadButton.setVisibility(View.GONE);
+
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(downloadButtonReciever);
+    }
+
+    public void resetActionBarDownload() {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (AppSettings.getTheme() == R.style.AppLightTheme) {
+                    downloadButton.setImageResource(R.drawable.ic_action_download);
+                }
+                else {
+                    downloadButton.setImageResource(R.drawable.ic_action_download_dark);
+                }
+                downloadButton.postInvalidate();
+            }
+        });
+    }
+
+    public void resetDownload() {
+        resetActionBarDownload();
+    }
 
     private boolean isServiceRunning(final String className) {
         final ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);

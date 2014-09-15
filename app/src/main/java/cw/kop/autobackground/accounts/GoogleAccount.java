@@ -24,8 +24,8 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class GoogleAccount {
 
-    public static final int GOOGLE_ACCOUNT_SIGN_IN = 0;
-    public static final int GOOGLE_AUTH_CODE = 1;
+    public static final int GOOGLE_ACCOUNT_SIGN_IN = 1;
+    public static final int GOOGLE_AUTH_CODE = 2;
 
     public static Intent getPickerIntent() {
         return AccountPicker.newChooseAccountIntent(null, null, new String[]{"com.google"}, false, null, null, null, null);

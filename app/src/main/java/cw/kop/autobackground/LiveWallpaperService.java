@@ -25,8 +25,6 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -70,10 +68,6 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -409,7 +403,14 @@ public class LiveWallpaperService extends GLWallpaperService {
         else {
             notification = notificationBuilder.getNotification();
         }
-        notificationManager.notify(NOTIFICATION_ID, notification);
+
+        try {
+            notificationManager.notify(NOTIFICATION_ID, notification);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(LiveWallpaperService.this, "Error pushing notification", Toast.LENGTH_SHORT).show();
+        }
 
     }
 
@@ -1605,6 +1606,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                         try {
                             final Bitmap bitmap = BitmapFactory.decodeFile(previousBitmaps.get(0).getAbsolutePath(), options);
 
+                            Downloader.setCurrentBitmapFile(previousBitmaps.get(0));
+
                             if (bitmap != null) {
 
                                 addEvent(new Runnable() {
@@ -1862,6 +1865,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                     offsetX = newOffsetX;
                     offsetY = newOffsetY;
                     animationX = offsetX;
+                    oldBitmapHeight = bitmapHeight;
+                    oldBitmapWidth = bitmapWidth;
                     scaleFactor = 1.0f;
                     render();
 
@@ -2108,27 +2113,40 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep, int xPixels, int yPixels) {
                 if (AppSettings.forceParallax()) {
-                    rawOffsetX = 1 - xOffset;
-                    if (!draggable && !animated) {
+                    float offsetDifference = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (1.0f - xOffset - rawOffsetX);
+                    rawOffsetX = 1.0f - xOffset;
+                    if (draggable || animated) {
+                        offsetX += offsetDifference;
+                        newOffsetX += offsetDifference;
+                        animationX += offsetDifference;
+                    }
+                    else {
                         if (AppSettings.useExactScrolling()) {
                             offsetX = renderScreenWidth - xPixels;
                             Log.i(TAG, "xPixels: " + xPixels + "offsetX: " + offsetX);
                         }
                         else {
-                            offsetX = (renderScreenWidth - bitmapWidth) * (1 - xOffset);
+                            newOffsetX = (renderScreenWidth - bitmapWidth) * (1.0f - xOffset);
+                            offsetX = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (1.0f - xOffset);
                         }
                     }
                 }
                 else {
+                    float offsetDifference = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (xOffset - rawOffsetX);
                     rawOffsetX = xOffset;
-                    if (!draggable && !animated) {
-
+                    if (draggable || animated) {
+                        offsetX += offsetDifference;
+                        newOffsetX += offsetDifference;
+                        animationX += offsetDifference;
+                    }
+                    else {
                         if (AppSettings.useExactScrolling()) {
                             offsetX = xPixels;
                             Log.i(TAG, "xPixels: " + xPixels + "offsetX: " + offsetX);
                         }
                         else {
-                            offsetX = (renderScreenWidth - bitmapWidth) * (xOffset);
+                            newOffsetX = (renderScreenWidth - bitmapWidth) * (xOffset);
+                            offsetX = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (xOffset);
                         }
                     }
                 }

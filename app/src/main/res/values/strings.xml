@@ -89,7 +89,7 @@
     <string name="force_parallax">Parallax Scrolling</string>
     <string name="force_parallax_description">Reverse direction of wallpaper scrolling</string>
     <string name="use_drag">Use Drag</string>
-    <string name="use_drag_description">Drag with 2 fingers to move image around, disables scrolling with homescreen</string>
+    <string name="use_drag_description">Drag with 2 fingers to move image around</string>
     <string name="reverse_drag">Reverse Drag</string>
     <string name="reverse_drag_description">Reverse direction of image movement</string>
     <string name="use_scale">Use Zoom</string>

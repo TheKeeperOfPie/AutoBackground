@@ -259,7 +259,7 @@
 
         <cw.kop.autobackground.CustomSwitchPreference
             android:key="use_drag"
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:title="@string/use_drag"
             android:summary="@string/use_drag_description"
             />
@@ -273,7 +273,7 @@
 
         <cw.kop.autobackground.CustomSwitchPreference
             android:key="use_scale"
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:title="@string/use_scale"
             android:summary="@string/use_scale_description"
             />

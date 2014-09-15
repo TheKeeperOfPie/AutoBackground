@@ -17,10 +17,10 @@
 package cw.kop.autobackground.downloader;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -31,14 +31,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.settings.AppSettings;
-import cw.kop.autobackground.sources.SourceListFragment;
 
 public class Downloader {
 
-	private static File currentBitmapFile = null;
     private static final String TAG = "Downloader";
+    public static final String DOWNLOAD_TERMINATED = "cw.kop.autobackground.downloader.Downloader.DOWNLOAD_TERMINATED";
+
+	private static File currentBitmapFile = null;
     private static int randIndex = 0;
     public static boolean isDownloading = false;
 	
@@ -66,14 +66,10 @@ public class Downloader {
                 if (AppSettings.useToast()) {
                     Toast.makeText(appContext, "No connection available,\ncheck Download Settings", Toast.LENGTH_SHORT).show();
                 }
-                try {
-                    SourceListFragment sourceListFragment = ((MainActivity) appContext).sourceListFragment; //.getFragmentManager().findFragmentByTag("source_fragment");
-                    if (sourceListFragment != null) {
-                        sourceListFragment.resetDownload();
-                    }
-                }
-                catch (ClassCastException e) {
-                }
+
+                Intent resetDownloadIntent = new Intent(Downloader.DOWNLOAD_TERMINATED);
+                LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
+
                 return true;
             }
             downloadThread = new DownloadThread(appContext);
@@ -91,10 +87,8 @@ public class Downloader {
     public static void cancel(Context appContext) {
         if (downloadThread != null) {
             downloadThread.interrupt();
-            SourceListFragment sourceListFragment = ((MainActivity) appContext).sourceListFragment; //.getFragmentManager().findFragmentByTag("source_fragment");
-            if (sourceListFragment != null) {
-                sourceListFragment.resetDownload();
-            }
+            Intent resetDownloadIntent = new Intent(Downloader.DOWNLOAD_TERMINATED);
+            LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
         }
         isDownloading = false;
     }
@@ -144,6 +138,10 @@ public class Downloader {
 	public static File getCurrentBitmapFile() {
 		return currentBitmapFile;
 	}
+
+    public static void setCurrentBitmapFile(File file) {
+        currentBitmapFile = file;
+    }
 
     public static void renameFiles(Context appContext, String previousName, String newName) {
 

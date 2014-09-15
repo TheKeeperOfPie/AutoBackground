@@ -46,13 +46,13 @@ public class SourceListAdapter extends BaseAdapter {
 	private Activity mainActivity;
     private ArrayList<HashMap<String, String>> listData;
     private HashSet<String> titles;
-    private static LayoutInflater inflater = null;
+    private LayoutInflater inflater = null;
 	
 	public SourceListAdapter(Activity activity) {
 		mainActivity = activity;
 		listData = new ArrayList<HashMap<String, String>>();
         titles = new HashSet<String>();
-		inflater = (LayoutInflater)mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	}
 
 	@Override
