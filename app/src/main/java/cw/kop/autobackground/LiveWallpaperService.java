@@ -1868,7 +1868,15 @@ public class LiveWallpaperService extends GLWallpaperService {
                     oldBitmapHeight = bitmapHeight;
                     oldBitmapWidth = bitmapWidth;
                     scaleFactor = 1.0f;
-                    render();
+
+                    GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+
+                    android.opengl.Matrix.orthoM(matrixProjection, 0, 0, renderScreenWidth / scaleFactor, 0, renderScreenHeight / scaleFactor, 0, 10f);
+
+                    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
+                    android.opengl.Matrix.setIdentityM(transMatrix, 0);
+                    android.opengl.Matrix.translateM(transMatrix, 0, offsetX, offsetY, 0f);
+                    renderImage();
 
                     if (!animated) {
                         setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);

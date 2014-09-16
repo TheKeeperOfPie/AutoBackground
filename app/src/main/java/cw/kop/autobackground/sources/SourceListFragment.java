@@ -439,11 +439,11 @@ public class SourceListFragment extends ListFragment {
 
     private void showInputDialog(final String type, String title, final String prefix, String data, String num, String mainTitle, final int position) {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
         View dialogView = View.inflate(context, R.layout.add_source_dialog, null);
 
-        dialog.setView(dialogView);
+        builder.setView(dialogView);
 
         final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
         final TextView sourcePrefix = (TextView) dialogView.findViewById(R.id.source_data_prefix);
@@ -457,10 +457,25 @@ public class SourceListFragment extends ListFragment {
         sourceData.setText(data);
         sourceNum.setText(num);
 
-
-        dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals("")){
+                // Empty due to overriding action further down
+            }
+        });
+        builder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+            }
+        });
+
+        final AlertDialog dialog = builder.create();
+
+        dialog.show();
+
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v)
+            {
+                if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals("")) {
 
                     if (sourceNum.getText().toString().equals("")) {
                         sourceNum.setText("1");
@@ -481,29 +496,23 @@ public class SourceListFragment extends ListFragment {
                                 Downloader.renameFiles(context, previousTitle, newTitle);
                             }
                             listAdapter.saveData();
-                        }
-                        else {
+                            dialog.dismiss();
+                        } else {
                             Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
                         }
-                    }
-                    else {
+                    } else {
                         if (listAdapter.addItem(type, newTitle, data, true, sourceNum.getText().toString())) {
                             listAdapter.saveData();
                             AppSettings.setSourceSet(newTitle, new HashSet<String>());
                             hide(addSourceTutorial);
-                        }
-                        else {
+                            dialog.dismiss();
+                        } else {
                             Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
             }
         });
-        dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-            }
-        });
-        dialog.show();
     }
 
 	private void showDialogMenu(final int position) {
