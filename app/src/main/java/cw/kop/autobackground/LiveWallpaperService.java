@@ -1801,6 +1801,9 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 }
 
+                GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+
+                
                 if (useTransition) {
                     applyTransition();
                 }
@@ -1814,7 +1817,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                         startTime = System.currentTimeMillis();
                     }
                     catch (InterruptedException e) {
-
                     }
 
                     if (animated && (bitmapWidth - renderScreenWidth) > AppSettings.getAnimationSafety()) {
@@ -1842,8 +1844,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     else if (offsetY > 0) {
                         offsetY = 0;
                     }
-
-                    GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
                     android.opengl.Matrix.orthoM(matrixProjection, 0, 0, renderScreenWidth / scaleFactor, 0, renderScreenHeight / scaleFactor, 0, 10f);
 
@@ -1880,7 +1880,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         if (animationX < (-bitmapWidth + renderScreenWidth + animationModifier)) {
                             animationModifier = -Math.abs(animationModifier);
                         }
-                        else if (animationX > animationModifier) {
+                        else if (animationX > -1.0f) {
                             animationModifier = Math.abs(animationModifier);
                         }
                         animationX -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifier / scaleFactor) : animationModifier);
@@ -1955,6 +1955,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     renderTransitionTexture(renderScreenWidth / transitionNewScaleFactor, renderScreenHeight / transitionNewScaleFactor, bitmapWidth, bitmapHeight, 0, transitionNewOffsetX, newOffsetY, transitionNewAngle, transitionNewScaleFactor);
+
+                    Log.i(TAG, "transitionNewAngle: " + transitionNewAngle);
+                    Log.i(TAG, "transitionOldAngle: " + transitionOldAngle);
 
                     GLES20.glDisable(GLES20.GL_BLEND);
                 }
@@ -2121,14 +2124,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                         animationX += offsetDifference;
                     }
                     else {
-                        if (AppSettings.useExactScrolling()) {
-                            offsetX = renderScreenWidth - xPixels;
-                            Log.i(TAG, "xPixels: " + xPixels + "offsetX: " + offsetX);
-                        }
-                        else {
-                            newOffsetX = (renderScreenWidth - bitmapWidth) * (1.0f - xOffset);
-                            offsetX = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (1.0f - xOffset);
-                        }
+                        newOffsetX = (renderScreenWidth - bitmapWidth) * (1.0f - xOffset);
+                        offsetX = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (1.0f - xOffset);
                     }
                 }
                 else {
@@ -2140,14 +2137,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                         animationX += offsetDifference;
                     }
                     else {
-                        if (AppSettings.useExactScrolling()) {
-                            offsetX = xPixels;
-                            Log.i(TAG, "xPixels: " + xPixels + "offsetX: " + offsetX);
-                        }
-                        else {
-                            newOffsetX = (renderScreenWidth - bitmapWidth) * (xOffset);
-                            offsetX = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (xOffset);
-                        }
+                        newOffsetX = (renderScreenWidth - bitmapWidth) * (xOffset);
+                        offsetX = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (xOffset);
                     }
                 }
             }

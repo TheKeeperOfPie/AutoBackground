@@ -241,14 +241,12 @@
             android:summary="@string/use_scrolling_description"
             />
 
-
-        <cw.kop.autobackground.CustomSwitchPreference
-            android:key="exact_scrolling"
-            android:defaultValue="false"
-            android:title="@string/exact_scrolling"
-            android:summary="@string/exact_scrolling_description"
-            />
-
+        <!--<cw.kop.autobackground.CustomSwitchPreference-->
+            <!--android:key="exact_scrolling"-->
+            <!--android:defaultValue="false"-->
+            <!--android:title="@string/exact_scrolling"-->
+            <!--android:summary="@string/exact_scrolling_description"-->
+            <!--/>-->
 
         <cw.kop.autobackground.CustomSwitchPreference
             android:key="force_parallax"
