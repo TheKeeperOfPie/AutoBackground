@@ -476,7 +476,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                 else {
                     notificationBuilder.setContentTitle(Downloader.getBitmapLocation());
                 }
-            } else {
+            }
+            else {
                 normalView.setOnClickPendingIntent(R.id.notification_title, null);
                 bigView.setOnClickPendingIntent(R.id.notification_big_title, null);
             }
@@ -491,7 +492,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                 else {
                     notificationBuilder.setContentText(Downloader.getBitmapLocation());
                 }
-            } else {
+            }
+            else {
                 normalView.setOnClickPendingIntent(R.id.notification_summary, null);
                 bigView.setOnClickPendingIntent(R.id.notification_big_summary, null);
             }
@@ -504,54 +506,65 @@ public class LiveWallpaperService extends GLWallpaperService {
                     Picasso.with(LiveWallpaperService.this).load(image).resizeDimen(android.R.dimen.notification_large_icon_width, android.R.dimen.notification_large_icon_height).centerCrop().into(targetIcon);
                 }
 
-            } else if (drawable == R.drawable.ic_action_picture || drawable == R.drawable.ic_action_picture_dark) {
+            }
+            else if (drawable == R.drawable.ic_action_picture || drawable == R.drawable.ic_action_picture_dark) {
                 if (Downloader.getCurrentBitmapFile() == null) {
                     return;
                 }
 
-                Picasso.with(LiveWallpaperService.this).load(Downloader.getCurrentBitmapFile()).resizeDimen(android.R.dimen.notification_large_icon_width, android.R.dimen.notification_large_icon_height).centerCrop().into(targetIcon);
-
+                //Picasso.with(LiveWallpaperService.this).load(Downloader.getCurrentBitmapFile()).into(targetIcon);//.resizeDimen(android.R.dimen.notification_large_icon_width, android.R.dimen.notification_large_icon_height).centerCrop().into(targetIcon);
 
 //                new Thread(new Runnable() {
 //                    @Override
 //                    public void run() {
-//                        try {
-//                            BitmapFactory.Options options = new BitmapFactory.Options();
-//                            if (!AppSettings.useHighQuality()) {
-//                                options.inPreferredConfig = Bitmap.Config.RGB_565;
-//                            }
-//                            options.inJustDecodeBounds = true;
-//                            Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
-//
-//                            int bitWidth = options.outWidth;
-//                            int bitHeight = options.outHeight;
-//                            int minWidth = LiveWallpaperService.this.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
-//                            int minHeight = LiveWallpaperService.this.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
-//                            int sampleSize = 1;
-//                            if (bitHeight > minHeight || bitWidth > minWidth) {
-//
-//                                final int halfHeight = bitHeight / 2;
-//                                final int halfWidth = bitWidth / 2;
-//                                while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
-//                                    sampleSize *= 2;
-//                                }
-//                            }
-//
-//                            Log.i(TAG, "bitWidth: " + bitWidth + " bitHeight: " + bitHeight + " sampleSize: " + sampleSize);
-//
-//                            options.inJustDecodeBounds = false;
-//                            System.gc();
-//                            bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
-//                            loadNotificationIconBitmap(bitmap);
-//                        }
-//                        catch (OutOfMemoryError e) {
-//                            if (AppSettings.useToast()) {
-//                                Toast.makeText(LiveWallpaperService.this, "Out of memory error", Toast.LENGTH_SHORT).show();
-//                            }
-//                        }
+//                        Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath());
+//                        targetIcon.onBitmapLoaded(bitmap, null);
 //                    }
 //                }).start();
-            } else {
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            BitmapFactory.Options options = new BitmapFactory.Options();
+                            if (!AppSettings.useHighQuality()) {
+                                options.inPreferredConfig = Bitmap.Config.RGB_565;
+                            }
+                            options.inJustDecodeBounds = true;
+                            Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
+
+                            int bitWidth = options.outWidth;
+                            int bitHeight = options.outHeight;
+                            int minWidth = LiveWallpaperService.this.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+                            int minHeight = LiveWallpaperService.this.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
+                            int sampleSize = 1;
+                            if (bitHeight > minHeight || bitWidth > minWidth) {
+
+                                final int halfHeight = bitHeight / 2;
+                                final int halfWidth = bitWidth / 2;
+                                while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
+                                    sampleSize *= 2;
+                                }
+                            }
+
+                            Log.i(TAG, "bitWidth: " + bitWidth + " bitHeight: " + bitHeight + " sampleSize: " + sampleSize);
+
+                            options.inSampleSize = sampleSize + 1;
+                            options.inJustDecodeBounds = false;
+                            Log.i(TAG, "sampleSize: " + options.inSampleSize);
+                            bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
+//                            loadNotificationIconBitmap(bitmap);
+                            targetIcon.onBitmapLoaded(bitmap, null);
+                        }
+                        catch (OutOfMemoryError e) {
+                            if (AppSettings.useToast()) {
+                                Toast.makeText(LiveWallpaperService.this, "Out of memory error", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                }).start();
+            }
+            else {
                 if (pinned && AppSettings.usePinIndicator()) {
                     Drawable[] layers = new Drawable[2];
                     layers[0] = LiveWallpaperService.this.getResources().getDrawable(drawable);
@@ -1803,7 +1816,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-                
+
                 if (useTransition) {
                     applyTransition();
                 }
@@ -1963,10 +1976,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     renderTransitionTexture(renderScreenWidth / transitionNewScaleFactor, renderScreenHeight / transitionNewScaleFactor, bitmapWidth, bitmapHeight, 0, transitionNewOffsetX, newOffsetY, transitionNewAngle, transitionNewScaleFactor);
-
-                    Log.i(TAG, "transitionNewAngle: " + transitionNewAngle);
-                    Log.i(TAG, "transitionOldAngle: " + transitionOldAngle);
-
                     GLES20.glDisable(GLES20.GL_BLEND);
                 }
             }
