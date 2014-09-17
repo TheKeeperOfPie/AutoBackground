@@ -55,7 +55,6 @@ import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -89,6 +88,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     public static SharedPreferences prefs;
     private static final int NOTIFICATION_ID = 0;
+    private static final int NOTIFICATION_ICON_SAMPLE_SIZE = 15;
     private static final String TAG = "LiveWallpaperService";
     public static final String UPDATE_NOTIFICATION = "UPDATE_NOTIFICATION";
     public static final String DOWNLOAD_WALLPAPER = "DOWNLOAD_WALLPAPER";
@@ -122,6 +122,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     private int tileWins = 0;
     private boolean gameSet = false;
     private int[] tileIds;
+    private int tilesLoaded = 0;
 
     private PendingIntent pendingToastIntent;
     private PendingIntent pendingCopyIntent;
@@ -295,33 +296,43 @@ public class LiveWallpaperService extends GLWallpaperService {
                 Toast.makeText(context, "Image Location:\n" + Downloader.getBitmapLocation(), Toast.LENGTH_LONG).show();
             }
             else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE0)) {
+                Log.i(TAG, "Game tile 0");
                 calculateGameTiles(0);
             }
             else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE1)) {
+                Log.i(TAG, "Game tile 1");
                 calculateGameTiles(1);
             }
             else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE2)) {
+                Log.i(TAG, "Game tile 2");
                 calculateGameTiles(2);
             }
             else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE3)) {
+                Log.i(TAG, "Game tile 3");
                 calculateGameTiles(3);
             }
             else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE4)) {
+                Log.i(TAG, "Game tile 4");
                 calculateGameTiles(4);
             }
             else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE5)) {
+                Log.i(TAG, "Game tile 5");
                 calculateGameTiles(5);
             }
             else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE6)) {
+                Log.i(TAG, "Game tile 6");
                 calculateGameTiles(6);
             }
             else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE7)) {
+                Log.i(TAG, "Game tile 7");
                 calculateGameTiles(7);
             }
             else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE8)) {
+                Log.i(TAG, "Game tile 8");
                 calculateGameTiles(8);
             }
             else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE9)) {
+                Log.i(TAG, "Game tile 9");
                 calculateGameTiles(9);
             }
 
@@ -376,7 +387,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                             }
                         }
                         pushNotification();
-
                     }
                 }
             }).start();
@@ -404,6 +414,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             notification = notificationBuilder.getNotification();
         }
 
+
         try {
             notificationManager.notify(NOTIFICATION_ID, notification);
         }
@@ -412,52 +423,6 @@ public class LiveWallpaperService extends GLWallpaperService {
             Toast.makeText(LiveWallpaperService.this, "Error pushing notification", Toast.LENGTH_SHORT).show();
         }
 
-    }
-
-    private void loadNotificationIconBitmap(Bitmap bitmap) {
-        if (notificationBuilder != null && notificationManager != null) {
-
-            if (pinned && AppSettings.usePinIndicator()) {
-
-                int notifyIconWidth = bitmap.getWidth();
-                int notifyIconHeight = bitmap.getHeight();
-
-                Drawable[] layers = new Drawable[2];
-                layers[0] = new BitmapDrawable(LiveWallpaperService.this.getResources(), bitmap);
-                layers[1] = LiveWallpaperService.this.getResources().getDrawable(R.drawable.pin_overlay);
-
-                LayerDrawable layerDrawable = new LayerDrawable(layers);
-
-                Bitmap mutableBitmap = Bitmap.createBitmap(notifyIconWidth, notifyIconHeight, Bitmap.Config.ARGB_8888);
-                Canvas canvas = new Canvas(mutableBitmap);
-                layerDrawable.setBounds(0, 0, notifyIconWidth, notifyIconHeight);
-                layerDrawable.draw(canvas);
-
-                normalView.setImageViewBitmap(R.id.notification_icon, mutableBitmap);
-                if (Build.VERSION.SDK_INT >= 16) {
-                    bigView.setImageViewBitmap(R.id.notification_big_icon, mutableBitmap);
-                }
-                else {
-                    notificationBuilder.setLargeIcon(mutableBitmap);
-                }
-                pushNotification();
-            }
-            else {
-                normalView.setImageViewBitmap(R.id.notification_icon, bitmap);
-                if (Build.VERSION.SDK_INT >= 16) {
-                    bigView.setImageViewBitmap(R.id.notification_big_icon, bitmap);
-                }
-                else {
-                    notificationBuilder.setLargeIcon(bitmap);
-                }
-            }
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    pushNotification();
-                }
-            }).start();
-        }
     }
 
     @SuppressLint("NewApi")
@@ -512,16 +477,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     return;
                 }
 
-                //Picasso.with(LiveWallpaperService.this).load(Downloader.getCurrentBitmapFile()).into(targetIcon);//.resizeDimen(android.R.dimen.notification_large_icon_width, android.R.dimen.notification_large_icon_height).centerCrop().into(targetIcon);
-
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath());
-//                        targetIcon.onBitmapLoaded(bitmap, null);
-//                    }
-//                }).start();
-
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -530,30 +485,33 @@ public class LiveWallpaperService extends GLWallpaperService {
                             if (!AppSettings.useHighQuality()) {
                                 options.inPreferredConfig = Bitmap.Config.RGB_565;
                             }
-                            options.inJustDecodeBounds = true;
-                            Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
 
-                            int bitWidth = options.outWidth;
-                            int bitHeight = options.outHeight;
-                            int minWidth = LiveWallpaperService.this.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
-                            int minHeight = LiveWallpaperService.this.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
-                            int sampleSize = 1;
-                            if (bitHeight > minHeight || bitWidth > minWidth) {
+                            if (AppSettings.useHighResolutionNotificationIcon()) {
 
-                                final int halfHeight = bitHeight / 2;
-                                final int halfWidth = bitWidth / 2;
-                                while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
-                                    sampleSize *= 2;
+                                options.inJustDecodeBounds = true;
+                                Bitmap checkSizeBitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
+
+                                int bitWidth = options.outWidth;
+                                int bitHeight = options.outHeight;
+                                int minWidth = LiveWallpaperService.this.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+                                int minHeight = LiveWallpaperService.this.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
+                                int sampleSize = 1;
+                                if (bitHeight > minHeight || bitWidth > minWidth) {
+
+                                    final int halfHeight = bitHeight / 2;
+                                    final int halfWidth = bitWidth / 2;
+                                    while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
+                                        sampleSize *= 2;
+                                    }
                                 }
+                                options.inJustDecodeBounds = false;
+                                options.inSampleSize = sampleSize;
                             }
-
-                            Log.i(TAG, "bitWidth: " + bitWidth + " bitHeight: " + bitHeight + " sampleSize: " + sampleSize);
-
-                            options.inSampleSize = sampleSize + 1;
-                            options.inJustDecodeBounds = false;
+                            else {
+                                options.inSampleSize = NOTIFICATION_ICON_SAMPLE_SIZE;
+                            }
                             Log.i(TAG, "sampleSize: " + options.inSampleSize);
-                            bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
-//                            loadNotificationIconBitmap(bitmap);
+                            Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
                             targetIcon.onBitmapLoaded(bitmap, null);
                         }
                         catch (OutOfMemoryError e) {
@@ -854,14 +812,11 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     private boolean setupGameTiles() {
 
-        ArrayList<File> bitmapFiles = new ArrayList<File>();
+        final ArrayList<File> bitmapFiles = new ArrayList<File>();
         bitmapFiles.addAll(Downloader.getBitmapList());
 
         if (bitmapFiles.size() >= NUM_TO_WIN) {
             Collections.shuffle(bitmapFiles);
-
-            int imageWidth = LiveWallpaperService.this.getResources().getDisplayMetrics().widthPixels / NUM_TO_WIN;
-            int imageHeight = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 76, LiveWallpaperService.this.getResources().getDisplayMetrics()));
 
             for (Bitmap bitmap : tileBitmaps) {
                 bitmap.recycle();
@@ -869,18 +824,70 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             tileBitmaps.clear();
 
-            Picasso.with(LiveWallpaperService.this).load(bitmapFiles.get(0)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget0);
-            Picasso.with(LiveWallpaperService.this).load(bitmapFiles.get(1)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget1);
-            Picasso.with(LiveWallpaperService.this).load(bitmapFiles.get(2)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget2);
-            Picasso.with(LiveWallpaperService.this).load(bitmapFiles.get(3)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget3);
-            Picasso.with(LiveWallpaperService.this).load(bitmapFiles.get(4)).resize(imageWidth, imageHeight).centerCrop().into(tileTarget4);
+            startLoadImageThreads(bitmapFiles);
             return true;
         }
 
         return false;
     }
 
+    private void startLoadImageThreads(final ArrayList<File> files) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    if (!AppSettings.useHighQuality()) {
+                        options.inPreferredConfig = Bitmap.Config.RGB_565;
+                    }
+
+                    if (AppSettings.useHighResolutionNotificationIcon()) {
+
+                        options.inJustDecodeBounds = true;
+                        Bitmap checkSizeBitmap = BitmapFactory.decodeFile(files.get(tilesLoaded).getAbsolutePath(), options);
+
+                        int bitWidth = options.outWidth;
+                        int bitHeight = options.outHeight;
+                        int minWidth = LiveWallpaperService.this.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+                        int minHeight = LiveWallpaperService.this.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
+                        int sampleSize = 1;
+                        if (bitHeight > minHeight || bitWidth > minWidth) {
+
+                            final int halfHeight = bitHeight / 2;
+                            final int halfWidth = bitWidth / 2;
+                            while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
+                                sampleSize *= 2;
+                            }
+                        }
+                        options.inJustDecodeBounds = false;
+                        options.inSampleSize = sampleSize;
+                    }
+                    else {
+                        options.inSampleSize = NOTIFICATION_ICON_SAMPLE_SIZE;
+                    }
+                    Bitmap bitmap = BitmapFactory.decodeFile(files.get(tilesLoaded).getAbsolutePath(), options);
+                    tileBitmaps.add(bitmap);
+                    setTileOrder();
+                    tilesLoaded++;
+                    if (tilesLoaded < NUM_TO_WIN) {
+                        startLoadImageThreads(files);
+                    }
+                    else {
+                        tilesLoaded = 0;
+                    }
+                }
+                catch (OutOfMemoryError e) {
+                    if (AppSettings.useToast()) {
+                        Toast.makeText(LiveWallpaperService.this, "Out of memory error", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }).start();
+    }
+
     private void setTileOrder() {
+        Log.i(TAG, "tileBitmaps size: " + tileBitmaps.size());
+
         if (tileBitmaps.size() == NUM_TO_WIN) {
 
             List<Integer> randomList = new ArrayList<Integer>();
@@ -898,97 +905,6 @@ public class LiveWallpaperService extends GLWallpaperService {
             gameSet = true;
         }
     }
-
-    private Target tileTarget0 = new Target() {
-        @Override
-        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
-            tileBitmaps.add(bitmap);
-            setTileOrder();
-
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable drawable) {
-
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable drawable) {
-
-        }
-    };
-
-    private Target tileTarget1 = new Target() {
-        @Override
-        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
-            tileBitmaps.add(bitmap);
-            setTileOrder();
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable drawable) {
-
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable drawable) {
-
-        }
-    };
-
-    private Target tileTarget2 = new Target() {
-        @Override
-        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
-            tileBitmaps.add(bitmap);
-            setTileOrder();
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable drawable) {
-
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable drawable) {
-
-        }
-    };
-
-    private Target tileTarget3 = new Target() {
-        @Override
-        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
-            tileBitmaps.add(bitmap);
-            setTileOrder();
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable drawable) {
-
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable drawable) {
-
-        }
-    };
-
-    private Target tileTarget4 = new Target() {
-        @Override
-        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom loadedFrom) {
-            tileBitmaps.add(bitmap);
-            setTileOrder();
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable drawable) {
-
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable drawable) {
-
-        }
-    };
 
     private void createGameIntents() {
 
@@ -1055,7 +971,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 @Override
                 public void onLongPress(MotionEvent e) {
                     renderer.resetPosition();
-                    Log.i(TAG, "onLongPress");
 
                     super.onLongPress(e);
                 }

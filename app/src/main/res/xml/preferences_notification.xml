@@ -44,6 +44,13 @@
             android:maxLength="2"
             />
 
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="high_resolution_notification_icon"
+            android:defaultValue="false"
+            android:title="@string/high_resolution_notification_icon"
+            android:summary="@string/high_resolution_notification_icon_description"
+            />
+
         <Preference
             android:key="show_tutorial_notification"
             android:title="@string/show_tutorial_notification"

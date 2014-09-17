@@ -8,8 +8,8 @@ android {
         applicationId "cw.kop.autobackground"
         minSdkVersion 14
         targetSdkVersion 19
-        versionCode 39
-        versionName "1.21.2"
+        versionCode 40
+        versionName "1.22"
     }
     buildTypes {
         release {
@@ -38,7 +38,7 @@ dependencies {
     compile 'com.android.support:support-v4:+'
     compile 'com.android.support:recyclerview-v7:21.0.0-rc1'
     compile group:'com.squareup.picasso', name:'picasso', version:'2.3.3'
-    compile (group:'com.google.android.gms', name:'play-services', version:'5.2+') {
+    compile (group:'com.google.android.gms', name:'play-services', version:'5.0.89') {
         exclude (group: 'xpp3', module: 'xpp3')
         exclude (group: 'org.apache.httpcomponents', module: 'httpclient')
         exclude (group: 'junit', module: 'junit')

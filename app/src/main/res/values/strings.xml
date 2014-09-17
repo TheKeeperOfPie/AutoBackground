@@ -234,6 +234,8 @@
     <string name="use_pin_indicator_description">Show a pin overlay in the notification when image is pinned</string>
     <string name="history_size">Previous History Size</string>
     <string name="history_size_description">Number of images to store in previous buffer</string>
+    <string name="high_resolution_notification_icon">Force high resolution icon</string>
+    <string name="high_resolution_notification_icon_description">Loads higher resolution icon, not recommended as this will cause lag</string>
     <string name="show_tutorial_notification">Reshow Notification Tutorial</string>
     <string name="show_tutorial_notification_description">Click to reshow notification tutorial screen</string>
 
