@@ -350,8 +350,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 @Override
                 public void run() {
 
-                    notificationManager.cancel(NOTIFICATION_ID);
-
                     if (notificationBuilder != null && notificationManager != null) {
 
                         if (pinned && AppSettings.usePinIndicator()) {
@@ -554,8 +552,6 @@ public class LiveWallpaperService extends GLWallpaperService {
     @SuppressLint("NewApi")
     private void startNotification(boolean useNotification) {
         if (useNotification) {
-            notificationManager.cancel(NOTIFICATION_ID);
-
             normalView = new RemoteViews(getPackageName(), R.layout.notification_layout);
             normalView.setInt(R.id.notification_container, "setBackgroundColor", AppSettings.getNotificationColor());
             normalView.setImageViewResource(R.id.notification_icon, R.drawable.app_icon);
