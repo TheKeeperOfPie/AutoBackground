@@ -1121,6 +1121,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.DELETE_IMAGE)) {
                     Downloader.deleteCurrentBitmap();
+                    closeNotificationDrawer(context);
+                    Toast.makeText(LiveWallpaperService.this, "Deleted image", Toast.LENGTH_LONG).show();
                     loadNextImage();
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.OPEN_IMAGE)) {
@@ -1131,8 +1133,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         linkIntent.setData(Uri.parse(location));
                         linkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(linkIntent);
-                        Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-                        context.sendBroadcast(closeDrawer);
+                        closeNotificationDrawer(context);
                     }
                     else {
                         Intent galleryIntent = new Intent();
@@ -1141,8 +1142,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
                         galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(galleryIntent);
-                        Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-                        context.sendBroadcast(closeDrawer);
+                        closeNotificationDrawer(context);
                     }
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.PREVIOUS_IMAGE)) {
@@ -1187,6 +1187,11 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             }
         };
+
+        private void closeNotificationDrawer(Context context) {
+            Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+            context.sendBroadcast(closeDrawer);
+        }
 
         private final BroadcastReceiver networkReceiver = new BroadcastReceiver() {
             @Override

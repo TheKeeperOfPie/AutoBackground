@@ -177,16 +177,25 @@ public class Downloader {
         for (int i = 0; i < AppSettings.getNumSources(); i++) {
             AppSettings.setSourceSet(AppSettings.getSourceTitle(i), new HashSet<String>());
         }
-        for (File file : getBitmapList()) {
-            if (file.getName().contains(AppSettings.getImagePrefix())) {
-                file.delete();
+        File mainDir = new File(AppSettings.getDownloadPath());
+
+        for (File folder : mainDir.listFiles()) {
+            if (folder.exists() && folder.isDirectory()) {
+                for (File file : folder.listFiles()) {
+                    if (file.exists() && file.isFile() && file.getName().contains(AppSettings.getImagePrefix())) {
+                        file.delete();
+                    }
+                }
             }
         }
+
     }
 
     public static void deleteBitmaps(Context appContext, int position) {
 
         File folder = new File(AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(position) + " " + AppSettings.getImagePrefix());
+
+        Log.i(TAG, folder.getAbsolutePath());
 
         AppSettings.setSourceSet(AppSettings.getSourceTitle(position), new HashSet<String>());
 

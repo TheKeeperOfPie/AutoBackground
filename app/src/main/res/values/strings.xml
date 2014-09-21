@@ -114,6 +114,8 @@
     <string name="user_width_description">Minimum width of image</string>
     <string name="user_height">Image Height</string>
     <string name="user_height_description">Minimum height of image</string>
+    <string name="full_resolution">Full resolution</string>
+    <string name="full_resolution_description">Download full resolution images</string>
     <string name="use_timer">Download Timer</string>
     <string name="use_timer_description">Download interval</string>
     <string name="timer_time">Start Time</string>
@@ -126,7 +128,7 @@
     <string name="use_data_description">Allow download on mobile</string>
     <string name="download_on_connection">Reattempt Download</string>
     <string name="download_on_connection_description">Will retry download on connection obtained if timer is missed</string>
-    <string name="use_download_notification">Download notification</string>
+    <string name="use_download_notification">Download Notification</string>
     <string name="use_download_notification_description">Notify on download completed</string>
     <string name="use_high_quality">High Quality</string>
     <string name="use_high_quality_description">Download high quality images</string>

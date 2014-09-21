@@ -245,14 +245,15 @@ public class DownloadThread extends Thread {
                 if (!oldLink) {
                     Bitmap bitmap = getImage(randLink);
                     if (bitmap != null) {
-                        writeToFile(bitmap, data.get(count), dir, title, num++);
+                        writeToFile(bitmap, data.get(count), dir, title, num);
                         usedLinks.add(randLink);
-                        updateNotification(totalTarget + num - stored);
+                        updateNotification(totalTarget + num++ - stored);
                     }
                 }
                 count++;
             }
         }
+        renameAndReorder(dir, stored, num, title);
 
         imagesDownloaded = num - stored;
 
@@ -260,6 +261,47 @@ public class DownloadThread extends Thread {
 
         AppSettings.setSourceNumStored(index, num);
         AppSettings.setSourceSet(title, usedLinks);
+    }
+
+    private void renameAndReorder(String dir, int stored, int numDownloaded, String title) {
+
+        String prefix = AppSettings.getImagePrefix();
+        int renamed = 0;
+        int index = stored;
+
+        File mainDir = new File(dir + "/" + title + " " + prefix);
+
+        Log.i(TAG, "stored: " + stored);
+        Log.i(TAG, "numDownloaded: " + numDownloaded);
+
+        for (int i = numDownloaded; i < mainDir.listFiles().length + 100; i++) {
+            File oldImageFile = new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" +  i + ".png");
+
+            Log.i(TAG, oldImageFile.getAbsolutePath());
+
+            if (oldImageFile.exists() && oldImageFile.isFile()) {
+                File newImageFile = new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + index + ".png");
+
+                if (newImageFile.exists() && newImageFile.isFile()) {
+                    newImageFile.renameTo(new File(mainDir.getAbsolutePath() + "/" + "tempRenamed" + renamed++ + ".png"));
+                }
+                oldImageFile.renameTo(newImageFile);
+                index++;
+            }
+        }
+
+        int oldIndex = numDownloaded;
+
+        for (int i = 0; i < renamed; i++) {
+
+            File oldImageFile = new File(mainDir.getAbsolutePath() + "/" + "tempRenamed" + i + ".png");
+
+            oldImageFile.renameTo(new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + oldIndex++ + ".png"));
+
+            Log.i(TAG, "renamedFile: " + oldImageFile.getAbsolutePath());
+            Log.i(TAG, "renamed to: " + mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + oldIndex + ".png");
+        }
+
     }
 
     private void downloadWebsite(String url, int index) throws IOException {
@@ -271,10 +313,7 @@ public class DownloadThread extends Thread {
         Set<String> imageLinks = new HashSet<String>();
         List<String> imageList = new ArrayList<String>();
 
-        Document linkDoc = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36")
-                .referrer("http://www.google.com")
-                .get();
+        Document linkDoc = Jsoup.connect(url).get();
 
         imageLinks.addAll(compileImageLinks(linkDoc, "a", "href"));
         imageLinks.addAll(compileImageLinks(linkDoc, "img", "href"));
@@ -465,12 +504,15 @@ public class DownloadThread extends Thread {
 
                 int sampleSize = 1;
 
-                if (bitHeight > minHeight || bitWidth > minWidth) {
+                if (!AppSettings.useFullResolution()) {
 
-                    final int halfHeight = bitHeight / 2;
-                    final int halfWidth = bitWidth / 2;
-                    while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
-                        sampleSize *= 2;
+                    if (bitHeight > minHeight || bitWidth > minWidth) {
+
+                        final int halfHeight = bitHeight / 2;
+                        final int halfWidth = bitWidth / 2;
+                        while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
+                            sampleSize *= 2;
+                        }
                     }
                 }
 

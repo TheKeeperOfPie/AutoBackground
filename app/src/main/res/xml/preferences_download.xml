@@ -26,6 +26,13 @@
             android:summary="@string/user_height_description"
             />
 
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="full_resolution"
+            android:defaultValue="false"
+            android:title="@string/full_resolution"
+            android:summary="@string/full_resolution_description"
+            />
+
 	    <cw.kop.autobackground.CustomSwitchPreference
 		    android:key="use_timer"
     		android:defaultValue="false"
@@ -104,7 +111,7 @@
          	/>
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="delete_old"
+            android:key="delete_old_images"
             android:defaultValue="false"
             android:title="@string/delete_old_images"
             android:summary="@string/delete_old_images_description"
