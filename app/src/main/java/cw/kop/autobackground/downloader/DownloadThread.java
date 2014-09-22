@@ -117,6 +117,19 @@ public class DownloadThread extends Thread {
                 }
             }
 
+            if (AppSettings.checkDuplicates()) {
+                Set<String> rawLinks = AppSettings.getUsedLinks();
+                for (String link : rawLinks) {
+                    if (link.lastIndexOf("Order") > 0) {
+                        link = link.substring(0, link.lastIndexOf("Order") + 5);
+                    }
+                    usedLinks.add(link);
+                }
+            }
+            else {
+                usedLinks = new HashSet<String>();
+            }
+
             for (int index : indexes) {
 
                 if (isInterrupted()) {
@@ -124,8 +137,6 @@ public class DownloadThread extends Thread {
                 }
 
                 try {
-
-                    usedLinks = new HashSet<String>();
                     if (!AppSettings.keepImages()) {
                         AppSettings.setSourceNumStored(index, 0);
                     }
@@ -140,10 +151,6 @@ public class DownloadThread extends Thread {
 
                     if (!file.exists() || !file.isDirectory()) {
                         file.mkdir();
-                    }
-
-                    if (AppSettings.checkDuplicates()) {
-                        usedLinks.addAll(AppSettings.getSourceSet(title));
                     }
 
                     if (AppSettings.getSourceType(index).equals(AppSettings.WEBSITE)) {
@@ -246,6 +253,7 @@ public class DownloadThread extends Thread {
                     Bitmap bitmap = getImage(randLink);
                     if (bitmap != null) {
                         writeToFile(bitmap, data.get(count), dir, title, num);
+                        AppSettings.addUsedLink(randLink);
                         usedLinks.add(randLink);
                         updateNotification(totalTarget + num++ - stored);
                     }
@@ -260,7 +268,6 @@ public class DownloadThread extends Thread {
         imageDetails += title + ": " + imagesDownloaded + " images;break;";
 
         AppSettings.setSourceNumStored(index, num);
-        AppSettings.setSourceSet(title, usedLinks);
     }
 
     private void renameAndReorder(String dir, int stored, int numDownloaded, String title) {
@@ -552,7 +559,6 @@ public class DownloadThread extends Thread {
         File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + imageIndex + ".png");
 
         if (file.isFile()) {
-            usedLinks.remove(AppSettings.getUrl(file.getName()));
             file.delete();
         }
 
