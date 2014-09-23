@@ -50,6 +50,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -117,6 +118,8 @@ public class DownloadThread extends Thread {
                 }
             }
 
+            usedLinks = new HashSet<String>();
+
             if (AppSettings.checkDuplicates()) {
                 Set<String> rawLinks = AppSettings.getUsedLinks();
                 for (String link : rawLinks) {
@@ -125,9 +128,6 @@ public class DownloadThread extends Thread {
                     }
                     usedLinks.add(link);
                 }
-            }
-            else {
-                usedLinks = new HashSet<String>();
             }
 
             for (int index : indexes) {
@@ -247,14 +247,15 @@ public class DownloadThread extends Thread {
 
                 String randLink = links.get(count);
 
-                boolean oldLink = usedLinks.contains(randLink);
+                boolean newLink = usedLinks.add(randLink);
 
-                if (!oldLink) {
+                if (newLink) {
+
                     Bitmap bitmap = getImage(randLink);
+
                     if (bitmap != null) {
                         writeToFile(bitmap, data.get(count), dir, title, num);
                         AppSettings.addUsedLink(randLink);
-                        usedLinks.add(randLink);
                         updateNotification(totalTarget + num++ - stored);
                     }
                 }

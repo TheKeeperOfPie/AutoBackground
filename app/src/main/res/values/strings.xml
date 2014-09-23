@@ -109,6 +109,7 @@
     <string name="no_button">No</string>
     <string name="use_directory_button">Use Directory</string>
     <string name="reset_directory_button">Reset Directory</string>
+    <string name="clear_history_button">Clear History</string>
 
     <string name="user_width">Image Width</string>
     <string name="user_width_description">Minimum width of image</string>

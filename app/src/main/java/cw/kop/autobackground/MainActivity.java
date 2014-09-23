@@ -37,6 +37,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import cw.kop.autobackground.images.AlbumFragment;
+import cw.kop.autobackground.images.ImageHistoryFragment;
 import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.notification.NotificationSettingsFragment;
 import cw.kop.autobackground.settings.AppSettings;

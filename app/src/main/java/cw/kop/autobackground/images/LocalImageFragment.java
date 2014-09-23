@@ -82,7 +82,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-		final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.image_grid_layout, null);
+		final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.local_image_layout, null);
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
 
