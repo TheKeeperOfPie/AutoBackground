@@ -39,7 +39,7 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class AppSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
-	private Context context;
+	private Context appContext;
     private SwitchPreference toastPref;
     private Preference themePref;
 
@@ -48,18 +48,30 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_app);
     }
-	
-	@Override
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        appContext = getActivity();
+    }
+
+    @Override
+    public void onDetach() {
+        appContext = null;
+        super.onDetach();
+    }
+
+    @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         Preference clearPref = findPreference("clear_pref");
         clearPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                if (context != null) {
-                    AppSettings.clearPrefs(context);
+                if (appContext != null) {
+                    AppSettings.clearPrefs(appContext);
                     if (AppSettings.useToast()) {
-                        Toast.makeText(context, "Resetting settings to default", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(appContext, "Resetting settings to default", Toast.LENGTH_SHORT).show();
                     }
                 }
                 return false;
@@ -82,7 +94,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 AppSettings.setTutorial(true, "source");
-                Toast.makeText(context, "Will reshow source tutorial", Toast.LENGTH_SHORT).show();
+                Toast.makeText(appContext, "Will reshow source tutorial", Toast.LENGTH_SHORT).show();
                 return false;
             }
         });
@@ -97,12 +109,6 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 		
 	}
 
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		context = getActivity();
-	}
-
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -113,7 +119,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     private void showThemeDialogMenu() {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
         dialog.setItems(R.array.theme_entry_menu, new DialogInterface.OnClickListener() {
 
@@ -136,9 +142,9 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                 String themeName = getResources().getResourceName(AppSettings.getTheme());
                 themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("App") + 3, themeName.indexOf("Theme")));
 
-                Intent intent = new Intent(context, MainActivity.class);
+                Intent intent = new Intent(appContext, MainActivity.class);
                 intent.putExtra("fragment", 6);
-                context.startActivity(intent);
+                appContext.startActivity(intent);
 
                 getActivity().finish();
 
@@ -151,7 +157,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     private void showToastDialog() {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
         dialog.setTitle("Are you sure you want to disable toast messages?");
         dialog.setMessage("You will not be notified of errors or info about the app.");
@@ -187,15 +193,22 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
-		if (!((Activity) context).isFinishing()) {
+		if (!((Activity) appContext).isFinishing()) {
 			Preference pref = findPreference(key);
-			
+
+            if (key.equals("use_right_drawer")) {
+                Intent intent = new Intent(appContext, MainActivity.class);
+                intent.putExtra("fragment", 6);
+                appContext.startActivity(intent);
+                ((Activity) appContext).finish();
+            }
+
 			if (key.equals("use_notification")) {
 				
 				Intent intent = new Intent();
                 intent.setAction(LiveWallpaperService.UPDATE_NOTIFICATION);
                 intent.putExtra("use", ((SwitchPreference) pref).isChecked());
-                context.sendBroadcast(intent);
+                appContext.sendBroadcast(intent);
 				
 				Log.i("WSF", "Toggle Notification");
 				

@@ -54,7 +54,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 	private final static long CONVERT_MILLES_TO_MIN = 60000;
 	private final static int REQUEST_FILE_ID = 0;
 	private SwitchPreference timerPref;
-	private Context context;
+	private Context appContext;
     private PendingIntent pendingIntent;
 	private AlarmManager alarmManager;
 	
@@ -63,8 +63,29 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_download);
     }
-	
-	@Override
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        appContext = getActivity();
+
+        Intent intent = new Intent();
+        intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
+        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        pendingIntent = PendingIntent.getBroadcast(appContext, 0, intent, 0);
+
+        alarmManager = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
+
+        Log.i("DSF", "onAttach");
+    }
+
+    @Override
+    public void onDetach() {
+        appContext = null;
+        super.onDetach();
+    }
+
+    @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
 		timerPref = (SwitchPreference) findPreference("use_timer");
@@ -74,7 +95,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             @Override
             public boolean onPreferenceClick(Preference preference) {
 
-                AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
                 dialog.setTitle("Are you sure you want to delete all images?");
                 dialog.setMessage("This cannot be undone.");
@@ -82,13 +103,13 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        Downloader.deleteAllBitmaps(context);
+                        Downloader.deleteAllBitmaps(appContext);
                         for (int i = 0; i < AppSettings.getNumSources(); i ++) {
                             if (AppSettings.getSourceType(i).equals("website")) {
                                 AppSettings.setSourceSet(AppSettings.getSourceTitle(i), new HashSet<String>());
                             }
                         }
-                        Toast.makeText(context, "Deleted images with prefix\n" + AppSettings.getImagePrefix(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(appContext, "Deleted images with prefix\n" + AppSettings.getImagePrefix(), Toast.LENGTH_SHORT).show();
                     }
                 });
                 dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
@@ -111,7 +132,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             public boolean onPreferenceClick(Preference preference) {
 
                 TimePickerDialog timeDialog;
-                timeDialog = new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                timeDialog = new TimePickerDialog(appContext, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
                         AppSettings.setTimerHour(selectedHour);
@@ -134,26 +155,11 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 		
 	}
 
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		context = getActivity();
-
-        Intent intent = new Intent();
-		intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
-		intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-		pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-
-		alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-
-        Log.i("DSF", "onAttach");
-	}
-
 	private void showDialogTimerMenu() {
 
         AppSettings.setTimerDuration(0);
 
-		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
         dialogBuilder.setItems(R.array.timer_entry_menu, new DialogInterface.OnClickListener() {
 			
@@ -214,10 +220,10 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         AppSettings.setTimerDuration(0);
 
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
         dialogBuilder.setMessage("Download Interval");
 
-        View dialogView = View.inflate(context, R.layout.numeric_dialog, null);
+        View dialogView = View.inflate(appContext, R.layout.numeric_dialog, null);
 
         dialogBuilder.setView(dialogView);
 
@@ -294,7 +300,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_download_settings");
             preferenceCategory.removePreference(findPreference("image_prefix_adv"));
             preferenceCategory.removePreference(findPreference("check_duplicates"));
-            preferenceCategory.removePreference(findPreference("delete_old"));
+            preferenceCategory.removePreference(findPreference("delete_old_images"));
             preferenceCategory.removePreference(findPreference("use_download_path"));
             preferenceCategory.removePreference(findPreference("force_download"));
             preferenceCategory.removePreference(findPreference("use_high_quality"));
@@ -327,7 +333,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
 		
-		if (!((Activity) context).isFinishing()) {
+		if (!((Activity) appContext).isFinishing()) {
 			Preference pref = findPreference(key);
 			if (pref instanceof EditTextPreference) {
 				EditTextPreference editPref = (EditTextPreference) pref;

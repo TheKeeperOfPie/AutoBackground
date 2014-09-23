@@ -46,7 +46,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 	private final static long CONVERT_MILLES_TO_MIN = 60000;
 	private SwitchPreference intervalPref;
     private EditTextPreference frameRatePref;
-    private Context context;
+    private Context appContext;
     private PendingIntent pendingIntent;
 	private AlarmManager alarmManager;
 
@@ -54,9 +54,27 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_wallpaper);
-
     }
-	
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        appContext = activity;
+        Intent intent = new Intent();
+        intent.setAction(LiveWallpaperService.UPDATE_WALLPAPER);
+        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        pendingIntent = PendingIntent.getBroadcast(appContext, 0, intent, 0);
+
+        alarmManager = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
+    }
+
+    @Override
+    public void onDetach() {
+        appContext = null;
+        super.onDetach();
+    }
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -68,19 +86,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
 
         return localInflater.inflate(R.layout.fragment_list, container, false);
-	}
-
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		
-		context = getActivity();
-        Intent intent = new Intent();
-		intent.setAction(LiveWallpaperService.UPDATE_WALLPAPER);
-		intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-		pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-		
-		alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 	}
 
     @Override
@@ -114,7 +119,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         AppSettings.setIntervalDuration(0);
 
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
         dialogBuilder.setItems(R.array.interval_entry_menu, new DialogInterface.OnClickListener() {
 			
@@ -175,10 +180,10 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         AppSettings.setIntervalDuration(0);
 
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
         dialogBuilder.setMessage("Update Interval");
 
-        View dialogView = View.inflate(context, R.layout.numeric_dialog, null);
+        View dialogView = View.inflate(appContext, R.layout.numeric_dialog, null);
 
         dialogBuilder.setView(dialogView);
 
@@ -241,7 +246,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		
-		if (!((Activity) context).isFinishing()) {
+		if (!((Activity) appContext).isFinishing()) {
 			Preference pref = findPreference(key);
 			
 			if (pref instanceof EditTextPreference) {

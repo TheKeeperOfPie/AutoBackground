@@ -46,7 +46,7 @@ import cw.kop.autobackground.sources.SourceListFragment;
 
 public class LocalImageFragment extends Fragment implements ListView.OnItemClickListener {
 
-	private Context context;
+	private Context appContext;
 	private LocalImageAdapter imageAdapter;
     private ListView imageListView;
 
@@ -66,6 +66,18 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         viewPath = bundle.getString("view_path", "");
         position = bundle.getInt("position", 0);
 	}
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        appContext = getActivity();
+    }
+
+    @Override
+    public void onDetach() {
+        appContext = null;
+        super.onDetach();
+    }
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -107,7 +119,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                 FilenameFilter filenameFilter = Downloader.getImageFileNameFilter();
                 if (setPath) {
                     AppSettings.setDownloadPath(dir.getAbsolutePath());
-                    Toast.makeText(context, "Download path set to: \n" + AppSettings.getDownloadPath(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(appContext, "Download path set to: \n" + AppSettings.getDownloadPath(), Toast.LENGTH_SHORT).show();
                 }
                 else {
                     SourceListFragment sourceListFragment = ((MainActivity) getActivity()).sourceListFragment; //.getFragmentManager().findFragmentByTag("source_fragment");
@@ -132,12 +144,6 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         }
 		
 		return view;
-	}
-	
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		context = getActivity();
 	}
 
     public boolean onBackPressed() {
@@ -188,7 +194,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
             galleryIntent.setDataAndType(Uri.fromFile(imageAdapter.getItem(positionInList)), "image/*");
             galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
             galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(galleryIntent);
+            appContext.startActivity(galleryIntent);
         }
 
     }

@@ -19,6 +19,13 @@
 			android:title="@string/force_multipane" 
 			android:summary="@string/force_multipane_description"
 			/>
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_right_drawer"
+            android:defaultValue="false"
+            android:title="@string/use_right_drawer"
+            android:summary="@string/use_right_drawer_description"
+            />
 		
 		<Preference
 			android:key="change_theme"

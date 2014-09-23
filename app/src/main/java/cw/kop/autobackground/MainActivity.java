@@ -84,7 +84,12 @@ public class MainActivity extends Activity {
             setTheme(R.style.AppTransparentTheme);
         }
 
-        setContentView(R.layout.activity_layout);
+        if (AppSettings.useRightDrawer()) {
+            setContentView(R.layout.activity_right_layout);
+        }
+        else {
+            setContentView(R.layout.activity_layout);
+        }
 
         mTitle = getTitle();
 
@@ -92,7 +97,7 @@ public class MainActivity extends Activity {
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
 
-        drawerList = (ListView) findViewById(R.id.left_drawer);
+        drawerList = (ListView) findViewById(R.id.navigation_drawer);
         drawerList.setAdapter(new NavListAdapter(this, fragmentList));
         drawerList.setOnItemClickListener(new DrawerItemClickListener());
 
@@ -113,7 +118,9 @@ public class MainActivity extends Activity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
 
-        View actionBarView = getLayoutInflater().inflate(R.layout.action_bar_layout, null);
+        int drawerLayoutId = AppSettings.useRightDrawer() ? R.layout.action_bar_right_layout :R.layout.action_bar_layout;
+
+        View actionBarView = getLayoutInflater().inflate(drawerLayoutId, null);
         actionBarTitle = (TextView) actionBarView.findViewById(R.id.action_bar_title);
 
         ImageView drawerIndicator = (ImageView) actionBarView.findViewById(R.id.drawer_indicator);
@@ -277,6 +284,11 @@ public class MainActivity extends Activity {
             case 7:
                 getFragmentManager().beginTransaction()
                         .replace(R.id.content_frame, new AboutFragment())
+                        .commit();
+                break;
+            case 8:
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.content_frame, new ImageHistoryFragment())
                         .commit();
                 break;
             default:

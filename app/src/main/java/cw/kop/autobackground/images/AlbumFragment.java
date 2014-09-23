@@ -38,7 +38,7 @@ import cw.kop.autobackground.sources.SourceListFragment;
 
 public class AlbumFragment extends Fragment implements ListView.OnItemClickListener {
 
-    private Context context;
+    private Context appContext;
     private ListView albumListView;
     private AlbumAdapter albumAdapter;
 
@@ -52,7 +52,13 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        context = getActivity();
+        appContext = getActivity();
+    }
+
+    @Override
+    public void onDetach() {
+        appContext = null;
+        super.onDetach();
     }
 
     @Override
@@ -108,7 +114,7 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
         super.onActivityCreated(savedInstanceState);
 
         if (albumAdapter == null) {
-            albumAdapter = new AlbumAdapter(context, albumNames, albumImages, albumLinks);
+            albumAdapter = new AlbumAdapter(appContext, albumNames, albumImages, albumLinks);
         }
 
         albumListView.setAdapter(albumAdapter);

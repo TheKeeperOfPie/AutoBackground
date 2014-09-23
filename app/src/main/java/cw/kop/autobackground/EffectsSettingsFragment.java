@@ -40,7 +40,7 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class EffectsSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
-    private Context context;
+    private Context appContext;
 
     private SwitchPreference randomPref, duotonePref;
 
@@ -48,6 +48,19 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_effects);
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        appContext = getActivity();
+
+    }
+
+    @Override
+    public void onDetach() {
+        appContext = null;
+        super.onDetach();
     }
 
     @Override
@@ -59,7 +72,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
             public boolean onPreferenceClick(Preference preference) {
                 resetEffects();
                 if (AppSettings.useToast()) {
-                    Toast.makeText(context, "Reset effects", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(appContext, "Reset effects", Toast.LENGTH_SHORT).show();
                 }
                 return false;
             }
@@ -77,13 +90,6 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
         LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
 
         return localInflater.inflate(R.layout.fragment_list, container, false);
-
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        context = getActivity();
 
     }
 
@@ -175,7 +181,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
     private void showEffectDialogMenu() {
 
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context, R.style.DarkDialogTheme);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext, R.style.DarkDialogTheme);
 
         dialogBuilder.setItems(R.array.random_effects_entry_menu, new DialogInterface.OnClickListener() {
 
@@ -257,7 +263,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
     }
 
     private void showDuotoneDialog() {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
         dialogBuilder.setTitle("Choose dual tone colors:");
 
@@ -317,7 +323,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
-        if (!((Activity) context).isFinishing()) {
+        if (!((Activity) appContext).isFinishing()) {
 
             if (!key.contains("switch") && key.contains("effect_")) {
                 EffectPreference effectPref = (EffectPreference) findPreference(key);

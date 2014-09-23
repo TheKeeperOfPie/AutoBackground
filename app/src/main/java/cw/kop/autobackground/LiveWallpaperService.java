@@ -1960,6 +1960,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 else {
                     setPreserveEGLContextOnPause(false);
                     contextInitialized = false;
+                    loadCurrent = true;
                 }
 
                 if (bitmapHeight == 0) {
@@ -2041,8 +2042,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 GLES20.glUseProgram(program);
                 GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1);
                 GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
-                bitmapHeight = 0;
 
                 Log.i(TAG, "onSurfaceCreated");
             }

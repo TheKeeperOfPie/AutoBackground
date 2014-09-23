@@ -36,7 +36,7 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class AboutFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener {
 
-    private Context context;
+    private Context appContext;
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,12 +54,12 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
         copyrightPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+                AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
-                TextView textView = new TextView(context);
-                textView.setText(context.getResources().getString(R.string.about_copyright_text));
+                TextView textView = new TextView(appContext);
+                textView.setText(appContext.getResources().getString(R.string.about_copyright_text));
 
-                ScrollView scrollView = new ScrollView(context);
+                ScrollView scrollView = new ScrollView(appContext);
                 scrollView.addView(textView);
 
                 dialog.setView(scrollView);
@@ -86,9 +86,14 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        context = getActivity();
+        appContext = getActivity();
     }
 
+    @Override
+    public void onDetach() {
+        appContext = null;
+        super.onDetach();
+    }
 
     @Override
     public boolean onPreferenceClick(Preference preference) {
@@ -119,7 +124,7 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
 
 
         if (intent != null) {
-            context.startActivity(intent);
+            appContext.startActivity(intent);
             return true;
         }
 

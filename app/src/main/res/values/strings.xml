@@ -213,6 +213,8 @@
     <string name="use_toast_description">Notify user of info on screen</string>
     <string name="force_multipane">Force Multi-Pane</string>
     <string name="force_multipane_description">Use a dual pane layout</string>
+    <string name="use_right_drawer">Right Drawer</string>
+    <string name="use_right_drawer_description">Place navigation drawer on right side</string>
     <string name="change_theme">Change Theme</string>
     <string name="change_theme_description">Use different app theme</string>
     <string name="use_advanced">Advanced Settings</string>
@@ -386,6 +388,7 @@
         <item>Notification</item>
         <item>Application</item>
         <item>About</item>
+        <item>History</item>
     </string-array>
 
     <string-array name="fragment_descriptions">
@@ -396,7 +399,8 @@
         <item>Change image effects</item>
         <item>Change notification look</item>
         <item>Various settings for app</item>
-        <item>Various Information</item>
+        <item>Various information</item>
+        <item>Image history</item>
     </string-array>
 
     <string-array name="source_menu">

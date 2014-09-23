@@ -83,7 +83,7 @@ import cw.kop.autobackground.settings.AppSettings;
 public class SourceListFragment extends ListFragment {
 
 	private SourceListAdapter listAdapter;
-    private Context context;
+    private Context appContext;
     private Handler handler;
     private Button setButton;
     private ImageButton addButton;
@@ -118,7 +118,13 @@ public class SourceListFragment extends ListFragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        context = getActivity();
+        appContext = getActivity();
+    }
+
+    @Override
+    public void onDetach() {
+        appContext = null;
+        super.onDetach();
     }
 
     @Override
@@ -129,7 +135,7 @@ public class SourceListFragment extends ListFragment {
         buttonParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         buttonParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
         buttonParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        buttonParams.setMargins(0, 0, 0, Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, context.getResources().getDisplayMetrics())));
+        buttonParams.setMargins(0, 0, 0, Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, appContext.getResources().getDisplayMetrics())));
 
         addButton = (ImageButton) view.findViewById(R.id.floating_button);
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -167,7 +173,7 @@ public class SourceListFragment extends ListFragment {
             @Override
             public boolean onLongClick(View v) {
                 if (AppSettings.useToast()) {
-                    Toast.makeText(context, "Download images", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(appContext, "Download images", Toast.LENGTH_SHORT).show();
                 }
                 return true;
             }
@@ -184,7 +190,7 @@ public class SourceListFragment extends ListFragment {
             @Override
             public boolean onLongClick(View v) {
                 if (AppSettings.useToast()) {
-                    Toast.makeText(context, "Sort sources", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(appContext, "Sort sources", Toast.LENGTH_SHORT).show();
                 }
                 return true;
             }
@@ -205,7 +211,7 @@ public class SourceListFragment extends ListFragment {
             hide(downloadTutorial);
             showTutorial(3);
         }
-        if (Downloader.download(context)) {
+        if (Downloader.download(appContext)) {
             if (AppSettings.getTheme() == R.style.AppLightTheme) {
                 downloadButton.setImageResource(R.drawable.ic_action_cancel);
             }
@@ -217,15 +223,15 @@ public class SourceListFragment extends ListFragment {
                 Intent intent = new Intent();
                 intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
                 intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-                AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(appContext, 0, intent, 0);
+                AlarmManager alarmManager = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
                 alarmManager.cancel(pendingIntent);
                 alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + AppSettings.getTimerDuration(), AppSettings.getTimerDuration(), pendingIntent);
             }
 
         }
         else {
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
             dialogBuilder.setTitle("Cancel download?");
 
@@ -238,7 +244,7 @@ public class SourceListFragment extends ListFragment {
             });
             dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialog, int id) {
+                    public void onClick(DialogInterface dialog, int id) {
                 }
             });
 
@@ -287,7 +293,7 @@ public class SourceListFragment extends ListFragment {
                     @Override
                     protected Void doInBackground(Void... params) {
                         try {
-                            String authToken = GoogleAuthUtil.getToken(context, accountName, "oauth2:https://picasaweb.google.com/data/");
+                            String authToken = GoogleAuthUtil.getToken(appContext, accountName, "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             AppSettings.setGoogleAccount(true);
                             new PicasaAlbumTask(-1).execute();
@@ -313,7 +319,7 @@ public class SourceListFragment extends ListFragment {
                     @Override
                     protected Void doInBackground(Void... params) {
                         try {
-                            String authToken = GoogleAuthUtil.getToken(context, AppSettings.getGoogleAccountName(), "oauth2:https://picasaweb.google.com/data/");
+                            String authToken = GoogleAuthUtil.getToken(appContext, AppSettings.getGoogleAccountName(), "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             AppSettings.setGoogleAccount(true);
                             new PicasaAlbumTask(-1).execute();
@@ -388,7 +394,7 @@ public class SourceListFragment extends ListFragment {
     }
 
     private void showSourceSortMenu() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
         dialog.setTitle("Sort by:");
 
@@ -423,7 +429,7 @@ public class SourceListFragment extends ListFragment {
             listAdapter.saveData();
         }
         else {
-            Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(appContext, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -433,15 +439,15 @@ public class SourceListFragment extends ListFragment {
             listAdapter.saveData();
         }
         else {
-            Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(appContext, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void showInputDialog(final String type, String title, final String prefix, String data, String num, String mainTitle, final int position) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
 
-        View dialogView = View.inflate(context, R.layout.add_source_dialog, null);
+        View dialogView = View.inflate(appContext, R.layout.add_source_dialog, null);
 
         builder.setView(dialogView);
 
@@ -493,12 +499,12 @@ public class SourceListFragment extends ListFragment {
                         if (listAdapter.setItem(position, type, newTitle, data, AppSettings.useSource(position), sourceNum.getText().toString())) {
                             if (!previousTitle.equals(newTitle)) {
                                 AppSettings.setSourceSet(newTitle, AppSettings.getSourceSet(previousTitle));
-                                Downloader.renameFiles(context, previousTitle, newTitle);
+                                Downloader.renameFiles(appContext, previousTitle, newTitle);
                             }
                             listAdapter.saveData();
                             dialog.dismiss();
                         } else {
-                            Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(appContext, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         if (listAdapter.addItem(type, newTitle, data, true, sourceNum.getText().toString())) {
@@ -507,7 +513,7 @@ public class SourceListFragment extends ListFragment {
                             hide(addSourceTutorial);
                             dialog.dismiss();
                         } else {
-                            Toast.makeText(context, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(appContext, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -576,7 +582,7 @@ public class SourceListFragment extends ListFragment {
 					case 2:
                         if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR) || type.equals(AppSettings.PICASA)) {
                             listAdapter.saveData();
-                            AlertDialog.Builder deleteDialog = new AlertDialog.Builder(context);
+                            AlertDialog.Builder deleteDialog = new AlertDialog.Builder(appContext);
 
                             deleteDialog.setTitle("Delete images associated with this source?");
                             deleteDialog.setMessage("This cannot be undone.");
@@ -584,8 +590,8 @@ public class SourceListFragment extends ListFragment {
                             deleteDialog.setPositiveButton(R.string.yes_button, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int id) {
-                                    Downloader.deleteBitmaps(context, position);
-                                    Toast.makeText(context, "Deleting " + AppSettings.getSourceTitle(position) + " images", Toast.LENGTH_SHORT).show();
+                                    Downloader.deleteBitmaps(appContext, position);
+                                    Toast.makeText(appContext, "Deleting " + AppSettings.getSourceTitle(position) + " images", Toast.LENGTH_SHORT).show();
                                     listAdapter.removeItem(position);
                                     listAdapter.saveData();
                                 }
@@ -833,7 +839,7 @@ public class SourceListFragment extends ListFragment {
         sortButton.setVisibility(View.VISIBLE);
         downloadButton.setVisibility(View.VISIBLE);
 
-        LocalBroadcastManager.getInstance(context).registerReceiver(downloadButtonReciever, new IntentFilter(Downloader.DOWNLOAD_TERMINATED));
+        LocalBroadcastManager.getInstance(appContext).registerReceiver(downloadButtonReciever, new IntentFilter(Downloader.DOWNLOAD_TERMINATED));
 
         if (Downloader.isDownloading) {
             if (AppSettings.getTheme() == R.style.AppLightTheme) {
@@ -857,7 +863,7 @@ public class SourceListFragment extends ListFragment {
         if (AppSettings.useSourceTutorial() && sourceListTutorial == null && !tutorialShowing) {
             Log.i("WLF", "Showing tutorial");
             tutorialShowing = true;
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
             dialogBuilder.setMessage("Show Sources Tutorial?");
 
@@ -895,7 +901,7 @@ public class SourceListFragment extends ListFragment {
         sortButton.setVisibility(View.GONE);
         downloadButton.setVisibility(View.GONE);
 
-        LocalBroadcastManager.getInstance(context).unregisterReceiver(downloadButtonReciever);
+        LocalBroadcastManager.getInstance(appContext).unregisterReceiver(downloadButtonReciever);
     }
 
     public void resetActionBarDownload() {
@@ -918,7 +924,7 @@ public class SourceListFragment extends ListFragment {
     }
 
     private boolean isServiceRunning(final String className) {
-        final ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        final ActivityManager manager = (ActivityManager) appContext.getSystemService(Context.ACTIVITY_SERVICE);
         for (final ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (className.equals(service.service.getClassName())) {
                 return true;
@@ -942,7 +948,7 @@ public class SourceListFragment extends ListFragment {
         @Override
         protected void onProgressUpdate(String... values) {
             super.onProgressUpdate(values);
-            Toast.makeText(context, values[0], Toast.LENGTH_SHORT).show();
+            Toast.makeText(appContext, values[0], Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -950,7 +956,7 @@ public class SourceListFragment extends ListFragment {
             publishProgress("Loading albums...");
             String authToken = null;
             try {
-                authToken = GoogleAuthUtil.getToken(context, AppSettings.getGoogleAccountName(), "oauth2:https://picasaweb.google.com/data/");
+                authToken = GoogleAuthUtil.getToken(appContext, AppSettings.getGoogleAccountName(), "oauth2:https://picasaweb.google.com/data/");
             } catch (IOException e) {
                 publishProgress("Error loading albums");
                 return null;

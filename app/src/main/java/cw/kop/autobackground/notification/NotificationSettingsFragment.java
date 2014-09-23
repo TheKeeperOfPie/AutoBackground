@@ -66,7 +66,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private final static long CONVERT_MILLES_TO_MIN = 60000;
     private static final int SELECT_PHOTO = 4;
-    private Context context;
+    private Context appContext;
 
     private ListView preferenceList;
     private RecyclerView recyclerView;
@@ -96,7 +96,13 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        context = getActivity();
+        appContext = getActivity();
+    }
+
+    @Override
+    public void onDetach() {
+        appContext = null;
+        super.onDetach();
     }
 
     @Override
@@ -109,13 +115,13 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             File image = new File(AppSettings.getNotificationIconFile());
 
             if (image.exists() && image.isFile()) {
-                Picasso.with(context).load(image).fit().centerCrop().into(notificationIcon);
+                Picasso.with(appContext).load(image).fit().centerCrop().into(notificationIcon);
                 Log.i("NSF", "Loading custom image");
             }
 
         }
         else if (Downloader.getCurrentBitmapFile() != null && (AppSettings.getNotificationIcon() == R.drawable.ic_action_picture || AppSettings.getNotificationIcon() == R.drawable.ic_action_picture_dark)) {
-            Picasso.with(context).load(Downloader.getCurrentBitmapFile()).fit().centerCrop().into(notificationIcon);
+            Picasso.with(appContext).load(Downloader.getCurrentBitmapFile()).fit().centerCrop().into(notificationIcon);
         }
         else {
             Log.i("NSF", "Loading default image");
@@ -147,9 +153,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         notificationTitle.setTextColor(AppSettings.getNotificationTitleColor());
         notificationSummary.setTextColor(AppSettings.getNotificationSummaryColor());
 
-        Drawable coloredImageOne = context.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(0)));
-        Drawable coloredImageTwo = context.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(1)));
-        Drawable coloredImageThree = context.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(2)));
+        Drawable coloredImageOne = appContext.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(0)));
+        Drawable coloredImageTwo = appContext.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(1)));
+        Drawable coloredImageThree = appContext.getResources().getDrawable(getWhiteDrawable(AppSettings.getNotificationOptionDrawable(2)));
 
         coloredImageOne.mutate().setColorFilter(AppSettings.getNotificationOptionColor(0), PorterDuff.Mode.MULTIPLY);
         coloredImageTwo.mutate().setColorFilter(AppSettings.getNotificationOptionColor(1), PorterDuff.Mode.MULTIPLY);
@@ -229,7 +235,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         iconActionPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
                 dialogBuilder.setTitle("Choose icon action:");
 
@@ -307,7 +313,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         if (AppSettings.useNotificationTutorial()) {
 
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
             dialogBuilder.setMessage("Show Notification Tutorial?");
 
@@ -360,7 +366,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         Intent intent = new Intent();
         intent.setAction(LiveWallpaperService.UPDATE_NOTIFICATION);
         intent.putExtra("use", AppSettings.useNotification());
-        context.sendBroadcast(intent);
+        appContext.sendBroadcast(intent);
     }
 
     @Override
@@ -413,11 +419,11 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private void showBackgroundColorDialog() {
 
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
         dialogBuilder.setTitle("Enter background color:");
 
-        final ColorPickerView colorPickerView = new ColorPickerView(context);
+        final ColorPickerView colorPickerView = new ColorPickerView(appContext);
         colorPickerView.setAlphaSliderVisible(true);
         colorPickerView.setColor(AppSettings.getNotificationOptionPreviousColor());
 
@@ -489,14 +495,14 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private void showIconList() {
 
-        String[] iconTitles = context.getResources().getStringArray(R.array.notification_icon);
-        String[] iconSummaries = context.getResources().getStringArray(R.array.notification_icon_descriptions);
+        String[] iconTitles = appContext.getResources().getStringArray(R.array.notification_icon);
+        String[] iconSummaries = appContext.getResources().getStringArray(R.array.notification_icon_descriptions);
         TypedArray iconIcons;
         if (AppSettings.getTheme() == R.style.AppLightTheme) {
-            iconIcons = context.getResources().obtainTypedArray(R.array.notification_icon_icons);
+            iconIcons = appContext.getResources().obtainTypedArray(R.array.notification_icon_icons);
         }
         else {
-            iconIcons = context.getResources().obtainTypedArray(R.array.notification_icon_icons_dark);
+            iconIcons = appContext.getResources().obtainTypedArray(R.array.notification_icon_icons_dark);
         }
 
         ArrayList<NotificationOptionData> optionsList = new ArrayList<NotificationOptionData>();
@@ -518,8 +524,8 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 }
                 else if (title.equals("Image")) {
                     AppSettings.setNotificationIcon(drawable);
-                    int imageSize = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 64, context.getResources().getDisplayMetrics()));
-                    Picasso.with(context).load(Downloader.getCurrentBitmapFile()).resize(imageSize, imageSize).into(notificationIcon);
+                    int imageSize = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 64, appContext.getResources().getDisplayMetrics()));
+                    Picasso.with(appContext).load(Downloader.getCurrentBitmapFile()).resize(imageSize, imageSize).into(notificationIcon);
                     clearHighlights();
                     recyclerView.setAdapter(null);
                     AppSettings.setUseNotificationIconFile(false);
@@ -556,7 +562,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             Uri selectedImage = data.getData();
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
-            Cursor cursor = context.getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+            Cursor cursor = appContext.getContentResolver().query(selectedImage, filePathColumn, null, null, null);
             cursor.moveToFirst();
 
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
@@ -568,8 +574,8 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             if (image.exists() && image.isFile()) {
                 AppSettings.setNotificationIconFile(filePath);
                 AppSettings.setUseNotificationIconFile(true);
-                int imageSize = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 64, context.getResources().getDisplayMetrics()));
-                Picasso.with(context).load(image).resize(imageSize, imageSize).into(notificationIcon);
+                int imageSize = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 64, appContext.getResources().getDisplayMetrics()));
+                Picasso.with(appContext).load(image).resize(imageSize, imageSize).into(notificationIcon);
             }
             clearHighlights();
             recyclerView.setAdapter(null);
@@ -579,14 +585,14 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private void showTitlesList(int position) {
 
-        String[] titleTitles = context.getResources().getStringArray(R.array.notification_titles);
-        String[] titleSummaries = context.getResources().getStringArray(R.array.notification_titles_descriptions);
+        String[] titleTitles = appContext.getResources().getStringArray(R.array.notification_titles);
+        String[] titleSummaries = appContext.getResources().getStringArray(R.array.notification_titles_descriptions);
         TypedArray titlesIcons;
         if (AppSettings.getTheme() == R.style.AppLightTheme) {
-            titlesIcons = context.getResources().obtainTypedArray(R.array.notification_titles_icons);
+            titlesIcons = appContext.getResources().obtainTypedArray(R.array.notification_titles_icons);
         }
         else {
-            titlesIcons = context.getResources().obtainTypedArray(R.array.notification_titles_icons_dark);
+            titlesIcons = appContext.getResources().obtainTypedArray(R.array.notification_titles_icons_dark);
         }
 
         ArrayList<NotificationOptionData> optionsList = new ArrayList<NotificationOptionData>();
@@ -632,14 +638,14 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private void showOptionList(int position) {
 
-        String[] optionsTitles = context.getResources().getStringArray(R.array.notification_options);
-        String[] optionsSummaries = context.getResources().getStringArray(R.array.notification_options_descriptions);
+        String[] optionsTitles = appContext.getResources().getStringArray(R.array.notification_options);
+        String[] optionsSummaries = appContext.getResources().getStringArray(R.array.notification_options_descriptions);
         TypedArray optionsIcons;
         if (AppSettings.getTheme() == R.style.AppLightTheme) {
-            optionsIcons = context.getResources().obtainTypedArray(R.array.notification_options_icons);
+            optionsIcons = appContext.getResources().obtainTypedArray(R.array.notification_options_icons);
         }
         else {
-            optionsIcons = context.getResources().obtainTypedArray(R.array.notification_options_icons_dark);
+            optionsIcons = appContext.getResources().obtainTypedArray(R.array.notification_options_icons_dark);
         }
 
         ArrayList<NotificationOptionData> optionsList = new ArrayList<NotificationOptionData>();
@@ -696,11 +702,11 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private void showTitleColorDialog(final int position, final String title, final int drawable) {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
         dialog.setTitle("Enter text color:");
 
-        final ColorPickerView colorPickerView = new ColorPickerView(context);
+        final ColorPickerView colorPickerView = new ColorPickerView(appContext);
         colorPickerView.setAlphaSliderVisible(true);
         colorPickerView.setColor(AppSettings.getNotificationOptionPreviousColor());
 
@@ -767,11 +773,11 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private void showOptionColorDialog(final int position, final String title, final int drawable) {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
         dialog.setTitle("Enter icon and text color:");
 
-        final ColorPickerView colorPickerView = new ColorPickerView(context);
+        final ColorPickerView colorPickerView = new ColorPickerView(appContext);
         colorPickerView.setAlphaSliderVisible(true);
         colorPickerView.setColor(AppSettings.getNotificationOptionPreviousColor());
 
@@ -791,21 +797,21 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                     case 0:
                         optionOneText.setText(title);
                         optionOneText.setTextColor(AppSettings.getNotificationOptionColor(0));
-                        Drawable coloredDrawableOne = context.getResources().getDrawable(whiteDrawable);
+                        Drawable coloredDrawableOne = appContext.getResources().getDrawable(whiteDrawable);
                         coloredDrawableOne.mutate().setColorFilter(AppSettings.getNotificationOptionColor(0), PorterDuff.Mode.MULTIPLY);
                         optionOneImage.setImageDrawable(coloredDrawableOne);
                         break;
                     case 1:
                         optionTwoText.setText(title);
                         optionTwoText.setTextColor(AppSettings.getNotificationOptionColor(1));
-                        Drawable coloredDrawableTwo = context.getResources().getDrawable(whiteDrawable);
+                        Drawable coloredDrawableTwo = appContext.getResources().getDrawable(whiteDrawable);
                         coloredDrawableTwo.mutate().setColorFilter(AppSettings.getNotificationOptionColor(1), PorterDuff.Mode.MULTIPLY);
                         optionTwoImage.setImageDrawable(coloredDrawableTwo);
                         break;
                     case 2:
                         optionThreeText.setText(title);
                         optionThreeText.setTextColor(AppSettings.getNotificationOptionColor(2));
-                        Drawable coloredDrawableThree = context.getResources().getDrawable(whiteDrawable);
+                        Drawable coloredDrawableThree = appContext.getResources().getDrawable(whiteDrawable);
                         coloredDrawableThree.mutate().setColorFilter(AppSettings.getNotificationOptionColor(2), PorterDuff.Mode.MULTIPLY);
                         optionThreeImage.setImageDrawable(coloredDrawableThree);
                         break;
@@ -824,11 +830,11 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private void showDialogForText(final int position, final int drawable) {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
         dialog.setTitle("Enter text:");
 
-        final EditText input = new EditText(context);
+        final EditText input = new EditText(appContext);
         dialog.setView(input);
 
         dialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
@@ -849,7 +855,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
         AppSettings.setIntervalDuration(0);
 
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
         dialogBuilder.setItems(R.array.pin_entry_menu, new DialogInterface.OnClickListener() {
 
@@ -909,7 +915,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         if (key.equals("use_notification_game")) {
             if (AppSettings.useNotificationGame()) {
                 if (Downloader.getBitmapList().size() < 5) {
-                    Toast.makeText(context, "Not enough images for game", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(appContext, "Not enough images for game", Toast.LENGTH_SHORT).show();
                     ((SwitchPreference) findPreference("use_notification_game")).setChecked(false);
                 }
             }
