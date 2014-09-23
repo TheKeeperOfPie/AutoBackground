@@ -13,11 +13,14 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Set;
 
 import cw.kop.autobackground.R;
@@ -43,18 +46,19 @@ public class ImageHistoryAdapter  extends BaseAdapter {
         for (String link : usedLinks) {
 
             int index = -1;
-            String url = "", date = "";
+            long time = 0;
+            String url = "Possible corruption", title = "Error";
 
             try {
                 index = Integer.parseInt("" + link.charAt(link.length() - 1));
-                url = link.substring(0, link.lastIndexOf("Date:"));
-                date = link.substring(link.lastIndexOf("Date:") + 5, link.lastIndexOf("Order:"));
+                url = link.substring(0, link.lastIndexOf("Time:"));
+                time = Long.parseLong(link.substring(link.lastIndexOf("Time:") + 5, link.lastIndexOf("Order:")));
+                title = DateFormat.getDateTimeInstance().format(new Date(time));
             }
             catch (Exception e) {
-//                e.printStackTrace();
             }
 
-            historyItems.add(new HistoryItem(index, date, url, null));
+            historyItems.add(new HistoryItem(index, title, url, new File(AppSettings.getDownloadPath() + "/HistoryCache/" + time + ".png")));
 
         }
 
@@ -108,8 +112,7 @@ public class ImageHistoryAdapter  extends BaseAdapter {
     }
 
     public void clearHistory() {
-
         historyItems = new ArrayList<HistoryItem>();
-
+        notifyDataSetChanged();
     }
 }

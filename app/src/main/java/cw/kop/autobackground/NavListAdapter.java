@@ -42,7 +42,7 @@ public class NavListAdapter extends BaseAdapter {
             R.drawable.ic_action_crop,
             R.drawable.ic_action_chat,
             R.drawable.ic_action_settings,
-            R.drawable.ic_action_about,
+            R.drawable.ic_action_view_as_list,
             R.drawable.ic_action_about};
     private int[] darkImages = new int[] {
             R.drawable.ic_action_picture_dark,
@@ -52,7 +52,7 @@ public class NavListAdapter extends BaseAdapter {
             R.drawable.ic_action_crop_dark,
             R.drawable.ic_action_chat_dark,
             R.drawable.ic_action_settings_dark,
-            R.drawable.ic_action_about_dark,
+            R.drawable.ic_action_view_as_list_dark,
             R.drawable.ic_action_about_dark};
 
     public NavListAdapter(Activity activity, String[] nameArray) {

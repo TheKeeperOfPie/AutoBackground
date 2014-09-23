@@ -388,8 +388,8 @@
         <item>Effects</item>
         <item>Notification</item>
         <item>Application</item>
-        <item>About</item>
         <item>History</item>
+        <item>About</item>
     </string-array>
 
     <string-array name="fragment_descriptions">

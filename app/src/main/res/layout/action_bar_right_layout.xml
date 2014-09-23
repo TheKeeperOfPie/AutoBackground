@@ -50,6 +50,7 @@
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
         android:src="@drawable/ic_action_download"
+        android:visibility="gone"
         />
 
     <ImageView

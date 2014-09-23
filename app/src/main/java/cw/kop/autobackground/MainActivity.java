@@ -284,12 +284,12 @@ public class MainActivity extends Activity {
                 break;
             case 7:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new AboutFragment())
+                        .replace(R.id.content_frame, new ImageHistoryFragment())
                         .commit();
                 break;
             case 8:
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new ImageHistoryFragment())
+                        .replace(R.id.content_frame, new AboutFragment())
                         .commit();
                 break;
             default:

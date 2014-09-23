@@ -86,13 +86,13 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
 
-        TextView emptyText = new TextView(getActivity());
-        emptyText.setText("Directory is empty.");
+        TextView emptyText = new TextView(appContext);
+        emptyText.setText("Directory is empty");
         emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
         emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
 
-        LinearLayout emptyLayout = new LinearLayout(getActivity());
+        LinearLayout emptyLayout = new LinearLayout(appContext);
         emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         emptyLayout.setGravity(Gravity.TOP);
         emptyLayout.addView(emptyText);

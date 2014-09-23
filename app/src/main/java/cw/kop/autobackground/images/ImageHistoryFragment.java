@@ -9,13 +9,17 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,6 +63,26 @@ public class ImageHistoryFragment extends Fragment {
 
         historyListView = (ListView) view.findViewById(R.id.history_listview);
 
+        TextView emptyText = new TextView(appContext);
+        emptyText.setText("History is empty");
+        emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
+        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
+
+        LinearLayout emptyLayout = new LinearLayout(appContext);
+        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyLayout.setGravity(Gravity.TOP);
+        emptyLayout.addView(emptyText);
+
+        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+            historyListView.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
+            emptyLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
+        }
+        else {
+            historyListView.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+            emptyLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+        }
+
         Button clearHistoryButton = (Button) view.findViewById(R.id.clear_history_button);
         clearHistoryButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,6 +90,10 @@ public class ImageHistoryFragment extends Fragment {
                 showClearHistoryDialog();
             }
         });
+
+        ((ViewGroup) historyListView.getParent()).addView(emptyLayout, 0);
+
+        historyListView.setEmptyView(emptyLayout);
 
         return view;
     }
