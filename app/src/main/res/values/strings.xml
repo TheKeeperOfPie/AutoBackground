@@ -545,4 +545,9 @@
         <item>teal</item>
     </string-array>
 
+    <string-array name="history_menu">
+        <item>Open</item>
+        <item>Delete</item>
+    </string-array>
+
 </resources>

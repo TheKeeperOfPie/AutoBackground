@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 import cw.kop.autobackground.R;
@@ -47,18 +48,17 @@ public class ImageHistoryAdapter  extends BaseAdapter {
 
             int index = -1;
             long time = 0;
-            String url = "Possible corruption", title = "Error";
+            String url = "Error";
 
             try {
                 index = Integer.parseInt("" + link.charAt(link.length() - 1));
                 url = link.substring(0, link.lastIndexOf("Time:"));
                 time = Long.parseLong(link.substring(link.lastIndexOf("Time:") + 5, link.lastIndexOf("Order:")));
-                title = DateFormat.getDateTimeInstance().format(new Date(time));
             }
             catch (Exception e) {
             }
 
-            historyItems.add(new HistoryItem(index, title, url, new File(AppSettings.getDownloadPath() + "/HistoryCache/" + time + ".png")));
+            historyItems.add(new HistoryItem(index, time, url, new File(AppSettings.getDownloadPath() + "/HistoryCache/" + time + ".png")));
 
         }
 
@@ -104,7 +104,7 @@ public class ImageHistoryAdapter  extends BaseAdapter {
                     .load(R.drawable.ic_action_collection)
                     .into(fileImage);
 
-            fileTitle.setText(historyItems.get(position).getName());
+            fileTitle.setText(DateFormat.getDateTimeInstance().format(new Date(historyItems.get(position).getTime())));
             fileSummary.setText(historyItems.get(position).getUrl());
             return view;
         }
@@ -114,5 +114,31 @@ public class ImageHistoryAdapter  extends BaseAdapter {
     public void clearHistory() {
         historyItems = new ArrayList<HistoryItem>();
         notifyDataSetChanged();
+    }
+
+    public void removeItem(HistoryItem item) {
+        historyItems.remove(item);
+        notifyDataSetChanged();
+    }
+
+    public void saveHistory() {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                HashSet<String> usedLinks = new HashSet<String>();
+
+                for (int i = 0; i < historyItems.size(); i++) {
+
+                    HistoryItem item = historyItems.get(i);
+
+                    usedLinks.add(item.getUrl() + "Time:" + item.getTime() + "Order:" + i);
+
+                }
+
+                AppSettings.setUsedLinks(usedLinks);
+
+            }
+        }).start();
     }
 }

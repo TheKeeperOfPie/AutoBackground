@@ -8,12 +8,13 @@ import java.io.File;
 public class HistoryItem {
 
     private int index;
-    private String name, url;
+    private long time;
+    private String  url;
     private File image;
 
-    public HistoryItem(int index, String name, String url, File image) {
+    public HistoryItem(int index, long time, String url, File image) {
         this.index = index;
-        this.name = name;
+        this.time = time;
         this.url = url;
         this.image = image;
     }
@@ -22,8 +23,8 @@ public class HistoryItem {
         return index;
     }
 
-    public String getName() {
-        return name;
+    public long getTime() {
+        return time;
     }
 
 

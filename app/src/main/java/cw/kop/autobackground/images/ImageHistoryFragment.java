@@ -21,8 +21,10 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import cw.kop.autobackground.R;
@@ -74,14 +76,14 @@ public class ImageHistoryFragment extends Fragment {
         emptyLayout.setGravity(Gravity.TOP);
         emptyLayout.addView(emptyText);
 
-        if (AppSettings.getTheme() == R.style.AppLightTheme) {
-            historyListView.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
-            emptyLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
-        }
-        else {
-            historyListView.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
-            emptyLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
-        }
+//        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+//            historyListView.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
+//            emptyLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
+//        }
+//        else {
+//            historyListView.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+//            emptyLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+//        }
 
         Button clearHistoryButton = (Button) view.findViewById(R.id.clear_history_button);
         clearHistoryButton.setOnClickListener(new View.OnClickListener() {
@@ -110,11 +112,20 @@ public class ImageHistoryFragment extends Fragment {
         historyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse(historyAdapter.getItem(position).getUrl()));
-                appContext.startActivity(intent);
+                showHistoryItemDialog(historyAdapter.getItem(position));
             }
         });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        historyAdapter.saveHistory();
+        super.onPause();
     }
 
     private void showClearHistoryDialog() {
@@ -133,6 +144,33 @@ public class ImageHistoryFragment extends Fragment {
         builder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
+            }
+        });
+
+        builder.show();
+
+    }
+
+    private void showHistoryItemDialog(final HistoryItem item) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
+
+        builder.setTitle(DateFormat.getDateTimeInstance().format(new Date(item.getTime())));
+
+        builder.setItems(R.array.history_menu, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setData(Uri.parse(item.getUrl()));
+                        appContext.startActivity(intent);
+                        break;
+                    case 1:
+                        historyAdapter.removeItem(item);
+                        break;
+                    default:
+                }
             }
         });
 

@@ -238,7 +238,7 @@ public class SourceListFragment extends ListFragment {
             dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
-                    Downloader.cancel(getActivity());
+                    Downloader.cancel(appContext);
                     resetActionBarDownload();
                 }
             });
@@ -340,7 +340,7 @@ public class SourceListFragment extends ListFragment {
     }
 
     private void showSourceMenu() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
         dialog.setItems(R.array.source_menu, new DialogInterface.OnClickListener() {
 

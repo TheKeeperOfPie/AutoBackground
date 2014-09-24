@@ -123,8 +123,8 @@ public class DownloadThread extends Thread {
             if (AppSettings.checkDuplicates()) {
                 Set<String> rawLinks = AppSettings.getUsedLinks();
                 for (String link : rawLinks) {
-                    if (link.lastIndexOf("Order") > 0) {
-                        link = link.substring(0, link.lastIndexOf("Order") + 5);
+                    if (link.lastIndexOf("Time:") > 0) {
+                        link = link.substring(0, link.lastIndexOf("Time:") + 5);
                     }
                     usedLinks.add(link);
                 }
@@ -619,7 +619,7 @@ public class DownloadThread extends Thread {
         sendToast("Download cancelled");
 
         appContext = null;
-        Downloader.isDownloading = false;
+        Downloader.setIsDownloading(false);
     }
 
     private void finish() {
@@ -664,6 +664,6 @@ public class DownloadThread extends Thread {
         appContext = null;
 
         Log.i(TAG, "Download Finished");
-        Downloader.isDownloading = false;
+        Downloader.setIsDownloading(false);
     }
 }

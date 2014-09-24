@@ -57,10 +57,8 @@ public class Downloader {
             NetworkInfo mobile = connect.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
             if (wifi != null && wifi.isConnected() && AppSettings.useWifi()) {
-
             }
             else if (mobile != null && mobile.isConnected() && AppSettings.useMobile()) {
-
             }
             else {
                 if (AppSettings.useToast()) {
@@ -69,7 +67,7 @@ public class Downloader {
 
                 Intent resetDownloadIntent = new Intent(Downloader.DOWNLOAD_TERMINATED);
                 LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
-
+                isDownloading = false;
                 return true;
             }
             downloadThread = new DownloadThread(appContext);
@@ -83,6 +81,10 @@ public class Downloader {
             return false;
         }
 	}
+
+    public static void setIsDownloading(boolean value) {
+        isDownloading = value;
+    }
 
     public static void cancel(Context appContext) {
         if (downloadThread != null) {
@@ -170,7 +172,7 @@ public class Downloader {
     }
 
 	public static void deleteCurrentBitmap() {
-		currentBitmapFile.delete();
+        Log.i(TAG, "Deleted: " + currentBitmapFile.delete());
 	}
 
     public static void deleteAllBitmaps(Context appContext) {
@@ -232,8 +234,6 @@ public class Downloader {
 		if (images.size() > 0 && randIndex < images.size()) {
 			currentBitmapFile = images.get(randIndex);
 		}
-
-        Log.i("RandIndex", "" + randIndex);
 
         return currentBitmapFile;
 	}

@@ -1469,7 +1469,12 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                         System.gc();
                         try {
-                            final Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
+
+                            Bitmap checkBitmap;
+                            File imageFile = Downloader.getCurrentBitmapFile();
+                            checkBitmap = imageFile.exists() ? BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options) : Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565);
+
+                            final Bitmap bitmap = checkBitmap;
 
                             if (bitmap != null) {
 
@@ -1533,7 +1538,12 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                         System.gc();
                         try {
-                            final Bitmap bitmap = BitmapFactory.decodeFile(previousBitmaps.get(0).getAbsolutePath(), options);
+
+                            Bitmap checkBitmap;
+                            File imageFile = previousBitmaps.get(0);
+                            checkBitmap = imageFile.exists() ? BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options) : Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565);
+
+                            final Bitmap bitmap = checkBitmap;
 
                             Downloader.setCurrentBitmapFile(previousBitmaps.get(0));
 
@@ -1602,7 +1612,12 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                         System.gc();
                         try {
-                            final Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getNextImage().getAbsolutePath(), options);
+
+                            Bitmap checkBitmap;
+                            File imageFile = Downloader.getNextImage();
+                            checkBitmap = imageFile.exists() ? BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options) : Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565);
+
+                            final Bitmap bitmap = checkBitmap;
 
                             if (bitmap != null) {
 
@@ -2137,6 +2152,8 @@ public class LiveWallpaperService extends GLWallpaperService {
             public void setBitmap(Bitmap bitmap) {
 
                 try {
+                    Log.i(TAG, "currentBitmapFile loaded: " + Downloader.getCurrentBitmapFile().getName());
+
                     int storeId = textureNames[0];
                     textureNames[0] = textureNames[1];
                     textureNames[1] = storeId;
