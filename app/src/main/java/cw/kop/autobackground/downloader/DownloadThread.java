@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.os.Build;
 import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
@@ -254,8 +255,19 @@ public class DownloadThread extends Thread {
                     Bitmap bitmap = getImage(randLink);
 
                     if (bitmap != null) {
-                        writeToFile(bitmap, data.get(count), dir, title, num);
-                        AppSettings.addUsedLink(randLink);
+                        if (AppSettings.useImageHistory()) {
+                            long time = System.currentTimeMillis();
+                            AppSettings.addUsedLink(randLink, time);
+                            if (AppSettings.cacheThumbnails()) {
+                                writeToFileWithThumbnail(bitmap, data.get(count), dir, title, num, time);
+                            }
+                            else {
+                                writeToFile(bitmap, data.get(count), dir, title, num);
+                            }
+                        }
+                        else {
+                            writeToFile(bitmap, data.get(count), dir, title, num);
+                        }
                         updateNotification(totalTarget + num++ - stored);
                     }
                 }
@@ -567,6 +579,67 @@ public class DownloadThread extends Thread {
         try {
             out = new FileOutputStream(file);
             image.compress(Bitmap.CompressFormat.PNG, 90, out);
+            AppSettings.setUrl(file.getName(), saveData);
+            Log.i(TAG, file.getName() + " " + saveData);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        finally {
+            try{
+                if (out !=null) {
+                    out.close();
+                }
+            }
+            catch(Throwable e) {
+                e.printStackTrace();
+            }
+        }
+
+        image.recycle();
+    }
+
+    private void writeToFileWithThumbnail(Bitmap image, String saveData, String dir, String title, int imageIndex, long time) {
+
+        File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + imageIndex + ".png");
+
+        if (file.isFile()) {
+            file.delete();
+        }
+
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(file);
+            image.compress(Bitmap.CompressFormat.PNG, 90, out);
+
+            int bitWidth = image.getWidth();
+            int bitHeight = image.getHeight();
+
+            int sampleSize = 1;
+
+            if (bitHeight > 100 || bitWidth > 100) {
+
+                final int halfHeight = bitHeight / 2;
+                final int halfWidth = bitWidth / 2;
+                while ((halfHeight / sampleSize) > 100 && (halfWidth / sampleSize) > 100) {
+                    sampleSize *= 2;
+                }
+            }
+
+            Matrix matrix = new Matrix();
+            matrix.postScale(bitWidth / sampleSize, bitHeight / sampleSize);
+            Bitmap thumbnail = Bitmap.createBitmap(image, 0, 0, bitWidth, bitHeight, matrix, false);
+
+            File thumbnailCache = new File(dir + "/HistoryCache");
+
+            if (!thumbnailCache.exists() || (thumbnailCache.exists() && !thumbnailCache.isDirectory())) {
+                thumbnailCache.mkdir();
+            }
+
+            FileOutputStream thumbnailOut = new FileOutputStream(new File(thumbnailCache.getAbsolutePath() + "/" + time));
+
+            thumbnail.compress(Bitmap.CompressFormat.PNG, 90, thumbnailOut);
+
             AppSettings.setUrl(file.getName(), saveData);
             Log.i(TAG, file.getName() + " " + saveData);
         }
