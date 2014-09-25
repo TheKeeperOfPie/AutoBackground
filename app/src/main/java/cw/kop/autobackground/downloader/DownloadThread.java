@@ -76,7 +76,6 @@ public class DownloadThread extends Thread {
     private int totalDownloaded = 0;
     private int totalTarget = 0;
     private int imagesDownloaded = 0;
-    private boolean isCancelled = false;
     private HashSet<String> usedLinks;
 
     public DownloadThread(Context context) {
@@ -615,19 +614,13 @@ public class DownloadThread extends Thread {
             int bitWidth = image.getWidth();
             int bitHeight = image.getHeight();
 
-            int sampleSize = 1;
-
-            if (bitHeight > 100 || bitWidth > 100) {
-
-                final int halfHeight = bitHeight / 2;
-                final int halfWidth = bitWidth / 2;
-                while ((halfHeight / sampleSize) > 100 && (halfWidth / sampleSize) > 100) {
-                    sampleSize *= 2;
-                }
-            }
-
             Matrix matrix = new Matrix();
-            matrix.postScale(bitWidth / sampleSize, bitHeight / sampleSize);
+            if (bitWidth > bitHeight) {
+                matrix.postScale(100 / bitWidth, 100 / bitWidth);
+            }
+            else {
+                matrix.postScale(100 / bitHeight, 100 / bitHeight);
+            }
             Bitmap thumbnail = Bitmap.createBitmap(image, 0, 0, bitWidth, bitHeight, matrix, false);
 
             File thumbnailCache = new File(dir + "/HistoryCache");

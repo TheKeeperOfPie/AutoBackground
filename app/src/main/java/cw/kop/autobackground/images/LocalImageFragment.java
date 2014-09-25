@@ -17,8 +17,10 @@
 package cw.kop.autobackground.images;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -38,6 +40,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.downloader.Downloader;
@@ -189,13 +192,49 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
     public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
 
         if (imageAdapter.getItem(positionInList).getName().contains(".png") || imageAdapter.getItem(positionInList).getName().contains(".jpg") || imageAdapter.getItem(positionInList).getName().contains(".jpeg")) {
-            Intent galleryIntent = new Intent();
-            galleryIntent.setAction(Intent.ACTION_VIEW);
-            galleryIntent.setDataAndType(Uri.fromFile(imageAdapter.getItem(positionInList)), "image/*");
-            galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
-            galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            appContext.startActivity(galleryIntent);
+            showImageDialog(positionInList);
         }
+    }
+
+    private void showImageDialog(final int index) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
+
+        builder.setItems(R.array.history_menu, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        openImage(index);
+                        break;
+                    case 1:
+                        File file = imageAdapter.getItem(index);
+
+                        if (file.exists() && file.isFile()) {
+                            if (file.getAbsolutePath().equals(Downloader.getCurrentBitmapFile().getAbsolutePath())) {
+                                Intent intent = new Intent();
+                                intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
+                                intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                                appContext.sendBroadcast(intent);
+                            }
+                            file.delete();
+                            imageAdapter.remove(index);
+                        }
+                }
+            }
+        });
+
+        builder.show();
 
     }
+
+    private void openImage(int index) {
+        Intent galleryIntent = new Intent();
+        galleryIntent.setAction(Intent.ACTION_VIEW);
+        galleryIntent.setDataAndType(Uri.fromFile(imageAdapter.getItem(index)), "image/*");
+        galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
+        galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        appContext.startActivity(galleryIntent);
+    }
+
 }

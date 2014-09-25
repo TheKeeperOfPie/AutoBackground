@@ -46,26 +46,24 @@ public class ImageHistoryAdapter  extends BaseAdapter {
 
         for (String link : usedLinks) {
 
-            int index = -1;
             long time = 0;
             String url = "Error";
 
             try {
-                index = Integer.parseInt("" + link.charAt(link.length() - 1));
                 url = link.substring(0, link.lastIndexOf("Time:"));
                 time = Long.parseLong(link.substring(link.lastIndexOf("Time:") + 5, link.lastIndexOf("Order:")));
             }
             catch (Exception e) {
             }
 
-            historyItems.add(new HistoryItem(index, time, url, new File(AppSettings.getDownloadPath() + "/HistoryCache/" + time + ".png")));
+            historyItems.add(new HistoryItem(time, url, new File(AppSettings.getDownloadPath() + "/HistoryCache/" + time + ".png")));
 
         }
 
         Collections.sort(historyItems, new Comparator<HistoryItem>() {
             @Override
             public int compare(HistoryItem lhs, HistoryItem rhs) {
-                return lhs.getIndex() - rhs.getIndex();
+                return (int) (rhs.getTime() - lhs.getTime());
             }
         });
 
@@ -100,9 +98,26 @@ public class ImageHistoryAdapter  extends BaseAdapter {
             TextView fileSummary = (TextView) view.findViewById(R.id.file_summary);
             ImageView fileImage = (ImageView) view.findViewById(R.id.file_image);
 
-            Picasso.with(mainActivity.getApplicationContext())
-                    .load(R.drawable.ic_action_collection)
-                    .into(fileImage);
+            File thumbnailFile = new File(AppSettings.getDownloadPath() + "/HistoryCache/"
+                    + historyItems.get(position).getTime() + ".png");
+
+            if (thumbnailFile.exists() && thumbnailFile.isFile()) {
+                Picasso.with(parent.getContext())
+                        .load(thumbnailFile)
+                        .into(fileImage);
+            }
+            else {
+                if (AppSettings.getTheme() == R.style.AppLightTheme) {
+                    Picasso.with(parent.getContext())
+                            .load(R.drawable.ic_action_view_as_list)
+                            .into(fileImage);
+                }
+                else {
+                    Picasso.with(parent.getContext())
+                            .load(R.drawable.ic_action_view_as_list_dark)
+                            .into(fileImage);
+                }
+            }
 
             fileTitle.setText(DateFormat.getDateTimeInstance().format(new Date(historyItems.get(position).getTime())));
             fileSummary.setText(historyItems.get(position).getUrl());

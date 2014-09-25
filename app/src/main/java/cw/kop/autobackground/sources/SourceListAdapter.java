@@ -198,15 +198,11 @@ public class SourceListAdapter extends BaseAdapter {
                     boolean first = Boolean.parseBoolean(lhs.get("use"));
                     boolean second = Boolean.parseBoolean(rhs.get("use"));
 
-                    if (first && second) {
-                        return 0;
+                    if (first && second || (!first && !second)) {
+                        return lhs.get("title").compareTo(rhs.get("title"));
                     }
-                    if (first) {
-                        return -1;
-                    }
-                    if (second) {
-                        return 1;
-                    }
+
+                    return first ? -1 : 1;
 
                 }
 

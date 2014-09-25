@@ -496,7 +496,7 @@ public class SourceListFragment extends ListFragment {
 
                     if (position >= 0) {
                         String previousTitle = AppSettings.getSourceTitle(position);
-                        if (listAdapter.setItem(position, type, newTitle, data, AppSettings.useSource(position), sourceNum.getText().toString())) {
+                        if (listAdapter.setItem(position, type, newTitle, data.trim(), AppSettings.useSource(position), sourceNum.getText().toString())) {
                             if (!previousTitle.equals(newTitle)) {
                                 AppSettings.setSourceSet(newTitle, AppSettings.getSourceSet(previousTitle));
                                 Downloader.renameFiles(appContext, previousTitle, newTitle);
@@ -507,7 +507,7 @@ public class SourceListFragment extends ListFragment {
                             Toast.makeText(appContext, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
                         }
                     } else {
-                        if (listAdapter.addItem(type, newTitle, data, true, sourceNum.getText().toString())) {
+                        if (listAdapter.addItem(type, newTitle, data.trim(), true, sourceNum.getText().toString())) {
                             listAdapter.saveData();
                             AppSettings.setSourceSet(newTitle, new HashSet<String>());
                             hide(addSourceTutorial);

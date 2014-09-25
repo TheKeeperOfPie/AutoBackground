@@ -92,7 +92,7 @@ public class LocalImageAdapter extends BaseAdapter {
 			ImageView fileImage = (ImageView) view.findViewById(R.id.file_image);
 			
 			if (file.getName().contains(".png") || file.getName().contains(".jpg") || file.getName().contains(".jpeg")) {
-				Picasso.with(mainActivity.getApplicationContext())
+				Picasso.with(parent.getContext())
 					.load(file)
                     .resize(screenWidth, imageHeight)
                     .centerCrop()
@@ -100,24 +100,24 @@ public class LocalImageAdapter extends BaseAdapter {
 			}
 			else if (file.isDirectory()){
                 if (AppSettings.getTheme() == R.style.AppLightTheme) {
-                    Picasso.with(mainActivity.getApplicationContext())
+                    Picasso.with(parent.getContext())
                             .load(R.drawable.ic_action_collection)
                             .into(fileImage);
                 }
                 else {
-                    Picasso.with(mainActivity.getApplicationContext())
+                    Picasso.with(parent.getContext())
                             .load(R.drawable.ic_action_collection_dark)
                             .into(fileImage);
                 }
 			}
 			else {
                 if (AppSettings.getTheme() == R.style.AppLightTheme) {
-                    Picasso.with(mainActivity.getApplicationContext())
+                    Picasso.with(parent.getContext())
                             .load(R.drawable.ic_action_view_as_list)
                             .into(fileImage);
                 }
                 else {
-                    Picasso.with(mainActivity.getApplicationContext())
+                    Picasso.with(parent.getContext())
                             .load(R.drawable.ic_action_view_as_list_dark)
                             .into(fileImage);
                 }
@@ -203,5 +203,10 @@ public class LocalImageAdapter extends BaseAdapter {
 		}
 		return true;
 	}
-	
+
+    public void remove(int index) {
+        listFiles.remove(index);
+        notifyDataSetChanged();
+    }
+
 }

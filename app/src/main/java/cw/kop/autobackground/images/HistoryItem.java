@@ -7,31 +7,23 @@ import java.io.File;
  */
 public class HistoryItem {
 
-    private int index;
     private long time;
     private String  url;
     private File image;
 
-    public HistoryItem(int index, long time, String url, File image) {
-        this.index = index;
+    public HistoryItem(long time, String url, File image) {
         this.time = time;
         this.url = url;
         this.image = image;
-    }
-
-    public int getIndex() {
-        return index;
     }
 
     public long getTime() {
         return time;
     }
 
-
     public String getUrl() {
         return url;
     }
-
 
     public File getImage() {
         return image;
