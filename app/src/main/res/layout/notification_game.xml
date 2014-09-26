@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/notification_big_container"
     android:layout_width="match_parent"
@@ -12,8 +13,10 @@
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:src="@drawable/app_icon"
+        tools:ignore="ContentDescription"
         />
 
     <RelativeLayout
@@ -22,6 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/notification_buttons"
         android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/notification_big_icon"
         android:layout_toRightOf="@id/notification_big_icon"
         android:orientation="vertical"
         android:paddingTop="2dp"
@@ -55,7 +59,6 @@
 
     </RelativeLayout>
 
-
     <LinearLayout
         android:id="@+id/notification_game_row_1"
         android:layout_width="match_parent"
@@ -72,6 +75,7 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
+            tools:ignore="ContentDescription"
             />
 
         <ImageView
@@ -82,6 +86,7 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
+            tools:ignore="ContentDescription"
             />
 
         <ImageView
@@ -92,6 +97,7 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
+            tools:ignore="ContentDescription"
             />
 
         <ImageView
@@ -102,6 +108,7 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
+            tools:ignore="ContentDescription"
             />
 
         <ImageView
@@ -112,6 +119,7 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
+            tools:ignore="ContentDescription"
             />
 
     </LinearLayout>
@@ -132,6 +140,7 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
+            tools:ignore="ContentDescription"
             />
 
 
@@ -143,6 +152,7 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
+            tools:ignore="ContentDescription"
             />
 
 
@@ -154,6 +164,7 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
+            tools:ignore="ContentDescription"
             />
 
         <ImageView
@@ -164,6 +175,7 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
+            tools:ignore="ContentDescription"
             />
 
         <ImageView
@@ -174,6 +186,7 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
+            tools:ignore="ContentDescription"
             />
 
     </LinearLayout>
@@ -206,18 +219,20 @@
                 android:id="@+id/notification_button_one_image"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
                 android:layout_alignParentLeft="true"
                 android:scaleType="centerInside"
                 android:adjustViewBounds="true"
                 android:src="@drawable/app_icon"
-                android:contentDescription="@string/notification_option_one_image"
                 android:focusable="false"
+                tools:ignore="ContentDescription"
                 />
 
             <TextView
                 android:id="@+id/notification_button_one_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_toEndOf="@id/notification_button_one_image"
                 android:layout_toRightOf="@id/notification_button_one_image"
                 android:text="@string/notification_option_one_text"
                 android:textSize="14sp"
@@ -239,18 +254,20 @@
                 android:id="@+id/notification_button_two_image"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
                 android:layout_alignParentLeft="true"
                 android:scaleType="centerInside"
                 android:adjustViewBounds="true"
                 android:src="@drawable/app_icon"
-                android:contentDescription="@string/notification_option_two_image"
                 android:focusable="false"
+                tools:ignore="ContentDescription"
                 />
 
             <TextView
                 android:id="@+id/notification_button_two_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_toEndOf="@id/notification_button_two_image"
                 android:layout_toRightOf="@id/notification_button_two_image"
                 android:text="@string/notification_option_two_text"
                 android:textSize="14sp"
@@ -271,18 +288,20 @@
                 android:id="@+id/notification_button_three_image"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
                 android:layout_alignParentLeft="true"
                 android:scaleType="centerInside"
                 android:adjustViewBounds="true"
                 android:src="@drawable/app_icon"
-                android:contentDescription="@string/notification_option_three_image"
                 android:focusable="false"
+                tools:ignore="ContentDescription"
                 />
 
             <TextView
                 android:id="@+id/notification_button_three_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_toEndOf="@id/notification_button_three_image"
                 android:layout_toRightOf="@id/notification_button_three_image"
                 android:text="@string/notification_option_three_text"
                 android:textSize="14sp"
