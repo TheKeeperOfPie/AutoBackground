@@ -71,10 +71,14 @@
     <string name="spin_out_angle">Spin Out Angle</string>
     <string name="spin_out_angle_description">Rotation angle for spin out</string>
 
-    <string name="use_animation">Use Animation</string>
-    <string name="use_animation_description">Wallpaper panning animation</string>
-    <string name="animation_speed">Animation Speed</string>
-    <string name="animation_speed_description">Speed of pan animation</string>
+    <string name="use_animation">Use Horizontal Animation</string>
+    <string name="use_animation_description">Pan side to side animation</string>
+    <string name="use_animation_vertical">Use Vertical Animation</string>
+    <string name="use_animation_vertical_description">Pan up and down animation</string>
+    <string name="animation_speed">Horizontal Speed</string>
+    <string name="animation_speed_description">Horizontal animation speed</string>
+    <string name="animation_speed_vertical">Vertical Speed</string>
+    <string name="animation_speed_vertical_description">Vertical animation speed</string>
     <string name="animation_speed_hint">pixels per frame</string>>
     <string name="scale_animation_speed">Scale Speed</string>
     <string name="scale_animation_speed_description">Adjust animation speed for zoom feature</string>

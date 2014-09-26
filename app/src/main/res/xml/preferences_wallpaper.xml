@@ -186,12 +186,28 @@
 			android:summary="@string/use_animation_description"
 			/>
 
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_animation_vertical"
+            android:defaultValue="false"
+            android:title="@string/use_animation_vertical"
+            android:summary="@string/use_animation_vertical_description"
+            />
+
         <cw.kop.autobackground.SeekBarPreference
             android:key="animation_speed"
             android:max="50"
             android:defaultValue="10"
             android:title="@string/animation_speed"
             android:summary="@string/animation_speed_description"
+            android:dialogMessage="pixels per frame"
+            />
+
+        <cw.kop.autobackground.SeekBarPreference
+            android:key="animation_speed_vertical"
+            android:max="50"
+            android:defaultValue="10"
+            android:title="@string/animation_speed_vertical"
+            android:summary="@string/animation_speed_vertical_description"
             android:dialogMessage="pixels per frame"
             />
 
