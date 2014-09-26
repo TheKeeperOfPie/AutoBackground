@@ -4,22 +4,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="56dp"
-    android:background="@color/BLUE_OPAQUE"
     >
-
-    <!--<ImageView-->
-        <!--android:id="@+id/action_bar_icon"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_toRightOf="@id/drawer_indicator"-->
-        <!--android:paddingTop="12dp"-->
-        <!--android:paddingBottom="12dp"-->
-        <!--android:paddingLeft="4dp"-->
-        <!--android:paddingRight="8dp"-->
-        <!--android:scaleType="centerInside"-->
-        <!--android:adjustViewBounds="true"-->
-        <!--android:src="@drawable/app_icon"-->
-        <!--/>-->
 
     <ImageView
         android:id="@+id/sort_sources"
@@ -35,6 +20,7 @@
         android:adjustViewBounds="true"
         android:src="@drawable/ic_action_storage"
         android:visibility="gone"
+        android:contentDescription="@string/sort_sources_content_description"
         />
 
     <ImageView
@@ -51,6 +37,7 @@
         android:adjustViewBounds="true"
         android:src="@drawable/ic_action_download"
         android:visibility="gone"
+        android:contentDescription="@string/download_wallpaper_content_description"
         />
 
     <ImageView
@@ -66,6 +53,7 @@
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
         android:src="@drawable/ic_action_refresh"
+        android:contentDescription="@string/cycle_wallpaper_content_description"
         />
 
     <View
@@ -104,6 +92,7 @@
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
         android:src="@drawable/drawer_menu"
+        android:contentDescription="@string/drawer_indicator_content_description"
         />
 
 </RelativeLayout>

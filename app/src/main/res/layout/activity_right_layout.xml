@@ -6,12 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="cw.kop.autobackground.MainActivity"
-    tools:ignore="MergeRootFrame"
-    android:background="@color/TRANSPARENT_BACKGROUND"
     >
 
     <FrameLayout
-        android:background="@color/TRANSPARENT_BACKGROUND"
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

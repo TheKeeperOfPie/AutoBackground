@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">AutoBackground</string>
+    <string name="app_name">AutoBackground</string>con
     <string name="wallpaper_description">AutoBackground</string>
     <string name="menu_help">Help</string>
-    <string name="fragment_content_description">Fragment image</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="letters_and_numbers">ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890</string>
-    <string name="file_content_description">File Image</string>
+
+    <string name="drawer_indicator_content_description">Open drawer</string>
+    <string name="cycle_wallpaper_content_description">Cycle wallpaper</string>
+    <string name="download_wallpaper_content_description">Download wallpaper</string>
+    <string name="sort_sources_content_description">Sort sources</string>
+    <string name="floating_add_button_content_description">Add source</string>
 
     <string name="title_wallpaper_settings">Wallpaper Settings</string>
     <string name="title_effects_settings">Effect Settings</string>
@@ -316,7 +320,6 @@
 
     </string>
 
-    <string name="notification_content_description">Preview Image</string>
     <string name="notification_option_icon">Notification Icon</string>
     <string name="notification_highlight">View Highlight</string>
     <string name="notification_option_one_image">Option Image 1</string>

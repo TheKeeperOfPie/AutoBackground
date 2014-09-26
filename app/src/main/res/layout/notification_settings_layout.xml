@@ -20,7 +20,6 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
             android:src="@drawable/app_icon"
-            android:contentDescription="@string/notification_content_description"
             />
 
         <ImageView

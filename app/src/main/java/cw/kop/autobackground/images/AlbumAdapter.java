@@ -81,7 +81,7 @@ public class AlbumAdapter extends BaseAdapter {
             name.setText(albumNames.get(position));
 
             if (Patterns.WEB_URL.matcher(albumImages.get(position)).matches()) {
-                Picasso.with(context).load(albumImages.get(position)).into(icon);
+                Picasso.with(parent.getContext()).load(albumImages.get(position)).into(icon);
             }
 
             return view;

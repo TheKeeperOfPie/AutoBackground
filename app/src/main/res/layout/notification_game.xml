@@ -14,7 +14,6 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:src="@drawable/app_icon"
-        android:contentDescription="@string/notification_content_description"
         />
 
     <RelativeLayout
@@ -73,7 +72,6 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
-            android:contentDescription="@string/notification_content_description"
             />
 
         <ImageView
@@ -84,7 +82,6 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
-            android:contentDescription="@string/notification_content_description"
             />
 
         <ImageView
@@ -95,7 +92,6 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
-            android:contentDescription="@string/notification_content_description"
             />
 
         <ImageView
@@ -106,7 +102,6 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
-            android:contentDescription="@string/notification_content_description"
             />
 
         <ImageView
@@ -117,7 +112,6 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
-            android:contentDescription="@string/notification_content_description"
             />
 
     </LinearLayout>
@@ -138,7 +132,6 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
-            android:contentDescription="@string/notification_content_description"
             />
 
 
@@ -150,7 +143,6 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
-            android:contentDescription="@string/notification_content_description"
             />
 
 
@@ -162,7 +154,6 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
-            android:contentDescription="@string/notification_content_description"
             />
 
         <ImageView
@@ -173,7 +164,6 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
-            android:contentDescription="@string/notification_content_description"
             />
 
         <ImageView
@@ -184,7 +174,6 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
             android:src="@drawable/ic_action_picture_dark"
-            android:contentDescription="@string/notification_content_description"
             />
 
     </LinearLayout>
