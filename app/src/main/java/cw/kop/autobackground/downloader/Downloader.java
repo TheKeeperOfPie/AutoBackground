@@ -44,13 +44,9 @@ public class Downloader {
 	
 	private static DownloadThread downloadThread;
 	
-	public Downloader() {
-	}
-	
 	public static boolean download(Context appContext) {
 
         if (!isDownloading) {
-            isDownloading = true;
             ConnectivityManager connect = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
 
             NetworkInfo wifi = connect.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
@@ -67,9 +63,9 @@ public class Downloader {
 
                 Intent resetDownloadIntent = new Intent(Downloader.DOWNLOAD_TERMINATED);
                 LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
-                isDownloading = false;
-                return true;
+                return false;
             }
+            isDownloading = true;
             downloadThread = new DownloadThread(appContext);
             downloadThread.start();
             if (AppSettings.useToast()) {

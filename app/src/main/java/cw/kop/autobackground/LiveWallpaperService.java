@@ -266,13 +266,15 @@ public class LiveWallpaperService extends GLWallpaperService {
         }
     }
 
+
+
     @Override
     public void onDestroy() {
-        super.onDestroy();
         notificationManager.cancel(NOTIFICATION_ID);
         unregisterReceiver(serviceReceiver);
         alarmManager.cancel(pendingDownloadIntent);
         alarmManager.cancel(pendingIntervalIntent);
+        super.onDestroy();
     }
 
     private final BroadcastReceiver serviceReceiver = new BroadcastReceiver() {
@@ -1767,7 +1769,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     if (animated) {
-                        if (AppSettings.useAnimation() && (bitmapWidth / scaleFactor) - renderScreenWidth > AppSettings.getAnimationSafety()) {
+                        if (AppSettings.useAnimation() && bitmapWidth - (renderScreenWidth / scaleFactor) > AppSettings.getAnimationSafety()) {
                             if (animationX < (-bitmapWidth + renderScreenWidth + animationModifierX)) {
                                 animationModifierX = -Math.abs(animationModifierX);
                             } else if (animationX > -1.0f) {
@@ -1778,7 +1780,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                             newOffsetX -= animationX;
                         }
 
-                        if (AppSettings.useVerticalAnimation() && (bitmapHeight / scaleFactor) - renderScreenHeight > AppSettings.getAnimationSafety()) {
+                        if (AppSettings.useVerticalAnimation() && bitmapHeight - (renderScreenHeight / scaleFactor) > AppSettings.getAnimationSafety()) {
                             if (animationY < (-bitmapHeight + renderScreenHeight + animationModifierY)) {
                                 animationModifierY = -Math.abs(animationModifierY);
                             } else if (animationY > -1.0f) {
@@ -1825,6 +1827,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     offsetX = newOffsetX;
                     offsetY = newOffsetY;
                     animationX = offsetX;
+                    animationY = offsetY;
                     oldBitmapHeight = bitmapHeight;
                     oldBitmapWidth = bitmapWidth;
                     scaleFactor = 1.0f;
@@ -1845,7 +1848,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 else {
 
                     if (animated) {
-                        if (AppSettings.useAnimation() && (bitmapWidth / scaleFactor) - renderScreenWidth > AppSettings.getAnimationSafety()) {
+                        if (AppSettings.useAnimation() && bitmapWidth - (renderScreenWidth / scaleFactor) > AppSettings.getAnimationSafety()) {
                             if (animationX < (-bitmapWidth + renderScreenWidth + animationModifierX)) {
                                 animationModifierX = -Math.abs(animationModifierX);
                             } else if (animationX > -1.0f) {
@@ -1858,7 +1861,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                             }
                         }
 
-                        if (AppSettings.useVerticalAnimation() && (bitmapHeight / scaleFactor) - renderScreenHeight > AppSettings.getAnimationSafety()) {
+                        if (AppSettings.useVerticalAnimation() && bitmapHeight - (renderScreenHeight / scaleFactor) > AppSettings.getAnimationSafety()) {
                             if (animationY < (-bitmapHeight + renderScreenHeight + animationModifierY)) {
                                 animationModifierY = -Math.abs(animationModifierY);
                             } else if (animationY > -1.0f) {
@@ -1873,31 +1876,43 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     float timeRatio = (float) (transitionTime - time) / AppSettings.getTransitionTime();
-                    float transitionNewScaleFactor = scaleFactor;
+                    float transitionNewScaleFactor = 1.0f;
                     float transitionOldScaleFactor = scaleFactor;
                     float transitionOldOffsetX = offsetX;
                     float transitionNewOffsetX = newOffsetX;
+                    float transitionOldOffsetY = offsetY;
+                    float transitionNewOffsetY = newOffsetY;
                     float transitionOldAngle = 0f;
                     float transitionNewAngle = 0f;
 
                     if (AppSettings.useZoomIn()) {
                         transitionNewScaleFactor = 1.0f - timeRatio;
-                        transitionNewOffsetX = bitmapWidth / transitionNewScaleFactor / 2.0f * timeRatio - ((bitmapWidth / transitionNewScaleFactor - renderScreenWidth / transitionNewScaleFactor) / 2.0f) - (bitmapWidth - renderScreenWidth) / transitionNewScaleFactor * (newOffsetX / (renderScreenWidth - bitmapWidth) - 0.5f);
-                        newOffsetY = bitmapHeight / transitionNewScaleFactor / 2 * timeRatio - ((bitmapHeight / transitionNewScaleFactor - renderScreenHeight / transitionNewScaleFactor) / 2);
+                        transitionNewOffsetX = bitmapWidth / transitionNewScaleFactor / 2 * timeRatio - ((bitmapWidth / transitionNewScaleFactor - renderScreenWidth / transitionNewScaleFactor) / 2.0f) - (bitmapWidth - renderScreenWidth) / transitionNewScaleFactor * (newOffsetX / (renderScreenWidth - bitmapWidth) - 0.5f);
+                        transitionNewOffsetY = bitmapHeight / transitionNewScaleFactor / 2 * timeRatio - ((bitmapHeight / transitionNewScaleFactor - renderScreenHeight / transitionNewScaleFactor) / 2);
                     }
 
 
                     if (AppSettings.useZoomOut()) {
                         transitionOldScaleFactor = timeRatio;
                         transitionOldOffsetX = oldBitmapWidth / transitionOldScaleFactor / 2 * (1.0f - timeRatio) - ((oldBitmapWidth / transitionOldScaleFactor - renderScreenWidth / transitionOldScaleFactor) / 2) - (oldBitmapWidth - renderScreenWidth) / transitionOldScaleFactor * (offsetX / (renderScreenWidth - oldBitmapWidth) - 0.5f);
-                        offsetY = oldBitmapHeight / transitionOldScaleFactor / 2 * (1.0f - timeRatio) - ((oldBitmapHeight / transitionOldScaleFactor - renderScreenHeight / transitionOldScaleFactor) / 2);
+                        transitionOldOffsetY = oldBitmapHeight / transitionOldScaleFactor / 2 * (1.0f - timeRatio) - ((oldBitmapHeight / transitionOldScaleFactor - renderScreenHeight / transitionOldScaleFactor) / 2);
                     }
 
                     if (AppSettings.useOvershoot()) {
-                        OvershootInterpolator overshootInterpolator = new OvershootInterpolator(AppSettings.getOvershootIntensity());
+                        OvershootInterpolator horizontalOvershootInterpolator = new OvershootInterpolator(AppSettings.getOvershootIntensity());
                         transitionNewOffsetX = (AppSettings.reverseOvershoot() ?
-                                transitionNewOffsetX + renderScreenWidth - (renderScreenWidth * overshootInterpolator.getInterpolation(1.0f - timeRatio)) :
-                                transitionNewOffsetX - renderScreenWidth + (renderScreenWidth * overshootInterpolator.getInterpolation(1.0f - timeRatio)));
+                                transitionNewOffsetX + renderScreenWidth - (renderScreenWidth * horizontalOvershootInterpolator.getInterpolation(1.0f - timeRatio)) :
+                                transitionNewOffsetX - renderScreenWidth + (renderScreenWidth * horizontalOvershootInterpolator.getInterpolation(1.0f - timeRatio)));
+                    }
+
+                    if (AppSettings.useVerticalOvershoot()) {
+                        OvershootInterpolator verticalOvershootInterpolator = new OvershootInterpolator(AppSettings.getVerticalOvershootIntensity());
+                        transitionNewOffsetY = (AppSettings.reverseVerticalOvershoot() ?
+                                transitionNewOffsetY + renderScreenHeight - (renderScreenHeight * verticalOvershootInterpolator.getInterpolation(1.0f - timeRatio)) :
+                                transitionNewOffsetY - renderScreenHeight + (renderScreenHeight * verticalOvershootInterpolator.getInterpolation(1.0f - timeRatio)));
+
+                        Log.i(TAG, "" + (renderScreenHeight * verticalOvershootInterpolator.getInterpolation(1.0f - timeRatio)));
+
                     }
 
                     if (AppSettings.useSpinIn()) {
@@ -1929,14 +1944,14 @@ public class LiveWallpaperService extends GLWallpaperService {
                         GLES20.glUniform1f(mAlphaHandle, 1.0f);
                     }
 
-                    renderTransitionTexture(renderScreenWidth / transitionOldScaleFactor, renderScreenHeight / transitionOldScaleFactor, oldBitmapWidth, oldBitmapHeight, 1, transitionOldOffsetX, offsetY, transitionOldAngle, transitionOldScaleFactor);
+                    renderTransitionTexture(renderScreenWidth / transitionOldScaleFactor, renderScreenHeight / transitionOldScaleFactor, oldBitmapWidth, oldBitmapHeight, 1, transitionOldOffsetX, transitionOldOffsetY, transitionOldAngle, transitionOldScaleFactor);
 
                     if (AppSettings.useFade()) {
                         fadeInAlpha = 1.0f - timeRatio;
                         GLES20.glUniform1f(mAlphaHandle, fadeInAlpha);
                     }
 
-                    renderTransitionTexture(renderScreenWidth / transitionNewScaleFactor, renderScreenHeight / transitionNewScaleFactor, bitmapWidth, bitmapHeight, 0, transitionNewOffsetX, newOffsetY, transitionNewAngle, transitionNewScaleFactor);
+                    renderTransitionTexture(renderScreenWidth / transitionNewScaleFactor, renderScreenHeight / transitionNewScaleFactor, bitmapWidth, bitmapHeight, 0, transitionNewOffsetX, transitionNewOffsetY, transitionNewAngle, transitionNewScaleFactor);
                     GLES20.glDisable(GLES20.GL_BLEND);
                 }
             }
@@ -2129,7 +2144,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                             newOffsetX += xMovement;
                         }
                         if (offsetY - yMovement > (-bitmapHeight + renderScreenHeight / scaleFactor) && offsetY - yMovement < 0) {
+                            animationY -= yMovement;
                             offsetY -= yMovement;
+                            newOffsetY -= yMovement;
                         }
                     }
                     else {
@@ -2139,7 +2156,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                             newOffsetX -= xMovement;
                         }
                         if (offsetY + yMovement > (-bitmapHeight + renderScreenHeight / scaleFactor) && offsetY + yMovement < 0) {
+                            animationY += yMovement;
                             offsetY += yMovement;
+                            newOffsetY += yMovement;
                         }
                     }
                 }

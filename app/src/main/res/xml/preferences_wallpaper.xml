@@ -114,6 +114,29 @@
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_overshoot_vertical"
+            android:defaultValue="false"
+            android:title="@string/use_overshoot_vertical"
+            android:summary="@string/use_overshoot_vertical_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="reverse_overshoot_vertical"
+            android:defaultValue="false"
+            android:title="@string/reverse_overshoot_vertical"
+            android:summary="@string/reverse_overshoot_vertical_description"
+            />
+
+        <cw.kop.autobackground.SeekBarPreference
+            android:key="overshoot_intensity_vertical"
+            android:max="100"
+            android:defaultValue="10"
+            android:title="@string/overshoot_intensity_vertical"
+            android:summary="@string/overshoot_intensity_vertical_description"
+            android:dialogMessage=" "
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
             android:key="use_zoom_in"
             android:defaultValue="false"
             android:title="@string/use_zoom_in"

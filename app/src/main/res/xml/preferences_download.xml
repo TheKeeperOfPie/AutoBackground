@@ -104,6 +104,29 @@
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_image_history"
+            android:defaultValue="true"
+            android:title="@string/use_image_history"
+            android:summary="@string/use_image_history_description"
+            />
+
+        <EditTextPreference
+            android:key="image_history_size"
+            android:defaultValue="100"
+            android:title="@string/image_history_size"
+            android:inputType="number"
+            android:numeric="integer"
+            android:summary="@string/image_history_size_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_thumbnails"
+            android:defaultValue="true"
+            android:title="@string/use_thumbnails"
+            android:summary="@string/use_thumbnails_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
 		    android:key="keep_images"
     		android:defaultValue="false"
 		    android:title="@string/keep_images"

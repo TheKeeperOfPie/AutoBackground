@@ -607,6 +607,7 @@ public class DownloadThread extends Thread {
         }
 
         FileOutputStream out = null;
+        FileOutputStream thumbnailOut = null;
         try {
             out = new FileOutputStream(file);
             image.compress(Bitmap.CompressFormat.PNG, 90, out);
@@ -629,7 +630,7 @@ public class DownloadThread extends Thread {
                 thumbnailCache.mkdir();
             }
 
-            FileOutputStream thumbnailOut = new FileOutputStream(new File(thumbnailCache.getAbsolutePath() + "/" + time));
+            thumbnailOut = new FileOutputStream(new File(thumbnailCache.getAbsolutePath() + "/" + time));
 
             thumbnail.compress(Bitmap.CompressFormat.PNG, 90, thumbnailOut);
 
@@ -644,8 +645,11 @@ public class DownloadThread extends Thread {
                 if (out !=null) {
                     out.close();
                 }
+                if (thumbnailOut != null) {
+                    thumbnailOut.close();
+                }
             }
-            catch(Throwable e) {
+            catch(IOException e) {
                 e.printStackTrace();
             }
         }
