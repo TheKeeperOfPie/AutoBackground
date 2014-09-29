@@ -817,7 +817,11 @@ public class LiveWallpaperService extends GLWallpaperService {
             Collections.shuffle(bitmapFiles);
 
             for (Bitmap bitmap : tileBitmaps) {
-                bitmap.recycle();
+                try {
+                    bitmap.recycle();
+                }
+                catch (NullPointerException e) {
+                }
             }
 
             tileBitmaps.clear();
@@ -1910,8 +1914,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                         transitionNewOffsetY = (AppSettings.reverseVerticalOvershoot() ?
                                 transitionNewOffsetY + renderScreenHeight - (renderScreenHeight * verticalOvershootInterpolator.getInterpolation(1.0f - timeRatio)) :
                                 transitionNewOffsetY - renderScreenHeight + (renderScreenHeight * verticalOvershootInterpolator.getInterpolation(1.0f - timeRatio)));
-
-                        Log.i(TAG, "" + (renderScreenHeight * verticalOvershootInterpolator.getInterpolation(1.0f - timeRatio)));
 
                     }
 

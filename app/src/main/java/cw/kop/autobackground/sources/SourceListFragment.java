@@ -89,6 +89,7 @@ public class SourceListFragment extends ListFragment {
     private ImageButton addButton;
     private ImageView downloadButton;
     private ImageView sortButton;
+    private ImageView cycleButton;
 
     private ShowcaseView sourceListTutorial;
     private ShowcaseView addSourceTutorial;
@@ -196,13 +197,41 @@ public class SourceListFragment extends ListFragment {
             }
         });
 
+        cycleButton = (ImageView) getActivity().getActionBar().getCustomView().findViewById(R.id.cycle_wallpaper);
+        cycleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cycleWallpaper();
+                if (AppSettings.useToast()) {
+                    Toast.makeText(appContext, "Cycling wallpaper...", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        cycleButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (AppSettings.useToast()) {
+                    Toast.makeText(appContext, "Cycle wallpaper", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            }
+        });
+
         if (AppSettings.getTheme() != R.style.AppLightTheme) {
             downloadButton.setImageResource(R.drawable.ic_action_download_dark);
             sortButton.setImageResource(R.drawable.ic_action_storage_dark);
+            cycleButton.setImageResource(R.drawable.ic_action_refresh_dark);
             addButton.setBackgroundResource(R.drawable.floating_button_dark);
         }
 
         return view;
+    }
+
+    private void cycleWallpaper() {
+        Intent intent = new Intent();
+        intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
+        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+        appContext.sendBroadcast(intent);
     }
 
     private void startDownload() {
@@ -350,6 +379,8 @@ public class SourceListFragment extends ListFragment {
                     case 0:
                         showInputDialog(AppSettings.WEBSITE,
                                 "",
+                                "URL",
+                                "",
                                 "",
                                 "",
                                 "",
@@ -362,7 +393,9 @@ public class SourceListFragment extends ListFragment {
                     case 2:
                         showInputDialog(AppSettings.IMGUR,
                                 "",
+                                "Subreddit",
                                 "imgur.com/r/",
+                                "",
                                 "",
                                 "",
                                 "Enter Imgur subreddit:",
@@ -371,7 +404,9 @@ public class SourceListFragment extends ListFragment {
                     case 3:
                         showInputDialog(AppSettings.IMGUR,
                                 "",
+                                "Album ID",
                                 "imgur.com/a/",
+                                "",
                                 "",
                                 "",
                                 "Enter Imgur album:",
@@ -384,6 +419,28 @@ public class SourceListFragment extends ListFragment {
                         else {
                             new PicasaAlbumTask(-1).execute();
                         }
+                        break;
+                    case 5:
+                        showInputDialog(AppSettings.TUMBLR_BLOG,
+                                "",
+                                "Blog name",
+                                "",
+                                "",
+                                ".tumblr.com",
+                                "",
+                                "Enter Tumblr blog:",
+                                -1);
+                        break;
+                    case 6:
+                        showInputDialog(AppSettings.TUMBLR_TAG,
+                                "",
+                                "Tag",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "Enter Tumblr tag:",
+                                -1);
                         break;
                     default:
                 }
@@ -443,7 +500,7 @@ public class SourceListFragment extends ListFragment {
         }
     }
 
-    private void showInputDialog(final String type, String title, final String prefix, String data, String num, String mainTitle, final int position) {
+    private void showInputDialog(final String type, String title, String hint, final String prefix, String data, final String suffix, String num, String mainTitle, final int position) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
 
@@ -454,13 +511,16 @@ public class SourceListFragment extends ListFragment {
         final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
         final TextView sourcePrefix = (TextView) dialogView.findViewById(R.id.source_data_prefix);
         final EditText sourceData = (EditText) dialogView.findViewById(R.id.source_data);
+        final TextView sourceSuffix = (TextView) dialogView.findViewById(R.id.source_data_suffix);
         final EditText sourceNum = (EditText) dialogView.findViewById(R.id.source_num);
         TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
 
         dialogTitle.setText(mainTitle);
         sourceTitle.setText(title);
         sourcePrefix.setText(prefix);
+        sourceData.setHint(hint);
         sourceData.setText(data);
+        sourceSuffix.setText(suffix);
         sourceNum.setText(num);
 
         builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
@@ -488,10 +548,17 @@ public class SourceListFragment extends ListFragment {
                     }
 
                     String newTitle = sourceTitle.getText().toString();
-                    String data = prefix + sourceData.getText().toString();
+                    String data = prefix + sourceData.getText().toString() + suffix;
 
-                    if (!data.contains("http")) {
+                    if ((type.equals(AppSettings.WEBSITE) ||
+                            type.equals(AppSettings.IMGUR) ||
+                            type.equals(AppSettings.PICASA) ||
+                            type.equals(AppSettings.TUMBLR_BLOG))
+                        && !data.contains("http")) {
                         data = "http://" + data;
+                    }
+                    else if (type.equals(AppSettings.TUMBLR_TAG)) {
+                        data = "Tumblr Tag: " + data;
                     }
 
                     if (position >= 0) {
@@ -536,7 +603,11 @@ public class SourceListFragment extends ListFragment {
 				switch (which) {
                     case 0:
                         String directory;
-                        if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR) || type.equals(AppSettings.PICASA)) {
+                        if (type.equals(AppSettings.WEBSITE) ||
+                                type.equals(AppSettings.IMGUR) ||
+                                type.equals(AppSettings.PICASA) ||
+                                type.equals(AppSettings.TUMBLR_BLOG )||
+                                type.equals(AppSettings.TUMBLR_TAG)) {
                             directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(position) + " " + AppSettings.getImagePrefix();
                         }
                         else {
@@ -549,38 +620,76 @@ public class SourceListFragment extends ListFragment {
                             showInputDialog(AppSettings.WEBSITE,
                                     AppSettings.getSourceTitle(position),
                                     "",
+                                    "",
                                     AppSettings.getSourceData(position),
+                                    "",
                                     "" + AppSettings.getSourceNum(position),
-                                    "Enter website:",
+                                    "Edit website:",
                                     position);
                         }
                         else if (type.equals(AppSettings.IMGUR)) {
-                            String prefix = "";
+                            String prefix = "", hint = "";
                             String data = AppSettings.getSourceData(position);
                             if (data.contains("imgur.com/a/")) {
                                 prefix = "imgur.com/a/";
+                                hint = "Album ID";
                             }
                             else if (data.contains("imgur.com/r/")) {
                                 prefix = "imgur.com/r/";
+                                hint = "Subreddit";
                             }
 
                             showInputDialog(AppSettings.IMGUR,
                                     AppSettings.getSourceTitle(position),
+                                    hint,
                                     prefix,
                                     data.substring(data.indexOf(prefix) + prefix.length()),
+                                    "",
                                     "" + AppSettings.getSourceNum(position),
-                                    "Enter Imgur source:",
+                                    "Edit Imgur source:",
                                     position);
                         }
                         else if (type.equals(AppSettings.PICASA)) {
                             new PicasaAlbumTask(position).execute();
+                        }
+                        else if (type.equals(AppSettings.TUMBLR_BLOG)) {
+                            showInputDialog(AppSettings.TUMBLR_BLOG,
+                                    AppSettings.getSourceTitle(position),
+                                    "Blog name",
+                                    "",
+                                    AppSettings.getSourceData(position),
+                                    "",
+                                    "" + AppSettings.getSourceNum(position),
+                                    "Edit Tumblr Blog:",
+                                    position);
+                        }
+                        else if (type.equals(AppSettings.TUMBLR_TAG)) {
+                            String data = AppSettings.getSourceData(position);
+
+                            if (data.length() > 12) {
+                                data = data.substring(12);
+                            }
+
+                            showInputDialog(AppSettings.TUMBLR_TAG,
+                                    AppSettings.getSourceTitle(position),
+                                    "Tag",
+                                    "",
+                                    data,
+                                    "",
+                                    "" + AppSettings.getSourceNum(position),
+                                    "Edit Tumblr Tag:",
+                                    position);
                         }
                         else if (type.equals(AppSettings.FOLDER)) {
                             showImageFragment(false, "", position);
                         }
 						break;
 					case 2:
-                        if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR) || type.equals(AppSettings.PICASA)) {
+                        if (type.equals(AppSettings.WEBSITE) ||
+                                type.equals(AppSettings.IMGUR) ||
+                                type.equals(AppSettings.PICASA) ||
+                                type.equals(AppSettings.TUMBLR_BLOG) ||
+                                type.equals(AppSettings.TUMBLR_TAG)) {
                             listAdapter.saveData();
                             AlertDialog.Builder deleteDialog = new AlertDialog.Builder(appContext);
 

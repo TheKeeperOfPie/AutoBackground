@@ -153,14 +153,23 @@ public class DownloadThread extends Thread {
                         file.mkdir();
                     }
 
-                    if (AppSettings.getSourceType(index).equals(AppSettings.WEBSITE)) {
-                        downloadWebsite(AppSettings.getSourceData(index), index);
+                    String sourceType = AppSettings.getSourceType(index);
+                    String sourceData = AppSettings.getSourceData(index);
+
+                    if (sourceType.equals(AppSettings.WEBSITE)) {
+                        downloadWebsite(sourceData, index);
                     }
-                    else if (AppSettings.getSourceType(index).equals(AppSettings.IMGUR)) {
-                        downloadImgur(AppSettings.getSourceData(index), index);
+                    else if (sourceType.equals(AppSettings.IMGUR)) {
+                        downloadImgur(sourceData, index);
                     }
-                    else if (AppSettings.getSourceType(index).equals(AppSettings.PICASA)) {
-                        downloadPicasa(AppSettings.getSourceData(index), index);
+                    else if (sourceType.equals(AppSettings.PICASA)) {
+                        downloadPicasa(sourceData, index);
+                    }
+                    else if (sourceType.equals(AppSettings.TUMBLR_BLOG)) {
+                        downloadTumblrBlog(sourceData, index);
+                    }
+                    else if (sourceType.equals(AppSettings.TUMBLR_TAG)) {
+                        downloadTumblrTag(sourceData, index);
                     }
 
                     totalTarget += AppSettings.getSourceNum(index);
@@ -293,12 +302,12 @@ public class DownloadThread extends Thread {
         Log.i(TAG, "stored: " + stored);
         Log.i(TAG, "numDownloaded: " + numDownloaded);
 
-        for (int i = numDownloaded; i < mainDir.listFiles().length + 100; i++) {
+        for (int i = numDownloaded; i < mainDir.listFiles().length + 500; i++) {
             File oldImageFile = new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" +  i + ".png");
 
-            Log.i(TAG, oldImageFile.getAbsolutePath());
-
             if (oldImageFile.exists() && oldImageFile.isFile()) {
+                Log.i(TAG, oldImageFile.getAbsolutePath());
+
                 File newImageFile = new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + index + ".png");
 
                 if (newImageFile.exists() && newImageFile.isFile()) {
@@ -412,14 +421,16 @@ public class DownloadThread extends Thread {
         }
     }
 
-    private void downloadPicasa(String url, int index) {
+    private void downloadPicasa(String data, int index) {
 
         if (isInterrupted()) {
             return;
         }
 
+        data = data.substring(data.indexOf("user/"));
+
         try {
-            HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/user/" + AppSettings.getGoogleAccountName() + "/albumid/6043504875137421169" + "?imgmax=d");
+            HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/" + data + "?imgmax=d");
             httpGet.setHeader("Authorization", "OAuth " + AppSettings.getGoogleAccountToken());
             httpGet.setHeader("X-GData-Client", AppSettings.PICASA_CLIENT_ID);
             httpGet.setHeader("GData-Version", "2");
@@ -438,6 +449,106 @@ public class DownloadThread extends Thread {
             }
 
             startDownload(imageList, imageList, index);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void downloadTumblrBlog(String url, int index) {
+
+        if (isInterrupted()) {
+            return;
+        }
+
+        String data = url.substring(url.indexOf("://") + 3);
+
+        try {
+            HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/blog/" + data + "/posts/photo?api_key=" + AppSettings.TUMBLR_CLIENT_ID);
+
+            String response = getResponse(httpGet);
+            if (response == null) {
+                return;
+            }
+
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jArray = jsonObject.getJSONObject("response").getJSONArray("posts");
+
+            List<String> imageList = new ArrayList<String>();
+            List<String> imagePages = new ArrayList<String>();
+
+            for (int i = 0; i < jArray.length(); i++)
+            {
+                JSONObject postObject = jArray.getJSONObject(i);
+
+                String postUrl = postObject.getString("post_url");
+
+                JSONArray imageArray = postObject.getJSONArray("photos");
+
+                for (int imageIndex = 0; imageIndex < imageArray.length(); imageIndex++) {
+                    imageList.add(imageArray.getJSONObject(imageIndex).getJSONObject("original_size").getString("url"));
+                    imagePages.add(postUrl);
+                }
+
+            }
+
+            Log.i(TAG, "imageList size: " + imageList.size());
+
+            startDownload(imageList, imagePages, index);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void downloadTumblrTag(String tag, int index) {
+
+        if (tag.length() <= 12 || isInterrupted()) {
+            return;
+        }
+
+        tag = tag.substring(12);
+
+        Log.i(TAG, "Tumblr Tag: " + tag);
+
+        try {
+            HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/tagged?tag=" + tag + "&api_key=" + AppSettings.TUMBLR_CLIENT_ID);
+
+            String response = getResponse(httpGet);
+            if (response == null) {
+                return;
+            }
+
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jArray = jsonObject.getJSONArray("response");
+
+            List<String> imageList = new ArrayList<String>();
+            List<String> imagePages = new ArrayList<String>();
+
+            for (int i = 0; i < jArray.length(); i++)
+            {
+                try {
+                    JSONObject postObject = jArray.getJSONObject(i);
+
+                    String postUrl = postObject.getString("post_url");
+
+                    JSONArray imageArray = postObject.getJSONArray("photos");
+
+                    for (int imageIndex = 0; imageIndex < imageArray.length(); imageIndex++) {
+                        imageList.add(imageArray.getJSONObject(imageIndex).getJSONObject("original_size").getString("url"));
+                        imagePages.add(postUrl);
+                    }
+                }
+                catch (JSONException e){
+                }
+
+            }
+
+            Log.i(TAG, "imageList size: " + imageList.size());
+
+            startDownload(imageList, imagePages, index);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -609,20 +720,22 @@ public class DownloadThread extends Thread {
         FileOutputStream out = null;
         FileOutputStream thumbnailOut = null;
         try {
-            out = new FileOutputStream(file);
-            image.compress(Bitmap.CompressFormat.PNG, 90, out);
-
             int bitWidth = image.getWidth();
             int bitHeight = image.getHeight();
 
+            float thumbnailSize = (float) AppSettings.getThumbnailSize();
+
             Matrix matrix = new Matrix();
             if (bitWidth > bitHeight) {
-                matrix.postScale(100 / bitWidth, 100 / bitWidth);
+                matrix.postScale(thumbnailSize / bitWidth, thumbnailSize / bitWidth);
             }
             else {
-                matrix.postScale(100 / bitHeight, 100 / bitHeight);
+                matrix.postScale(thumbnailSize / bitHeight, thumbnailSize / bitHeight);
             }
             Bitmap thumbnail = Bitmap.createBitmap(image, 0, 0, bitWidth, bitHeight, matrix, false);
+
+            out = new FileOutputStream(file);
+            image.compress(Bitmap.CompressFormat.PNG, 90, out);
 
             File thumbnailCache = new File(dir + "/HistoryCache");
 
@@ -630,9 +743,13 @@ public class DownloadThread extends Thread {
                 thumbnailCache.mkdir();
             }
 
-            thumbnailOut = new FileOutputStream(new File(thumbnailCache.getAbsolutePath() + "/" + time));
+            File thumbnailFile = new File(thumbnailCache.getAbsolutePath() + "/" + time + ".png");
+
+            thumbnailOut = new FileOutputStream(thumbnailFile);
 
             thumbnail.compress(Bitmap.CompressFormat.PNG, 90, thumbnailOut);
+
+            Log.i(TAG, "Thumbnail written: " + thumbnailFile.getAbsolutePath());
 
             AppSettings.setUrl(file.getName(), saveData);
             Log.i(TAG, file.getName() + " " + saveData);
@@ -688,6 +805,7 @@ public class DownloadThread extends Thread {
 
         sendToast("Download cancelled");
 
+        AppSettings.checkUsedLinksSize();
         appContext = null;
         Downloader.setIsDownloading(false);
     }
@@ -731,6 +849,7 @@ public class DownloadThread extends Thread {
         Intent resetDownloadIntent = new Intent(Downloader.DOWNLOAD_TERMINATED);
         LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
 
+        AppSettings.checkUsedLinksSize();
         appContext = null;
 
         Log.i(TAG, "Download Finished");

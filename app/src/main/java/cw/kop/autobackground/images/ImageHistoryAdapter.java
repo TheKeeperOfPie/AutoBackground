@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +52,7 @@ public class ImageHistoryAdapter  extends BaseAdapter {
 
             try {
                 url = link.substring(0, link.lastIndexOf("Time:"));
-                time = Long.parseLong(link.substring(link.lastIndexOf("Time:") + 5, link.lastIndexOf("Order:")));
+                time = Long.parseLong(link.substring(link.lastIndexOf("Time:") + 5));
             }
             catch (Exception e) {
             }
@@ -128,11 +129,38 @@ public class ImageHistoryAdapter  extends BaseAdapter {
 
     public void clearHistory() {
         historyItems = new ArrayList<HistoryItem>();
+
+        File historyDir = new File(AppSettings.getDownloadPath() + "/HistoryCache");
+
+        FilenameFilter imageFilter = new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String filename) {
+
+                if (filename.length() > 4 && filename.substring(filename.length() - 4, filename.length()).equals(".png")) {
+                    return true;
+                }
+
+                return false;
+            }
+        };
+
+        for (File file : historyDir.listFiles(imageFilter)) {
+            if (file.exists() && file.isFile()) {
+                file.delete();
+            }
+        }
+
         notifyDataSetChanged();
     }
 
     public void removeItem(HistoryItem item) {
+        File file = new File(AppSettings.getDownloadPath() + "/HistoryCache/" + item.getTime() + ".png");
+        if (file.exists() && file.isFile()) {
+            file.delete();
+        }
+
         historyItems.remove(item);
+
         notifyDataSetChanged();
     }
 
@@ -143,12 +171,8 @@ public class ImageHistoryAdapter  extends BaseAdapter {
             public void run() {
                 HashSet<String> usedLinks = new HashSet<String>();
 
-                for (int i = 0; i < historyItems.size(); i++) {
-
-                    HistoryItem item = historyItems.get(i);
-
-                    usedLinks.add(item.getUrl() + "Time:" + item.getTime() + "Order:" + i);
-
+                for (HistoryItem item : historyItems) {
+                    usedLinks.add(item.getUrl() + "Time:" + item.getTime());
                 }
 
                 AppSettings.setUsedLinks(usedLinks);

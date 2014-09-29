@@ -140,28 +140,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        ImageView cycleButton = (ImageView) actionBarView.findViewById(R.id.cycle_wallpaper);
-        cycleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cycleWallpaper();
-                if (AppSettings.useToast()) {
-                    Toast.makeText(getApplicationContext(), "Cycling wallpaper...", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        cycleButton.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (AppSettings.useToast()) {
-                    Toast.makeText(getApplicationContext(), "Cycle wallpaper", Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            }
-        });
-
         if (AppSettings.getTheme() != R.style.AppLightTheme) {
-            cycleButton.setImageResource(R.drawable.ic_action_refresh_dark);
             drawerIndicator.setImageResource(R.drawable.drawer_menu_dark);
         }
 
@@ -336,13 +315,6 @@ public class MainActivity extends Activity {
             super.onBackPressed();
         }
 
-    }
-
-    private void cycleWallpaper() {
-        Intent intent = new Intent();
-        intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
-        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-        sendBroadcast(intent);
     }
 
     @Override

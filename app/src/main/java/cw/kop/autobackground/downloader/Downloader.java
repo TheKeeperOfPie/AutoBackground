@@ -103,12 +103,16 @@ public class Downloader {
 
             if (AppSettings.useSource(i)) {
                 String type = AppSettings.getSourceType(i);
-                if (type.equals(AppSettings.WEBSITE) || type.equals(AppSettings.IMGUR) || type.equals(AppSettings.PICASA)) {
+                if (type.equals(AppSettings.WEBSITE) ||
+                        type.equals(AppSettings.IMGUR) ||
+                        type.equals(AppSettings.PICASA) ||
+                        type.equals(AppSettings.TUMBLR_BLOG) ||
+                        type.equals(AppSettings.TUMBLR_TAG)) {
                     File folder = new File(cacheDir + "/" + AppSettings.getSourceTitle(i) + " " + AppSettings.getImagePrefix());
                     if (folder.exists() && folder.isDirectory()) {
                         bitmaps.addAll(Arrays.asList(folder.listFiles(filenameFilter)));
                     }
-                } else if (AppSettings.getSourceType(i).equals(AppSettings.FOLDER)) {
+                } else if (type.equals(AppSettings.FOLDER)) {
                     File folder = new File(AppSettings.getSourceData(i));
                     if (folder.exists() && folder.isDirectory()) {
                         bitmaps.addAll(Arrays.asList(folder.listFiles(filenameFilter)));
