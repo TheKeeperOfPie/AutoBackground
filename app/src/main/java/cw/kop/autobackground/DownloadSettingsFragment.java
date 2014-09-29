@@ -298,13 +298,15 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         if (!AppSettings.useAdvanced()) {
             PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_download_settings");
-            preferenceCategory.removePreference(findPreference("image_prefix_adv"));
-            preferenceCategory.removePreference(findPreference("check_duplicates"));
-            preferenceCategory.removePreference(findPreference("delete_old_images"));
-            preferenceCategory.removePreference(findPreference("use_download_path"));
-            preferenceCategory.removePreference(findPreference("force_download"));
+            preferenceCategory.removePreference(findPreference("full_resolution"));
+            preferenceCategory.removePreference(findPreference("use_download_notification"));
             preferenceCategory.removePreference(findPreference("use_high_quality"));
-            preferenceCategory.removePreference(findPreference("reset_on_manual_download"));
+            preferenceCategory.removePreference(findPreference("force_download"));
+            preferenceCategory.removePreference(findPreference("use_download_path"));
+            preferenceCategory.removePreference(findPreference("image_history_size"));
+            preferenceCategory.removePreference(findPreference("delete_old_images"));
+            preferenceCategory.removePreference(findPreference("check_duplicates"));
+            preferenceCategory.removePreference(findPreference("image_prefix_adv"));
         }
 
         EditTextPreference widthPref = (EditTextPreference) findPreference("user_width");

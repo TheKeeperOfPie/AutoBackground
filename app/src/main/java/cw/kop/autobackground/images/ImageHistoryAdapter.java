@@ -43,6 +43,7 @@ public class ImageHistoryAdapter  extends BaseAdapter {
         inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         historyItems = new ArrayList<HistoryItem>();
+        AppSettings.checkUsedLinksSize();
         Set<String> usedLinks = AppSettings.getUsedLinks();
 
         for (String link : usedLinks) {

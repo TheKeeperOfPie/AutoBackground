@@ -30,6 +30,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.provider.MediaStore;
@@ -109,6 +110,14 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        if (!AppSettings.useAdvanced()) {
+
+            PreferenceCategory notificationPreferences = (PreferenceCategory) findPreference("title_notification_settings");
+
+            notificationPreferences.removePreference(findPreference("use_notification_game"));
+            notificationPreferences.removePreference(findPreference("high_resolution_notification_icon"));
+
+        }
 
         if (AppSettings.useNotificationIconFile()) {
             Log.i("NSF", "Loading file");

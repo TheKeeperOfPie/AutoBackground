@@ -95,12 +95,27 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         frameRatePref.setSummary(AppSettings.getAnimationFrameRate() + " FPS");
 
         if (!AppSettings.useAdvanced()) {
-            ((PreferenceCategory) findPreference("title_animation_settings")).removePreference(frameRatePref);
-            ((PreferenceCategory) findPreference("title_animation_settings")).removePreference(findPreference("animation_safety_adv"));
-            ((PreferenceCategory) findPreference("title_transition_settings")).removePreference(findPreference("reverse_spin_in"));
-            ((PreferenceCategory) findPreference("title_transition_settings")).removePreference(findPreference("spin_in_angle"));
-            ((PreferenceCategory) findPreference("title_transition_settings")).removePreference(findPreference("reverse_spin_out"));
-            ((PreferenceCategory) findPreference("title_transition_settings")).removePreference(findPreference("spin_out_angle"));
+            PreferenceCategory wallpaperPreferences = (PreferenceCategory) findPreference("title_wallpaper_settings");
+
+            wallpaperPreferences.removePreference(findPreference("preserve_context"));
+
+            PreferenceCategory intervalPreferences = (PreferenceCategory) findPreference("title_interval_settings");
+
+            intervalPreferences.removePreference(findPreference("force_interval"));
+            intervalPreferences.removePreference(findPreference("when_locked"));
+
+            PreferenceCategory animationPreferences = (PreferenceCategory) findPreference("title_animation_settings");
+
+            animationPreferences.removePreference(frameRatePref);
+            animationPreferences.removePreference(findPreference("animation_safety_adv"));
+            animationPreferences.removePreference(findPreference("scale_animation_speed"));
+
+            PreferenceCategory transitionPreferences = (PreferenceCategory) findPreference("title_transition_settings");
+
+            transitionPreferences.removePreference(findPreference("reverse_spin_in"));
+            transitionPreferences.removePreference(findPreference("spin_in_angle"));
+            transitionPreferences.removePreference(findPreference("reverse_spin_out"));
+            transitionPreferences.removePreference(findPreference("spin_out_angle"));
         }
 
         if (AppSettings.getIntervalDuration() > 0) {

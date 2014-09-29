@@ -124,7 +124,7 @@ public class DownloadThread extends Thread {
                 Set<String> rawLinks = AppSettings.getUsedLinks();
                 for (String link : rawLinks) {
                     if (link.lastIndexOf("Time:") > 0) {
-                        link = link.substring(0, link.lastIndexOf("Time:") + 5);
+                        link = link.substring(0, link.lastIndexOf("Time:"));
                     }
                     usedLinks.add(link);
                 }

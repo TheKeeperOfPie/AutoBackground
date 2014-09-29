@@ -108,6 +108,8 @@
     <string name="reverse_drag_description">Reverse direction of image movement</string>
     <string name="use_scale">Use Zoom</string>
     <string name="use_scale_description">Pinch to scale from bottom left corner, recommended to also enable drag, alters scaling of image to provide full resolution</string>
+    <string name="use_long_press_reset">Use Long Press Reset</string>
+    <string name="use_long_press_reset_description">Long press wallpaper to reset image position</string>
 
     <string name="add_source">Add New Source</string>
     <string name="source_title">Title</string>
@@ -152,7 +154,7 @@
     <string name="use_download_path">Custom Download Path</string>
     <string name="use_download_path_description">Set folder for downloaded images</string>
     <string name="use_image_history">Image History</string>
-    <string name="use_image_history_description">Save history of images downloaded</string>
+    <string name="use_image_history_description">Save history of downloaded images</string>
     <string name="image_history_size">Image History Size</string>
     <string name="image_history_size_description">Max history entries to store</string>
     <string name="use_thumbnails">Cache Thumbnails</string>
@@ -162,7 +164,7 @@
     <string name="delete_old_images">Delete Old</string>
     <string name="delete_old_images_description">Remove old images on download</string>
     <string name="check_duplicates">Prevent Duplicates</string>
-    <string name="check_duplicates_description">Check URLs to prevent redundant downloads</string>
+    <string name="check_duplicates_description">Check URLs to prevent redundant downloads, requires image history enabled</string>
     <string name="delete_images">Delete Images</string>
     <string name="delete_images_description">Purge downloaded images</string>
     <string name="image_prefix">Image Prefix</string>

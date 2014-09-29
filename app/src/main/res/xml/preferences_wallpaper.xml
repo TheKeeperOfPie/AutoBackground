@@ -2,6 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     
 	<PreferenceCategory
+        android:key="title_wallpaper_settings"
 		android:title="@string/title_wallpaper_settings"
 		>
 
@@ -29,6 +30,7 @@
 	</PreferenceCategory>
 
 	<PreferenceCategory
+        android:key="title_interval_settings"
 	    android:title="@string/title_interval_settings">
 	
 		<cw.kop.autobackground.CustomSwitchPreference
@@ -313,6 +315,13 @@
             android:defaultValue="true"
             android:title="@string/use_scale"
             android:summary="@string/use_scale_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_long_press_reset"
+            android:defaultValue="true"
+            android:title="@string/use_long_press_reset"
+            android:summary="@string/use_long_press_reset_description"
             />
 
     </PreferenceCategory>

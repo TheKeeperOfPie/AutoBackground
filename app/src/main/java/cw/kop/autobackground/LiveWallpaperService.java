@@ -972,7 +972,9 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 @Override
                 public void onLongPress(MotionEvent e) {
-                    renderer.resetPosition();
+                    if (AppSettings.useLongPressReset()) {
+                        renderer.resetPosition();
+                    }
 
                     super.onLongPress(e);
                 }
@@ -1001,7 +1003,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                 @Override
                 public boolean onScale(ScaleGestureDetector detector) {
                     scaleFactor *= detector.getScaleFactor();
-                    scaleFactor = Math.max(1.0f, Math.min(scaleFactor, 5.0f));
+
+                    float minScaleFactor = renderer.renderScreenWidth > renderer.renderScreenHeight ?
+                            renderer.renderScreenWidth / renderer.bitmapWidth:
+                            renderer.renderScreenHeight / renderer.bitmapHeight;
+
+                    scaleFactor = Math.max(minScaleFactor, Math.min(scaleFactor, 5.0f));
 
                     render();
                     return true;
@@ -2168,8 +2175,11 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             public void resetPosition() {
                 scaleFactor = 1.0f;
-                offsetX = (renderScreenWidth - bitmapWidth) * (rawOffsetX);
+                float resetOffsetX = (renderScreenWidth - bitmapWidth) * (rawOffsetX);
+                offsetX = resetOffsetX;
+                animationX = resetOffsetX;
                 offsetY = 0;
+                animationY = 0;
                 render();
             }
 

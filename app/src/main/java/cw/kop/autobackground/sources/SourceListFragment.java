@@ -100,7 +100,7 @@ public class SourceListFragment extends ListFragment {
     private boolean setShown = false;
     private boolean tutorialShowing = false;
 
-    private BroadcastReceiver downloadButtonReciever = new BroadcastReceiver() {
+    private BroadcastReceiver downloadButtonReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             resetActionBarDownload();
@@ -938,8 +938,8 @@ public class SourceListFragment extends ListFragment {
 
 	@Override
 	public void onDestroyView() {
+        setListAdapter(null);
 		super.onDestroyView();
-		setListAdapter(null);
 	}
 
 	@Override
@@ -947,8 +947,9 @@ public class SourceListFragment extends ListFragment {
 		super.onResume();
         sortButton.setVisibility(View.VISIBLE);
         downloadButton.setVisibility(View.VISIBLE);
+        cycleButton.setVisibility(View.VISIBLE);
 
-        LocalBroadcastManager.getInstance(appContext).registerReceiver(downloadButtonReciever, new IntentFilter(Downloader.DOWNLOAD_TERMINATED));
+        LocalBroadcastManager.getInstance(appContext).registerReceiver(downloadButtonReceiver, new IntentFilter(Downloader.DOWNLOAD_TERMINATED));
 
         if (Downloader.isDownloading) {
             if (AppSettings.getTheme() == R.style.AppLightTheme) {
@@ -1009,8 +1010,9 @@ public class SourceListFragment extends ListFragment {
         listAdapter.saveData();
         sortButton.setVisibility(View.GONE);
         downloadButton.setVisibility(View.GONE);
+        cycleButton.setVisibility(View.GONE);
 
-        LocalBroadcastManager.getInstance(appContext).unregisterReceiver(downloadButtonReciever);
+        LocalBroadcastManager.getInstance(appContext).unregisterReceiver(downloadButtonReceiver);
     }
 
     public void resetActionBarDownload() {
