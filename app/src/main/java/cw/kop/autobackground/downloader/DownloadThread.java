@@ -25,6 +25,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Build;
 import android.os.Looper;
+import android.preference.SwitchPreference;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.util.Patterns;
@@ -725,14 +726,20 @@ public class DownloadThread extends Thread {
 
             float thumbnailSize = (float) AppSettings.getThumbnailSize();
 
-            Matrix matrix = new Matrix();
-            if (bitWidth > bitHeight) {
-                matrix.postScale(thumbnailSize / bitWidth, thumbnailSize / bitWidth);
+            Bitmap thumbnail;
+
+            if (thumbnailSize < bitWidth && thumbnailSize < bitHeight) {
+                Matrix matrix = new Matrix();
+                if (bitWidth > bitHeight) {
+                    matrix.postScale(thumbnailSize / bitWidth, thumbnailSize / bitWidth);
+                } else {
+                    matrix.postScale(thumbnailSize / bitHeight, thumbnailSize / bitHeight);
+                }
+                thumbnail = Bitmap.createBitmap(image, 0, 0, bitWidth, bitHeight, matrix, false);
             }
             else {
-                matrix.postScale(thumbnailSize / bitHeight, thumbnailSize / bitHeight);
+                thumbnail = image;
             }
-            Bitmap thumbnail = Bitmap.createBitmap(image, 0, 0, bitWidth, bitHeight, matrix, false);
 
             out = new FileOutputStream(file);
             image.compress(Bitmap.CompressFormat.PNG, 90, out);
@@ -850,6 +857,11 @@ public class DownloadThread extends Thread {
 
         Intent resetDownloadIntent = new Intent(Downloader.DOWNLOAD_TERMINATED);
         LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
+
+        Intent intent = new Intent();
+        intent.setAction(LiveWallpaperService.UPDATE_NOTIFICATION);
+        intent.putExtra("use", AppSettings.useNotification());
+        appContext.sendBroadcast(intent);
 
         AppSettings.checkUsedLinksSize();
         appContext = null;

@@ -126,6 +126,15 @@
             android:summary="@string/use_thumbnails_description"
             />
 
+        <EditTextPreference
+            android:key="thumbnail_size"
+            android:defaultValue="100"
+            android:title="@string/thumbnail_size"
+            android:inputType="number"
+            android:numeric="integer"
+            android:summary="@string/thumbnail_size_description"
+            />
+
         <cw.kop.autobackground.CustomSwitchPreference
 		    android:key="keep_images"
     		android:defaultValue="false"

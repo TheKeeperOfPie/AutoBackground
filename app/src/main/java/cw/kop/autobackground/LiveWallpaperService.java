@@ -2043,7 +2043,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
 
                 if (bitmapHeight == 0) {
-                    loadNextImage();
+                    loadCurrent = true;
                 }
 
                 if (width != renderScreenWidth) {

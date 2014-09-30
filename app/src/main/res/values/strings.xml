@@ -159,6 +159,8 @@
     <string name="image_history_size_description">Max history entries to store</string>
     <string name="use_thumbnails">Cache Thumbnails</string>
     <string name="use_thumbnails_description">Store thumbnails for history</string>
+    <string name="thumbnail_size">Thumbnail Size</string>
+    <string name="thumbnail_size_description">Max side length of thumbnail image in pixels</string>
     <string name="keep_images">Keep Images</string>
     <string name="keep_images_description">Keep all images in cache</string>
     <string name="delete_old_images">Delete Old</string>
