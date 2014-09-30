@@ -609,6 +609,10 @@ public class LiveWallpaperService extends GLWallpaperService {
                 bigView.setOnClickPendingIntent(tileIds[7], pendingTile7);
                 bigView.setOnClickPendingIntent(tileIds[8], pendingTile8);
                 bigView.setOnClickPendingIntent(tileIds[9], pendingTile9);
+
+                for (int i = 0; i < NUM_TO_WIN * 2; i++) {
+                    setTileImage(i, R.drawable.ic_action_picture_dark);
+                }
             }
             else {
                 bigView = new RemoteViews(getPackageName(), R.layout.notification_big_layout);
@@ -797,9 +801,9 @@ public class LiveWallpaperService extends GLWallpaperService {
             @Override
             public void run() {
                 Log.i(TAG, "POSTED");
-                startNotification(true);
                 tileWins = 0;
                 usedTiles.clear();
+                startNotification(true);
             }
         }, 2000);
     }
