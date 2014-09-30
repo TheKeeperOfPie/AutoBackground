@@ -420,7 +420,9 @@ public class LiveWallpaperService extends GLWallpaperService {
         }
         catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(LiveWallpaperService.this, "Error pushing notification", Toast.LENGTH_SHORT).show();
+            if (AppSettings.useToast()) {
+                Toast.makeText(LiveWallpaperService.this, "Error pushing notification", Toast.LENGTH_SHORT).show();
+            }
         }
 
     }
@@ -609,10 +611,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 bigView.setOnClickPendingIntent(tileIds[7], pendingTile7);
                 bigView.setOnClickPendingIntent(tileIds[8], pendingTile8);
                 bigView.setOnClickPendingIntent(tileIds[9], pendingTile9);
-
-                for (int i = 0; i < NUM_TO_WIN * 2; i++) {
-                    setTileImage(i, R.drawable.ic_action_picture_dark);
-                }
             }
             else {
                 bigView = new RemoteViews(getPackageName(), R.layout.notification_big_layout);
@@ -797,7 +795,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         pushNotification();
 
-        handler.postDelayed(new Runnable() {
+        handler.postDelayed( new Runnable() {
             @Override
             public void run() {
                 Log.i(TAG, "POSTED");
@@ -824,7 +822,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 try {
                     bitmap.recycle();
                 }
-                catch (NullPointerException e) {
+                catch (Exception e) {
                 }
             }
 
@@ -850,7 +848,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     if (AppSettings.useHighResolutionNotificationIcon()) {
 
                         options.inJustDecodeBounds = true;
-                        Bitmap checkSizeBitmap = BitmapFactory.decodeFile(files.get(tilesLoaded).getAbsolutePath(), options);
+                        BitmapFactory.decodeFile(files.get(tilesLoaded).getAbsolutePath(), options);
 
                         int bitWidth = options.outWidth;
                         int bitHeight = options.outHeight;
@@ -909,6 +907,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                 tileOrder.add(randomList.get(i));
             }
             gameSet = true;
+
+            for (int i = 0; i < NUM_TO_WIN * 2; i++) {
+                setTileImage(i, R.drawable.ic_action_picture_dark);
+            }
+
+            pushNotification();
         }
     }
 
@@ -1135,7 +1139,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                 else if (intent.getAction().equals(LiveWallpaperService.DELETE_IMAGE)) {
                     Downloader.deleteCurrentBitmap();
                     closeNotificationDrawer(context);
-                    Toast.makeText(LiveWallpaperService.this, "Deleted image", Toast.LENGTH_LONG).show();
+                    if (AppSettings.useToast()) {
+                        Toast.makeText(LiveWallpaperService.this, "Deleted image", Toast.LENGTH_LONG).show();
+                    }
                     loadNextImage();
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.OPEN_IMAGE)) {

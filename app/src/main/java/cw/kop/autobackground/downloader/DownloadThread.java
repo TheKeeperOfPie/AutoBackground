@@ -775,7 +775,9 @@ public class DownloadThread extends Thread {
     }
 
     private void sendToast(String message) {
-        Toast.makeText(appContext, message, Toast.LENGTH_SHORT).show();
+        if (AppSettings.useToast()) {
+            Toast.makeText(appContext, message, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateNotification(int value) {

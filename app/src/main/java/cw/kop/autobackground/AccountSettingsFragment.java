@@ -93,7 +93,9 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
                 }
                 else {
                     GoogleAccount.deleteAccount();
-                    Toast.makeText(appContext, "Google access token has been deleted", Toast.LENGTH_SHORT).show();
+                    if (AppSettings.useToast()) {
+                        Toast.makeText(appContext, "Google access token has been deleted", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         }

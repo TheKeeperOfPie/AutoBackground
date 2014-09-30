@@ -61,8 +61,22 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
         super.onDetach();
     }
 
+
+
     @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        return inflater.inflate(R.layout.fragment_list, container, false);
+		
+	}
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_app_settings");
+        preferenceCategory.removePreference(findPreference("force_multipane"));
+
 
         Preference clearPref = findPreference("clear_pref");
         clearPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -79,8 +93,6 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
         });
 
         themePref = findPreference("change_theme");
-        String themeName = getResources().getResourceName(AppSettings.getTheme());
-        themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("App") + 3, themeName.indexOf("Theme")));
         themePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
@@ -88,6 +100,8 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                 return false;
             }
         });
+
+        setThemePrefSummary();
 
         Preference tutorialPref = findPreference("show_tutorial_source");
         tutorialPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -100,21 +114,6 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
         });
 
         toastPref = (SwitchPreference) findPreference("use_toast");
-
-        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
-
-        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
-        return localInflater.inflate(R.layout.fragment_list, container, false);
-		
-	}
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_app_settings");
-        preferenceCategory.removePreference(findPreference("force_multipane"));
     }
 
     private void showThemeDialogMenu() {
@@ -139,8 +138,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                     default:
                 }
 
-                String themeName = getResources().getResourceName(AppSettings.getTheme());
-                themePref.setSummary("Theme: " + themeName.substring(themeName.indexOf("App") + 3, themeName.indexOf("Theme")));
+                setThemePrefSummary();
 
                 Intent intent = new Intent(appContext, MainActivity.class);
                 intent.putExtra("fragment", 6);
@@ -153,6 +151,28 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
         dialog.create();
         dialog.show();
+    }
+
+    private void setThemePrefSummary() {
+
+        if (themePref != null) {
+            int theme = AppSettings.getTheme();
+
+            switch (theme) {
+                case R.style.AppLightTheme:
+                    themePref.setSummary("Theme: Light");
+                    break;
+                case R.style.AppDarkTheme:
+                    themePref.setSummary("Theme: Dark");
+                    break;
+                case R.style.AppTransparentTheme:
+                    themePref.setSummary("Theme: Transparent");
+                    break;
+                default:
+                    themePref.setSummary("Error reading theme");
+                    break;
+            }
+        }
     }
 
     private void showToastDialog() {
