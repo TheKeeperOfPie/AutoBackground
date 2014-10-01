@@ -533,14 +533,15 @@ public class LiveWallpaperService extends GLWallpaperService {
                     layerDrawable.setBounds(0, 0, layers[0].getIntrinsicWidth(), layers[0].getIntrinsicHeight());
                     layerDrawable.draw(canvas);
 
-                        normalView.setImageViewBitmap(R.id.notification_icon, mutableBitmap);
+                    normalView.setImageViewBitmap(R.id.notification_icon, mutableBitmap);
                     if (Build.VERSION.SDK_INT >= 16) {
                         bigView.setImageViewBitmap(R.id.notification_big_icon, mutableBitmap);
                     }
                     else {
                         notificationBuilder.setLargeIcon(mutableBitmap);
                     }
-                } else {
+                }
+                else {
                     normalView.setImageViewResource(R.id.notification_icon, drawable);
                     bigView.setImageViewResource(R.id.notification_big_icon, drawable);
                 }
@@ -1063,28 +1064,23 @@ public class LiveWallpaperService extends GLWallpaperService {
                 intentFilter.addAction(LiveWallpaperService.PIN_IMAGE);
                 intentFilter.addAction(LiveWallpaperService.SHARE_IMAGE);
                 registerReceiver(updateReceiver, intentFilter);
-                IntentFilter musicFilter = new IntentFilter();
+//                IntentFilter musicFilter = new IntentFilter();
 //                musicFilter.addAction("com.android.music.metachanged");
 //                musicFilter.addAction("com.android.music.playstatechanged");
 //                musicFilter.addAction("com.android.music.playbackcomplete");
 //                musicFilter.addAction("com.android.music.queuechanged");
-
-                musicFilter.addAction("com.android.music.metachanged");
-
-                musicFilter.addAction("com.htc.music.metachanged");
-
-                musicFilter.addAction("fm.last.android.metachanged");
-                musicFilter.addAction("com.sec.android.app.music.metachanged");
-                musicFilter.addAction("com.nullsoft.winamp.metachanged");
-                musicFilter.addAction("com.amazon.mp3.metachanged");
-                musicFilter.addAction("com.miui.player.metachanged");
-                musicFilter.addAction("com.real.IMP.metachanged");
-                musicFilter.addAction("com.sonyericsson.music.metachanged");
-                musicFilter.addAction("com.rdio.android.metachanged");
-                musicFilter.addAction("com.samsung.sec.android.MusicPlayer.metachanged");
-                musicFilter.addAction("com.andrew.apollo.metachanged");
-
-
+//                musicFilter.addAction("com.android.music.metachanged");
+//                musicFilter.addAction("com.htc.music.metachanged");
+//                musicFilter.addAction("fm.last.android.metachanged");
+//                musicFilter.addAction("com.sec.android.app.music.metachanged");
+//                musicFilter.addAction("com.nullsoft.winamp.metachanged");
+//                musicFilter.addAction("com.amazon.mp3.metachanged");
+//                musicFilter.addAction("com.miui.player.metachanged");
+//                musicFilter.addAction("com.real.IMP.metachanged");
+//                musicFilter.addAction("com.sonyericsson.music.metachanged");
+//                musicFilter.addAction("com.rdio.android.metachanged");
+//                musicFilter.addAction("com.samsung.sec.android.MusicPlayer.metachanged");
+//                musicFilter.addAction("com.andrew.apollo.metachanged");
 //                registerReceiver(musicReciever, musicFilter);
                 Log.i(TAG, "Registered");
             }
@@ -1141,32 +1137,24 @@ public class LiveWallpaperService extends GLWallpaperService {
                     loadNextImage();
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.OPEN_IMAGE)) {
-
+                    Intent openIntent = new Intent();
                     String location = Downloader.getBitmapLocation();
                     if (location.substring(0, 4).equals("http")) {
-                        Intent linkIntent = new Intent(Intent.ACTION_VIEW);
-                        linkIntent.setData(Uri.parse(location));
-                        linkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(linkIntent);
-                        closeNotificationDrawer(context);
+                        openIntent = new Intent(Intent.ACTION_VIEW);
+                        openIntent.setData(Uri.parse(location));
+                        openIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     }
                     else {
-                        Intent galleryIntent = new Intent();
-                        galleryIntent.setAction(Intent.ACTION_VIEW);
-                        galleryIntent.setDataAndType(Uri.fromFile(Downloader.getCurrentBitmapFile()), "image/*");
-                        galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
-                        galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(galleryIntent);
-                        closeNotificationDrawer(context);
+                        openIntent.setAction(Intent.ACTION_VIEW);
+                        openIntent.setDataAndType(Uri.fromFile(Downloader.getCurrentBitmapFile()), "image/*");
+                        openIntent = Intent.createChooser(openIntent, "Open Image");
+                        openIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     }
+                    context.startActivity(openIntent);
+                    closeNotificationDrawer(context);
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.PREVIOUS_IMAGE)) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            loadPreviousImage();
-                        }
-                    });
+                        loadPreviousImage();
                 }
                 else if (intent.getAction().equals(LiveWallpaperService.PIN_IMAGE)) {
                     if (AppSettings.getPinDuration() > 0 && !pinned) {
