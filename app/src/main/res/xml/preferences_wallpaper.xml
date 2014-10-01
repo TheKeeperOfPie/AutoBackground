@@ -206,14 +206,14 @@
 
 		<cw.kop.autobackground.CustomSwitchPreference
 			android:key="use_animation"
-			android:defaultValue="false"
+			android:defaultValue="true"
 			android:title="@string/use_animation"
 			android:summary="@string/use_animation_description"
 			/>
 
         <cw.kop.autobackground.CustomSwitchPreference
             android:key="use_animation_vertical"
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:title="@string/use_animation_vertical"
             android:summary="@string/use_animation_vertical_description"
             />

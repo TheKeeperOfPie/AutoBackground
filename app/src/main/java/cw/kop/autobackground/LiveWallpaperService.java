@@ -89,7 +89,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     public static SharedPreferences prefs;
     private static final int NOTIFICATION_ID = 0;
     private static final int NOTIFICATION_ICON_SAMPLE_SIZE = 15;
-    private static final String TAG = "LiveWallpaperService";
+    private static final String TAG = LiveWallpaperService.class.getName();
     public static final String UPDATE_NOTIFICATION = "UPDATE_NOTIFICATION";
     public static final String DOWNLOAD_WALLPAPER = "DOWNLOAD_WALLPAPER";
     public static final String UPDATE_WALLPAPER = "UPDATE_WALLPAPER";
@@ -165,12 +165,25 @@ public class LiveWallpaperService extends GLWallpaperService {
         super.onCreate();
 
         handler = new Handler();
-
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         AppSettings.setPrefs(prefs);
 
-        AppSettings.versionUpdate();
+        setIntents();
+        createGameIntents();
 
+        registerReceiver(serviceReceiver, getServiceIntentFilter());
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        startAlarms();
+
+        if (AppSettings.useNotification()) {
+            startNotification(true);
+        }
+
+        Log.i(TAG, "onCreateService");
+    }
+
+    private void setIntents() {
         Intent downloadIntent = new Intent();
         downloadIntent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
         downloadIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
@@ -214,8 +227,9 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         Intent appIntent = new Intent(this, MainActivity.class);
         pendingAppIntent = PendingIntent.getActivity(this, 0, appIntent, 0);
+    }
 
-        createGameIntents();
+    private IntentFilter getServiceIntentFilter() {
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(LiveWallpaperService.UPDATE_NOTIFICATION);
@@ -232,16 +246,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         intentFilter.addAction(LiveWallpaperService.GAME_TILE8);
         intentFilter.addAction(LiveWallpaperService.GAME_TILE9);
 
-        registerReceiver(serviceReceiver, intentFilter);
-        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-        if (AppSettings.useNotification()) {
-            startNotification(true);
-        }
-
-        alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        startAlarms();
-        Log.i(TAG, "onCreateService");
+        return intentFilter;
     }
 
     private void startAlarms() {
@@ -281,10 +286,13 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(LiveWallpaperService.UPDATE_NOTIFICATION)) {
+
+            String action = intent.getAction();
+
+            if (action.equals(UPDATE_NOTIFICATION)) {
                 startNotification(intent.getBooleanExtra("use", false));
             }
-            else if (intent.getAction().equals(LiveWallpaperService.COPY_IMAGE)) {
+            else if (action.equals(COPY_IMAGE)) {
                 ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText("Image Location", Downloader.getBitmapLocation());
                 clipboard.setPrimaryClip(clip);
@@ -292,53 +300,42 @@ public class LiveWallpaperService extends GLWallpaperService {
                     Toast.makeText(context, "Copied image location to clipboard", Toast.LENGTH_SHORT).show();
                 }
             }
-            else if (intent.getAction().equals(LiveWallpaperService.TOAST_LOCATION)) {
+            else if (action.equals(TOAST_LOCATION)) {
                 Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
                 context.sendBroadcast(closeDrawer);
                 Toast.makeText(context, "Image Location:\n" + Downloader.getBitmapLocation(), Toast.LENGTH_LONG).show();
             }
-            else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE0)) {
-                Log.i(TAG, "Game tile 0");
+            else if (action.equals(GAME_TILE0)) {
                 calculateGameTiles(0);
             }
-            else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE1)) {
-                Log.i(TAG, "Game tile 1");
+            else if (action.equals(GAME_TILE1)) {
                 calculateGameTiles(1);
             }
-            else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE2)) {
-                Log.i(TAG, "Game tile 2");
+            else if (action.equals(GAME_TILE2)) {
                 calculateGameTiles(2);
             }
-            else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE3)) {
-                Log.i(TAG, "Game tile 3");
+            else if (action.equals(GAME_TILE3)) {
                 calculateGameTiles(3);
             }
-            else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE4)) {
-                Log.i(TAG, "Game tile 4");
+            else if (action.equals(GAME_TILE4)) {
                 calculateGameTiles(4);
             }
-            else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE5)) {
-                Log.i(TAG, "Game tile 5");
+            else if (action.equals(GAME_TILE5)) {
                 calculateGameTiles(5);
             }
-            else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE6)) {
-                Log.i(TAG, "Game tile 6");
+            else if (action.equals(GAME_TILE6)) {
                 calculateGameTiles(6);
             }
-            else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE7)) {
-                Log.i(TAG, "Game tile 7");
+            else if (action.equals(GAME_TILE7)) {
                 calculateGameTiles(7);
             }
-            else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE8)) {
-                Log.i(TAG, "Game tile 8");
+            else if (action.equals(GAME_TILE8)) {
                 calculateGameTiles(8);
             }
-            else if (intent.getAction().equals(LiveWallpaperService.GAME_TILE9)) {
-                Log.i(TAG, "Game tile 9");
+            else if (action.equals(GAME_TILE9)) {
                 calculateGameTiles(9);
             }
-
-            Log.i("Receiver", "ServiceReceived");
+            Log.i(TAG, "Service received intent");
         }
     };
 
@@ -413,7 +410,6 @@ public class LiveWallpaperService extends GLWallpaperService {
         else {
             notification = notificationBuilder.getNotification();
         }
-
 
         try {
             notificationManager.notify(NOTIFICATION_ID, notification);
@@ -491,7 +487,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                             if (AppSettings.useHighResolutionNotificationIcon()) {
 
                                 options.inJustDecodeBounds = true;
-                                Bitmap checkSizeBitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
+                                BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(), options);
 
                                 int bitWidth = options.outWidth;
                                 int bitHeight = options.outHeight;
@@ -734,6 +730,8 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     private void calculateGameTiles(final int tile) {
 
+        Log.i(TAG, "Game tile: " + tile);
+
         if (gameSet && tileOrder.size() == (NUM_TO_WIN * 2) && tileBitmaps.size() == NUM_TO_WIN) {
 
             if (!usedTiles.contains(tile) && lastTile != tile) {
@@ -766,8 +764,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 lastTile = NUM_TO_WIN * 2;
                 numFlipped = 0;
             }
-
-            if (numFlipped > 0 && lastTile != tile && !usedTiles.contains(tile)) {
+            else if (numFlipped > 0 && lastTile != tile && !usedTiles.contains(tile)) {
                 lastTile = tile;
             }
 
@@ -798,7 +795,6 @@ public class LiveWallpaperService extends GLWallpaperService {
         handler.postDelayed( new Runnable() {
             @Override
             public void run() {
-                Log.i(TAG, "POSTED");
                 tileWins = 0;
                 usedTiles.clear();
                 startNotification(true);
@@ -1791,41 +1787,56 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     if (animated) {
                         if (AppSettings.useAnimation() && bitmapWidth - (renderScreenWidth / scaleFactor) > AppSettings.getAnimationSafety()) {
-                            if (animationX < (-bitmapWidth + renderScreenWidth + animationModifierX)) {
-                                animationModifierX = -Math.abs(animationModifierX);
-                            } else if (animationX > -1.0f) {
-                                animationModifierX = Math.abs(animationModifierX);
-                            }
+
                             animationX -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifierX / scaleFactor) : animationModifierX);
                             offsetX = animationX;
                             newOffsetX -= animationX;
+
+                            if (animationX < (-bitmapWidth + renderScreenWidth + animationModifierX)) {
+                                animationModifierX = -Math.abs(animationModifierX);
+                            } else if (animationX > -2.0f) {
+                                animationModifierX = Math.abs(animationModifierX);
+                            }
                         }
 
                         if (AppSettings.useVerticalAnimation() && bitmapHeight - (renderScreenHeight / scaleFactor) > AppSettings.getAnimationSafety()) {
-                            if (animationY < (-bitmapHeight + renderScreenHeight + animationModifierY)) {
-                                animationModifierY = -Math.abs(animationModifierY);
-                            } else if (animationY > -1.0f) {
-                                animationModifierY = Math.abs(animationModifierY);
-                            }
+
                             animationY -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifierY / scaleFactor) : animationModifierY);
                             offsetY = animationY;
                             newOffsetY -= animationY;
+
+                            if (animationY < (-bitmapHeight + renderScreenHeight + animationModifierY)) {
+                                animationModifierY = -Math.abs(animationModifierY);
+                            }
+                            else if (animationY > -2.0f) {
+                                animationModifierY = Math.abs(animationModifierY);
+                            }
+
                         }
 
                     }
 
                     if (offsetX < (-bitmapWidth + renderScreenWidth / scaleFactor)) {
+                        animationModifierX = -Math.abs(animationModifierX);
                         offsetX = -bitmapWidth + renderScreenWidth / scaleFactor;
+                        animationX = offsetX;
+
                     }
-                    else if (offsetX > 0) {
-                        offsetX = 0;
+                    else if (offsetX > -1.0f) {
+                        animationModifierX = Math.abs(animationModifierX);
+                        offsetX = -1.0f;
+                        animationX = offsetX;
                     }
 
                     if (offsetY < (-bitmapHeight + renderScreenHeight / scaleFactor)) {
-                        offsetY = -bitmapHeight + renderScreenHeight / scaleFactor;
+                        animationModifierY = -Math.abs(animationModifierY);
+                        offsetY = -bitmapHeight + renderScreenHeight / scaleFactor ;
+                        animationY = offsetY;
                     }
-                    else if (offsetY > 0) {
-                        offsetY = 0;
+                    else if (offsetY > -1.0f) {
+                        animationModifierY = Math.abs(animationModifierY);
+                        offsetY = -1.0f;
+                        animationY = offsetY;
                     }
 
                     android.opengl.Matrix.orthoM(matrixProjection, 0, 0, renderScreenWidth / scaleFactor, 0, renderScreenHeight / scaleFactor, 0, 10f);
