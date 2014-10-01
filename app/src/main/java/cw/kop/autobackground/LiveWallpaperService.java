@@ -1786,15 +1786,18 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     if (animated) {
-                        if (AppSettings.useAnimation() && bitmapWidth - (renderScreenWidth / scaleFactor) > AppSettings.getAnimationSafety()) {
+                        if (AppSettings.useAnimation() &&
+                                bitmapWidth - (renderScreenWidth / scaleFactor) > AppSettings.getAnimationSafety() &&
+                                bitmapHeight - (renderScreenHeight / scaleFactor) > AppSettings.getAnimationSafety()) {
 
                             animationX -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifierX / scaleFactor) : animationModifierX);
                             offsetX = animationX;
                             newOffsetX -= animationX;
 
-                            if (animationX < (-bitmapWidth + renderScreenWidth + animationModifierX)) {
+                            if (animationX < (-bitmapWidth + renderScreenWidth / scaleFactor)) {
                                 animationModifierX = -Math.abs(animationModifierX);
-                            } else if (animationX > -2.0f) {
+                            }
+                            else if (animationX > -2.0f) {
                                 animationModifierX = Math.abs(animationModifierX);
                             }
                         }
@@ -1805,7 +1808,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                             offsetY = animationY;
                             newOffsetY -= animationY;
 
-                            if (animationY < (-bitmapHeight + renderScreenHeight + animationModifierY)) {
+                            if (animationY < (-bitmapHeight + renderScreenHeight / scaleFactor)) {
                                 animationModifierY = -Math.abs(animationModifierY);
                             }
                             else if (animationY > -2.0f) {
@@ -1817,24 +1820,20 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     if (offsetX < (-bitmapWidth + renderScreenWidth / scaleFactor)) {
-                        animationModifierX = -Math.abs(animationModifierX);
                         offsetX = -bitmapWidth + renderScreenWidth / scaleFactor;
                         animationX = offsetX;
 
                     }
                     else if (offsetX > -1.0f) {
-                        animationModifierX = Math.abs(animationModifierX);
                         offsetX = -1.0f;
                         animationX = offsetX;
                     }
 
                     if (offsetY < (-bitmapHeight + renderScreenHeight / scaleFactor)) {
-                        animationModifierY = -Math.abs(animationModifierY);
                         offsetY = -bitmapHeight + renderScreenHeight / scaleFactor ;
                         animationY = offsetY;
                     }
                     else if (offsetY > -1.0f) {
-                        animationModifierY = Math.abs(animationModifierY);
                         offsetY = -1.0f;
                         animationY = offsetY;
                     }
@@ -1880,29 +1879,33 @@ public class LiveWallpaperService extends GLWallpaperService {
                 else {
 
                     if (animated) {
-                        if (AppSettings.useAnimation() && bitmapWidth - (renderScreenWidth / scaleFactor) > AppSettings.getAnimationSafety()) {
-                            if (animationX < (-bitmapWidth + renderScreenWidth + animationModifierX)) {
-                                animationModifierX = -Math.abs(animationModifierX);
-                            } else if (animationX > -1.0f) {
-                                animationModifierX = Math.abs(animationModifierX);
-                            }
+                        if (AppSettings.useAnimation() &&
+                                bitmapWidth - (renderScreenWidth / scaleFactor) > AppSettings.getAnimationSafety() &&
+                                bitmapHeight - (renderScreenHeight / scaleFactor) > AppSettings.getAnimationSafety()) {
+
                             animationX -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifierX / scaleFactor) : animationModifierX);
                             offsetX = animationX;
-                            if (newOffsetX < 0 && newOffsetX > (-bitmapWidth + renderScreenWidth)) {
-                                newOffsetX -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifierX / scaleFactor) : animationModifierX);
+                            newOffsetX -= animationX;
+
+                            if (animationX < (-bitmapWidth + renderScreenWidth / scaleFactor)) {
+                                animationModifierX = -Math.abs(animationModifierX);
+                            }
+                            else if (animationX > -2.0f) {
+                                animationModifierX = Math.abs(animationModifierX);
                             }
                         }
 
                         if (AppSettings.useVerticalAnimation() && bitmapHeight - (renderScreenHeight / scaleFactor) > AppSettings.getAnimationSafety()) {
-                            if (animationY < (-bitmapHeight + renderScreenHeight + animationModifierY)) {
-                                animationModifierY = -Math.abs(animationModifierY);
-                            } else if (animationY > -1.0f) {
-                                animationModifierY = Math.abs(animationModifierY);
-                            }
+
                             animationY -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifierY / scaleFactor) : animationModifierY);
                             offsetY = animationY;
-                            if (newOffsetY < 0 && newOffsetY > (-bitmapHeight + renderScreenHeight)) {
-                                newOffsetY -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifierY / scaleFactor) : animationModifierY);
+                            newOffsetY -= animationY;
+
+                            if (animationY < (-bitmapHeight + renderScreenHeight / scaleFactor)) {
+                                animationModifierY = -Math.abs(animationModifierY);
+                            }
+                            else if (animationY > -2.0f) {
+                                animationModifierY = Math.abs(animationModifierY);
                             }
                         }
                     }
