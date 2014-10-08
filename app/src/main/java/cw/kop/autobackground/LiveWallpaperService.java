@@ -1785,22 +1785,28 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     if (animated) {
-                        if (AppSettings.useAnimation() && bitmapWidth - (renderScreenWidth / scaleFactor) > AppSettings.getAnimationSafety()) {
+                        float safety = AppSettings.getAnimationSafety();
+                        if (AppSettings.useAnimation() && bitmapWidth - (renderScreenWidth / scaleFactor) > safety) {
                             float animationFactor = 1;
-                            if (animationX < -bitmapWidth + AppSettings.getAnimationSafety()) {
-                                animationFactor = decelerateInterpolator.getInterpolation((bitmapWidth + animationX) / AppSettings.getAnimationSafety());
-                            }
-                            else if (animationX > -AppSettings.getAnimationSafety()) {
-                                animationFactor = accelerateInterpolator.getInterpolation(animationX / AppSettings.getAnimationSafety());
-                            }
 
-                            animationX -= animationFactor * ((AppSettings.scaleAnimationSpeed()) ? (animationModifierX / scaleFactor) : animationModifierX);
+//                            if (animationX < -bitmapWidth + renderScreenWidth + AppSettings.getAnimationSafety()) {
+//                                if (animationModifierX < 0) {
+//                                    animationFactor = accelerateInterpolator.getInterpolation((bitmapWidth - renderScreenWidth + animationX) / safety);
+//                                }
+//                                else {
+//                                    animationFactor = accelerateInterpolator.getInterpolation((safety - bitmapWidth - renderScreenWidth + animationX) / safety);
+//                                }
+//
+//                                animationFactor = animationFactor < 0.1f ? 0.1f : animationFactor;
+//                            }
+
+                            animationX += animationFactor * ((AppSettings.scaleAnimationSpeed()) ? (animationModifierX / scaleFactor) : animationModifierX);
                             offsetX = animationX;
                             newOffsetX -= animationX;
                         }
 
                         if (AppSettings.useVerticalAnimation() && bitmapHeight - (renderScreenHeight / scaleFactor) > AppSettings.getAnimationSafety()) {
-                            animationY -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifierY / scaleFactor) : animationModifierY);
+                            animationY += ((AppSettings.scaleAnimationSpeed()) ? (animationModifierY / scaleFactor) : animationModifierY);
                             offsetY = animationY;
                             newOffsetY -= animationY;
                         }
@@ -1851,7 +1857,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     if (animated) {
                         if (AppSettings.useAnimation() && bitmapWidth - (renderScreenWidth / scaleFactor) > AppSettings.getAnimationSafety()) {
-                            animationX -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifierX / scaleFactor) : animationModifierX);
+                            animationX += ((AppSettings.scaleAnimationSpeed()) ? (animationModifierX / scaleFactor) : animationModifierX);
                             offsetX = animationX;
                             if (newOffsetX < 0 && newOffsetX > (-bitmapWidth + renderScreenWidth)) {
                                 newOffsetX -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifierX / scaleFactor) : animationModifierX);
@@ -1859,7 +1865,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
 
                         if (AppSettings.useVerticalAnimation() && bitmapHeight - (renderScreenHeight / scaleFactor) > AppSettings.getAnimationSafety()) {
-                            animationY -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifierY / scaleFactor) : animationModifierY);
+                            animationY += ((AppSettings.scaleAnimationSpeed()) ? (animationModifierY / scaleFactor) : animationModifierY);
                             offsetY = animationY;
                             if (newOffsetY < 0 && newOffsetY > (-bitmapHeight + renderScreenHeight)) {
                                 newOffsetY -= ((AppSettings.scaleAnimationSpeed()) ? (animationModifierY / scaleFactor) : animationModifierY);
@@ -1948,12 +1954,12 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 if (bitmapWidth >= renderScreenWidth) {
                     if (offsetX < (-bitmapWidth + renderScreenWidth / scaleFactor)) {
-                        animationModifierX = -Math.abs(animationModifierX);
+                        animationModifierX = Math.abs(animationModifierX);
                         offsetX = -bitmapWidth + renderScreenWidth / scaleFactor;
                         animationX = offsetX;
 
                     } else if (offsetX > -1.0f) {
-                        animationModifierX = Math.abs(animationModifierX);
+                        animationModifierX = -Math.abs(animationModifierX);
                         offsetX = -1.0f;
                         animationX = offsetX;
                     }
@@ -1961,11 +1967,11 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 if (bitmapHeight >= renderScreenHeight) {
                     if (offsetY < (-bitmapHeight + renderScreenHeight / scaleFactor)) {
-                        animationModifierY = -Math.abs(animationModifierY);
+                        animationModifierY = Math.abs(animationModifierY);
                         offsetY = -bitmapHeight + renderScreenHeight / scaleFactor;
                         animationY = offsetY;
                     } else if (offsetY > -1.0f) {
-                        animationModifierY = Math.abs(animationModifierY);
+                        animationModifierY = -Math.abs(animationModifierY);
                         offsetY = -1.0f;
                         animationY = offsetY;
                     }
