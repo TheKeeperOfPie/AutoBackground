@@ -28,7 +28,6 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,11 +84,11 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
         duotonePref = (SwitchPreference) findPreference("effect_duotone_switch");
 
-        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
+//        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
+//
+//        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
 
-        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
-        return localInflater.inflate(R.layout.fragment_list, container, false);
+        return inflater.inflate(R.layout.fragment_list, container, false);
 
     }
 

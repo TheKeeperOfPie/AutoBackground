@@ -87,7 +87,7 @@ public class NavListAdapter extends BaseAdapter {
         ImageView fragmentImage = (ImageView) view.findViewById(R.id.fragment_image);
         TextView fragmentTitle = (TextView) view.findViewById(R.id.fragment_title);
 
-        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             fragmentImage.setImageResource(lightImages[position]);
         }
         else {

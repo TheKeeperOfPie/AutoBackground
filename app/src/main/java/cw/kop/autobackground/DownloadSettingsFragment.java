@@ -34,7 +34,6 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -147,11 +146,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             }
         });
 
-        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
-
-        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
-        return localInflater.inflate(R.layout.fragment_list, container, false);
+        return inflater.inflate(R.layout.fragment_list, container, false);
 		
 	}
 

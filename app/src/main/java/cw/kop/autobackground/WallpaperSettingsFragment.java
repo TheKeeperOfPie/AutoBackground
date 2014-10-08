@@ -33,7 +33,6 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,6 +60,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         super.onAttach(activity);
 
         appContext = activity;
+
         Intent intent = new Intent();
         intent.setAction(LiveWallpaperService.UPDATE_WALLPAPER);
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
@@ -81,11 +81,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         frameRatePref = (EditTextPreference) findPreference("animation_frame_rate");
 		intervalPref = (SwitchPreference) findPreference("use_interval");
 
-        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
-
-        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
-        return localInflater.inflate(R.layout.fragment_list, container, false);
+        return inflater.inflate(R.layout.fragment_list, container, false);
 	}
 
     @Override
@@ -98,6 +94,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
             PreferenceCategory wallpaperPreferences = (PreferenceCategory) findPreference("title_wallpaper_settings");
 
             wallpaperPreferences.removePreference(findPreference("preserve_context"));
+            wallpaperPreferences.removePreference(findPreference("scale_images"));
 
             PreferenceCategory intervalPreferences = (PreferenceCategory) findPreference("title_interval_settings");
 
@@ -116,6 +113,11 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
             transitionPreferences.removePreference(findPreference("spin_in_angle"));
             transitionPreferences.removePreference(findPreference("reverse_spin_out"));
             transitionPreferences.removePreference(findPreference("spin_out_angle"));
+
+            PreferenceCategory gesturePreferences = (PreferenceCategory) findPreference("title_gesture_settings");
+
+            gesturePreferences.removePreference(findPreference("extend_scale"));
+
         }
 
         if (AppSettings.getIntervalDuration() > 0) {

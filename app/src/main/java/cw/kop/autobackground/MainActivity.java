@@ -18,13 +18,17 @@ package cw.kop.autobackground;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Gravity;
@@ -34,7 +38,8 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import javax.xml.transform.Source;
 
 import cw.kop.autobackground.images.AlbumFragment;
 import cw.kop.autobackground.images.ImageHistoryFragment;
@@ -74,14 +79,14 @@ public class MainActivity extends Activity {
 
         int[] colors = {0, 0xFFFFFFFF, 0};
 
-        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             setTheme(R.style.AppLightTheme);
             colors = new int[] {0, 0xFF000000, 0};
         }
-        else if (AppSettings.getTheme() == R.style.AppDarkTheme){
+        else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)){
             setTheme(R.style.AppDarkTheme);
         }
-        else if (AppSettings.getTheme() == R.style.AppTransparentTheme){
+        else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)){
             setTheme(R.style.AppTransparentTheme);
         }
 
@@ -102,13 +107,13 @@ public class MainActivity extends Activity {
         drawerList.setAdapter(new NavListAdapter(this, fragmentList));
         drawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             drawerList.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
         }
-        else if (AppSettings.getTheme() == R.style.AppDarkTheme){
+        else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)){
             drawerList.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
         }
-        else if (AppSettings.getTheme() == R.style.AppTransparentTheme){
+        else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)){
             drawerList.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
         }
 
@@ -140,7 +145,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        if (AppSettings.getTheme() != R.style.AppLightTheme) {
+        if (!AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             drawerIndicator.setImageResource(R.drawable.drawer_menu_dark);
         }
 
@@ -317,9 +322,40 @@ public class MainActivity extends Activity {
 
     }
 
+    private BroadcastReceiver entryReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String action = intent.getAction();
+
+            if (action.equals(SourceListFragment.ADD_ENTRY)) {
+                sourceListFragment.addEntry(
+                        intent.getStringExtra("type"),
+                        intent.getStringExtra("title"),
+                        intent.getStringExtra("data"),
+                        intent.getStringExtra("num"));
+            }
+            if (action.equals(SourceListFragment.SET_ENTRY)) {
+                sourceListFragment.setEntry(
+                        intent.getIntExtra("position", -1),
+                        intent.getStringExtra("type"),
+                        intent.getStringExtra("title"),
+                        intent.getStringExtra("data"),
+                        intent.getStringExtra("num"));
+            }
+
+        }
+    };
+
     @Override
 	protected void onResume() {
 		super.onResume();
+
+        IntentFilter entryFilter = new IntentFilter();
+        entryFilter.addAction(SourceListFragment.ADD_ENTRY);
+        entryFilter.addAction(SourceListFragment.SET_ENTRY);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(entryReceiver, entryFilter);
 
         View view = getWindow().getDecorView().findViewById(getResources().getIdentifier("action_bar_container", "id", "android"));
         if (view == null) {
@@ -327,4 +363,11 @@ public class MainActivity extends Activity {
         }
 	}
 
+    @Override
+    protected void onPause() {
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(entryReceiver);
+
+        super.onPause();
+    }
 }

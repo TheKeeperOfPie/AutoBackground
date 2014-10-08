@@ -26,6 +26,13 @@
 			android:title="@string/shuffle_images" 
 			android:summary="@string/shuffle_images_description"
 			/>
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="scale_images"
+            android:defaultValue="true"
+            android:title="@string/scale_images"
+            android:summary="@string/scale_images_description"
+            />
       
 	</PreferenceCategory>
 
@@ -315,6 +322,13 @@
             android:defaultValue="true"
             android:title="@string/use_scale"
             android:summary="@string/use_scale_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="extend_scale"
+            android:defaultValue="false"
+            android:title="@string/extend_scale"
+            android:summary="@string/extend_scale_description"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference

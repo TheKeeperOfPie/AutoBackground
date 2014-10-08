@@ -99,7 +99,7 @@ public class LocalImageAdapter extends BaseAdapter {
 					.into(fileImage);
 			}
 			else if (file.isDirectory()){
-                if (AppSettings.getTheme() == R.style.AppLightTheme) {
+                if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
                     Picasso.with(parent.getContext())
                             .load(R.drawable.ic_action_collection)
                             .into(fileImage);
@@ -111,7 +111,7 @@ public class LocalImageAdapter extends BaseAdapter {
                 }
 			}
 			else {
-                if (AppSettings.getTheme() == R.style.AppLightTheme) {
+                if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
                     Picasso.with(parent.getContext())
                             .load(R.drawable.ic_action_view_as_list)
                             .into(fileImage);

@@ -1,9 +1,6 @@
 package cw.kop.autobackground.images;
 
-import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,8 +14,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -109,7 +104,7 @@ public class ImageHistoryAdapter  extends BaseAdapter {
                         .into(fileImage);
             }
             else {
-                if (AppSettings.getTheme() == R.style.AppLightTheme) {
+                if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
                     Picasso.with(parent.getContext())
                             .load(R.drawable.ic_action_view_as_list)
                             .into(fileImage);

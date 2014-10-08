@@ -24,6 +24,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -39,6 +40,8 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
+
+import javax.xml.transform.Source;
 
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.MainActivity;
@@ -100,7 +103,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         emptyLayout.setGravity(Gravity.TOP);
         emptyLayout.addView(emptyText);
 
-        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             imageListView.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
             emptyLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
         }
@@ -125,16 +128,33 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                     Toast.makeText(appContext, "Download path set to: \n" + AppSettings.getDownloadPath(), Toast.LENGTH_SHORT).show();
                 }
                 else {
-                    SourceListFragment sourceListFragment = ((MainActivity) getActivity()).sourceListFragment; //.getFragmentManager().findFragmentByTag("source_fragment");
+//                    SourceListFragment sourceListFragment = ((MainActivity) getActivity()).sourceListFragment; //.getFragmentManager().findFragmentByTag("source_fragment");
                     int numImages = 0;
                     if (dir.listFiles(filenameFilter) != null) {
                         numImages =  dir.listFiles(filenameFilter).length;
                     }
+//                    if (position > 0) {
+//                        sourceListFragment.setEntry(position, AppSettings.FOLDER, dir.getName(), dir.getAbsolutePath(), "" + numImages);
+//                    } else {
+//                        sourceListFragment.addEntry(AppSettings.FOLDER, dir.getName(), dir.getAbsolutePath(), "" + numImages);
+//                    }
+
+                    Intent returnEntryIntent = new Intent();
                     if (position > 0) {
-                        sourceListFragment.setEntry(position, AppSettings.FOLDER, dir.getName(), dir.getAbsolutePath(), "" + numImages);
-                    } else {
-                        sourceListFragment.addEntry(AppSettings.FOLDER, dir.getName(), dir.getAbsolutePath(), "" + numImages);
+                        returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
+                        returnEntryIntent.putExtra("position", position);
                     }
+                    else {
+                        returnEntryIntent.setAction(SourceListFragment.ADD_ENTRY);
+                    }
+
+                    returnEntryIntent.putExtra("type", AppSettings.FOLDER);
+                    returnEntryIntent.putExtra("title", dir.getName());
+                    returnEntryIntent.putExtra("data", dir.getAbsolutePath());
+                    returnEntryIntent.putExtra("num", numImages);
+
+                    LocalBroadcastManager.getInstance(appContext).sendBroadcast(returnEntryIntent);
+
                 }
                 imageAdapter.setFinished();
                 getActivity().onBackPressed();
@@ -150,9 +170,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 	}
 
     public boolean onBackPressed() {
-
         return imageAdapter.backDirectory();
-
     }
 
 	@Override
@@ -180,7 +198,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 
                     File selectedFile = imageAdapter.getItem(position);
 
-                    if (selectedFile.isDirectory()) {
+                    if (selectedFile.exists() && selectedFile.isDirectory()) {
                         imageAdapter.setDirectory(selectedFile);
                     }
                 }
@@ -223,9 +241,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                 }
             }
         });
-
         builder.show();
-
     }
 
     private void openImage(int index) {
@@ -236,5 +252,4 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         appContext.startActivity(galleryIntent);
     }
-
 }

@@ -507,7 +507,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         String[] iconTitles = appContext.getResources().getStringArray(R.array.notification_icon);
         String[] iconSummaries = appContext.getResources().getStringArray(R.array.notification_icon_descriptions);
         TypedArray iconIcons;
-        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             iconIcons = appContext.getResources().obtainTypedArray(R.array.notification_icon_icons);
         }
         else {
@@ -597,7 +597,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         String[] titleTitles = appContext.getResources().getStringArray(R.array.notification_titles);
         String[] titleSummaries = appContext.getResources().getStringArray(R.array.notification_titles_descriptions);
         TypedArray titlesIcons;
-        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             titlesIcons = appContext.getResources().obtainTypedArray(R.array.notification_titles_icons);
         }
         else {
@@ -650,7 +650,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         String[] optionsTitles = appContext.getResources().getStringArray(R.array.notification_options);
         String[] optionsSummaries = appContext.getResources().getStringArray(R.array.notification_options_descriptions);
         TypedArray optionsIcons;
-        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             optionsIcons = appContext.getResources().obtainTypedArray(R.array.notification_options_icons);
         }
         else {
@@ -703,7 +703,6 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         NotificationListAdapter optionsAdapter = new NotificationListAdapter(optionsList, position, listener);
 
         recyclerView.setAdapter(optionsAdapter);
-
 
         optionsIcons.recycle();
 

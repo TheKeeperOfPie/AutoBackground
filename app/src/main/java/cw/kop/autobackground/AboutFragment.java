@@ -25,14 +25,11 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
-
-import cw.kop.autobackground.settings.AppSettings;
 
 public class AboutFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener {
 
@@ -76,11 +73,7 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
         findPreference("about_library_picasso").setOnPreferenceClickListener(this);
         findPreference("about_library_colorpickerview").setOnPreferenceClickListener(this);
 
-        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
-
-        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
-        return localInflater.inflate(R.layout.fragment_list, container, false);
+        return inflater.inflate(R.layout.fragment_list, container, false);
     }
 
     @Override

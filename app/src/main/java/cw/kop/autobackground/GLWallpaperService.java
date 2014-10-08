@@ -25,8 +25,6 @@ public abstract class GLWallpaperService extends WallpaperService {
 
     public class GLEngine extends Engine {
 
-        private static final String TAG = "GLEngine";
-
         private WallpaperGLSurfaceView glSurfaceView;
         private boolean rendererHasBeenSet;
 
@@ -80,7 +78,6 @@ public abstract class GLWallpaperService extends WallpaperService {
         }
 
         class WallpaperGLSurfaceView extends GLSurfaceView {
-            private static final String TAG = "WallpaperGLSurfaceView";
 
             WallpaperGLSurfaceView(Context context) {
                 super(context);

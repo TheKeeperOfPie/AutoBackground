@@ -29,7 +29,6 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -154,25 +153,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
     }
 
     private void setThemePrefSummary() {
-
-        if (themePref != null) {
-            int theme = AppSettings.getTheme();
-
-            switch (theme) {
-                case R.style.AppLightTheme:
-                    themePref.setSummary("Theme: Light");
-                    break;
-                case R.style.AppDarkTheme:
-                    themePref.setSummary("Theme: Dark");
-                    break;
-                case R.style.AppTransparentTheme:
-                    themePref.setSummary("Theme: Transparent");
-                    break;
-                default:
-                    themePref.setSummary("Error reading theme");
-                    break;
-            }
-        }
+        themePref.setSummary(AppSettings.getTheme());
     }
 
     private void showToastDialog() {

@@ -25,7 +25,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Build;
 import android.os.Looper;
-import android.preference.SwitchPreference;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.util.Patterns;
@@ -52,7 +51,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -300,22 +298,27 @@ public class DownloadThread extends Thread {
 
         File mainDir = new File(dir + "/" + title + " " + prefix);
 
+        int filesIterated = numDownloaded;
+        int numFiles = mainDir.listFiles().length;
+
+        int num = 0;
+
         Log.i(TAG, "stored: " + stored);
         Log.i(TAG, "numDownloaded: " + numDownloaded);
 
-        for (int i = numDownloaded; i < mainDir.listFiles().length + 500; i++) {
-            File oldImageFile = new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" +  i + ".png");
+        while (filesIterated < numFiles) {
+            File oldImageFile = new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" +  num++ + ".png");
 
             if (oldImageFile.exists() && oldImageFile.isFile()) {
                 Log.i(TAG, oldImageFile.getAbsolutePath());
 
-                File newImageFile = new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + index + ".png");
+                File newImageFile = new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + index++ + ".png");
 
                 if (newImageFile.exists() && newImageFile.isFile()) {
                     newImageFile.renameTo(new File(mainDir.getAbsolutePath() + "/" + "tempRenamed" + renamed++ + ".png"));
                 }
                 oldImageFile.renameTo(newImageFile);
-                index++;
+                filesIterated++;
             }
         }
 

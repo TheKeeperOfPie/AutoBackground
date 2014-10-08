@@ -93,7 +93,7 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
         emptyLayout.setGravity(Gravity.TOP);
         emptyLayout.addView(emptyText);
 
-        if (AppSettings.getTheme() == R.style.AppLightTheme) {
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             albumListView.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
             emptyLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
         }

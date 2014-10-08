@@ -82,6 +82,9 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListFragment extends ListFragment {
 
+    public static final String ADD_ENTRY = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
+    public static final String SET_ENTRY = "cw.kop.autobackground.SourceListFragment.SET_ENTRY";
+
 	private SourceListAdapter listAdapter;
     private Context appContext;
     private Handler handler;
@@ -217,7 +220,7 @@ public class SourceListFragment extends ListFragment {
             }
         });
 
-        if (AppSettings.getTheme() != R.style.AppLightTheme) {
+        if (!AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             downloadButton.setImageResource(R.drawable.ic_action_download_dark);
             sortButton.setImageResource(R.drawable.ic_action_storage_dark);
             cycleButton.setImageResource(R.drawable.ic_action_refresh_dark);
@@ -241,7 +244,7 @@ public class SourceListFragment extends ListFragment {
             showTutorial(3);
         }
         if (Downloader.download(appContext)) {
-            if (AppSettings.getTheme() == R.style.AppLightTheme) {
+            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
                 downloadButton.setImageResource(R.drawable.ic_action_cancel);
             }
             else {
@@ -952,7 +955,7 @@ public class SourceListFragment extends ListFragment {
         LocalBroadcastManager.getInstance(appContext).registerReceiver(downloadButtonReceiver, new IntentFilter(Downloader.DOWNLOAD_TERMINATED));
 
         if (Downloader.isDownloading) {
-            if (AppSettings.getTheme() == R.style.AppLightTheme) {
+            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
                 downloadButton.setImageResource(R.drawable.ic_action_cancel);
             }
             else {
@@ -1019,7 +1022,7 @@ public class SourceListFragment extends ListFragment {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if (AppSettings.getTheme() == R.style.AppLightTheme) {
+                if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
                     downloadButton.setImageResource(R.drawable.ic_action_download);
                 }
                 else {

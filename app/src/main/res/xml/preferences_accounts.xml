@@ -8,6 +8,7 @@
         >
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:icon="@drawable/google_plus_icon"
             android:key="use_google_account"
             android:defaultValue="false"
             android:title="@string/use_google_account"
