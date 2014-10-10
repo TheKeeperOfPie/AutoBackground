@@ -18,6 +18,7 @@ package cw.kop.autobackground.downloader;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
@@ -38,6 +39,7 @@ public class Downloader {
     private static final String TAG = "Downloader";
     public static final String DOWNLOAD_TERMINATED = "cw.kop.autobackground.downloader.Downloader.DOWNLOAD_TERMINATED";
 
+    private static Bitmap musicBitmap = null;
 	private static File currentBitmapFile = null;
     private static int randIndex = 0;
     public static boolean isDownloading = false;
@@ -143,6 +145,16 @@ public class Downloader {
 
     public static void setCurrentBitmapFile(File file) {
         currentBitmapFile = file;
+    }
+
+    public static Bitmap getMusicBitmap() {
+        return musicBitmap;
+    }
+
+    public static void setMusicBitmap(Bitmap bitmap) {
+        if (bitmap != null) {
+            musicBitmap = bitmap;
+        }
     }
 
     public static void renameFiles(Context appContext, String previousName, String newName) {

@@ -17,6 +17,7 @@
 package cw.kop.autobackground;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.KeyguardManager;
 import android.app.Notification;
@@ -40,6 +41,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.media.AudioManager;
+import android.media.MediaMetadataRetriever;
+import android.media.RemoteController;
 import android.media.effect.Effect;
 import android.media.effect.EffectContext;
 import android.media.effect.EffectFactory;
@@ -94,6 +97,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     private static final String TAG = LiveWallpaperService.class.getName();
     public static final String UPDATE_NOTIFICATION = "UPDATE_NOTIFICATION";
     public static final String DOWNLOAD_WALLPAPER = "DOWNLOAD_WALLPAPER";
+    public static final String UPDATE_CURRENT_WALLPAPER = "UPDATE_CURRENT_WALLPAPER";
     public static final String UPDATE_WALLPAPER = "UPDATE_WALLPAPER";
     public static final String TOAST_LOCATION = "TOAST_LOCATION";
 
@@ -104,6 +108,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     public static final String PIN_IMAGE = "PIN_IMAGE";
     public static final String PREVIOUS_IMAGE = "PREVIOUS_IMAGE";
     public static final String SHARE_IMAGE = "SHARE_IMAGE";
+    public static final String CURRENT_IMAGE = "CURRENT_IMAGE";
 
     public static final String GAME_TILE0 = "GAME_TILE0";
     public static final String GAME_TILE1 = "GAME_TILE1";
@@ -1028,6 +1033,14 @@ public class LiveWallpaperService extends GLWallpaperService {
 //                    e.printStackTrace();
 //                }
             }
+            if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+                if (isVisible()) {
+                    loadCurrentImage();
+                }
+                else {
+                    renderer.loadCurrent = true;
+                }
+            }
         }
 
         @Override
@@ -1042,6 +1055,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             if (!isPreview()){
                 registerReceiver(updateReceiver, getEngineIntentFilter());
+
 //                IntentFilter musicFilter = new IntentFilter();
 //                musicFilter.addAction("com.android.music.metachanged");
 //                musicFilter.addAction("com.android.music.playstatechanged");
@@ -1063,12 +1077,19 @@ public class LiveWallpaperService extends GLWallpaperService {
 //                musicFilter.addAction("com.samsung.sec.android.MusicPlayer.metachanged");
 //                musicFilter.addAction("com.andrew.apollo.metachanged");
 //                registerReceiver(musicReciever, musicFilter);
+
+                if (Build.VERSION.SDK_INT >= 19) {
+                    Intent musicReceiverIntent = new Intent(LiveWallpaperService.this, MusicReceiverService.class);
+                    startService(musicReceiverIntent);
+                }
+
                 Log.i(TAG, "Registered");
             }
         }
 
         private IntentFilter getEngineIntentFilter() {
             IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(LiveWallpaperService.UPDATE_CURRENT_WALLPAPER);
             intentFilter.addAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
             intentFilter.addAction(LiveWallpaperService.CYCLE_IMAGE);
             intentFilter.addAction(LiveWallpaperService.UPDATE_WALLPAPER);
@@ -1085,10 +1106,12 @@ public class LiveWallpaperService extends GLWallpaperService {
             @Override
             public void onReceive(Context context, Intent intent) {
 
-                if (intent.getAction().equals(LiveWallpaperService.DOWNLOAD_WALLPAPER)) {
+                String action = intent.getAction();
+
+                if (action.equals(LiveWallpaperService.DOWNLOAD_WALLPAPER)) {
                     getNewImages();
                 }
-                else if (intent.getAction().equals(LiveWallpaperService.CYCLE_IMAGE)) {
+                else if (action.equals(LiveWallpaperService.CYCLE_IMAGE)) {
 
                     if (AppSettings.resetOnManualCycle() && AppSettings.useInterval() && AppSettings.getIntervalDuration() > 0) {
                         Intent cycleIntent = new Intent();
@@ -1122,7 +1145,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }).start();
                     }
                 }
-                else if (intent.getAction().equals(LiveWallpaperService.DELETE_IMAGE)) {
+                else if (action.equals(LiveWallpaperService.DELETE_IMAGE)) {
                     Downloader.deleteCurrentBitmap();
                     closeNotificationDrawer(context);
                     if (AppSettings.useToast()) {
@@ -1130,7 +1153,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
                     loadNextImage();
                 }
-                else if (intent.getAction().equals(LiveWallpaperService.OPEN_IMAGE)) {
+                else if (action.equals(LiveWallpaperService.OPEN_IMAGE)) {
 
                     String location = Downloader.getBitmapLocation();
                     if (location.substring(0, 4).equals("http")) {
@@ -1150,7 +1173,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         closeNotificationDrawer(context);
                     }
                 }
-                else if (intent.getAction().equals(LiveWallpaperService.PREVIOUS_IMAGE)) {
+                else if (action.equals(LiveWallpaperService.PREVIOUS_IMAGE)) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -1158,7 +1181,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
                     });
                 }
-                else if (intent.getAction().equals(LiveWallpaperService.PIN_IMAGE)) {
+                else if (action.equals(LiveWallpaperService.PIN_IMAGE)) {
                     if (AppSettings.getPinDuration() > 0 && !pinned) {
                         pinReleaseTime = System.currentTimeMillis() + AppSettings.getPinDuration();
                     }
@@ -1170,7 +1193,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         notifyChangeImage();
                     }
                 }
-                else if (intent.getAction().equals(LiveWallpaperService.SHARE_IMAGE)) {
+                else if (action.equals(LiveWallpaperService.SHARE_IMAGE)) {
                     Intent shareIntent = new Intent();
                     shareIntent.setAction(Intent.ACTION_SEND);
                     shareIntent.setType("image/*");
@@ -1181,12 +1204,28 @@ public class LiveWallpaperService extends GLWallpaperService {
                     Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
                     context.sendBroadcast(closeDrawer);
                 }
-                else if (intent.getAction().equals(LiveWallpaperService.UPDATE_WALLPAPER)) {
+                else if (action.equals(LiveWallpaperService.UPDATE_WALLPAPER)) {
                     if (AppSettings.forceInterval()) {
                         loadNextImage();
                     }
                     else {
                         toChange = true;
+                    }
+                }
+                else if (action.equals(LiveWallpaperService.UPDATE_CURRENT_WALLPAPER)) {
+                    if (isVisible()) {
+                        loadCurrentBitmap();
+                    }
+                    else {
+                        isPlayingMusic = true;
+                    }
+                }
+                else if (action.equals(LiveWallpaperService.CURRENT_IMAGE)) {
+                    if (isVisible()) {
+                        loadCurrentImage();
+                    }
+                    else {
+                        renderer.loadCurrent = true;
                     }
                 }
 
@@ -1239,6 +1278,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                 String testAlbumId = "";
 
                 Long albumId = 0l;
+
+//                Toast.makeText(LiveWallpaperService.this, "Artist: " + artist + " Album: " + album, Toast.LENGTH_SHORT).show();
 
                 fetchAlbumArt(artist, album);
             }
@@ -1352,6 +1393,8 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             Log.i(TAG, "Final path: " + finalPath);
 
+            Toast.makeText(LiveWallpaperService.this, "Final path: " + finalPath, Toast.LENGTH_SHORT).show();
+
         }
 
         @Override
@@ -1393,8 +1436,8 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         }
 
+        @SuppressLint("NewApi")
         public void onDestroy() {
-            super.onDestroy();
             Log.i(TAG, "onDestroy");
             if (renderer != null) {
                 renderer.release();
@@ -1405,7 +1448,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                 if (downloadOnConnection) {
                     unregisterReceiver(networkReceiver);
                 }
+                if (Build.VERSION.SDK_INT >= 19) {
+                    Intent musicReceiverIntent = new Intent(LiveWallpaperService.this, MusicReceiverService.class);
+                    stopService(musicReceiverIntent);
+                }
             }
+            super.onDestroy();
         }
 
         @Override
@@ -1454,6 +1502,54 @@ public class LiveWallpaperService extends GLWallpaperService {
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             super.onSurfaceChanged(holder, format, width, height);
             Log.i(TAG, "onSurfaceChanged Wallpaper");
+        }
+
+        private void loadCurrentBitmap() {
+            if (animated) {
+                setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+            }
+            else {
+                setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+            }
+
+            if (Downloader.getCurrentBitmapFile() == null) {
+                loadNextImage();
+                return;
+            }
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        final Bitmap bitmap = Downloader.getMusicBitmap();
+
+                        if (bitmap != null) {
+
+                            addEvent(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    renderer.setBitmap(bitmap);
+                                }
+                            });
+
+                            if (AppSettings.useNotification()) {
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        notifyChangeImage();
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    catch (OutOfMemoryError e) {
+                        if (AppSettings.useToast()) {
+                            Toast.makeText(LiveWallpaperService.this, "Out of memory error", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            }).start();
         }
 
         public void loadCurrentImage() {
@@ -1958,9 +2054,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                         offsetX = -bitmapWidth + renderScreenWidth / scaleFactor;
                         animationX = offsetX;
 
-                    } else if (offsetX > -1.0f) {
+                    } else if (offsetX > 0f) {
                         animationModifierX = -Math.abs(animationModifierX);
-                        offsetX = -1.0f;
+                        offsetX = 0f;
                         animationX = offsetX;
                     }
                 }
@@ -1970,9 +2066,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                         animationModifierY = Math.abs(animationModifierY);
                         offsetY = -bitmapHeight + renderScreenHeight / scaleFactor;
                         animationY = offsetY;
-                    } else if (offsetY > -1.0f) {
+                    } else if (offsetY > 0f) {
                         animationModifierY = -Math.abs(animationModifierY);
-                        offsetY = -1.0f;
+                        offsetY = 0f;
                         animationY = offsetY;
                     }
                 }
@@ -2056,13 +2152,13 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
 
                 if (loadCurrent) {
-                    if (isPlayingMusic) {
-
-                    }
-                    else {
-                        loadCurrentImage();
-                    }
+                    loadCurrentImage();
                     loadCurrent = false;
+                }
+
+                if (isPlayingMusic) {
+                    loadCurrentBitmap();
+                    isPlayingMusic = false;
                 }
 
                 renderScreenWidth = width;
