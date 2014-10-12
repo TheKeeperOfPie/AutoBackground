@@ -23,11 +23,8 @@ import android.util.AttributeSet;
 
 public class CustomSwitchPreference extends SwitchPreference {
 
-    private final Context context;
-
     public CustomSwitchPreference(Context context) {
         super(context, null);
-        this.context = context;
     }
 
     public CustomSwitchPreference(Context context, AttributeSet attrs) {
@@ -36,6 +33,5 @@ public class CustomSwitchPreference extends SwitchPreference {
 
     public CustomSwitchPreference(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        this.context = context;
     }
 }

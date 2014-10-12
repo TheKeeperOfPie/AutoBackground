@@ -33,9 +33,11 @@
     <string name="fill_images">Fill Images</string>
     <string name="fill_images_description">Fill screen with image</string>
     <string name="shuffle_images">Shuffle Images</string>
-    <string name="shuffle_images_description">Shuffle Images</string>
+    <string name="shuffle_images_description">Shuffle images</string>
     <string name="scale_images">Scale Images</string>
     <string name="scale_images_description">Rescale images if lower/higher resolution</string>
+    <string name="show_album_art">Show Album Art</string>
+    <string name="show_album_art_description">Change background to album art when playing music (EXPERIMENTAL)</string>
     <string name="use_interval">Update Interval</string>
     <string name="use_interval_description">Change image after certain period</string>
     <string name="force_interval">Force Interval</string>

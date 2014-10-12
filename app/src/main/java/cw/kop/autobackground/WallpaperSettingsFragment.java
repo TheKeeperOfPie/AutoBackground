@@ -95,6 +95,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
             wallpaperPreferences.removePreference(findPreference("preserve_context"));
             wallpaperPreferences.removePreference(findPreference("scale_images"));
+            wallpaperPreferences.removePreference(findPreference("show_album_art"));
 
             PreferenceCategory intervalPreferences = (PreferenceCategory) findPreference("title_interval_settings");
 
@@ -294,8 +295,12 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
             if (key.equals("animation_frame_rate")) {
                 frameRatePref.setSummary(AppSettings.getAnimationFrameRate() + " FPS");
             }
+
+            if (key.equals("show_album_art")) {
+                Intent musicReceiverIntent = new Intent(appContext, MusicReceiverService.class);
+
+                appContext.stopService(musicReceiverIntent);
+            }
 		}
-		
 	}
-	
 }

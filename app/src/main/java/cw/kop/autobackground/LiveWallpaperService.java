@@ -95,31 +95,31 @@ public class LiveWallpaperService extends GLWallpaperService {
     private static final int NOTIFICATION_ID = 0;
     private static final int NOTIFICATION_ICON_SAMPLE_SIZE = 15;
     private static final String TAG = LiveWallpaperService.class.getName();
-    public static final String UPDATE_NOTIFICATION = "UPDATE_NOTIFICATION";
-    public static final String DOWNLOAD_WALLPAPER = "DOWNLOAD_WALLPAPER";
-    public static final String UPDATE_CURRENT_WALLPAPER = "UPDATE_CURRENT_WALLPAPER";
-    public static final String UPDATE_WALLPAPER = "UPDATE_WALLPAPER";
-    public static final String TOAST_LOCATION = "TOAST_LOCATION";
+    public static final String UPDATE_NOTIFICATION = "cw.kop.autobackgrond.UPDATE_NOTIFICATION";
+    public static final String DOWNLOAD_WALLPAPER = "cw.kop.autobackgrond.DOWNLOAD_WALLPAPER";
+    public static final String UPDATE_CURRENT_WALLPAPER = "cw.kop.autobackgrond.UPDATE_CURRENT_WALLPAPER";
+    public static final String UPDATE_WALLPAPER = "cw.kop.autobackgrond.UPDATE_WALLPAPER";
+    public static final String TOAST_LOCATION = "cw.kop.autobackgrond.TOAST_LOCATION";
 
-    public static final String COPY_IMAGE = "COPY_IMAGE";
-    public static final String CYCLE_IMAGE = "CYCLE_IMAGE";
-    public static final String DELETE_IMAGE = "DELETE_IMAGE";
-    public static final String OPEN_IMAGE = "OPEN_IMAGE";
-    public static final String PIN_IMAGE = "PIN_IMAGE";
-    public static final String PREVIOUS_IMAGE = "PREVIOUS_IMAGE";
-    public static final String SHARE_IMAGE = "SHARE_IMAGE";
-    public static final String CURRENT_IMAGE = "CURRENT_IMAGE";
+    public static final String COPY_IMAGE = "cw.kop.autobackgrond.COPY_IMAGE";
+    public static final String CYCLE_IMAGE = "cw.kop.autobackgrond.CYCLE_IMAGE";
+    public static final String DELETE_IMAGE = "cw.kop.autobackgrond.DELETE_IMAGE";
+    public static final String OPEN_IMAGE = "cw.kop.autobackgrond.OPEN_IMAGE";
+    public static final String PIN_IMAGE = "cw.kop.autobackgrond.PIN_IMAGE";
+    public static final String PREVIOUS_IMAGE = "cw.kop.autobackgrond.PREVIOUS_IMAGE";
+    public static final String SHARE_IMAGE = "cw.kop.autobackgrond.SHARE_IMAGE";
+    public static final String CURRENT_IMAGE = "cw.kop.autobackgrond.CURRENT_IMAGE";
 
-    public static final String GAME_TILE0 = "GAME_TILE0";
-    public static final String GAME_TILE1 = "GAME_TILE1";
-    public static final String GAME_TILE2 = "GAME_TILE2";
-    public static final String GAME_TILE3 = "GAME_TILE3";
-    public static final String GAME_TILE4 = "GAME_TILE4";
-    public static final String GAME_TILE5 = "GAME_TILE5";
-    public static final String GAME_TILE6 = "GAME_TILE6";
-    public static final String GAME_TILE7 = "GAME_TILE7";
-    public static final String GAME_TILE8 = "GAME_TILE8";
-    public static final String GAME_TILE9 = "GAME_TILE9";
+    public static final String GAME_TILE0 = "cw.kop.autobackgrond.GAME_TILE0";
+    public static final String GAME_TILE1 = "cw.kop.autobackgrond.GAME_TILE1";
+    public static final String GAME_TILE2 = "cw.kop.autobackgrond.GAME_TILE2";
+    public static final String GAME_TILE3 = "cw.kop.autobackgrond.GAME_TILE3";
+    public static final String GAME_TILE4 = "cw.kop.autobackgrond.GAME_TILE4";
+    public static final String GAME_TILE5 = "cw.kop.autobackgrond.GAME_TILE5";
+    public static final String GAME_TILE6 = "cw.kop.autobackgrond.GAME_TILE6";
+    public static final String GAME_TILE7 = "cw.kop.autobackgrond.GAME_TILE7";
+    public static final String GAME_TILE8 = "cw.kop.autobackgrond.GAME_TILE8";
+    public static final String GAME_TILE9 = "cw.kop.autobackgrond.GAME_TILE9";
     public static final int NUM_TO_WIN = 5;
     private ArrayList<Bitmap> tileBitmaps = new ArrayList<Bitmap>();
     private ArrayList<Integer> tileOrder= new ArrayList<Integer>();
@@ -1078,7 +1078,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 //                musicFilter.addAction("com.andrew.apollo.metachanged");
 //                registerReceiver(musicReciever, musicFilter);
 
-                if (Build.VERSION.SDK_INT >= 19) {
+                if (Build.VERSION.SDK_INT >= 19 && AppSettings.showAlbumArt()) {
                     Intent musicReceiverIntent = new Intent(LiveWallpaperService.this, MusicReceiverService.class);
                     startService(musicReceiverIntent);
                 }
@@ -1098,6 +1098,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             intentFilter.addAction(LiveWallpaperService.PREVIOUS_IMAGE);
             intentFilter.addAction(LiveWallpaperService.PIN_IMAGE);
             intentFilter.addAction(LiveWallpaperService.SHARE_IMAGE);
+            intentFilter.addAction(LiveWallpaperService.CURRENT_IMAGE);
             return intentFilter;
         }
 
@@ -1938,7 +1939,9 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-                    android.opengl.Matrix.orthoM(matrixProjection, 0, 0, renderScreenWidth / scaleFactor, 0, renderScreenHeight / scaleFactor, 0, 10f);
+//                    android.opengl.Matrix.orthoM(matrixProjection, 0, 0, renderScreenWidth / scaleFactor, 0, renderScreenHeight / scaleFactor, 0, 10f);
+
+                    android.opengl.Matrix.scaleM(matrixProjection, 0, scaleFactor, scaleFactor, 1f);
 
                     GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
                     android.opengl.Matrix.setIdentityM(transMatrix, 0);
@@ -2034,21 +2037,21 @@ public class LiveWallpaperService extends GLWallpaperService {
                         GLES20.glUniform1f(mAlphaHandle, fadeOutAlpha);
                     }
 
-                    renderTransitionTexture(renderScreenWidth / transitionOldScaleFactor, renderScreenHeight / transitionOldScaleFactor, oldBitmapWidth, oldBitmapHeight, 1, transitionOldOffsetX, transitionOldOffsetY, transitionOldAngle, transitionOldScaleFactor);
+                    renderTransitionTexture(oldBitmapWidth, oldBitmapHeight, 1, transitionOldOffsetX, transitionOldOffsetY, transitionOldAngle, transitionOldScaleFactor);
 
                     if (AppSettings.useFade()) {
                         fadeInAlpha = 1.0f - timeRatio;
                         GLES20.glUniform1f(mAlphaHandle, fadeInAlpha);
                     }
 
-                    renderTransitionTexture(renderScreenWidth / transitionNewScaleFactor, renderScreenHeight / transitionNewScaleFactor, bitmapWidth, bitmapHeight, 0, transitionNewOffsetX, transitionNewOffsetY, transitionNewAngle, transitionNewScaleFactor);
+                    renderTransitionTexture(bitmapWidth, bitmapHeight, 0, transitionNewOffsetX, transitionNewOffsetY, transitionNewAngle, transitionNewScaleFactor);
                     GLES20.glDisable(GLES20.GL_BLEND);
                 }
             }
 
             private void calculateBounds() {
 
-                if (bitmapWidth >= renderScreenWidth) {
+                if (bitmapWidth * scaleFactor >= renderScreenWidth) {
                     if (offsetX < (-bitmapWidth + renderScreenWidth / scaleFactor)) {
                         animationModifierX = Math.abs(animationModifierX);
                         offsetX = -bitmapWidth + renderScreenWidth / scaleFactor;
@@ -2061,7 +2064,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
                 }
 
-                if (bitmapHeight >= renderScreenHeight) {
+                if (bitmapHeight * scaleFactor >= renderScreenHeight) {
                     if (offsetY < (-bitmapHeight + renderScreenHeight / scaleFactor)) {
                         animationModifierY = Math.abs(animationModifierY);
                         offsetY = -bitmapHeight + renderScreenHeight / scaleFactor;
@@ -2074,10 +2077,11 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
             }
 
-            private void renderTransitionTexture(float screenWidth, float screenHeight, float containerWidth, float containerHeight, int texture, float x, float y, float angle, float scale) {
+            private void renderTransitionTexture(float containerWidth, float containerHeight, int texture, float x, float y, float angle, float scale) {
 
                 setupContainer(containerWidth, containerHeight);
-                android.opengl.Matrix.orthoM(matrixProjection, 0, 0, screenWidth, 0, screenHeight, 0, 10f);
+//                android.opengl.Matrix.orthoM(matrixProjection, 0, 0, screenWidth, 0, screenHeight, 0, 10f);
+                android.opengl.Matrix.scaleM(matrixProjection, 0, scaleFactor, scaleFactor, 1f);
 
                 GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[texture]);
                 android.opengl.Matrix.setIdentityM(transMatrix, 0);
@@ -2226,9 +2230,9 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep, int xPixels, int yPixels) {
                 if (AppSettings.forceParallax()) {
-                    float offsetDifference = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (1.0f - xOffset - rawOffsetX);
                     rawOffsetX = 1.0f - xOffset;
                     if (draggable || animated) {
+                        float offsetDifference = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (1.0f - xOffset - rawOffsetX);
                         offsetX += offsetDifference;
                         newOffsetX += offsetDifference;
                         animationX += offsetDifference;
@@ -2239,9 +2243,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
                 }
                 else {
-                    float offsetDifference = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (xOffset - rawOffsetX);
                     rawOffsetX = xOffset;
                     if (draggable || animated) {
+                        float offsetDifference = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (xOffset - rawOffsetX);
                         offsetX += offsetDifference;
                         newOffsetX += offsetDifference;
                         animationX += offsetDifference;

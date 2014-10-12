@@ -81,15 +81,15 @@ public class MusicReceiverService extends NotificationListenerService implements
     @Override
     public void onClientPlaybackStateUpdate(int state) {
 
-        if (state == RemoteControlClient.PLAYSTATE_STOPPED) {
+        if (state == RemoteControlClient.PLAYSTATE_STOPPED || state == RemoteControlClient.PLAYSTATE_PAUSED) {
             Toast.makeText(MusicReceiverService.this, "Music stopped", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent();
             intent.setAction(LiveWallpaperService.CURRENT_IMAGE);
             sendBroadcast(intent);
-        }
 
-        Log.i(TAG, "Playback state: " + state);
-        Toast.makeText(MusicReceiverService.this, "Playback state: " + state, Toast.LENGTH_SHORT).show();
+            previousAlbum = null;
+            previousArtist = null;
+        }
 
     }
 
@@ -106,14 +106,19 @@ public class MusicReceiverService extends NotificationListenerService implements
     @Override
     public void onClientMetadataUpdate(RemoteController.MetadataEditor metadataEditor) {
 
-        String artist = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_ARTIST, "Error");
+        String artist = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_ARTIST, null);
         String albumArtist = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST, "Error");
         String album = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_ALBUM, "Error");
         String track = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_TITLE, "Error");
 
-        Log.i(TAG, "Artist: " + artist + " Album: " + album);
+        if (artist == null) {
+            artist = albumArtist;
+        }
 
-//        if (!album.equals(previousAlbum) || !artist.equals(previousArtist)) {
+        Log.i(TAG, "Artist: " + artist + " Album: " + album);
+        Toast.makeText(MusicReceiverService.this, "Metadata changed, \nArtist: " + artist + " Album: " + album, Toast.LENGTH_SHORT).show();
+
+        if (!album.equals(previousAlbum) || !artist.equals(previousArtist)) {
 
             Bitmap bitmap = metadataEditor.getBitmap(RemoteController.MetadataEditor.BITMAP_KEY_ARTWORK, null);
 
@@ -122,7 +127,7 @@ public class MusicReceiverService extends NotificationListenerService implements
             Intent intent = new Intent();
             intent.setAction(LiveWallpaperService.UPDATE_CURRENT_WALLPAPER);
             sendBroadcast(intent);
-//        }
+        }
 
         previousAlbum = album;
         previousArtist = artist;
