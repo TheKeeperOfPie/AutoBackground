@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,10 +41,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import javax.xml.transform.Source;
-
 import cw.kop.autobackground.LiveWallpaperService;
-import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.settings.AppSettings;
@@ -52,26 +49,26 @@ import cw.kop.autobackground.sources.SourceListFragment;
 
 public class LocalImageFragment extends Fragment implements ListView.OnItemClickListener {
 
-	private Context appContext;
-	private LocalImageAdapter imageAdapter;
+    private Context appContext;
+    private LocalImageAdapter imageAdapter;
     private ListView imageListView;
 
     private boolean setPath;
     private int position;
     private String viewPath = "";
 
-	public LocalImageFragment() {
+    public LocalImageFragment() {
     }
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
         Bundle bundle = getArguments();
         setPath = bundle.getBoolean("set_path", false);
         viewPath = bundle.getString("view_path", "");
         position = bundle.getInt("position", 0);
-	}
+    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -84,11 +81,12 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         appContext = null;
         super.onDetach();
     }
-	
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-		final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.local_image_layout, null);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.local_image_layout, null);
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
 
@@ -116,12 +114,12 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 
         imageListView.setEmptyView(emptyLayout);
 
-		Button useDirectoryButton = (Button) view.findViewById(R.id.use_directory_button);
-		useDirectoryButton.setOnClickListener(new OnClickListener() {
+        Button useDirectoryButton = (Button) view.findViewById(R.id.use_directory_button);
+        useDirectoryButton.setOnClickListener(new OnClickListener() {
 
-			@Override
-			public void onClick(View v) {
-				File dir = imageAdapter.getDirectory();
+            @Override
+            public void onClick(View v) {
+                File dir = imageAdapter.getDirectory();
                 FilenameFilter filenameFilter = Downloader.getImageFileNameFilter();
                 if (setPath) {
                     AppSettings.setDownloadPath(dir.getAbsolutePath());
@@ -131,7 +129,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 //                    SourceListFragment sourceListFragment = ((MainActivity) getActivity()).sourceListFragment; //.getFragmentManager().findFragmentByTag("source_fragment");
                     int numImages = 0;
                     if (dir.listFiles(filenameFilter) != null) {
-                        numImages =  dir.listFiles(filenameFilter).length;
+                        numImages = dir.listFiles(filenameFilter).length;
                     }
 //                    if (position > 0) {
 //                        sourceListFragment.setEntry(position, AppSettings.FOLDER, dir.getName(), dir.getAbsolutePath(), "" + numImages);
@@ -158,24 +156,24 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                 }
                 imageAdapter.setFinished();
                 getActivity().onBackPressed();
-			}
-			
-		});
+            }
+
+        });
 
         if (!viewPath.equals("")) {
             useDirectoryButton.setVisibility(View.GONE);
         }
-		
-		return view;
-	}
+
+        return view;
+    }
 
     public boolean onBackPressed() {
         return imageAdapter.backDirectory();
     }
 
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
         File dir = new File("/");
 
@@ -183,9 +181,9 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
             dir = new File(viewPath);
         }
 
-		if (imageAdapter == null) {
-			imageAdapter = new LocalImageAdapter(getActivity(), dir);
-		}
+        if (imageAdapter == null) {
+            imageAdapter = new LocalImageAdapter(getActivity(), dir);
+        }
 
         imageListView.setAdapter(imageAdapter);
         if (!viewPath.equals("")) {
@@ -204,7 +202,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                 }
             });
         }
-	}
+    }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {

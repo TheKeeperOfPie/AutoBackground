@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,12 +42,12 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class WallpaperSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
-	private final static long CONVERT_MILLES_TO_MIN = 60000;
-	private SwitchPreference intervalPref;
+    private final static long CONVERT_MILLES_TO_MIN = 60000;
+    private SwitchPreference intervalPref;
     private EditTextPreference frameRatePref;
     private Context appContext;
     private PendingIntent pendingIntent;
-	private AlarmManager alarmManager;
+    private AlarmManager alarmManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -75,14 +75,15 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         super.onDetach();
     }
 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
 
         frameRatePref = (EditTextPreference) findPreference("animation_frame_rate");
-		intervalPref = (SwitchPreference) findPreference("use_interval");
+        intervalPref = (SwitchPreference) findPreference("use_interval");
 
         return inflater.inflate(R.layout.fragment_list, container, false);
-	}
+    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -127,72 +128,72 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
     }
 
     @Override
-	public void onResume() {
+    public void onResume() {
         super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-        
+
     }
-	
-	private void showDialogIntervalMenu() {
+
+    private void showDialogIntervalMenu() {
 
         AppSettings.setIntervalDuration(0);
 
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
         dialogBuilder.setItems(R.array.interval_entry_menu, new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				
-				switch (which) {
-					case 0: 
-						AppSettings.setIntervalDuration(5 * CONVERT_MILLES_TO_MIN);
-						break;
-					case 1: 
-						AppSettings.setIntervalDuration(15 * CONVERT_MILLES_TO_MIN);
-						break;
-					case 2: 
-						AppSettings.setIntervalDuration(30 * CONVERT_MILLES_TO_MIN);
-						break;
-					case 3: 
-						AppSettings.setIntervalDuration(AlarmManager.INTERVAL_HOUR);
-						break;
-					case 4: 
-						AppSettings.setIntervalDuration(2 * AlarmManager.INTERVAL_HOUR);
-						break;
-					case 5: 
-						AppSettings.setIntervalDuration(6 * AlarmManager.INTERVAL_HOUR);
-						break;
-					case 6: 
-						AppSettings.setIntervalDuration(AlarmManager.INTERVAL_HALF_DAY);
-						break;
-					default:
-				}
 
-		        if (AppSettings.getIntervalDuration() > 0) {
-		        	intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
-		        }
-		        
-				setIntervalAlarm();
-		        
-			}
-		});
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                switch (which) {
+                    case 0:
+                        AppSettings.setIntervalDuration(5 * CONVERT_MILLES_TO_MIN);
+                        break;
+                    case 1:
+                        AppSettings.setIntervalDuration(15 * CONVERT_MILLES_TO_MIN);
+                        break;
+                    case 2:
+                        AppSettings.setIntervalDuration(30 * CONVERT_MILLES_TO_MIN);
+                        break;
+                    case 3:
+                        AppSettings.setIntervalDuration(AlarmManager.INTERVAL_HOUR);
+                        break;
+                    case 4:
+                        AppSettings.setIntervalDuration(2 * AlarmManager.INTERVAL_HOUR);
+                        break;
+                    case 5:
+                        AppSettings.setIntervalDuration(6 * AlarmManager.INTERVAL_HOUR);
+                        break;
+                    case 6:
+                        AppSettings.setIntervalDuration(AlarmManager.INTERVAL_HALF_DAY);
+                        break;
+                    default:
+                }
+
+                if (AppSettings.getIntervalDuration() > 0) {
+                    intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
+                }
+
+                setIntervalAlarm();
+
+            }
+        });
 
         AlertDialog dialog = dialogBuilder.create();
 
-		dialog.setOnDismissListener(new OnDismissListener () {
+        dialog.setOnDismissListener(new OnDismissListener() {
 
-			@Override
-			public void onDismiss(DialogInterface dialog) {
-				if (AppSettings.getIntervalDuration() <= 0) {
-					intervalPref.setChecked(false);
-				}
-			}
-			
-		});
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (AppSettings.getIntervalDuration() <= 0) {
+                    intervalPref.setChecked(false);
+                }
+            }
 
-		dialog.show();
-	}
+        });
+
+        dialog.show();
+    }
 
     private void showDialogIntervalForInput() {
 
@@ -231,7 +232,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         AlertDialog dialog = dialogBuilder.create();
 
-        dialog.setOnDismissListener(new OnDismissListener () {
+        dialog.setOnDismissListener(new OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
                 if (AppSettings.getIntervalDuration() <= 0) {
@@ -244,53 +245,53 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         dialog.show();
     }
 
-	private void setIntervalAlarm() {
-		
-		if (AppSettings.useInterval() && AppSettings.getIntervalDuration() > 0) {
-			alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + AppSettings.getIntervalDuration(), AppSettings.getIntervalDuration(), pendingIntent);
-			Log.i("WSD", "Interval Set: " + AppSettings.getIntervalDuration());
-		}
-		else {
-			alarmManager.cancel(pendingIntent);
-		}
-	}
+    private void setIntervalAlarm() {
 
-	@Override
-	public void onPause() {
+        if (AppSettings.useInterval() && AppSettings.getIntervalDuration() > 0) {
+            alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + AppSettings.getIntervalDuration(), AppSettings.getIntervalDuration(), pendingIntent);
+            Log.i("WSD", "Interval Set: " + AppSettings.getIntervalDuration());
+        }
+        else {
+            alarmManager.cancel(pendingIntent);
+        }
+    }
+
+    @Override
+    public void onPause() {
         super.onPause();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
-	
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		
-		if (!((Activity) appContext).isFinishing()) {
-			Preference pref = findPreference(key);
-			
-			if (pref instanceof EditTextPreference) {
-				EditTextPreference editPref = (EditTextPreference) pref;
-				if (editPref.getText().equals("0") || editPref.getText().equals("")) {
-					editPref.setText("1");
-				}
-				editPref.setSummary(editPref.getText());
-			}
-			
-			if (key.equals("use_interval")) {
-				if (AppSettings.useInterval()) {
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
+        if (!((Activity) appContext).isFinishing()) {
+            Preference pref = findPreference(key);
+
+            if (pref instanceof EditTextPreference) {
+                EditTextPreference editPref = (EditTextPreference) pref;
+                if (editPref.getText().equals("0") || editPref.getText().equals("")) {
+                    editPref.setText("1");
+                }
+                editPref.setSummary(editPref.getText());
+            }
+
+            if (key.equals("use_interval")) {
+                if (AppSettings.useInterval()) {
                     if (AppSettings.useAdvanced()) {
                         showDialogIntervalForInput();
                     }
                     else {
                         showDialogIntervalMenu();
                     }
-	    		}
-				else {
-					AppSettings.setIntervalDuration(0);
-			        intervalPref.setSummary("Change image after certain period");
-					setIntervalAlarm();
-				}
-				Log.i("WSF", "Interval Set: " + AppSettings.useInterval());
-			}
+                }
+                else {
+                    AppSettings.setIntervalDuration(0);
+                    intervalPref.setSummary("Change image after certain period");
+                    setIntervalAlarm();
+                }
+                Log.i("WSF", "Interval Set: " + AppSettings.useInterval());
+            }
 
             if (key.equals("animation_frame_rate")) {
                 frameRatePref.setSummary(AppSettings.getAnimationFrameRate() + " FPS");
@@ -301,6 +302,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
                 appContext.stopService(musicReceiverIntent);
             }
-		}
-	}
+        }
+    }
 }

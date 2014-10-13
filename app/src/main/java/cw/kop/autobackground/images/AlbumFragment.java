@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -76,7 +76,8 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
 
         final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.album_list_layout, null);
 
@@ -129,7 +130,8 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
         if (sourceListFragment != null) {
             if (changePosition > -1) {
                 sourceListFragment.setEntry(changePosition, type, albumNames.get(position), albumLinks.get(position), albumNums.get(position));
-            } else {
+            }
+            else {
                 sourceListFragment.addEntry(type, albumNames.get(position), albumLinks.get(position), albumNums.get(position));
             }
             getActivity().onBackPressed();

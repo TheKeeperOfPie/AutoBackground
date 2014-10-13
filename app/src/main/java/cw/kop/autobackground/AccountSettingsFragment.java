@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -64,7 +64,8 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
 
         googlePref = (SwitchPreference) findPreference("use_google_account");
 
@@ -115,15 +116,19 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
                             String authToken = GoogleAuthUtil.getToken(appContext, accountName, "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             Log.i("MA", "GOOGLE_ACCOUNT_SIGN_IN Token: " + authToken);
-                        } catch (IOException transientEx) {
+                        }
+                        catch (IOException transientEx) {
                             return null;
-                        } catch (UserRecoverableAuthException e) {
+                        }
+                        catch (UserRecoverableAuthException e) {
                             e.printStackTrace();
                             startActivityForResult(e.getIntent(), GoogleAccount.GOOGLE_AUTH_CODE);
                             return null;
-                        } catch (GoogleAuthException authEx) {
+                        }
+                        catch (GoogleAuthException authEx) {
                             return null;
-                        } catch (Exception e) {
+                        }
+                        catch (Exception e) {
                             throw new RuntimeException(e);
                         }
                         return null;
@@ -144,13 +149,17 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
                             String authToken = GoogleAuthUtil.getToken(appContext, AppSettings.getGoogleAccountName(), "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             Log.i("MA", "GOOGLE_AUTH_CODE Token: " + authToken);
-                        } catch (IOException transientEx) {
+                        }
+                        catch (IOException transientEx) {
                             return null;
-                        } catch (UserRecoverableAuthException e) {
+                        }
+                        catch (UserRecoverableAuthException e) {
                             return null;
-                        } catch (GoogleAuthException authEx) {
+                        }
+                        catch (GoogleAuthException authEx) {
                             return null;
-                        } catch (Exception e) {
+                        }
+                        catch (Exception e) {
                             throw new RuntimeException(e);
                         }
                         return null;

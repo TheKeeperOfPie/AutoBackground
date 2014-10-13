@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,8 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-public class SeekBarPreference extends DialogPreference implements SeekBar.OnSeekBarChangeListener
-{
+public class SeekBarPreference extends DialogPreference implements SeekBar.OnSeekBarChangeListener {
     private static final String namespace = "http://schemas.android.com/apk/res/android";
 
     private SeekBar seekBar;
@@ -38,21 +37,22 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
     private int defaultValue, max, value, changedValue = 0;
 
     public SeekBarPreference(Context context, AttributeSet attrs) {
-        super(context,attrs);
+        super(context, attrs);
         this.context = context;
 
-        suffix = attrs.getAttributeValue(namespace,"dialogMessage");
-        defaultValue = attrs.getAttributeIntValue(namespace,"defaultValue", 0);
-        max = attrs.getAttributeIntValue(namespace,"max", 1);
+        suffix = attrs.getAttributeValue(namespace, "dialogMessage");
+        defaultValue = attrs.getAttributeIntValue(namespace, "defaultValue", 0);
+        max = attrs.getAttributeIntValue(namespace, "max", 1);
 
     }
+
     @Override
     protected View onCreateDialogView() {
         LinearLayout.LayoutParams params;
         params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         LinearLayout layout = new LinearLayout(context);
         layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(6,6,6,6);
+        layout.setPadding(6, 6, 6, 6);
 
         valueTextView = new TextView(context);
         valueTextView.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -77,15 +77,16 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
         seekBar.setProgress(value);
         return layout;
     }
+
     @Override
     protected void onBindDialogView(View v) {
         super.onBindDialogView(v);
         seekBar.setMax(max);
         seekBar.setProgress(value);
     }
+
     @Override
-    protected void onSetInitialValue(boolean restore, Object initial)
-    {
+    protected void onSetInitialValue(boolean restore, Object initial) {
         super.onSetInitialValue(restore, initial);
         if (restore) {
             value = shouldPersist() ? getPersistedInt(defaultValue) : 0;
@@ -98,15 +99,17 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
 
     }
 
-    public void onProgressChanged(SeekBar seek, int value, boolean fromTouch)
-    {
+    public void onProgressChanged(SeekBar seek, int value, boolean fromTouch) {
         valueTextView.setText("" + ((float) value / 10));
         changedValue = value;
         callChangeListener(value);
     }
 
-    public void onStartTrackingTouch(SeekBar seek) {}
-    public void onStopTrackingTouch(SeekBar seek) {}
+    public void onStartTrackingTouch(SeekBar seek) {
+    }
+
+    public void onStopTrackingTouch(SeekBar seek) {
+    }
 
     @Override
     protected void onDialogClosed(boolean positiveResult) {

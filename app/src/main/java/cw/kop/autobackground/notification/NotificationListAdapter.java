@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,13 +27,14 @@ import java.util.List;
 
 import cw.kop.autobackground.R;
 
-public class NotificationListAdapter extends RecyclerView.Adapter<NotificationListAdapter.ViewHolder>{
+public class NotificationListAdapter extends RecyclerView.Adapter<NotificationListAdapter.ViewHolder> {
 
     private List<NotificationOptionData> optionsList;
     private RecyclerViewListClickListener listClickListener;
     private int optionPosition;
 
-    public NotificationListAdapter(List<NotificationOptionData> options, int position, RecyclerViewListClickListener listener) {
+    public NotificationListAdapter(List<NotificationOptionData> options, int position,
+                                   RecyclerViewListClickListener listener) {
         optionsList = options;
         optionPosition = position;
         listClickListener = listener;
@@ -70,6 +71,11 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
 
     }
 
+    @Override
+    public int getItemCount() {
+        return optionsList.size();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         public ImageView optionIcon;
@@ -86,10 +92,5 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
             optionTitle = (TextView) rowLayout.findViewById(R.id.notification_list_title);
             optionSummary = (TextView) rowLayout.findViewById(R.id.notification_list_summary);
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return optionsList.size();
     }
 }

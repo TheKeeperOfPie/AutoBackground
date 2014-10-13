@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,7 +40,8 @@ public class AlbumAdapter extends BaseAdapter {
     private ArrayList<String> albumLinks;
 
 
-    public AlbumAdapter(Context context, ArrayList<String> names, ArrayList<String> images, ArrayList<String> links) {
+    public AlbumAdapter(Context context, ArrayList<String> names, ArrayList<String> images,
+                        ArrayList<String> links) {
         this.context = context;
         albumNames = names;
         albumImages = images;
@@ -70,7 +71,7 @@ public class AlbumAdapter extends BaseAdapter {
             View view = convertView;
 
             if (convertView == null) {
-                LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 view = inflater.inflate(R.layout.album_list_cell, null);
             }
 

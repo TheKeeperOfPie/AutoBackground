@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -184,7 +184,8 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.notification_settings_layout, container, false);
 
@@ -282,9 +283,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 previewTutorial = new ShowcaseView.Builder(getActivity())
                         .setContentTitle("Notification Customization")
                         .setContentText("This is where you can change \n" +
-                                "how the persistent notification looks. \n" +
-                                "To customize a part, simply click on it \n" +
-                                "inside this preview.")
+                                                "how the persistent notification looks. \n" +
+                                                "To customize a part, simply click on it \n" +
+                                                "inside this preview.")
                         .setStyle(R.style.ShowcaseStyle)
                         .setTarget(new ViewTarget(notificationPreview))
                         .setOnClickListener(new View.OnClickListener() {
@@ -332,9 +333,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                     previewTutorial = new ShowcaseView.Builder(getActivity())
                             .setContentTitle("Notification Customization")
                             .setContentText("This is where you can change \n" +
-                                    "how the persistent notification looks. \n" +
-                                    "To customize a part, simply click on it \n" +
-                                    "inside this preview.")
+                                                    "how the persistent notification looks. \n" +
+                                                    "To customize a part, simply click on it \n" +
+                                                    "inside this preview.")
                             .setStyle(R.style.ShowcaseStyle)
                             .setTarget(new ViewTarget(notificationPreview))
                             .setOnClickListener(new View.OnClickListener() {
@@ -614,7 +615,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             @Override
             public void onClick(int position, String title, int drawable) {
 
-                if (title.equals("None")){
+                if (title.equals("None")) {
                     clearHighlights();
                     recyclerView.setAdapter(null);
                     switch (position) {
@@ -623,8 +624,8 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                             notificationTitle.setText("");
                             break;
                         case 5:
-                                AppSettings.setNotificationSummary("");
-                                notificationSummary.setText("");
+                            AppSettings.setNotificationSummary("");
+                            notificationSummary.setText("");
                             break;
                     }
                 }

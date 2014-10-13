@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,75 +42,75 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListAdapter extends BaseAdapter {
 
-	private Activity mainActivity;
+    private Activity mainActivity;
     private ArrayList<HashMap<String, String>> listData;
     private HashSet<String> titles;
     private LayoutInflater inflater = null;
-	
-	public SourceListAdapter(Activity activity) {
-		mainActivity = activity;
-		listData = new ArrayList<HashMap<String, String>>();
+
+    public SourceListAdapter(Activity activity) {
+        mainActivity = activity;
+        listData = new ArrayList<HashMap<String, String>>();
         titles = new HashSet<String>();
-		inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-	}
+        inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
 
-	@Override
-	public int getCount() {
-		return listData.size();
-	}
+    @Override
+    public int getCount() {
+        return listData.size();
+    }
 
-	public HashMap<String, String> getItem(int position) {
-		return listData.get(position);
-	}
-	
-	@Override
-	public long getItemId(int position) {
-		return position;
-	}
+    public HashMap<String, String> getItem(int position) {
+        return listData.get(position);
+    }
 
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
-		
-		final HashMap<String, String> listItem = listData.get(position);
-		
-		View view = convertView;
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+
+        final HashMap<String, String> listItem = listData.get(position);
+
+        View view = convertView;
 
 //        final Context contextThemeWrapper = new ContextThemeWrapper(mainActivity, AppSettings.getTheme());
 //
 //        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
 
-		if (convertView == null) {
-			view = inflater.inflate(R.layout.source_list_row, null);
-		}
-		
-		TextView title = (TextView) view.findViewById(R.id.title_text);
-		TextView summary = (TextView) view.findViewById(R.id.summary_text);
-		TextView num = (TextView) view.findViewById(R.id.num_text);
-		final Switch useBox = (Switch) view.findViewById(R.id.use_source_checkbox);
-		useBox.setTag(position);
-		
-		useBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+        if (convertView == null) {
+            view = inflater.inflate(R.layout.source_list_row, null);
+        }
 
-			@Override
-			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-				
-				int index = Integer.parseInt(useBox.getTag().toString());
+        TextView title = (TextView) view.findViewById(R.id.title_text);
+        TextView summary = (TextView) view.findViewById(R.id.summary_text);
+        TextView num = (TextView) view.findViewById(R.id.num_text);
+        final Switch useBox = (Switch) view.findViewById(R.id.use_source_checkbox);
+        useBox.setTag(position);
+
+        useBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+                int index = Integer.parseInt(useBox.getTag().toString());
 
                 setActivated(index, isChecked);
-				
-			}
-			
-		});
+
+            }
+
+        });
 
         title.setSelected(true);
         summary.setSelected(true);
-		title.setText(listItem.get("title"));
-		summary.setText(listItem.get("data"));
-		num.setText("# Images: " + listItem.get("num"));
-		useBox.setChecked(Boolean.valueOf(listItem.get("use")));
-		
-		return view;
-	}
+        title.setText(listItem.get("title"));
+        summary.setText(listItem.get("data"));
+        num.setText("# Images: " + listItem.get("num"));
+        useBox.setChecked(Boolean.valueOf(listItem.get("use")));
+
+        return view;
+    }
 
     public void setActivated(int position, boolean use) {
         HashMap<String, String> changedItem = listData.get(position);
@@ -120,7 +120,8 @@ public class SourceListAdapter extends BaseAdapter {
         saveData();
     }
 
-	public boolean setItem(int position, String type, String title, String data, boolean use, String num) {
+    public boolean setItem(int position, String type, String title, String data, boolean use,
+                           String num) {
 
         HashMap<String, String> changedItem = listData.get(position);
 
@@ -132,17 +133,17 @@ public class SourceListAdapter extends BaseAdapter {
 
         titles.remove(changedItem.get("title").replaceAll(" ", ""));
         changedItem.put("type", type);
-		changedItem.put("title", title);
-		changedItem.put("data", data);
-		changedItem.put("num", "" + num);
-		changedItem.put("use", "" + use);
-		listData.set(position, changedItem);
+        changedItem.put("title", title);
+        changedItem.put("data", data);
+        changedItem.put("num", "" + num);
+        changedItem.put("use", "" + use);
+        listData.set(position, changedItem);
         titles.add(title.replaceAll(" ", ""));
-		notifyDataSetChanged();
+        notifyDataSetChanged();
         return true;
-	}
-	
-	public boolean addItem(String type, String title, String data, boolean use, String num) {
+    }
+
+    public boolean addItem(String type, String title, String data, boolean use, String num) {
 
         if (titles.contains(title.replaceAll(" ", ""))) {
             return false;
@@ -150,23 +151,23 @@ public class SourceListAdapter extends BaseAdapter {
 
         HashMap<String, String> newItem = new HashMap<String, String>();
         newItem.put("type", type);
-		newItem.put("title", title);
-		newItem.put("data", data);
-		newItem.put("num", "" + num);
-		newItem.put("use", "" + use);
-		listData.add(newItem);
+        newItem.put("title", title);
+        newItem.put("data", data);
+        newItem.put("num", "" + num);
+        newItem.put("use", "" + use);
+        listData.add(newItem);
         titles.add(title.replaceAll(" ", ""));
-		notifyDataSetChanged();
+        notifyDataSetChanged();
 
-		Log.i("WLA", "listData" + listData.size());
+        Log.i("WLA", "listData" + listData.size());
         return true;
-	}
-	
-	public void removeItem(int position) {
+    }
+
+    public void removeItem(int position) {
         titles.remove(listData.get(position).get("title").replaceAll(" ", ""));
-		listData.remove(position);
-		notifyDataSetChanged();
-	}
+        listData.remove(position);
+        notifyDataSetChanged();
+    }
 
     public void updateNum() {
 
@@ -222,12 +223,12 @@ public class SourceListAdapter extends BaseAdapter {
 
     }
 
-	public void saveData() {
-		
-		AppSettings.setSources(listData);
-		
-		Log.i("WLA", "SavedListData" + listData.size());
-		Log.i("WLA", "Saved Data: " + AppSettings.getNumSources());
-	}
-	
+    public void saveData() {
+
+        AppSettings.setSources(listData);
+
+        Log.i("WLA", "SavedListData" + listData.size());
+        Log.i("WLA", "Saved Data: " + AppSettings.getNumSources());
+    }
+
 }

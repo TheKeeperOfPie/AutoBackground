@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,17 +36,15 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class Downloader {
 
-    private static final String TAG = "Downloader";
     public static final String DOWNLOAD_TERMINATED = "cw.kop.autobackground.downloader.Downloader.DOWNLOAD_TERMINATED";
-
-    private static Bitmap musicBitmap = null;
-	private static File currentBitmapFile = null;
-    private static int randIndex = 0;
+    private static final String TAG = "Downloader";
     public static boolean isDownloading = false;
-	
-	private static DownloadThread downloadThread;
-	
-	public static boolean download(Context appContext) {
+    private static Bitmap musicBitmap = null;
+    private static File currentBitmapFile = null;
+    private static int randIndex = 0;
+    private static DownloadThread downloadThread;
+
+    public static boolean download(Context appContext) {
 
         if (!isDownloading) {
             ConnectivityManager connect = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -78,7 +76,7 @@ public class Downloader {
         else {
             return false;
         }
-	}
+    }
 
     public static void setIsDownloading(boolean value) {
         isDownloading = value;
@@ -93,11 +91,11 @@ public class Downloader {
         isDownloading = false;
     }
 
-	public static List<File> getBitmapList() {
+    public static List<File> getBitmapList() {
 
         FilenameFilter filenameFilter = getImageFileNameFilter();
 
-		String cacheDir = AppSettings.getDownloadPath();
+        String cacheDir = AppSettings.getDownloadPath();
 
         List<File> bitmaps = new ArrayList<File>();
 
@@ -114,7 +112,8 @@ public class Downloader {
                     if (folder.exists() && folder.isDirectory()) {
                         bitmaps.addAll(Arrays.asList(folder.listFiles(filenameFilter)));
                     }
-                } else if (type.equals(AppSettings.FOLDER)) {
+                }
+                else if (type.equals(AppSettings.FOLDER)) {
                     File folder = new File(AppSettings.getSourceData(i));
                     if (folder.exists() && folder.isDirectory()) {
                         bitmaps.addAll(Arrays.asList(folder.listFiles(filenameFilter)));
@@ -125,11 +124,11 @@ public class Downloader {
 
         Log.i(TAG, "Bitmap list size: " + bitmaps.size());
 
-		return bitmaps;
-		
-	}
-	
-	public static String getBitmapLocation() {
+        return bitmaps;
+
+    }
+
+    public static String getBitmapLocation() {
         if (currentBitmapFile != null) {
             if (AppSettings.getUrl(currentBitmapFile.getName()) == null) {
                 return currentBitmapFile.getAbsolutePath();
@@ -137,11 +136,11 @@ public class Downloader {
             return AppSettings.getUrl(currentBitmapFile.getName());
         }
         return null;
-	}
+    }
 
-	public static File getCurrentBitmapFile() {
-		return currentBitmapFile;
-	}
+    public static File getCurrentBitmapFile() {
+        return currentBitmapFile;
+    }
 
     public static void setCurrentBitmapFile(File file) {
         currentBitmapFile = file;
@@ -183,9 +182,9 @@ public class Downloader {
 
     }
 
-	public static void deleteCurrentBitmap() {
+    public static void deleteCurrentBitmap() {
         Log.i(TAG, "Deleted: " + currentBitmapFile.delete());
-	}
+    }
 
     public static void deleteAllBitmaps(Context appContext) {
         for (int i = 0; i < AppSettings.getNumSources(); i++) {
@@ -223,32 +222,32 @@ public class Downloader {
         }
     }
 
-	public static File getNextImage() {
-		
-    	List<File> images = getBitmapList();
+    public static File getNextImage() {
 
-		Log.i("Downloader", "Getting next image");
-		
-		if (!AppSettings.shuffleImages()) {
-			randIndex++;
-		}
-		else if (images.size() > 0){
-			randIndex += (Math.random() * (images.size() - 2)) + 1;
-		}
-		
-		if (randIndex >= images.size()) {
-			randIndex -= images.size();
-		}
-		else if (randIndex < 0) {
+        List<File> images = getBitmapList();
+
+        Log.i("Downloader", "Getting next image");
+
+        if (!AppSettings.shuffleImages()) {
+            randIndex++;
+        }
+        else if (images.size() > 0) {
+            randIndex += (Math.random() * (images.size() - 2)) + 1;
+        }
+
+        if (randIndex >= images.size()) {
+            randIndex -= images.size();
+        }
+        else if (randIndex < 0) {
             randIndex += images.size();
         }
 
-		if (images.size() > 0 && randIndex < images.size()) {
-			currentBitmapFile = images.get(randIndex);
-		}
+        if (images.size() > 0 && randIndex < images.size()) {
+            currentBitmapFile = images.get(randIndex);
+        }
 
         return currentBitmapFile;
-	}
+    }
 
     public static void decreaseIndex() {
         randIndex--;

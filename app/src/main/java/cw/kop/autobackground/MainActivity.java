@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -39,8 +39,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import javax.xml.transform.Source;
-
 import cw.kop.autobackground.images.AlbumFragment;
 import cw.kop.autobackground.images.ImageHistoryFragment;
 import cw.kop.autobackground.images.LocalImageFragment;
@@ -50,19 +48,43 @@ import cw.kop.autobackground.sources.SourceListFragment;
 
 public class MainActivity extends Activity {
 
+    public SourceListFragment sourceListFragment;
     private ActionBarDrawerToggle drawerToggle;
     private String[] fragmentList;
     private DrawerLayout drawerLayout;
     private ListView drawerList;
     private TextView actionBarTitle;
     private CharSequence mTitle;
-    public SourceListFragment sourceListFragment;
+    private BroadcastReceiver entryReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            String action = intent.getAction();
+
+            if (action.equals(SourceListFragment.ADD_ENTRY)) {
+                sourceListFragment.addEntry(
+                        intent.getStringExtra("type"),
+                        intent.getStringExtra("title"),
+                        intent.getStringExtra("data"),
+                        intent.getStringExtra("num"));
+            }
+            if (action.equals(SourceListFragment.SET_ENTRY)) {
+                sourceListFragment.setEntry(
+                        intent.getIntExtra("position", -1),
+                        intent.getStringExtra("type"),
+                        intent.getStringExtra("title"),
+                        intent.getStringExtra("data"),
+                        intent.getStringExtra("num"));
+            }
+
+        }
+    };
 
     public MainActivity() {
     }
 
     @Override
-    public void onConfigurationChanged (Configuration newConfig) {
+    public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         Log.i("MP", "onConfigurationChanged");
     }
@@ -83,10 +105,10 @@ public class MainActivity extends Activity {
             setTheme(R.style.AppLightTheme);
             colors = new int[] {0, 0xFF000000, 0};
         }
-        else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)){
+        else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)) {
             setTheme(R.style.AppDarkTheme);
         }
-        else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)){
+        else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
             setTheme(R.style.AppTransparentTheme);
         }
 
@@ -110,10 +132,10 @@ public class MainActivity extends Activity {
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             drawerList.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
         }
-        else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)){
+        else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)) {
             drawerList.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
         }
-        else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)){
+        else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
             drawerList.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
         }
 
@@ -124,7 +146,7 @@ public class MainActivity extends Activity {
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
 
-        int drawerLayoutId = AppSettings.useRightDrawer() ? R.layout.action_bar_right_layout :R.layout.action_bar_layout;
+        int drawerLayoutId = AppSettings.useRightDrawer() ? R.layout.action_bar_right_layout : R.layout.action_bar_layout;
 
         View actionBarView = getLayoutInflater().inflate(drawerLayoutId, null);
         actionBarTitle = (TextView) actionBarView.findViewById(R.id.action_bar_title);
@@ -220,13 +242,6 @@ public class MainActivity extends Activity {
 
     }
 
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position);
-        }
-    }
-
     private void selectItem(int position) {
 
         switch (position) {
@@ -293,7 +308,7 @@ public class MainActivity extends Activity {
     }
 
     @Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item) {
 
         Log.i("MP", "Item pressed: " + item.getItemId());
 
@@ -305,7 +320,7 @@ public class MainActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
-	}
+    }
 
     @Override
     public void onBackPressed() {
@@ -322,34 +337,9 @@ public class MainActivity extends Activity {
 
     }
 
-    private BroadcastReceiver entryReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            String action = intent.getAction();
-
-            if (action.equals(SourceListFragment.ADD_ENTRY)) {
-                sourceListFragment.addEntry(
-                        intent.getStringExtra("type"),
-                        intent.getStringExtra("title"),
-                        intent.getStringExtra("data"),
-                        intent.getStringExtra("num"));
-            }
-            if (action.equals(SourceListFragment.SET_ENTRY)) {
-                sourceListFragment.setEntry(
-                        intent.getIntExtra("position", -1),
-                        intent.getStringExtra("type"),
-                        intent.getStringExtra("title"),
-                        intent.getStringExtra("data"),
-                        intent.getStringExtra("num"));
-            }
-
-        }
-    };
-
     @Override
-	protected void onResume() {
-		super.onResume();
+    protected void onResume() {
+        super.onResume();
 
         IntentFilter entryFilter = new IntentFilter();
         entryFilter.addAction(SourceListFragment.ADD_ENTRY);
@@ -361,7 +351,7 @@ public class MainActivity extends Activity {
         if (view == null) {
             Log.i("MP", "Home null");
         }
-	}
+    }
 
     @Override
     protected void onPause() {
@@ -369,5 +359,12 @@ public class MainActivity extends Activity {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(entryReceiver);
 
         super.onPause();
+    }
+
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            selectItem(position);
+        }
     }
 }

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -63,7 +63,8 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
 
         Preference resetPref = findPreference("reset_effects");
         resetPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -106,10 +107,10 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
         PreferenceCategory parametersCategory = (PreferenceCategory) findPreference("title_effects_parameters");
 
-        for(int i = 0; i < parametersCategory.getPreferenceCount(); i++) {
+        for (int i = 0; i < parametersCategory.getPreferenceCount(); i++) {
             String key = parametersCategory.getPreference(i).getKey();
 
-            if(key != null && !key.contains("switch")) {
+            if (key != null && !key.contains("switch")) {
                 EffectPreference effectPref = (EffectPreference) findPreference(key);
                 effectPref.setSummary(effectPref.getTitle() + ": " + AppSettings.getEffectValue(key) + "%");
             }
@@ -219,11 +220,11 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
     private void resetEffects() {
         PreferenceCategory settingsCategory = (PreferenceCategory) findPreference("title_effects_settings");
 
-        for(int i = 0; i < settingsCategory.getPreferenceCount(); i++) {
+        for (int i = 0; i < settingsCategory.getPreferenceCount(); i++) {
             String key = settingsCategory.getPreference(i).getKey();
 
             if (key != null) {
-                if(key.equals("effects_frequency")) {
+                if (key.equals("effects_frequency")) {
                     AppSettings.setEffect(key, 100);
                 }
                 else if (!key.equals("reset_effects")) {
@@ -237,16 +238,18 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
         PreferenceCategory parametersCategory = (PreferenceCategory) findPreference("title_effects_parameters");
 
-        for(int i = 0; i < parametersCategory.getPreferenceCount(); i++) {
+        for (int i = 0; i < parametersCategory.getPreferenceCount(); i++) {
             String key = parametersCategory.getPreference(i).getKey();
 
             if (key != null) {
                 if (!key.contains("switch")) {
                     if (key.equals("effect_brightness") || key.equals("effect_contrast") || key.equals("effect_saturate") || key.equals("effects_frequency")) {
                         AppSettings.setEffect(key, 100);
-                    } else if (key.equals("effect_temperature")) {
+                    }
+                    else if (key.equals("effect_temperature")) {
                         AppSettings.setEffect(key, 50);
-                    } else {
+                    }
+                    else {
                         AppSettings.setEffect(key, 0);
                     }
 

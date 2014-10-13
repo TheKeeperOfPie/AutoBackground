@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -50,14 +50,14 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class DownloadSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
-	private final static long CONVERT_MILLES_TO_MIN = 60000;
-	private final static int REQUEST_FILE_ID = 0;
-	private SwitchPreference timerPref;
-	private Context appContext;
+    private final static long CONVERT_MILLES_TO_MIN = 60000;
+    private final static int REQUEST_FILE_ID = 0;
+    private SwitchPreference timerPref;
+    private Context appContext;
     private PendingIntent pendingIntent;
-	private AlarmManager alarmManager;
-	
-	@Override
+    private AlarmManager alarmManager;
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_download);
@@ -85,9 +85,10 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     }
 
     @Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
 
-		timerPref = (SwitchPreference) findPreference("use_timer");
+        timerPref = (SwitchPreference) findPreference("use_timer");
 
         Preference deletePref = findPreference("delete_images");
         deletePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -103,7 +104,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Downloader.deleteAllBitmaps(appContext);
-                        for (int i = 0; i < AppSettings.getNumSources(); i ++) {
+                        for (int i = 0; i < AppSettings.getNumSources(); i++) {
                             if (AppSettings.getSourceType(i).equals("website")) {
                                 AppSettings.setSourceSet(AppSettings.getSourceTitle(i), new HashSet<String>());
                             }
@@ -133,7 +134,8 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 TimePickerDialog timeDialog;
                 timeDialog = new TimePickerDialog(appContext, new TimePickerDialog.OnTimeSetListener() {
                     @Override
-                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                    public void onTimeSet(TimePicker timePicker, int selectedHour,
+                                          int selectedMinute) {
                         AppSettings.setTimerHour(selectedHour);
                         AppSettings.setTimerMinute(selectedMinute);
                         setDownloadAlarm();
@@ -147,69 +149,69 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         });
 
         return inflater.inflate(R.layout.fragment_list, container, false);
-		
-	}
 
-	private void showDialogTimerMenu() {
+    }
+
+    private void showDialogTimerMenu() {
 
         AppSettings.setTimerDuration(0);
 
-		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
         dialogBuilder.setItems(R.array.timer_entry_menu, new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				
-				switch (which) {
-					case 0: 
-						AppSettings.setTimerDuration(AlarmManager.INTERVAL_HOUR);
-						break;
-					case 1: 
-						AppSettings.setTimerDuration(2 * AlarmManager.INTERVAL_HOUR);
-						break;
-					case 2: 
-						AppSettings.setTimerDuration(6 * AlarmManager.INTERVAL_HOUR);
-						break;
-					case 3: 
-						AppSettings.setTimerDuration(AlarmManager.INTERVAL_HALF_DAY);
-						break;
-					case 4: 
-						AppSettings.setTimerDuration(AlarmManager.INTERVAL_DAY);
-						break;
-					case 5: 
-						AppSettings.setTimerDuration(2 * AlarmManager.INTERVAL_DAY);
-						break;
-					case 6: 
-						AppSettings.setTimerDuration(4 * AlarmManager.INTERVAL_DAY);
-						break;
-					default:
-				}
 
-		        if (AppSettings.getTimerDuration() > 0) {
-		            timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
-		        }
-		        
-				setDownloadAlarm();
-		        
-			}
-		});
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                switch (which) {
+                    case 0:
+                        AppSettings.setTimerDuration(AlarmManager.INTERVAL_HOUR);
+                        break;
+                    case 1:
+                        AppSettings.setTimerDuration(2 * AlarmManager.INTERVAL_HOUR);
+                        break;
+                    case 2:
+                        AppSettings.setTimerDuration(6 * AlarmManager.INTERVAL_HOUR);
+                        break;
+                    case 3:
+                        AppSettings.setTimerDuration(AlarmManager.INTERVAL_HALF_DAY);
+                        break;
+                    case 4:
+                        AppSettings.setTimerDuration(AlarmManager.INTERVAL_DAY);
+                        break;
+                    case 5:
+                        AppSettings.setTimerDuration(2 * AlarmManager.INTERVAL_DAY);
+                        break;
+                    case 6:
+                        AppSettings.setTimerDuration(4 * AlarmManager.INTERVAL_DAY);
+                        break;
+                    default:
+                }
+
+                if (AppSettings.getTimerDuration() > 0) {
+                    timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
+                }
+
+                setDownloadAlarm();
+
+            }
+        });
 
         AlertDialog dialog = dialogBuilder.create();
 
-		dialog.setOnDismissListener(new OnDismissListener () {
+        dialog.setOnDismissListener(new OnDismissListener() {
 
-			@Override
-			public void onDismiss(DialogInterface dialog) {
-				if (AppSettings.getTimerDuration() <= 0) {
-					timerPref.setChecked(false);
-				}
-			}
-			
-		});
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (AppSettings.getTimerDuration() <= 0) {
+                    timerPref.setChecked(false);
+                }
+            }
 
-		dialog.show();
-	}
+        });
+
+        dialog.show();
+    }
 
     private void showDialogTimerForInput() {
 
@@ -248,7 +250,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         AlertDialog dialog = dialogBuilder.create();
 
-        dialog.setOnDismissListener(new OnDismissListener () {
+        dialog.setOnDismissListener(new OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
                 if (AppSettings.getTimerDuration() <= 0) {
@@ -261,9 +263,9 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         dialog.show();
     }
 
-	private void setDownloadAlarm() {
-		
-		if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
+    private void setDownloadAlarm() {
+
+        if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(System.currentTimeMillis());
             calendar.set(Calendar.HOUR_OF_DAY, AppSettings.getTimerHour());
@@ -279,11 +281,11 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             }
 
             Log.i("DSF", "Alarm Set: " + AppSettings.getTimerDuration());
-		}
-		else {
-			alarmManager.cancel(pendingIntent);
-		}
-	}
+        }
+        else {
+            alarmManager.cancel(pendingIntent);
+        }
+    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -316,47 +318,47 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     }
 
     @Override
-	public void onResume() {
-		super.onResume();
+    public void onResume() {
+        super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-	}
-	
-	@Override
-	public void onPause() {
+    }
+
+    @Override
+    public void onPause() {
         super.onPause();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
 
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
-		
-		if (!((Activity) appContext).isFinishing()) {
-			Preference pref = findPreference(key);
-			if (pref instanceof EditTextPreference) {
-				EditTextPreference editPref = (EditTextPreference) pref;
-				if (editPref.getText().equals("0") || editPref.getText().equals("")) {
-					editPref.setText("1");
-				}
-				editPref.setSummary(editPref.getText());
-			}
-			
-			if (key.equals("use_timer")) {
-				if (AppSettings.useTimer()) {
+
+        if (!((Activity) appContext).isFinishing()) {
+            Preference pref = findPreference(key);
+            if (pref instanceof EditTextPreference) {
+                EditTextPreference editPref = (EditTextPreference) pref;
+                if (editPref.getText().equals("0") || editPref.getText().equals("")) {
+                    editPref.setText("1");
+                }
+                editPref.setSummary(editPref.getText());
+            }
+
+            if (key.equals("use_timer")) {
+                if (AppSettings.useTimer()) {
                     if (AppSettings.useAdvanced()) {
                         showDialogTimerForInput();
                     }
-	        		else {
+                    else {
                         showDialogTimerMenu();
                     }
-	    		}
-				else {
-					SwitchPreference timerPref = (SwitchPreference) pref;
-					timerPref.setSummary(getString(R.string.use_timer_description));
-					setDownloadAlarm();
-				}
-				Log.i("DSF", "Alarm Set: " + AppSettings.useTimer());
-			}
+                }
+                else {
+                    SwitchPreference timerPref = (SwitchPreference) pref;
+                    timerPref.setSummary(getString(R.string.use_timer_description));
+                    setDownloadAlarm();
+                }
+                Log.i("DSF", "Alarm Set: " + AppSettings.useTimer());
+            }
 
             if (key.equals("use_download_path") && AppSettings.useDownloadPath()) {
 
@@ -373,9 +375,9 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                         .commit();
             }
 
-		}
-		
-		
-	}
-	
+        }
+
+
+    }
+
 }

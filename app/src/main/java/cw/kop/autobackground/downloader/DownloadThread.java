@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -180,16 +180,18 @@ public class DownloadThread extends Thread {
                     }
                     if (imagesDownloaded < AppSettings.getSourceNum(index)) {
                         sendToast("Not enough photos from " + AppSettings.getSourceData(index) + " " +
-                                "Try lowering the resolution or changing sources. " +
-                                "There may also have been too many duplicates.");
+                                          "Try lowering the resolution or changing sources. " +
+                                          "There may also have been too many duplicates.");
                     }
 
                     totalDownloaded += imagesDownloaded;
 
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     sendToast("Invalid URL: " + AppSettings.getSourceData(index));
                     Log.i(TAG, "Invalid URL");
-                } catch (IllegalArgumentException e) {
+                }
+                catch (IllegalArgumentException e) {
                     sendToast("Invalid URL: " + AppSettings.getSourceData(index));
                     Log.i(TAG, "Invalid URL");
                 }
@@ -307,7 +309,7 @@ public class DownloadThread extends Thread {
         Log.i(TAG, "numDownloaded: " + numDownloaded);
 
         while (filesIterated < numFiles) {
-            File oldImageFile = new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" +  num++ + ".png");
+            File oldImageFile = new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + num++ + ".png");
 
             if (oldImageFile.exists() && oldImageFile.isFile()) {
                 Log.i(TAG, oldImageFile.getAbsolutePath());
@@ -396,8 +398,7 @@ public class DownloadThread extends Thread {
             List<String> imageList = new ArrayList<String>();
             List<String> imagePages = new ArrayList<String>();
 
-            for (int i=0; i < jArray.length(); i++)
-            {
+            for (int i = 0; i < jArray.length(); i++) {
                 JSONObject imageObject = jArray.getJSONObject(i);
 
                 imageList.add(imageObject.getString("link"));
@@ -482,8 +483,7 @@ public class DownloadThread extends Thread {
             List<String> imageList = new ArrayList<String>();
             List<String> imagePages = new ArrayList<String>();
 
-            for (int i = 0; i < jArray.length(); i++)
-            {
+            for (int i = 0; i < jArray.length(); i++) {
                 JSONObject postObject = jArray.getJSONObject(i);
 
                 String postUrl = postObject.getString("post_url");
@@ -531,8 +531,7 @@ public class DownloadThread extends Thread {
             List<String> imageList = new ArrayList<String>();
             List<String> imagePages = new ArrayList<String>();
 
-            for (int i = 0; i < jArray.length(); i++)
-            {
+            for (int i = 0; i < jArray.length(); i++) {
                 try {
                     JSONObject postObject = jArray.getJSONObject(i);
 
@@ -545,7 +544,7 @@ public class DownloadThread extends Thread {
                         imagePages.add(postUrl);
                     }
                 }
-                catch (JSONException e){
+                catch (JSONException e) {
                 }
 
             }
@@ -590,7 +589,8 @@ public class DownloadThread extends Thread {
                 if (reader != null) {
                     reader.close();
                 }
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -681,7 +681,8 @@ public class DownloadThread extends Thread {
         return null;
     }
 
-    private void writeToFile(Bitmap image, String saveData, String dir, String title, int imageIndex) {
+    private void writeToFile(Bitmap image, String saveData, String dir, String title,
+                             int imageIndex) {
 
         File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + imageIndex + ".png");
 
@@ -700,12 +701,12 @@ public class DownloadThread extends Thread {
             e.printStackTrace();
         }
         finally {
-            try{
-                if (out !=null) {
+            try {
+                if (out != null) {
                     out.close();
                 }
             }
-            catch(Throwable e) {
+            catch (Throwable e) {
                 e.printStackTrace();
             }
         }
@@ -713,7 +714,8 @@ public class DownloadThread extends Thread {
         image.recycle();
     }
 
-    private void writeToFileWithThumbnail(Bitmap image, String saveData, String dir, String title, int imageIndex, long time) {
+    private void writeToFileWithThumbnail(Bitmap image, String saveData, String dir, String title,
+                                          int imageIndex, long time) {
 
         File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + imageIndex + ".png");
 
@@ -735,7 +737,8 @@ public class DownloadThread extends Thread {
                 Matrix matrix = new Matrix();
                 if (bitWidth > bitHeight) {
                     matrix.postScale(thumbnailSize / bitWidth, thumbnailSize / bitWidth);
-                } else {
+                }
+                else {
                     matrix.postScale(thumbnailSize / bitHeight, thumbnailSize / bitHeight);
                 }
                 thumbnail = Bitmap.createBitmap(image, 0, 0, bitWidth, bitHeight, matrix, false);
@@ -768,15 +771,15 @@ public class DownloadThread extends Thread {
             e.printStackTrace();
         }
         finally {
-            try{
-                if (out !=null) {
+            try {
+                if (out != null) {
                     out.close();
                 }
                 if (thumbnailOut != null) {
                     thumbnailOut.close();
                 }
             }
-            catch(IOException e) {
+            catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -798,10 +801,12 @@ public class DownloadThread extends Thread {
 
                 if (Build.VERSION.SDK_INT >= 16) {
                     notificationManager.notify(NOTIFICATION_ID, notifyProgress.build());
-                } else {
+                }
+                else {
                     notificationManager.notify(NOTIFICATION_ID, notifyProgress.getNotification());
                 }
-            } else {
+            }
+            else {
                 notificationManager.cancel(NOTIFICATION_ID);
             }
         }

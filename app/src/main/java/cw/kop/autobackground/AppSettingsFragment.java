@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,7 +38,7 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class AppSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
-	private Context appContext;
+    private Context appContext;
     private SwitchPreference toastPref;
     private Preference themePref;
 
@@ -61,13 +61,13 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
     }
 
 
-
     @Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
 
         return inflater.inflate(R.layout.fragment_list, container, false);
-		
-	}
+
+    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -179,23 +179,23 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
         dialog.show();
     }
 
-	@Override
-	public void onResume() {
-		super.onResume();
+    @Override
+    public void onResume() {
+        super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-	}
-	
-	@Override
-	public void onPause() {
+    }
+
+    @Override
+    public void onPause() {
         super.onPause();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
 
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
-		if (!((Activity) appContext).isFinishing()) {
-			Preference pref = findPreference(key);
+        if (!((Activity) appContext).isFinishing()) {
+            Preference pref = findPreference(key);
 
             if (key.equals("use_right_drawer")) {
                 Intent intent = new Intent(appContext, MainActivity.class);
@@ -204,24 +204,24 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                 ((Activity) appContext).finish();
             }
 
-			if (key.equals("use_notification")) {
-				
-				Intent intent = new Intent();
+            if (key.equals("use_notification")) {
+
+                Intent intent = new Intent();
                 intent.setAction(LiveWallpaperService.UPDATE_NOTIFICATION);
                 intent.putExtra("use", ((SwitchPreference) pref).isChecked());
                 appContext.sendBroadcast(intent);
-				
-				Log.i("WSF", "Toggle Notification");
-				
-			}
+
+                Log.i("WSF", "Toggle Notification");
+
+            }
 
             if (key.equals("use_toast")) {
                 if (!AppSettings.useToast()) {
                     showToastDialog();
                 }
             }
-		}
-		
-	}
-	
+        }
+
+    }
+
 }
