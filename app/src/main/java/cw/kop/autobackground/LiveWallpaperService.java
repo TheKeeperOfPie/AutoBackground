@@ -42,6 +42,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.media.effect.Effect;
 import android.media.effect.EffectContext;
 import android.media.effect.EffectFactory;
+import android.media.effect.EffectUpdateListener;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -2362,12 +2363,32 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
             }
 
+            private EffectUpdateListener effectUpdateListener = new EffectUpdateListener() {
+                @Override
+                public void onEffectUpdated(Effect effect, Object info) {
+
+                    Log.i(TAG, "Effect info: " + info.toString());
+
+                    if (AppSettings.useToast()) {
+                        Toast.makeText(LiveWallpaperService.this, "Effect info: " + info.toString(), Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+            };
+
             private void applyEffect(Effect setEffect, int texture, String name, String description) {
+
+                setEffect.setUpdateListener(effectUpdateListener);
 
                 GLES20.glDeleteTextures(1, textureNames, texture);
                 setEffect.apply(textureNames[2], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[texture]);
                 GLES20.glDeleteTextures(1, textureNames, 2);
-                setEffect.apply(textureNames[texture], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[2]);
+
+                int tempName = textureNames[texture];
+                textureNames[texture] = textureNames[2];
+                textureNames[2] = tempName;
+
+//                setEffect.apply(textureNames[texture], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[2]);
                 setEffect.release();
                 toastEffect(name, description);
                 Log.i(TAG, "Effect applied: " + name +"\n" + description);
@@ -2507,16 +2528,16 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     effect = effectFactory.createEffect(effectName);
                     if (usableEffectsList.get(index).equals("android.media.effect.effects.SaturateEffect")) {
-                        value = (float) (Math.random() * 0.6f) - 0.3f;
+                        value = (random.nextFloat() * 0.6f) - 0.3f;
                     }
                     else if (usableEffectsList.get(index).equals("android.media.effect.effects.ColorTemperatureEffect")) {
-                        value = (float) Math.random();
+                        value = random.nextFloat();
                     }
                     else if (parameter.equals("brightness") || parameter.equals("contrast")) {
-                        value = (float) (Math.random() * 0.4f) + 0.8f;
+                        value = (random.nextFloat() * 0.4f) + 0.8f;
                     }
                     else if (!usableEffectsParameters.get(index).equals("none")) {
-                        value = (float) (Math.random() * 0.3f) + 0.3f;
+                        value = (random.nextFloat() * 0.3f) + 0.3f;
                     }
 
                     if (EffectFactory.isEffectSupported(effectName)) {
