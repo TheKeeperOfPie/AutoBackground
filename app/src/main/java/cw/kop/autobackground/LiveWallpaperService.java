@@ -90,7 +90,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     public static final String UPDATE_NOTIFICATION = "cw.kop.autobackgrond.UPDATE_NOTIFICATION";
     public static final String DOWNLOAD_WALLPAPER = "cw.kop.autobackgrond.DOWNLOAD_WALLPAPER";
-    public static final String UPDATE_CURRENT_WALLPAPER = "cw.kop.autobackgrond.UPDATE_CURRENT_WALLPAPER";
+    public static final String LOAD_ALBUM_ART = "cw.kop.autobackgrond.LOAD_ALBUM_ART";
     public static final String UPDATE_WALLPAPER = "cw.kop.autobackgrond.UPDATE_WALLPAPER";
     public static final String TOAST_LOCATION = "cw.kop.autobackgrond.TOAST_LOCATION";
     public static final String COPY_IMAGE = "cw.kop.autobackgrond.COPY_IMAGE";
@@ -554,7 +554,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             if (AppSettings.useNotificationGame() && setupGameTiles()) {
                 bigView = new RemoteViews(getPackageName(), R.layout.notification_game);
-                tileIds = new int[] {
+                tileIds = new int[]{
                         R.id.notification_game_tile_0,
                         R.id.notification_game_tile_1,
                         R.id.notification_game_tile_2,
@@ -908,7 +908,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         };
 
         private MyGLRenderer renderer;
-        private int[] maxTextureSize = new int[] {0};
+        private int[] maxTextureSize = new int[]{0};
         private boolean toChange = false;
         private boolean animated = false;
         private int touchCount = 0;
@@ -1006,7 +1006,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         private IntentFilter getEngineIntentFilter() {
             IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(LiveWallpaperService.UPDATE_CURRENT_WALLPAPER);
+            intentFilter.addAction(LiveWallpaperService.LOAD_ALBUM_ART);
             intentFilter.addAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
             intentFilter.addAction(LiveWallpaperService.CYCLE_IMAGE);
             intentFilter.addAction(LiveWallpaperService.UPDATE_WALLPAPER);
@@ -1031,7 +1031,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             //1. Try to get the album art from the MediaStore.Audio.Albums.ALBUM_ART column
             //Log.i(TAG, "Attempting to retrieve artwork from MediaStore ALBUM_ART column");
-            String[] projection = new String[] {
+            String[] projection = new String[]{
                     MediaStore.Audio.Albums._ID,
                     MediaStore.Audio.Albums.ARTIST,
                     MediaStore.Audio.Albums.ALBUM,
@@ -1063,7 +1063,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             //2. Try to find the artwork in the MediaStore based on the trackId instead of the albumId
             //Log.d(TAG, "Attempting to retrieve artwork from MediaStore _ID column");
-            projection = new String[] {
+            projection = new String[]{
                     MediaStore.Audio.Media._ID,
                     MediaStore.Audio.Media.DATA,
                     MediaStore.Audio.Media.ARTIST,
@@ -1236,142 +1236,12 @@ public class LiveWallpaperService extends GLWallpaperService {
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             super.onSurfaceChanged(holder, format, width, height);
             Log.i(TAG, "onSurfaceChanged Wallpaper");
-        }        private final BroadcastReceiver updateReceiver = new BroadcastReceiver() {
+        }
 
-            @Override
-            public void onReceive(Context context, Intent intent) {
-
-                String action = intent.getAction();
-
-                if (action.equals(LiveWallpaperService.DOWNLOAD_WALLPAPER)) {
-                    getNewImages();
-                }
-                else if (action.equals(LiveWallpaperService.CYCLE_IMAGE)) {
-
-                    if (AppSettings.resetOnManualCycle() && AppSettings.useInterval() && AppSettings.getIntervalDuration() > 0) {
-                        Intent cycleIntent = new Intent();
-                        intent.setAction(LiveWallpaperService.UPDATE_WALLPAPER);
-                        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-                        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, cycleIntent, 0);
-                        alarmManager.cancel(pendingIntent);
-                        alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + AppSettings.getIntervalDuration(), AppSettings.getIntervalDuration(), pendingIntent);
-                    }
-
-                    if (isVisible()) {
-                        loadNextImage();
-                    }
-                    else {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Downloader.getNextImage();
-                                renderer.loadCurrent = true;
-
-                                if (AppSettings.useNotification()) {
-                                    handler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            notifyChangeImage();
-                                        }
-                                    });
-                                }
-
-                            }
-                        }).start();
-                    }
-                }
-                else if (action.equals(LiveWallpaperService.DELETE_IMAGE)) {
-                    Downloader.deleteCurrentBitmap();
-                    closeNotificationDrawer(context);
-                    if (AppSettings.useToast()) {
-                        Toast.makeText(LiveWallpaperService.this, "Deleted image", Toast.LENGTH_LONG).show();
-                    }
-                    loadNextImage();
-                }
-                else if (action.equals(LiveWallpaperService.OPEN_IMAGE)) {
-
-                    String location = Downloader.getBitmapLocation();
-                    if (location.substring(0, 4).equals("http")) {
-                        Intent linkIntent = new Intent(Intent.ACTION_VIEW);
-                        linkIntent.setData(Uri.parse(location));
-                        linkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(linkIntent);
-                        closeNotificationDrawer(context);
-                    }
-                    else {
-                        Intent galleryIntent = new Intent();
-                        galleryIntent.setAction(Intent.ACTION_VIEW);
-                        galleryIntent.setDataAndType(Uri.fromFile(Downloader.getCurrentBitmapFile()), "image/*");
-                        galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
-                        galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        context.startActivity(galleryIntent);
-                        closeNotificationDrawer(context);
-                    }
-                }
-                else if (action.equals(LiveWallpaperService.PREVIOUS_IMAGE)) {
-                    handler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            loadPreviousImage();
-                        }
-                    });
-                }
-                else if (action.equals(LiveWallpaperService.PIN_IMAGE)) {
-                    if (AppSettings.getPinDuration() > 0 && !pinned) {
-                        pinReleaseTime = System.currentTimeMillis() + AppSettings.getPinDuration();
-                    }
-                    else {
-                        pinReleaseTime = 0;
-                    }
-                    pinned = !pinned;
-                    if (AppSettings.useNotification()) {
-                        notifyChangeImage();
-                    }
-                }
-                else if (action.equals(LiveWallpaperService.SHARE_IMAGE)) {
-                    Intent shareIntent = new Intent();
-                    shareIntent.setAction(Intent.ACTION_SEND);
-                    shareIntent.setType("image/*");
-                    shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(Downloader.getCurrentBitmapFile()));
-                    shareIntent = Intent.createChooser(shareIntent, "Share Image");
-                    shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(shareIntent);
-                    Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-                    context.sendBroadcast(closeDrawer);
-                }
-                else if (action.equals(LiveWallpaperService.UPDATE_WALLPAPER)) {
-                    if (AppSettings.forceInterval()) {
-                        loadNextImage();
-                    }
-                    else {
-                        toChange = true;
-                    }
-                }
-                else if (action.equals(LiveWallpaperService.UPDATE_CURRENT_WALLPAPER)) {
-                    if (isVisible()) {
-                        loadCurrentBitmap();
-                    }
-                    else {
-                        isPlayingMusic = true;
-                    }
-                }
-                else if (action.equals(LiveWallpaperService.CURRENT_IMAGE)) {
-                    if (isVisible()) {
-                        loadCurrentImage();
-                    }
-                    else {
-                        renderer.loadCurrent = true;
-                    }
-                }
-
-            }
-        };
-
-        private void loadCurrentBitmap() {
+        private void loadMusicBitmap() {
             resetRenderMode();
 
-            if (Downloader.getCurrentBitmapFile() == null) {
-                loadNextImage();
+            if (Downloader.getMusicBitmap() == null) {
                 return;
             }
 
@@ -1466,7 +1336,137 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
                 }
             }).start();
-        }
+        }        private final BroadcastReceiver updateReceiver = new BroadcastReceiver() {
+
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                String action = intent.getAction();
+
+                switch (action) {
+                    case LiveWallpaperService.DOWNLOAD_WALLPAPER:
+                        getNewImages();
+                        break;
+                    case LiveWallpaperService.CYCLE_IMAGE:
+                        if (AppSettings.resetOnManualCycle() && AppSettings.useInterval() && AppSettings.getIntervalDuration() > 0) {
+                            Intent cycleIntent = new Intent();
+                            intent.setAction(LiveWallpaperService.UPDATE_WALLPAPER);
+                            intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, cycleIntent, 0);
+                            alarmManager.cancel(pendingIntent);
+                            alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + AppSettings.getIntervalDuration(), AppSettings.getIntervalDuration(), pendingIntent);
+                        }
+                        if (isVisible()) {
+                            loadNextImage();
+                        }
+                        else {
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Downloader.getNextImage();
+                                    renderer.loadCurrent = true;
+
+                                    if (AppSettings.useNotification()) {
+                                        handler.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                notifyChangeImage();
+                                            }
+                                        });
+                                    }
+
+                                }
+                            }).start();
+                        }
+                        break;
+                    case LiveWallpaperService.DELETE_IMAGE:
+                        Downloader.deleteCurrentBitmap();
+                        closeNotificationDrawer(context);
+                        if (AppSettings.useToast()) {
+                            Toast.makeText(LiveWallpaperService.this, "Deleted image", Toast.LENGTH_LONG).show();
+                        }
+                        loadNextImage();
+                        break;
+                    case LiveWallpaperService.OPEN_IMAGE:
+                        String location = Downloader.getBitmapLocation();
+                        if (location.substring(0, 4).equals("http")) {
+                            Intent linkIntent = new Intent(Intent.ACTION_VIEW);
+                            linkIntent.setData(Uri.parse(location));
+                            linkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            context.startActivity(linkIntent);
+                            closeNotificationDrawer(context);
+                        }
+                        else {
+                            Intent galleryIntent = new Intent();
+                            galleryIntent.setAction(Intent.ACTION_VIEW);
+                            galleryIntent.setDataAndType(Uri.fromFile(Downloader.getCurrentBitmapFile()), "image/*");
+                            galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
+                            galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            context.startActivity(galleryIntent);
+                            closeNotificationDrawer(context);
+                        }
+                        break;
+                    case LiveWallpaperService.PREVIOUS_IMAGE:
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                loadPreviousImage();
+                            }
+                        });
+                        break;
+                    case LiveWallpaperService.PIN_IMAGE:
+                        if (AppSettings.getPinDuration() > 0 && !pinned) {
+                            pinReleaseTime = System.currentTimeMillis() + AppSettings.getPinDuration();
+                        }
+                        else {
+                            pinReleaseTime = 0;
+                        }
+                        pinned = !pinned;
+                        if (AppSettings.useNotification()) {
+                            notifyChangeImage();
+                        }
+                        break;
+                    case LiveWallpaperService.SHARE_IMAGE:
+                        Intent shareIntent = new Intent();
+                        shareIntent.setAction(Intent.ACTION_SEND);
+                        shareIntent.setType("image/*");
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(Downloader.getCurrentBitmapFile()));
+                        shareIntent = Intent.createChooser(shareIntent, "Share Image");
+                        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(shareIntent);
+                        Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+                        context.sendBroadcast(closeDrawer);
+                        break;
+                    case LiveWallpaperService.UPDATE_WALLPAPER:
+                        if (AppSettings.forceInterval()) {
+                            loadNextImage();
+                        }
+                        else {
+                            toChange = true;
+                        }
+                        break;
+                    case LiveWallpaperService.LOAD_ALBUM_ART:
+                        toChange = false;
+                        renderer.loadCurrent = false;
+                        if (isVisible()) {
+                            loadMusicBitmap();
+                        }
+                        else {
+                            isPlayingMusic = true;
+                        }
+                        break;
+                    case LiveWallpaperService.CURRENT_IMAGE:
+                        if (isVisible()) {
+                            loadCurrentImage();
+                        }
+                        else {
+                            renderer.loadCurrent = true;
+                        }
+                        break;
+                }
+
+            }
+        };
 
         private void loadPreviousImage() {
             if (pinReleaseTime > 0 && pinReleaseTime < System.currentTimeMillis()) {
@@ -1680,6 +1680,18 @@ public class LiveWallpaperService extends GLWallpaperService {
             private OvershootInterpolator verticalOvershootInterpolator;
             private AccelerateInterpolator accelerateInterpolator;
             private DecelerateInterpolator decelerateInterpolator;
+            private EffectUpdateListener effectUpdateListener = new EffectUpdateListener() {
+                @Override
+                public void onEffectUpdated(Effect effect, Object info) {
+
+                    Log.i(TAG, "Effect info: " + info.toString());
+
+                    if (AppSettings.useToast()) {
+                        Toast.makeText(LiveWallpaperService.this, "Effect info: " + info.toString(), Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+            };
 
             public MyGLRenderer() {
                 startTime = System.currentTimeMillis();
@@ -1978,7 +1990,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 GLES20.glDisableVertexAttribArray(mTexCoordLoc);
             }
 
-
             @Override
             public void onSurfaceChanged(GL10 gl, int width, int height) {
 
@@ -2009,7 +2020,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
 
                 if (isPlayingMusic) {
-                    loadCurrentBitmap();
+                    loadMusicBitmap();
                     isPlayingMusic = false;
                 }
 
@@ -2052,7 +2063,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     GLES20.glGenTextures(3, textureNames, 0);
 
-                    uvs = new float[] {
+                    uvs = new float[]{
                             0.0f, 0.0f,
                             0.0f, 1.0f,
                             1.0f, 1.0f,
@@ -2079,7 +2090,6 @@ public class LiveWallpaperService extends GLWallpaperService {
             public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep,
                                          int xPixels, int yPixels) {
                 if (AppSettings.forceParallax()) {
-                    rawOffsetX = 1.0f - xOffset;
                     if (AppSettings.useDrag() || animated) {
                         float offsetDifference = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (1.0f - xOffset - rawOffsetX);
                         offsetX += offsetDifference;
@@ -2090,9 +2100,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                         newOffsetX = (renderScreenWidth - bitmapWidth) * (1.0f - xOffset);
                         offsetX = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (1.0f - xOffset);
                     }
+                    rawOffsetX = 1.0f - xOffset;
                 }
                 else {
-                    rawOffsetX = xOffset;
                     if (AppSettings.useDrag() || animated) {
                         float offsetDifference = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (xOffset - rawOffsetX);
                         offsetX += offsetDifference;
@@ -2103,6 +2113,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         newOffsetX = (renderScreenWidth - bitmapWidth) * (xOffset);
                         offsetX = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (xOffset);
                     }
+                    rawOffsetX = xOffset;
                 }
             }
 
@@ -2151,14 +2162,14 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             public void setupContainer(float width, float height) {
 
-                vertices = new float[] {
+                vertices = new float[]{
                         0.0f, height, 0.0f,
                         0.0f, 0.0f, 0.0f,
                         width, 0.0f, 0.0f,
                         width, height, 0.0f
                 };
 
-                indices = new short[] {0, 1, 2, 0, 2, 3};
+                indices = new short[]{0, 1, 2, 0, 2, 3};
 
                 // The vertex buffer.
                 ByteBuffer bb = ByteBuffer.allocateDirect(vertices.length * 4);
@@ -2363,35 +2374,23 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
             }
 
-            private EffectUpdateListener effectUpdateListener = new EffectUpdateListener() {
-                @Override
-                public void onEffectUpdated(Effect effect, Object info) {
-
-                    Log.i(TAG, "Effect info: " + info.toString());
-
-                    if (AppSettings.useToast()) {
-                        Toast.makeText(LiveWallpaperService.this, "Effect info: " + info.toString(), Toast.LENGTH_SHORT).show();
-                    }
-
-                }
-            };
-
             private void applyEffect(Effect setEffect, int texture, String name, String description) {
 
                 setEffect.setUpdateListener(effectUpdateListener);
 
                 GLES20.glDeleteTextures(1, textureNames, texture);
                 setEffect.apply(textureNames[2], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[texture]);
-                GLES20.glDeleteTextures(1, textureNames, 2);
-
-                int tempName = textureNames[texture];
-                textureNames[texture] = textureNames[2];
-                textureNames[2] = tempName;
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[texture]);
+//                GLES20.glDeleteTextures(1, textureNames, 2);
+//
+//                int tempName = textureNames[texture];
+//                textureNames[texture] = textureNames[2];
+//                textureNames[2] = tempName;
 
 //                setEffect.apply(textureNames[texture], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[2]);
                 setEffect.release();
                 toastEffect(name, description);
-                Log.i(TAG, "Effect applied: " + name +"\n" + description);
+                Log.i(TAG, "Effect applied: " + name + "\n" + description);
 
             }
 
@@ -2627,6 +2626,8 @@ public class LiveWallpaperService extends GLWallpaperService {
             }
 
         }
+
+
 
 
     }

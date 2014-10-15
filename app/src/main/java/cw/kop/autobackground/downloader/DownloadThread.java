@@ -180,8 +180,8 @@ public class DownloadThread extends Thread {
                     }
                     if (imagesDownloaded < AppSettings.getSourceNum(index)) {
                         sendToast("Not enough photos from " + AppSettings.getSourceData(index) + " " +
-                                          "Try lowering the resolution or changing sources. " +
-                                          "There may also have been too many duplicates.");
+                                "Try lowering the resolution or changing sources. " +
+                                "There may also have been too many duplicates.");
                     }
 
                     totalDownloaded += imagesDownloaded;

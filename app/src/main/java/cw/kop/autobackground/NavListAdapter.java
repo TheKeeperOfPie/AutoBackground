@@ -34,7 +34,7 @@ public class NavListAdapter extends BaseAdapter {
 
     private static LayoutInflater inflater = null;
     private ArrayList<String> fragmentList;
-    private int[] lightImages = new int[] {
+    private int[] lightImages = new int[]{
             R.drawable.ic_action_picture,
             R.drawable.ic_action_web_site,
             R.drawable.ic_action_download,
@@ -44,7 +44,7 @@ public class NavListAdapter extends BaseAdapter {
             R.drawable.ic_action_settings,
             R.drawable.ic_action_view_as_list,
             R.drawable.ic_action_about};
-    private int[] darkImages = new int[] {
+    private int[] darkImages = new int[]{
             R.drawable.ic_action_picture_dark,
             R.drawable.ic_action_web_site_dark,
             R.drawable.ic_action_download_dark,

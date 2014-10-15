@@ -103,7 +103,7 @@ public class MainActivity extends Activity {
 
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             setTheme(R.style.AppLightTheme);
-            colors = new int[] {0, 0xFF000000, 0};
+            colors = new int[]{0, 0xFF000000, 0};
         }
         else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)) {
             setTheme(R.style.AppDarkTheme);
@@ -226,7 +226,7 @@ public class MainActivity extends Activity {
         super.onStop();
     }
 
-    private void toggleDrawer() {
+    public void toggleDrawer() {
         LocalImageFragment localImageFragment = (LocalImageFragment) getFragmentManager().findFragmentByTag("image_fragment");
         AlbumFragment albumFragment = (AlbumFragment) getFragmentManager().findFragmentByTag("album_fragment");
         if (localImageFragment != null || albumFragment != null) {

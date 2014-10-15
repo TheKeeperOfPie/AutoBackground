@@ -143,7 +143,7 @@ public class MusicReceiverService extends NotificationListenerService implements
             Downloader.setMusicBitmap(bitmap);
 
             Intent intent = new Intent();
-            intent.setAction(LiveWallpaperService.UPDATE_CURRENT_WALLPAPER);
+            intent.setAction(LiveWallpaperService.LOAD_ALBUM_ART);
             sendBroadcast(intent);
         }
 

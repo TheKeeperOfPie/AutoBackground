@@ -112,7 +112,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
             ImageView fileImage = (ImageView) view.findViewById(R.id.file_image);
 
             File thumbnailFile = new File(AppSettings.getDownloadPath() + "/HistoryCache/"
-                                                  + historyItems.get(position).getTime() + ".png");
+                    + historyItems.get(position).getTime() + ".png");
 
             if (thumbnailFile.exists() && thumbnailFile.isFile()) {
                 Picasso.with(parent.getContext())

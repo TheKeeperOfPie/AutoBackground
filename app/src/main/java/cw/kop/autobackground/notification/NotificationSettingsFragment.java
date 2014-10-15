@@ -283,9 +283,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 previewTutorial = new ShowcaseView.Builder(getActivity())
                         .setContentTitle("Notification Customization")
                         .setContentText("This is where you can change \n" +
-                                                "how the persistent notification looks. \n" +
-                                                "To customize a part, simply click on it \n" +
-                                                "inside this preview.")
+                                "how the persistent notification looks. \n" +
+                                "To customize a part, simply click on it \n" +
+                                "inside this preview.")
                         .setStyle(R.style.ShowcaseStyle)
                         .setTarget(new ViewTarget(notificationPreview))
                         .setOnClickListener(new View.OnClickListener() {
@@ -333,9 +333,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                     previewTutorial = new ShowcaseView.Builder(getActivity())
                             .setContentTitle("Notification Customization")
                             .setContentText("This is where you can change \n" +
-                                                    "how the persistent notification looks. \n" +
-                                                    "To customize a part, simply click on it \n" +
-                                                    "inside this preview.")
+                                    "how the persistent notification looks. \n" +
+                                    "To customize a part, simply click on it \n" +
+                                    "inside this preview.")
                             .setStyle(R.style.ShowcaseStyle)
                             .setTarget(new ViewTarget(notificationPreview))
                             .setOnClickListener(new View.OnClickListener() {

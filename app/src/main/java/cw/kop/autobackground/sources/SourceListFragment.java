@@ -73,6 +73,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import cw.kop.autobackground.LiveWallpaperService;
+import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.downloader.Downloader;
@@ -392,39 +393,39 @@ public class SourceListFragment extends ListFragment {
                 switch (which) {
                     case 0:
                         showInputDialog(AppSettings.WEBSITE,
-                                        "",
-                                        "URL",
-                                        "",
-                                        "",
-                                        "",
-                                        "",
-                                        "Enter website:",
-                                        -1);
+                                "",
+                                "URL",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "Enter website:",
+                                -1);
                         break;
                     case 1:
                         showImageFragment(false, "", -1);
                         break;
                     case 2:
                         showInputDialog(AppSettings.IMGUR,
-                                        "",
-                                        "Subreddit",
-                                        "imgur.com/r/",
-                                        "",
-                                        "",
-                                        "",
-                                        "Enter Imgur subreddit:",
-                                        -1);
+                                "",
+                                "Subreddit",
+                                "imgur.com/r/",
+                                "",
+                                "",
+                                "",
+                                "Enter Imgur subreddit:",
+                                -1);
                         break;
                     case 3:
                         showInputDialog(AppSettings.IMGUR,
-                                        "",
-                                        "Album ID",
-                                        "imgur.com/a/",
-                                        "",
-                                        "",
-                                        "",
-                                        "Enter Imgur album:",
-                                        -1);
+                                "",
+                                "Album ID",
+                                "imgur.com/a/",
+                                "",
+                                "",
+                                "",
+                                "Enter Imgur album:",
+                                -1);
                         break;
                     case 4:
                         if (AppSettings.getGoogleAccountName().equals("")) {
@@ -436,25 +437,25 @@ public class SourceListFragment extends ListFragment {
                         break;
                     case 5:
                         showInputDialog(AppSettings.TUMBLR_BLOG,
-                                        "",
-                                        "Blog name",
-                                        "",
-                                        "",
-                                        ".tumblr.com",
-                                        "",
-                                        "Enter Tumblr blog:",
-                                        -1);
+                                "",
+                                "Blog name",
+                                "",
+                                "",
+                                ".tumblr.com",
+                                "",
+                                "Enter Tumblr blog:",
+                                -1);
                         break;
                     case 6:
                         showInputDialog(AppSettings.TUMBLR_TAG,
-                                        "",
-                                        "Tag",
-                                        "",
-                                        "",
-                                        "",
-                                        "",
-                                        "Enter Tumblr tag:",
-                                        -1);
+                                "",
+                                "Tag",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "Enter Tumblr tag:",
+                                -1);
                         break;
                     default:
                 }
@@ -636,14 +637,14 @@ public class SourceListFragment extends ListFragment {
                     case 1:
                         if (type.equals(AppSettings.WEBSITE)) {
                             showInputDialog(AppSettings.WEBSITE,
-                                            AppSettings.getSourceTitle(position),
-                                            "",
-                                            "",
-                                            AppSettings.getSourceData(position),
-                                            "",
-                                            "" + AppSettings.getSourceNum(position),
-                                            "Edit website:",
-                                            position);
+                                    AppSettings.getSourceTitle(position),
+                                    "",
+                                    "",
+                                    AppSettings.getSourceData(position),
+                                    "",
+                                    "" + AppSettings.getSourceNum(position),
+                                    "Edit website:",
+                                    position);
                         }
                         else if (type.equals(AppSettings.IMGUR)) {
                             String prefix = "", hint = "";
@@ -658,28 +659,28 @@ public class SourceListFragment extends ListFragment {
                             }
 
                             showInputDialog(AppSettings.IMGUR,
-                                            AppSettings.getSourceTitle(position),
-                                            hint,
-                                            prefix,
-                                            data.substring(data.indexOf(prefix) + prefix.length()),
-                                            "",
-                                            "" + AppSettings.getSourceNum(position),
-                                            "Edit Imgur source:",
-                                            position);
+                                    AppSettings.getSourceTitle(position),
+                                    hint,
+                                    prefix,
+                                    data.substring(data.indexOf(prefix) + prefix.length()),
+                                    "",
+                                    "" + AppSettings.getSourceNum(position),
+                                    "Edit Imgur source:",
+                                    position);
                         }
                         else if (type.equals(AppSettings.PICASA)) {
                             new PicasaAlbumTask(position).execute();
                         }
                         else if (type.equals(AppSettings.TUMBLR_BLOG)) {
                             showInputDialog(AppSettings.TUMBLR_BLOG,
-                                            AppSettings.getSourceTitle(position),
-                                            "Blog name",
-                                            "",
-                                            AppSettings.getSourceData(position),
-                                            "",
-                                            "" + AppSettings.getSourceNum(position),
-                                            "Edit Tumblr Blog:",
-                                            position);
+                                    AppSettings.getSourceTitle(position),
+                                    "Blog name",
+                                    "",
+                                    AppSettings.getSourceData(position),
+                                    "",
+                                    "" + AppSettings.getSourceNum(position),
+                                    "Edit Tumblr Blog:",
+                                    position);
                         }
                         else if (type.equals(AppSettings.TUMBLR_TAG)) {
                             String data = AppSettings.getSourceData(position);
@@ -689,14 +690,14 @@ public class SourceListFragment extends ListFragment {
                             }
 
                             showInputDialog(AppSettings.TUMBLR_TAG,
-                                            AppSettings.getSourceTitle(position),
-                                            "Tag",
-                                            "",
-                                            data,
-                                            "",
-                                            "" + AppSettings.getSourceNum(position),
-                                            "Edit Tumblr Tag:",
-                                            position);
+                                    AppSettings.getSourceTitle(position),
+                                    "Tag",
+                                    "",
+                                    data,
+                                    "",
+                                    "" + AppSettings.getSourceNum(position),
+                                    "Edit Tumblr Tag:",
+                                    position);
                         }
                         else if (type.equals(AppSettings.FOLDER)) {
                             showImageFragment(false, "", position);
@@ -809,9 +810,9 @@ public class SourceListFragment extends ListFragment {
                 sourceListTutorial = new ShowcaseView.Builder(getActivity())
                         .setContentTitle("Sources List")
                         .setContentText("This is a list of your sources. \n" +
-                                                "These can include both sources and your \n" +
-                                                "own image folders. You can edit them by \n" +
-                                                "tapping on their boxes.")
+                                "These can include both sources and your \n" +
+                                "own image folders. You can edit them by \n" +
+                                "tapping on their boxes.")
                         .setStyle(R.style.ShowcaseStyle)
                         .setOnClickListener(websiteListListener)
                         .setTarget((new ViewTarget(getActivity().getActionBar().getCustomView().findViewById(R.id.action_bar_title))))
@@ -829,16 +830,16 @@ public class SourceListFragment extends ListFragment {
                 };
 
                 addSourceTutorial = new ShowcaseView.Builder(getActivity())
-                        .setContentTitle("Adding Websites")
+                        .setContentTitle("Adding Sources")
                         .setContentText(
-                                "To add a new website entry, \n" +
+                                "To add a new source entry, \n" +
                                         "click the plus (+) sign. \n" +
                                         "\n" +
                                         "Not all sources will work, \n" +
                                         "so if there are no images, \n" +
-                                        "try a different website. \n" +
+                                        "try a different source. \n" +
                                         "\n" +
-                                        "Provided is a website \n" +
+                                        "Provided is a page \n" +
                                         "of some landscape photos \n" +
                                         "taken by Kai Lehnberg.")
                         .setStyle(R.style.ShowcaseStyle)
@@ -859,14 +860,14 @@ public class SourceListFragment extends ListFragment {
                 downloadTutorial = new ShowcaseView.Builder(getActivity())
                         .setContentTitle("Downloading Images")
                         .setContentText("Once you have a website entered, \n" +
-                                                "click this download button to start \n" +
-                                                "downloading some images. \n" +
-                                                "\n" +
-                                                "The app will only use WiFi to \n" +
-                                                "download as a default. If you \n" +
-                                                "wish to change this setting, \n" +
-                                                "go into the Downloader settings \n" +
-                                                "and enable mobile data.")
+                                "click this download button to start \n" +
+                                "downloading some images. \n" +
+                                "\n" +
+                                "The app will only use WiFi to \n" +
+                                "download as a default. If you \n" +
+                                "wish to change this setting, \n" +
+                                "go into the Downloader settings \n" +
+                                "and enable mobile data.")
                         .setStyle(R.style.ShowcaseStyle)
                         .setTarget(new ViewTarget(downloadButton))
                         .setOnClickListener(downloadListener)
@@ -886,10 +887,10 @@ public class SourceListFragment extends ListFragment {
                     setTutorial = new ShowcaseView.Builder(getActivity())
                             .setContentTitle("Setting the wallpaper")
                             .setContentText("Now that it's downloading, \n" +
-                                                    "it's time to set the app \n" +
-                                                    "as your system wallpaper. \n" +
-                                                    "Click the set button and \n" +
-                                                    "hit apply on next page.")
+                                    "it's time to set the app \n" +
+                                    "as your system wallpaper. \n" +
+                                    "Click the set button and \n" +
+                                    "hit apply on next page.")
                             .setStyle(R.style.ShowcaseStyle)
                             .setTarget(new ViewTarget(setButton))
                             .setOnClickListener(setListener)
@@ -916,13 +917,14 @@ public class SourceListFragment extends ListFragment {
                 settingsTutorial = new ShowcaseView.Builder(getActivity())
                         .setContentTitle("Accessing Settings")
                         .setContentText("To open the other settings, \n" +
-                                                "click the app icon in the top left, \n" +
-                                                "which opens a list of settings.")
+                                "click the entry in the top left, \n" +
+                                "which opens a list of settings.")
                         .setStyle(R.style.ShowcaseStyle)
                         .setOnClickListener(settingsListener)
                         .setTarget((new ViewTarget(getActivity().getActionBar().getCustomView().findViewById(R.id.drawer_indicator))))
                         .build();
                 settingsTutorial.setButtonPosition(buttonParams);
+                ((MainActivity) appContext).toggleDrawer();
                 break;
             case 5:
                 AppSettings.setTutorial(false, "source");
