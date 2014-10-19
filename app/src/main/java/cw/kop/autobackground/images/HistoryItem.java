@@ -21,7 +21,7 @@ import java.io.File;
 /**
  * Created by TheKeeperOfPie on 9/22/2014.
  */
-public class HistoryItem {
+public class HistoryItem implements Comparable<HistoryItem>{
 
     private long time;
     private String url;
@@ -45,5 +45,11 @@ public class HistoryItem {
         return image;
     }
 
+    @Override
+    public int compareTo(HistoryItem another) {
 
+        long time = another.getTime() - this.getTime();
+
+        return time == 0 ? 0 : time > 0 ? 1 : -1;
+    }
 }

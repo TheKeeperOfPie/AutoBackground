@@ -44,14 +44,11 @@ import cw.kop.autobackground.settings.AppSettings;
  */
 public class ImageHistoryAdapter extends BaseAdapter {
 
-    private Context mainActivity;
     private LayoutInflater inflater;
     private ArrayList<HistoryItem> historyItems;
 
     public ImageHistoryAdapter(Context activity) {
-
-        mainActivity = activity;
-        inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         historyItems = new ArrayList<HistoryItem>();
         AppSettings.checkUsedLinksSize();
@@ -73,12 +70,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
 
         }
 
-        Collections.sort(historyItems, new Comparator<HistoryItem>() {
-            @Override
-            public int compare(HistoryItem lhs, HistoryItem rhs) {
-                return (int) (rhs.getTime() - lhs.getTime());
-            }
-        });
+        Collections.sort(historyItems);
 
     }
 

@@ -139,12 +139,15 @@ public class MusicReceiverService extends NotificationListenerService implements
         if (!album.equals(previousAlbum) || !artist.equals(previousArtist)) {
 
             Bitmap bitmap = metadataEditor.getBitmap(RemoteController.MetadataEditor.BITMAP_KEY_ARTWORK, null);
+            if (bitmap != null) {
+                Toast.makeText(MusicReceiverService.this, "Bitmap ID: " + bitmap.getGenerationId(), Toast.LENGTH_SHORT).show();
 
-            Downloader.setMusicBitmap(bitmap);
+                Downloader.setMusicBitmap(bitmap);
 
-            Intent intent = new Intent();
-            intent.setAction(LiveWallpaperService.LOAD_ALBUM_ART);
-            sendBroadcast(intent);
+                Intent intent = new Intent();
+                intent.setAction(LiveWallpaperService.LOAD_ALBUM_ART);
+                sendBroadcast(intent);
+            }
         }
 
         previousAlbum = album;
