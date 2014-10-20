@@ -90,7 +90,7 @@
             android:layout_weight="1"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_action_picture_dark"
+            android:src="@drawable/ic_action_picture_white"
             tools:ignore="ContentDescription"
             />
 
@@ -101,7 +101,7 @@
             android:layout_weight="1"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_action_picture_dark"
+            android:src="@drawable/ic_action_picture_white"
             tools:ignore="ContentDescription"
             />
 
@@ -112,7 +112,7 @@
             android:layout_weight="1"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_action_picture_dark"
+            android:src="@drawable/ic_action_picture_white"
             tools:ignore="ContentDescription"
             />
 
@@ -123,7 +123,7 @@
             android:layout_weight="1"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_action_picture_dark"
+            android:src="@drawable/ic_action_picture_white"
             tools:ignore="ContentDescription"
             />
 
@@ -134,7 +134,7 @@
             android:layout_weight="1"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_action_picture_dark"
+            android:src="@drawable/ic_action_picture_white"
             tools:ignore="ContentDescription"
             />
 
@@ -155,7 +155,7 @@
             android:layout_weight="1"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_action_picture_dark"
+            android:src="@drawable/ic_action_picture_white"
             tools:ignore="ContentDescription"
             />
 
@@ -167,7 +167,7 @@
             android:layout_weight="1"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_action_picture_dark"
+            android:src="@drawable/ic_action_picture_white"
             tools:ignore="ContentDescription"
             />
 
@@ -179,7 +179,7 @@
             android:layout_weight="1"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_action_picture_dark"
+            android:src="@drawable/ic_action_picture_white"
             tools:ignore="ContentDescription"
             />
 
@@ -190,7 +190,7 @@
             android:layout_weight="1"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_action_picture_dark"
+            android:src="@drawable/ic_action_picture_white"
             tools:ignore="ContentDescription"
             />
 
@@ -201,7 +201,7 @@
             android:layout_weight="1"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
-            android:src="@drawable/ic_action_picture_dark"
+            android:src="@drawable/ic_action_picture_white"
             tools:ignore="ContentDescription"
             />
 

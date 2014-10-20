@@ -58,7 +58,7 @@ dependencies {
     compile project(':libraries:colorpickerpreference')
     compile 'com.github.amlcurran.showcaseview:library:5.0.0@aar'
     compile 'com.android.support:support-v4:+'
-    compile 'com.android.support:recyclerview-v7:21.0.0-rc1'
+    compile 'com.android.support:recyclerview-v7:21.0.0'
     compile group:'com.squareup.picasso', name:'picasso', version:'2.3.3'
     compile (group:'com.google.android.gms', name:'play-services', version:'5.0.89') {
         exclude (group: 'xpp3', module: 'xpp3')

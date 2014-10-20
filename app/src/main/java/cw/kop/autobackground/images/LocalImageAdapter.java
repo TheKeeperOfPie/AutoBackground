@@ -106,7 +106,7 @@ public class LocalImageAdapter extends BaseAdapter {
                 }
                 else {
                     Picasso.with(parent.getContext())
-                            .load(R.drawable.ic_action_collection_dark)
+                            .load(R.drawable.ic_action_collection_white)
                             .into(fileImage);
                 }
             }
@@ -118,7 +118,7 @@ public class LocalImageAdapter extends BaseAdapter {
                 }
                 else {
                     Picasso.with(parent.getContext())
-                            .load(R.drawable.ic_action_view_as_list_dark)
+                            .load(R.drawable.ic_action_view_as_list_white)
                             .into(fileImage);
                 }
             }

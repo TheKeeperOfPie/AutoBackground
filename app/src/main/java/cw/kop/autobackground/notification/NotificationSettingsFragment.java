@@ -129,7 +129,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             }
 
         }
-        else if (Downloader.getCurrentBitmapFile() != null && (AppSettings.getNotificationIcon() == R.drawable.ic_action_picture || AppSettings.getNotificationIcon() == R.drawable.ic_action_picture_dark)) {
+        else if (Downloader.getCurrentBitmapFile() != null && (AppSettings.getNotificationIcon() == R.drawable.ic_action_picture || AppSettings.getNotificationIcon() == R.drawable.ic_action_picture_white)) {
             Picasso.with(appContext).load(Downloader.getCurrentBitmapFile()).fit().centerCrop().into(notificationIcon);
         }
         else {
@@ -471,21 +471,21 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
         switch (drawable) {
             case R.drawable.ic_action_copy:
-                return R.drawable.ic_action_copy_dark;
+                return R.drawable.ic_action_copy_white;
             case R.drawable.ic_action_refresh:
-                return R.drawable.ic_action_refresh_dark;
+                return R.drawable.ic_action_refresh_white;
             case R.drawable.ic_action_discard:
-                return R.drawable.ic_action_discard_dark;
+                return R.drawable.ic_action_discard_white;
             case R.drawable.ic_action_picture:
-                return R.drawable.ic_action_picture_dark;
+                return R.drawable.ic_action_picture_white;
             case R.drawable.ic_action_make_available_offline:
-                return R.drawable.ic_action_make_available_offline_dark;
+                return R.drawable.ic_action_make_available_offline_white;
             case R.drawable.ic_action_back:
-                return R.drawable.ic_action_back_dark;
+                return R.drawable.ic_action_back_white;
             case R.drawable.ic_action_share:
-                return R.drawable.ic_action_share_dark;
+                return R.drawable.ic_action_share_white;
             case R.drawable.ic_action_backspace:
-                return R.drawable.ic_action_backspace_dark;
+                return R.drawable.ic_action_backspace_white;
             default:
                 return drawable;
         }

@@ -438,7 +438,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
 
             }
-            else if (drawable == R.drawable.ic_action_picture || drawable == R.drawable.ic_action_picture_dark) {
+            else if (drawable == R.drawable.ic_action_picture || drawable == R.drawable.ic_action_picture_white) {
                 if (Downloader.getCurrentBitmapFile() == null) {
                     return;
                 }
@@ -693,8 +693,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                     tileWins++;
                 }
                 else {
-                    setTileImage(tile, R.drawable.ic_action_picture_dark);
-                    setTileImage(lastTile, R.drawable.ic_action_picture_dark);
+                    setTileImage(tile, R.drawable.ic_action_picture_white);
+                    setTileImage(lastTile, R.drawable.ic_action_picture_white);
                 }
 
                 handler.postDelayed(new Runnable() {
@@ -857,7 +857,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             gameSet = true;
 
             for (int i = 0; i < NUM_TO_WIN * 2; i++) {
-                setTileImage(i, R.drawable.ic_action_picture_dark);
+                setTileImage(i, R.drawable.ic_action_picture_white);
             }
 
             pushNotification();
@@ -1716,7 +1716,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         initEffects(0);
                     }
                     catch (RuntimeException e) {
-
+                        e.printStackTrace();
                     }
                     GLES20.glDeleteTextures(1, textureNames, 2);
                     Log.i(TAG, "Deleted texture: " + textureNames[2]);
@@ -2250,6 +2250,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         checkGLError("Bind textureNames[2]");
                         Log.i(TAG, "Bind texture: " + textureNames[2]);
                         toEffect = true;
+                        Log.i(TAG, "toEffect set: " + toEffect);
                     }
 
 
@@ -2380,15 +2381,16 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 GLES20.glDeleteTextures(1, textureNames, texture);
                 setEffect.apply(textureNames[2], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[texture]);
-                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[texture]);
-//                GLES20.glDeleteTextures(1, textureNames, 2);
-//
-//                int tempName = textureNames[texture];
-//                textureNames[texture] = textureNames[2];
-//                textureNames[2] = tempName;
-
-//                setEffect.apply(textureNames[texture], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[2]);
                 setEffect.release();
+
+                GLES20.glDeleteTextures(1, textureNames, 2);
+                Effect resetEffect = effectFactory.createEffect(EffectFactory.EFFECT_TEMPERATURE);
+                resetEffect.setParameter("scale", 0.5f);
+                resetEffect.apply(textureNames[texture], Math.round(renderScreenWidth), Math.round(renderScreenHeight), textureNames[2]);
+                resetEffect.release();
+
+                GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[texture]);
+
                 toastEffect(name, description);
                 Log.i(TAG, "Effect applied: " + name + "\n" + description);
 

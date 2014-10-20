@@ -25,10 +25,10 @@
     </array>
 
     <array name="notification_icon_icons_dark">
-        <item>@drawable/ic_action_about_dark</item>
-        <item>@drawable/ic_action_picture_dark</item>
-        <item>@drawable/ic_action_settings_dark</item>
-        <item>@drawable/ic_action_backspace_dark</item>
+        <item>@drawable/ic_action_about_white</item>
+        <item>@drawable/ic_action_picture_white</item>
+        <item>@drawable/ic_action_settings_white</item>
+        <item>@drawable/ic_action_backspace_white</item>
     </array>
 
     <array name="notification_titles_icons">
@@ -39,10 +39,10 @@
     </array>
 
     <array name="notification_titles_icons_dark">
-        <item>@drawable/ic_action_about_dark</item>
-        <item>@drawable/ic_action_collection_dark</item>
-        <item>@drawable/ic_action_settings_dark</item>
-        <item>@drawable/ic_action_backspace_dark</item>
+        <item>@drawable/ic_action_about_white</item>
+        <item>@drawable/ic_action_collection_white</item>
+        <item>@drawable/ic_action_settings_white</item>
+        <item>@drawable/ic_action_backspace_white</item>
     </array>
 
     <array name="notification_options_icons">
@@ -57,14 +57,14 @@
     </array>
 
     <array name="notification_options_icons_dark">
-        <item>@drawable/ic_action_copy_dark</item>
-        <item>@drawable/ic_action_refresh_dark</item>
-        <item>@drawable/ic_action_discard_dark</item>
-        <item>@drawable/ic_action_picture_dark</item>
-        <item>@drawable/ic_action_make_available_offline_dark</item>
-        <item>@drawable/ic_action_back_dark</item>
-        <item>@drawable/ic_action_share_dark</item>
-        <item>@drawable/ic_action_backspace_dark</item>
+        <item>@drawable/ic_action_copy_white</item>
+        <item>@drawable/ic_action_refresh_white</item>
+        <item>@drawable/ic_action_discard_white</item>
+        <item>@drawable/ic_action_picture_white</item>
+        <item>@drawable/ic_action_make_available_offline_white</item>
+        <item>@drawable/ic_action_back_white</item>
+        <item>@drawable/ic_action_share_white</item>
+        <item>@drawable/ic_action_backspace_white</item>
     </array>
 
 </resources>

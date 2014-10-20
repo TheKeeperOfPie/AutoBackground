@@ -168,7 +168,7 @@ public class MainActivity extends Activity {
         });
 
         if (!AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            drawerIndicator.setImageResource(R.drawable.drawer_menu_dark);
+            drawerIndicator.setImageResource(R.drawable.drawer_menu_white);
         }
 
         actionBar.setCustomView(actionBarView);

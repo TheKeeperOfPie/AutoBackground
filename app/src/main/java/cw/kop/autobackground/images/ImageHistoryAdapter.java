@@ -31,7 +31,6 @@ import java.io.FilenameFilter;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -119,7 +118,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
                 }
                 else {
                     Picasso.with(parent.getContext())
-                            .load(R.drawable.ic_action_view_as_list_dark)
+                            .load(R.drawable.ic_action_view_as_list_white)
                             .into(fileImage);
                 }
             }

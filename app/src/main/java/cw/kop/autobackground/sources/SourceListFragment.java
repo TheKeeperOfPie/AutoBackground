@@ -223,10 +223,10 @@ public class SourceListFragment extends ListFragment {
         });
 
         if (!AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            downloadButton.setImageResource(R.drawable.ic_action_download_dark);
-            sortButton.setImageResource(R.drawable.ic_action_storage_dark);
-            cycleButton.setImageResource(R.drawable.ic_action_refresh_dark);
-            addButton.setBackgroundResource(R.drawable.floating_button_dark);
+            downloadButton.setImageResource(R.drawable.ic_action_download_white);
+            sortButton.setImageResource(R.drawable.ic_action_storage_white);
+            cycleButton.setImageResource(R.drawable.ic_action_refresh_white);
+            addButton.setBackgroundResource(R.drawable.floating_button_white);
         }
 
         return view;
@@ -250,7 +250,7 @@ public class SourceListFragment extends ListFragment {
                 downloadButton.setImageResource(R.drawable.ic_action_cancel);
             }
             else {
-                downloadButton.setImageResource(R.drawable.ic_action_cancel_dark);
+                downloadButton.setImageResource(R.drawable.ic_action_cancel_white);
             }
 
             if (AppSettings.resetOnManualDownload() && AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
@@ -977,7 +977,7 @@ public class SourceListFragment extends ListFragment {
                 downloadButton.setImageResource(R.drawable.ic_action_cancel);
             }
             else {
-                downloadButton.setImageResource(R.drawable.ic_action_cancel_dark);
+                downloadButton.setImageResource(R.drawable.ic_action_cancel_white);
             }
         }
         else {
@@ -1044,7 +1044,7 @@ public class SourceListFragment extends ListFragment {
                     downloadButton.setImageResource(R.drawable.ic_action_download);
                 }
                 else {
-                    downloadButton.setImageResource(R.drawable.ic_action_download_dark);
+                    downloadButton.setImageResource(R.drawable.ic_action_download_white);
                 }
                 downloadButton.postInvalidate();
             }

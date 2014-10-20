@@ -45,15 +45,15 @@ public class NavListAdapter extends BaseAdapter {
             R.drawable.ic_action_view_as_list,
             R.drawable.ic_action_about};
     private int[] darkImages = new int[]{
-            R.drawable.ic_action_picture_dark,
-            R.drawable.ic_action_web_site_dark,
-            R.drawable.ic_action_download_dark,
-            R.drawable.ic_action_accounts_dark,
-            R.drawable.ic_action_crop_dark,
-            R.drawable.ic_action_chat_dark,
-            R.drawable.ic_action_settings_dark,
-            R.drawable.ic_action_view_as_list_dark,
-            R.drawable.ic_action_about_dark};
+            R.drawable.ic_action_picture_white,
+            R.drawable.ic_action_web_site_white,
+            R.drawable.ic_action_download_white,
+            R.drawable.ic_action_accounts_white,
+            R.drawable.ic_action_crop_white,
+            R.drawable.ic_action_chat_white,
+            R.drawable.ic_action_settings_white,
+            R.drawable.ic_action_view_as_list_white,
+            R.drawable.ic_action_about_white};
 
     public NavListAdapter(Activity activity, String[] nameArray) {
         fragmentList = new ArrayList<String>();
