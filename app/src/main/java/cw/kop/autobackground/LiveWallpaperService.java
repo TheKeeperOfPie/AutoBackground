@@ -122,51 +122,53 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             String action = intent.getAction();
 
-            if (action.equals(UPDATE_NOTIFICATION)) {
-                startNotification(intent.getBooleanExtra("use", false));
-            }
-            else if (action.equals(COPY_IMAGE)) {
-                ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Image Location", Downloader.getBitmapLocation());
-                clipboard.setPrimaryClip(clip);
-                if (AppSettings.useToast()) {
-                    Toast.makeText(context, "Copied image location to clipboard", Toast.LENGTH_SHORT).show();
-                }
-            }
-            else if (action.equals(TOAST_LOCATION)) {
-                Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-                context.sendBroadcast(closeDrawer);
-                Toast.makeText(context, "Image Location:\n" + Downloader.getBitmapLocation(), Toast.LENGTH_LONG).show();
-            }
-            else if (action.equals(GAME_TILE0)) {
-                calculateGameTiles(0);
-            }
-            else if (action.equals(GAME_TILE1)) {
-                calculateGameTiles(1);
-            }
-            else if (action.equals(GAME_TILE2)) {
-                calculateGameTiles(2);
-            }
-            else if (action.equals(GAME_TILE3)) {
-                calculateGameTiles(3);
-            }
-            else if (action.equals(GAME_TILE4)) {
-                calculateGameTiles(4);
-            }
-            else if (action.equals(GAME_TILE5)) {
-                calculateGameTiles(5);
-            }
-            else if (action.equals(GAME_TILE6)) {
-                calculateGameTiles(6);
-            }
-            else if (action.equals(GAME_TILE7)) {
-                calculateGameTiles(7);
-            }
-            else if (action.equals(GAME_TILE8)) {
-                calculateGameTiles(8);
-            }
-            else if (action.equals(GAME_TILE9)) {
-                calculateGameTiles(9);
+            switch (action) {
+                case UPDATE_NOTIFICATION:
+                    startNotification(intent.getBooleanExtra("use", false));
+                    break;
+                case COPY_IMAGE:
+                    ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("Image Location", Downloader.getBitmapLocation());
+                    clipboard.setPrimaryClip(clip);
+                    if (AppSettings.useToast()) {
+                        Toast.makeText(context, "Copied image location to clipboard", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
+                case TOAST_LOCATION:
+                    Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+                    context.sendBroadcast(closeDrawer);
+                    Toast.makeText(context, "Image Location:\n" + Downloader.getBitmapLocation(), Toast.LENGTH_LONG).show();
+                    break;
+                case GAME_TILE0:
+                    calculateGameTiles(0);
+                    break;
+                case GAME_TILE1:
+                    calculateGameTiles(1);
+                    break;
+                case GAME_TILE2:
+                    calculateGameTiles(2);
+                    break;
+                case GAME_TILE3:
+                    calculateGameTiles(3);
+                    break;
+                case GAME_TILE4:
+                    calculateGameTiles(4);
+                    break;
+                case GAME_TILE5:
+                    calculateGameTiles(5);
+                    break;
+                case GAME_TILE6:
+                    calculateGameTiles(6);
+                    break;
+                case GAME_TILE7:
+                    calculateGameTiles(7);
+                    break;
+                case GAME_TILE8:
+                    calculateGameTiles(8);
+                    break;
+                case GAME_TILE9:
+                    calculateGameTiles(9);
+                    break;
             }
             Log.i(TAG, "Service received intent");
         }
@@ -233,9 +235,9 @@ public class LiveWallpaperService extends GLWallpaperService {
         }
     };
     public static SharedPreferences prefs;
-    private ArrayList<Bitmap> tileBitmaps = new ArrayList<Bitmap>();
-    private ArrayList<Integer> tileOrder = new ArrayList<Integer>();
-    private ArrayList<Integer> usedTiles = new ArrayList<Integer>();
+    private ArrayList<Bitmap> tileBitmaps = new ArrayList<>();
+    private ArrayList<Integer> tileOrder = new ArrayList<>();
+    private ArrayList<Integer> usedTiles = new ArrayList<>();
     private int lastTile = 6;
     private int numFlipped = 0;
     private int tileWins = 0;
@@ -754,7 +756,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     private boolean setupGameTiles() {
 
-        final ArrayList<File> bitmapFiles = new ArrayList<File>();
+        final ArrayList<File> bitmapFiles = new ArrayList<>();
         bitmapFiles.addAll(Downloader.getBitmapList());
 
         if (bitmapFiles.size() >= NUM_TO_WIN) {
@@ -842,7 +844,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         if (tileBitmaps.size() == NUM_TO_WIN) {
 
-            List<Integer> randomList = new ArrayList<Integer>();
+            List<Integer> randomList = new ArrayList<>();
             for (int i = 0; i < NUM_TO_WIN; i++) {
                 randomList.add(i);
                 randomList.add(i);
@@ -915,7 +917,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         private GestureDetector gestureDetector;
         private ScaleGestureDetector scaleGestureDetector;
         private float scaleFactor = 1.f;
-        private List<File> previousBitmaps = new ArrayList<File>();
+        private List<File> previousBitmaps = new ArrayList<>();
         private long pinReleaseTime;
         private boolean downloadOnConnection = false;
         private boolean isPlayingMusic = false;
@@ -1103,7 +1105,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             if (path != null) {
                 int lastSlash = path.lastIndexOf('/');
                 if (lastSlash > 0) {
-                    ArrayList<String> paths = new ArrayList<String>();
+                    ArrayList<String> paths = new ArrayList<>();
                     String subString = path.substring(0, lastSlash + 1);
                     paths.add(subString + "AlbumArt.jpg");
                     paths.add(subString + "albumart.jpg");
@@ -2250,7 +2252,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                         checkGLError("Bind textureNames[2]");
                         Log.i(TAG, "Bind texture: " + textureNames[2]);
                         toEffect = true;
-                        Log.i(TAG, "toEffect set: " + toEffect);
                     }
 
 
@@ -2508,118 +2509,126 @@ public class LiveWallpaperService extends GLWallpaperService {
                 Random random = new Random();
                 Effect effect;
 
-                if (randomEffect.equals("Completely Random")) {
-                    String[] allEffectsList = LiveWallpaperService.this.getResources().getStringArray(R.array.effects_list);
-                    String[] allEffectParameters = LiveWallpaperService.this.getResources().getStringArray(R.array.effects_list_parameters);
+                switch (randomEffect) {
+                    case "Completely Random": {
+                        String[] allEffectsList = LiveWallpaperService.this.getResources().getStringArray(R.array.effects_list);
+                        String[] allEffectParameters = LiveWallpaperService.this.getResources().getStringArray(R.array.effects_list_parameters);
 
-                    ArrayList<String> usableEffectsList = new ArrayList<String>();
-                    ArrayList<String> usableEffectsParameters = new ArrayList<String>();
+                        ArrayList<String> usableEffectsList = new ArrayList<>();
+                        ArrayList<String> usableEffectsParameters = new ArrayList<>();
 
-                    for (int i = 0; i < allEffectsList.length; i++) {
-                        if (EffectFactory.isEffectSupported(allEffectsList[i])) {
-                            usableEffectsList.add(allEffectsList[i]);
-                            usableEffectsParameters.add(allEffectParameters[i]);
+                        for (int i = 0; i < allEffectsList.length; i++) {
+                            if (EffectFactory.isEffectSupported(allEffectsList[i])) {
+                                usableEffectsList.add(allEffectsList[i]);
+                                usableEffectsParameters.add(allEffectParameters[i]);
+                            }
                         }
-                    }
 
-                    int index = (int) (Math.random() * usableEffectsList.size());
-                    String effectName = usableEffectsList.get(index);
-                    String parameter = usableEffectsParameters.get(index);
-                    float value = 0.0f;
+                        int index = (int) (Math.random() * usableEffectsList.size());
+                        String effectName = usableEffectsList.get(index);
+                        String parameter = usableEffectsParameters.get(index);
+                        float value = 0.0f;
 
-                    effect = effectFactory.createEffect(effectName);
-                    if (usableEffectsList.get(index).equals("android.media.effect.effects.SaturateEffect")) {
-                        value = (random.nextFloat() * 0.6f) - 0.3f;
-                    }
-                    else if (usableEffectsList.get(index).equals("android.media.effect.effects.ColorTemperatureEffect")) {
-                        value = random.nextFloat();
-                    }
-                    else if (parameter.equals("brightness") || parameter.equals("contrast")) {
-                        value = (random.nextFloat() * 0.4f) + 0.8f;
-                    }
-                    else if (!usableEffectsParameters.get(index).equals("none")) {
-                        value = (random.nextFloat() * 0.3f) + 0.3f;
-                    }
-
-                    if (EffectFactory.isEffectSupported(effectName)) {
-                        if (value != 0.0f) {
-                            effect.setParameter(parameter, value);
+                        effect = effectFactory.createEffect(effectName);
+                        if (usableEffectsList.get(index).equals("android.media.effect.effects.SaturateEffect")) {
+                            value = (random.nextFloat() * 0.6f) - 0.3f;
                         }
-                        applyEffect(effect, texture, effectName.substring(effectName.indexOf("effects.") + 8), ((value != 0.0f) ? "Value:" + value : ""));
+                        else if (usableEffectsList.get(index).equals("android.media.effect.effects.ColorTemperatureEffect")) {
+                            value = random.nextFloat();
+                        }
+                        else if (parameter.equals("brightness") || parameter.equals("contrast")) {
+                            value = (random.nextFloat() * 0.4f) + 0.8f;
+                        }
+                        else if (!usableEffectsParameters.get(index).equals("none")) {
+                            value = (random.nextFloat() * 0.3f) + 0.3f;
+                        }
+
+                        if (EffectFactory.isEffectSupported(effectName)) {
+                            if (value != 0.0f) {
+                                effect.setParameter(parameter, value);
+                            }
+                            applyEffect(effect, texture, effectName.substring(effectName.indexOf("effects.") + 8), ((value != 0.0f) ? "Value:" + value : ""));
+                        }
+                        break;
                     }
-                }
-                else if (randomEffect.equals("Filter Effects")) {
-                    String[] filtersList = LiveWallpaperService.this.getResources().getStringArray(R.array.effects_filters_list);
+                    case "Filter Effects": {
+                        String[] filtersList = LiveWallpaperService.this.getResources().getStringArray(R.array.effects_filters_list);
 
-                    int index = random.nextInt(filtersList.length);
+                        int index = random.nextInt(filtersList.length);
 
-                    effect = effectFactory.createEffect(filtersList[index]);
-                    applyEffect(effect, texture, filtersList[index].substring(filtersList[index].indexOf("effects.") + 8), "");
-                }
-                else if (randomEffect.equals("Dual Tone Random")) {
-
-                    int firstColor = Color.argb(255, random.nextInt(80), random.nextInt(80), random.nextInt(80));
-                    int secondColor = Color.argb(255, random.nextInt(100) + 75, random.nextInt(100) + 75, random.nextInt(100) + 75);
-
-                    effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
-                    effect.setParameter("first_color", firstColor);
-                    effect.setParameter("second_color", secondColor);
-                    applyEffect(effect, texture, randomEffect, "\n" + firstColor + "\n" + secondColor);
-
-                }
-                else if (randomEffect.equals("Dual Tone Rainbow")) {
-
-                    ArrayList<String> colorsList = (ArrayList<String>) Arrays.asList(LiveWallpaperService.this.getResources().getStringArray(R.array.effects_color_list));
-
-                    Collections.shuffle(colorsList);
-
-                    int firstColor = Color.parseColor(colorsList.get(0));
-                    int secondColor = Color.parseColor(colorsList.get(1));
-
-                    if (AppSettings.useDuotoneGray()) {
-                        firstColor = Color.parseColor("gray");
-                        Log.i(TAG, "Duotone gray");
+                        effect = effectFactory.createEffect(filtersList[index]);
+                        applyEffect(effect, texture, filtersList[index].substring(filtersList[index].indexOf("effects.") + 8), "");
+                        break;
                     }
+                    case "Dual Tone Random": {
 
-                    effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
-                    effect.setParameter("first_color", firstColor);
-                    effect.setParameter("second_color", secondColor);
-                    applyEffect(effect, texture, randomEffect, "\n" + firstColor + "\n" + secondColor);
+                        int firstColor = Color.argb(255, random.nextInt(80), random.nextInt(80), random.nextInt(80));
+                        int secondColor = Color.argb(255, random.nextInt(100) + 75, random.nextInt(100) + 75, random.nextInt(100) + 75);
 
-                }
-                else if (randomEffect.equals("Dual Tone Warm")) {
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                        effect.setParameter("first_color", firstColor);
+                        effect.setParameter("second_color", secondColor);
+                        applyEffect(effect, texture, randomEffect, "\n" + firstColor + "\n" + secondColor);
 
-                    int firstColor = Color.argb(255, random.nextInt(40) + 40, random.nextInt(40), random.nextInt(40));
-                    int secondColor = Color.argb(255, random.nextInt(80) + 150, random.nextInt(80) + 125, random.nextInt(80) + 125);
-
-                    if (AppSettings.useDuotoneGray()) {
-                        int grayValue = random.nextInt(50);
-                        firstColor = Color.argb(255, grayValue, grayValue, grayValue);
-                        Log.i(TAG, "Duotone gray");
+                        break;
                     }
+                    case "Dual Tone Rainbow": {
 
-                    effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
-                    effect.setParameter("first_color", firstColor);
-                    effect.setParameter("second_color", secondColor);
-                    applyEffect(effect, texture, randomEffect, "\n" + firstColor + "\n" + secondColor);
+                        ArrayList<String> colorsList = (ArrayList<String>) Arrays.asList(LiveWallpaperService.this.getResources().getStringArray(R.array.effects_color_list));
 
-                }
-                else if (randomEffect.equals("Dual Tone Cool")) {
+                        Collections.shuffle(colorsList);
 
-                    int firstColor = Color.argb(255, random.nextInt(40), random.nextInt(40) + 40, random.nextInt(40) + 40);
-                    int secondColor = Color.argb(255, random.nextInt(80) + 125, random.nextInt(80) + 150, random.nextInt(80) + 150);
+                        int firstColor = Color.parseColor(colorsList.get(0));
+                        int secondColor = Color.parseColor(colorsList.get(1));
 
-                    if (AppSettings.useDuotoneGray()) {
-                        int grayValue = random.nextInt(50);
-                        firstColor = Color.argb(255, grayValue, grayValue, grayValue);
-                        Log.i(TAG, "Duotone gray");
+                        if (AppSettings.useDuotoneGray()) {
+                            firstColor = Color.parseColor("gray");
+                            Log.i(TAG, "Duotone gray");
+                        }
+
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                        effect.setParameter("first_color", firstColor);
+                        effect.setParameter("second_color", secondColor);
+                        applyEffect(effect, texture, randomEffect, "\n" + firstColor + "\n" + secondColor);
+
+                        break;
                     }
+                    case "Dual Tone Warm": {
 
-                    effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
-                    effect.setParameter("first_color", firstColor);
-                    effect.setParameter("second_color", secondColor);
-                    applyEffect(effect, texture, randomEffect, "\n" + firstColor + "\n" + secondColor);
+                        int firstColor = Color.argb(255, random.nextInt(40) + 40, random.nextInt(40), random.nextInt(40));
+                        int secondColor = Color.argb(255, random.nextInt(80) + 150, random.nextInt(80) + 125, random.nextInt(80) + 125);
 
+                        if (AppSettings.useDuotoneGray()) {
+                            int grayValue = random.nextInt(50);
+                            firstColor = Color.argb(255, grayValue, grayValue, grayValue);
+                            Log.i(TAG, "Duotone gray");
+                        }
+
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                        effect.setParameter("first_color", firstColor);
+                        effect.setParameter("second_color", secondColor);
+                        applyEffect(effect, texture, randomEffect, "\n" + firstColor + "\n" + secondColor);
+
+                        break;
+                    }
+                    case "Dual Tone Cool": {
+
+                        int firstColor = Color.argb(255, random.nextInt(40), random.nextInt(40) + 40, random.nextInt(40) + 40);
+                        int secondColor = Color.argb(255, random.nextInt(80) + 125, random.nextInt(80) + 150, random.nextInt(80) + 150);
+
+                        if (AppSettings.useDuotoneGray()) {
+                            int grayValue = random.nextInt(50);
+                            firstColor = Color.argb(255, grayValue, grayValue, grayValue);
+                            Log.i(TAG, "Duotone gray");
+                        }
+
+                        effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                        effect.setParameter("first_color", firstColor);
+                        effect.setParameter("second_color", secondColor);
+                        applyEffect(effect, texture, randomEffect, "\n" + firstColor + "\n" + secondColor);
+
+                        break;
+                    }
                 }
             }
 

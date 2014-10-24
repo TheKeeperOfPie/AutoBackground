@@ -42,7 +42,8 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class WallpaperSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
-    private final static long CONVERT_MILLES_TO_MIN = 60000;
+    private static final String TAG = WallpaperSettingsFragment.class.getName();
+    private static final long CONVERT_MILLES_TO_MIN = 60000;
     private SwitchPreference intervalPref;
     private EditTextPreference frameRatePref;
     private Context appContext;
@@ -300,7 +301,14 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
             if (key.equals("show_album_art")) {
                 Intent musicReceiverIntent = new Intent(appContext, MusicReceiverService.class);
 
-                appContext.stopService(musicReceiverIntent);
+                if (AppSettings.showAlbumArt()) {
+                    appContext.startService(musicReceiverIntent);
+                    Log.i(TAG, "Starting MusicReceiverService");
+                }
+                else {
+                    appContext.stopService(musicReceiverIntent);
+                    Log.i(TAG, "Stopping MusicReceiverService");
+                }
             }
         }
     }

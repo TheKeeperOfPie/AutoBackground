@@ -49,8 +49,8 @@ public class SourceListAdapter extends BaseAdapter {
 
     public SourceListAdapter(Activity activity) {
         mainActivity = activity;
-        listData = new ArrayList<HashMap<String, String>>();
-        titles = new HashSet<String>();
+        listData = new ArrayList<>();
+        titles = new HashSet<>();
         inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
@@ -75,12 +75,8 @@ public class SourceListAdapter extends BaseAdapter {
 
         View view = convertView;
 
-//        final Context contextThemeWrapper = new ContextThemeWrapper(mainActivity, AppSettings.getTheme());
-//
-//        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
         if (convertView == null) {
-            view = inflater.inflate(R.layout.source_list_row, null);
+            view = inflater.inflate(R.layout.source_list_row, parent, false);
         }
 
         TextView title = (TextView) view.findViewById(R.id.title_text);
@@ -171,18 +167,21 @@ public class SourceListAdapter extends BaseAdapter {
 
     public void updateNum() {
 
-        FilenameFilter filenameFilter = Downloader.getImageFileNameFilter();
-
-        for (HashMap<String, String> hashMap : listData) {
-            if (hashMap.get("type").equals(AppSettings.FOLDER)) {
-                File file = new File(hashMap.get("data"));
-                if (file.exists() && file.isDirectory()) {
-                    hashMap.put("num", "" + file.listFiles(filenameFilter).length);
+        if (listData != null) {
+            for (HashMap<String, String> hashMap : listData) {
+                if (hashMap.get("type").equals(AppSettings.FOLDER)) {
+                    File file = new File(hashMap.get("data"));
+                    if (file.exists() && file.isDirectory()) {
+                        hashMap.put("num", "" + file.listFiles(Downloader.getImageFileNameFilter()).length);
+                    }
+                    else {
+                        hashMap.put("num", "0");
+                    }
                 }
             }
+            notifyDataSetChanged();
+            saveData();
         }
-        notifyDataSetChanged();
-        saveData();
     }
 
     public void sortData(final String key) {

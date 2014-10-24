@@ -109,7 +109,7 @@ public class DownloadThread extends Thread {
                 cache.mkdir();
             }
 
-            List<Integer> indexes = new ArrayList<Integer>();
+            List<Integer> indexes = new ArrayList<>();
             for (int index = 0; index < AppSettings.getNumSources(); index++) {
                 if (!AppSettings.getSourceType(index).equals(AppSettings.FOLDER) && AppSettings.useSource(index)) {
                     indexes.add(index);
@@ -117,7 +117,7 @@ public class DownloadThread extends Thread {
                 }
             }
 
-            usedLinks = new HashSet<String>();
+            usedLinks = new HashSet<>();
 
             if (AppSettings.checkDuplicates()) {
                 Set<String> rawLinks = AppSettings.getUsedLinks();
@@ -155,20 +155,22 @@ public class DownloadThread extends Thread {
                     String sourceType = AppSettings.getSourceType(index);
                     String sourceData = AppSettings.getSourceData(index);
 
-                    if (sourceType.equals(AppSettings.WEBSITE)) {
-                        downloadWebsite(sourceData, index);
-                    }
-                    else if (sourceType.equals(AppSettings.IMGUR)) {
-                        downloadImgur(sourceData, index);
-                    }
-                    else if (sourceType.equals(AppSettings.PICASA)) {
-                        downloadPicasa(sourceData, index);
-                    }
-                    else if (sourceType.equals(AppSettings.TUMBLR_BLOG)) {
-                        downloadTumblrBlog(sourceData, index);
-                    }
-                    else if (sourceType.equals(AppSettings.TUMBLR_TAG)) {
-                        downloadTumblrTag(sourceData, index);
+                    switch (sourceType) {
+                        case AppSettings.WEBSITE:
+                            downloadWebsite(sourceData, index);
+                            break;
+                        case AppSettings.IMGUR:
+                            downloadImgur(sourceData, index);
+                            break;
+                        case AppSettings.PICASA:
+                            downloadPicasa(sourceData, index);
+                            break;
+                        case AppSettings.TUMBLR_BLOG:
+                            downloadTumblrBlog(sourceData, index);
+                            break;
+                        case AppSettings.TUMBLR_TAG:
+                            downloadTumblrTag(sourceData, index);
+                            break;
                     }
 
                     totalTarget += AppSettings.getSourceNum(index);
@@ -187,11 +189,7 @@ public class DownloadThread extends Thread {
                     totalDownloaded += imagesDownloaded;
 
                 }
-                catch (IOException e) {
-                    sendToast("Invalid URL: " + AppSettings.getSourceData(index));
-                    Log.i(TAG, "Invalid URL");
-                }
-                catch (IllegalArgumentException e) {
+                catch (IOException | IllegalArgumentException e) {
                     sendToast("Invalid URL: " + AppSettings.getSourceData(index));
                     Log.i(TAG, "Invalid URL");
                 }
@@ -213,7 +211,7 @@ public class DownloadThread extends Thread {
     private Set<String> compileImageLinks(Document doc, String tag, String attr) {
 
         Elements downloadLinks = doc.select(tag);
-        Set<String> links = new HashSet<String>();
+        Set<String> links = new HashSet<>();
 
         for (Element link : downloadLinks) {
             String url = link.attr(attr);
@@ -344,8 +342,8 @@ public class DownloadThread extends Thread {
             return;
         }
 
-        Set<String> imageLinks = new HashSet<String>();
-        List<String> imageList = new ArrayList<String>();
+        Set<String> imageLinks = new HashSet<>();
+        List<String> imageList = new ArrayList<>();
 
         Document linkDoc = Jsoup.connect(url).get();
 
@@ -395,8 +393,8 @@ public class DownloadThread extends Thread {
             JSONObject jsonObject = new JSONObject(response);
             JSONArray jArray = jsonObject.getJSONArray("data");
 
-            List<String> imageList = new ArrayList<String>();
-            List<String> imagePages = new ArrayList<String>();
+            List<String> imageList = new ArrayList<>();
+            List<String> imagePages = new ArrayList<>();
 
             for (int i = 0; i < jArray.length(); i++) {
                 JSONObject imageObject = jArray.getJSONObject(i);
@@ -447,7 +445,7 @@ public class DownloadThread extends Thread {
 
             Document linkDoc = Jsoup.parse(response);
 
-            List<String> imageList = new ArrayList<String>();
+            List<String> imageList = new ArrayList<>();
 
             for (Element link : linkDoc.select("media|group")) {
                 imageList.add(link.select("media|content").attr("url"));
@@ -480,8 +478,8 @@ public class DownloadThread extends Thread {
             JSONObject jsonObject = new JSONObject(response);
             JSONArray jArray = jsonObject.getJSONObject("response").getJSONArray("posts");
 
-            List<String> imageList = new ArrayList<String>();
-            List<String> imagePages = new ArrayList<String>();
+            List<String> imageList = new ArrayList<>();
+            List<String> imagePages = new ArrayList<>();
 
             for (int i = 0; i < jArray.length(); i++) {
                 JSONObject postObject = jArray.getJSONObject(i);
@@ -528,8 +526,8 @@ public class DownloadThread extends Thread {
             JSONObject jsonObject = new JSONObject(response);
             JSONArray jArray = jsonObject.getJSONArray("response");
 
-            List<String> imageList = new ArrayList<String>();
-            List<String> imagePages = new ArrayList<String>();
+            List<String> imageList = new ArrayList<>();
+            List<String> imagePages = new ArrayList<>();
 
             for (int i = 0; i < jArray.length(); i++) {
                 try {
@@ -574,7 +572,7 @@ public class DownloadThread extends Thread {
 
             String line = null;
             while ((line = reader.readLine()) != null) {
-                stringBuilder.append(line + "\n");
+                stringBuilder.append(line).append("\n");
             }
             result = stringBuilder.toString();
         }
@@ -667,13 +665,7 @@ public class DownloadThread extends Thread {
                 return bitmap;
 
             }
-            catch (OutOfMemoryError e) {
-                e.printStackTrace();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-            catch (Exception e) {
+            catch (OutOfMemoryError | IOException e) {
                 e.printStackTrace();
             }
         }

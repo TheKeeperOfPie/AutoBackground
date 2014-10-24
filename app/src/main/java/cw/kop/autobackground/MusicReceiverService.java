@@ -76,6 +76,7 @@ public class MusicReceiverService extends NotificationListenerService implements
         ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).unregisterRemoteController(audioRemoteController);
 
         Log.i(TAG, "MusicReceiverService destroyed");
+        Toast.makeText(MusicReceiverService.this, "MusicReceiverService destroyed", Toast.LENGTH_SHORT).show();
 
         super.onDestroy();
     }

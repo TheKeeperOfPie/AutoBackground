@@ -75,6 +75,7 @@
         android:scaleType="centerInside"
         android:adjustViewBounds="true"
         android:src="@drawable/ic_action_refresh"
+        android:visibility="gone"
         android:contentDescription="@string/cycle_wallpaper_content_description"
         />
 

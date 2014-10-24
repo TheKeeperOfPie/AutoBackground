@@ -515,7 +515,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             iconIcons = appContext.getResources().obtainTypedArray(R.array.notification_icon_icons_dark);
         }
 
-        ArrayList<NotificationOptionData> optionsList = new ArrayList<NotificationOptionData>();
+        ArrayList<NotificationOptionData> optionsList = new ArrayList<>();
 
         for (int i = 0; i < iconTitles.length; i++) {
             optionsList.add(new NotificationOptionData(iconTitles[i], iconSummaries[i], iconIcons.getResourceId(i, R.color.TRANSPARENT_BACKGROUND), iconSummaries[i]));
@@ -605,7 +605,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             titlesIcons = appContext.getResources().obtainTypedArray(R.array.notification_titles_icons_dark);
         }
 
-        ArrayList<NotificationOptionData> optionsList = new ArrayList<NotificationOptionData>();
+        ArrayList<NotificationOptionData> optionsList = new ArrayList<>();
 
         for (int i = 0; i < titleTitles.length; i++) {
             optionsList.add(new NotificationOptionData(titleTitles[i], titleSummaries[i], titlesIcons.getResourceId(i, R.color.TRANSPARENT_BACKGROUND), titleSummaries[i]));
@@ -658,7 +658,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             optionsIcons = appContext.getResources().obtainTypedArray(R.array.notification_options_icons_dark);
         }
 
-        ArrayList<NotificationOptionData> optionsList = new ArrayList<NotificationOptionData>();
+        ArrayList<NotificationOptionData> optionsList = new ArrayList<>();
 
         for (int i = 0; i < optionsTitles.length; i++) {
             optionsList.add(new NotificationOptionData(optionsTitles[i], optionsSummaries[i], optionsIcons.getResourceId(i, R.color.TRANSPARENT_BACKGROUND), optionsTitles[i]));

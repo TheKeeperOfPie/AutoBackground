@@ -67,7 +67,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         Bundle bundle = getArguments();
         setPath = bundle.getBoolean("set_path", false);
         viewPath = bundle.getString("view_path", "");
-        position = bundle.getInt("position", 0);
+        position = bundle.getInt("position", -1);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.local_image_layout, null);
+        final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.local_image_layout, container, false);
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
 
@@ -126,19 +126,13 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                     Toast.makeText(appContext, "Download path set to: \n" + AppSettings.getDownloadPath(), Toast.LENGTH_SHORT).show();
                 }
                 else {
-//                    SourceListFragment sourceListFragment = ((MainActivity) getActivity()).sourceListFragment; //.getFragmentManager().findFragmentByTag("source_fragment");
                     int numImages = 0;
                     if (dir.listFiles(filenameFilter) != null) {
                         numImages = dir.listFiles(filenameFilter).length;
                     }
-//                    if (position > 0) {
-//                        sourceListFragment.setEntry(position, AppSettings.FOLDER, dir.getName(), dir.getAbsolutePath(), "" + numImages);
-//                    } else {
-//                        sourceListFragment.addEntry(AppSettings.FOLDER, dir.getName(), dir.getAbsolutePath(), "" + numImages);
-//                    }
 
                     Intent returnEntryIntent = new Intent();
-                    if (position > 0) {
+                    if (position > -1) {
                         returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
                         returnEntryIntent.putExtra("position", position);
                     }

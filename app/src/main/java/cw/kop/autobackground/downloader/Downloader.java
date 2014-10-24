@@ -97,7 +97,7 @@ public class Downloader {
 
         String cacheDir = AppSettings.getDownloadPath();
 
-        List<File> bitmaps = new ArrayList<File>();
+        List<File> bitmaps = new ArrayList<>();
 
         for (int i = 0; i < AppSettings.getNumSources(); i++) {
 

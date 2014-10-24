@@ -41,6 +41,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -635,72 +636,76 @@ public class SourceListFragment extends ListFragment {
                         showImageFragment(false, directory, position);
                         break;
                     case 1:
-                        if (type.equals(AppSettings.WEBSITE)) {
-                            showInputDialog(AppSettings.WEBSITE,
-                                    AppSettings.getSourceTitle(position),
-                                    "",
-                                    "",
-                                    AppSettings.getSourceData(position),
-                                    "",
-                                    "" + AppSettings.getSourceNum(position),
-                                    "Edit website:",
-                                    position);
-                        }
-                        else if (type.equals(AppSettings.IMGUR)) {
-                            String prefix = "", hint = "";
-                            String data = AppSettings.getSourceData(position);
-                            if (data.contains("imgur.com/a/")) {
-                                prefix = "imgur.com/a/";
-                                hint = "Album ID";
-                            }
-                            else if (data.contains("imgur.com/r/")) {
-                                prefix = "imgur.com/r/";
-                                hint = "Subreddit";
-                            }
+                        switch (type) {
+                            case AppSettings.WEBSITE:
+                                showInputDialog(AppSettings.WEBSITE,
+                                        AppSettings.getSourceTitle(position),
+                                        "",
+                                        "",
+                                        AppSettings.getSourceData(position),
+                                        "",
+                                        "" + AppSettings.getSourceNum(position),
+                                        "Edit website:",
+                                        position);
+                                break;
+                            case AppSettings.IMGUR: {
+                                String prefix = "", hint = "";
+                                String data = AppSettings.getSourceData(position);
+                                if (data.contains("imgur.com/a/")) {
+                                    prefix = "imgur.com/a/";
+                                    hint = "Album ID";
+                                }
+                                else if (data.contains("imgur.com/r/")) {
+                                    prefix = "imgur.com/r/";
+                                    hint = "Subreddit";
+                                }
 
-                            showInputDialog(AppSettings.IMGUR,
-                                    AppSettings.getSourceTitle(position),
-                                    hint,
-                                    prefix,
-                                    data.substring(data.indexOf(prefix) + prefix.length()),
-                                    "",
-                                    "" + AppSettings.getSourceNum(position),
-                                    "Edit Imgur source:",
-                                    position);
-                        }
-                        else if (type.equals(AppSettings.PICASA)) {
-                            new PicasaAlbumTask(position).execute();
-                        }
-                        else if (type.equals(AppSettings.TUMBLR_BLOG)) {
-                            showInputDialog(AppSettings.TUMBLR_BLOG,
-                                    AppSettings.getSourceTitle(position),
-                                    "Blog name",
-                                    "",
-                                    AppSettings.getSourceData(position),
-                                    "",
-                                    "" + AppSettings.getSourceNum(position),
-                                    "Edit Tumblr Blog:",
-                                    position);
-                        }
-                        else if (type.equals(AppSettings.TUMBLR_TAG)) {
-                            String data = AppSettings.getSourceData(position);
-
-                            if (data.length() > 12) {
-                                data = data.substring(12);
+                                showInputDialog(AppSettings.IMGUR,
+                                        AppSettings.getSourceTitle(position),
+                                        hint,
+                                        prefix,
+                                        data.substring(data.indexOf(prefix) + prefix.length()),
+                                        "",
+                                        "" + AppSettings.getSourceNum(position),
+                                        "Edit Imgur source:",
+                                        position);
+                                break;
                             }
+                            case AppSettings.PICASA:
+                                new PicasaAlbumTask(position).execute();
+                                break;
+                            case AppSettings.TUMBLR_BLOG:
+                                showInputDialog(AppSettings.TUMBLR_BLOG,
+                                        AppSettings.getSourceTitle(position),
+                                        "Blog name",
+                                        "",
+                                        AppSettings.getSourceData(position),
+                                        "",
+                                        "" + AppSettings.getSourceNum(position),
+                                        "Edit Tumblr Blog:",
+                                        position);
+                                break;
+                            case AppSettings.TUMBLR_TAG: {
+                                String data = AppSettings.getSourceData(position);
 
-                            showInputDialog(AppSettings.TUMBLR_TAG,
-                                    AppSettings.getSourceTitle(position),
-                                    "Tag",
-                                    "",
-                                    data,
-                                    "",
-                                    "" + AppSettings.getSourceNum(position),
-                                    "Edit Tumblr Tag:",
-                                    position);
-                        }
-                        else if (type.equals(AppSettings.FOLDER)) {
-                            showImageFragment(false, "", position);
+                                if (data.length() > 12) {
+                                    data = data.substring(12);
+                                }
+
+                                showInputDialog(AppSettings.TUMBLR_TAG,
+                                        AppSettings.getSourceTitle(position),
+                                        "Tag",
+                                        "",
+                                        data,
+                                        "",
+                                        "" + AppSettings.getSourceNum(position),
+                                        "Edit Tumblr Tag:",
+                                        position);
+                                break;
+                            }
+                            case AppSettings.FOLDER:
+                                showImageFragment(false, "", position);
+                                break;
                         }
                         break;
                     case 2:
@@ -782,6 +787,14 @@ public class SourceListFragment extends ListFragment {
 
         getListView().setEmptyView(emptyLayout);
         getListView().setDividerHeight(1);
+
+        getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                showDialogMenu(position);
+                return true;
+            }
+        });
 
         listAdapter.updateNum();
 
@@ -1068,10 +1081,10 @@ public class SourceListFragment extends ListFragment {
     class PicasaAlbumTask extends AsyncTask<Void, String, Void> {
 
         int changePosition;
-        ArrayList<String> albumNames = new ArrayList<String>();
-        ArrayList<String> albumImageLinks = new ArrayList<String>();
-        ArrayList<String> albumLinks = new ArrayList<String>();
-        ArrayList<String> albumNums = new ArrayList<String>();
+        ArrayList<String> albumNames = new ArrayList<>();
+        ArrayList<String> albumImageLinks = new ArrayList<>();
+        ArrayList<String> albumLinks = new ArrayList<>();
+        ArrayList<String> albumNums = new ArrayList<>();
 
         public PicasaAlbumTask(int position) {
             changePosition = position;

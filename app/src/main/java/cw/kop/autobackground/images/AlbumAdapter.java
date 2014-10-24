@@ -72,7 +72,7 @@ public class AlbumAdapter extends BaseAdapter {
 
             if (convertView == null) {
                 LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                view = inflater.inflate(R.layout.album_list_cell, null);
+                view = inflater.inflate(R.layout.album_list_cell, parent, false);
             }
 
             ImageView icon = (ImageView) view.findViewById(R.id.album_image);

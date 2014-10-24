@@ -56,7 +56,7 @@ public class NavListAdapter extends BaseAdapter {
             R.drawable.ic_action_about_white};
 
     public NavListAdapter(Activity activity, String[] nameArray) {
-        fragmentList = new ArrayList<String>();
+        fragmentList = new ArrayList<>();
         Collections.addAll(fragmentList, nameArray);
         inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
@@ -81,7 +81,7 @@ public class NavListAdapter extends BaseAdapter {
         View view = convertView;
 
         if (convertView == null) {
-            view = inflater.inflate(R.layout.nav_row, null);
+            view = inflater.inflate(R.layout.nav_row, parent, false);
         }
 
         ImageView fragmentImage = (ImageView) view.findViewById(R.id.fragment_image);

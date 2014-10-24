@@ -50,7 +50,7 @@ public class LocalImageAdapter extends BaseAdapter {
 
     public LocalImageAdapter(Activity activity, File directory) {
         mainActivity = activity;
-        listFiles = new ArrayList<File>();
+        listFiles = new ArrayList<>();
         inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         startDir = directory;
         mainDir = directory;
@@ -84,7 +84,7 @@ public class LocalImageAdapter extends BaseAdapter {
             View view = convertView;
 
             if (convertView == null) {
-                view = inflater.inflate(R.layout.image_list_cell, null);
+                view = inflater.inflate(R.layout.image_list_cell, parent, false);
             }
 
             TextView fileTitle = (TextView) view.findViewById(R.id.file_title);

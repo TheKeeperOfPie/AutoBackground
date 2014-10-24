@@ -49,7 +49,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
     public ImageHistoryAdapter(Context activity) {
         inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        historyItems = new ArrayList<HistoryItem>();
+        historyItems = new ArrayList<>();
         AppSettings.checkUsedLinksSize();
         Set<String> usedLinks = AppSettings.getUsedLinks();
 
@@ -95,7 +95,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
             View view = convertView;
 
             if (convertView == null) {
-                view = inflater.inflate(R.layout.image_list_cell, null);
+                view = inflater.inflate(R.layout.image_list_cell, parent, false);
             }
 
             TextView fileTitle = (TextView) view.findViewById(R.id.file_title);
@@ -131,7 +131,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
     }
 
     public void clearHistory() {
-        historyItems = new ArrayList<HistoryItem>();
+        historyItems = new ArrayList<>();
 
         File historyDir = new File(AppSettings.getDownloadPath() + "/HistoryCache");
 
@@ -139,11 +139,8 @@ public class ImageHistoryAdapter extends BaseAdapter {
             @Override
             public boolean accept(File dir, String filename) {
 
-                if (filename.length() > 4 && filename.substring(filename.length() - 4, filename.length()).equals(".png")) {
-                    return true;
-                }
+                return filename.length() > 4 && filename.substring(filename.length() - 4, filename.length()).equals(".png");
 
-                return false;
             }
         };
 
@@ -172,7 +169,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                HashSet<String> usedLinks = new HashSet<String>();
+                HashSet<String> usedLinks = new HashSet<>();
 
                 for (HistoryItem item : historyItems) {
                     usedLinks.add(item.getUrl() + "Time:" + item.getTime());

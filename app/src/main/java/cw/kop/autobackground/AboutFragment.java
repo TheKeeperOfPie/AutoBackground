@@ -95,25 +95,27 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
         String key = preference.getKey();
         Intent intent = null;
 
-        if (key.equals("about_self_copyright")) {
-            intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("https://github.com/TheKeeperOfPie/AutoBackground"));
-        }
-        else if (key.equals("about_library_jsoup")) {
-            intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("http://jsoup.org/"));
-        }
-        else if (key.equals("about_library_showcaseview")) {
-            intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("http://amlcurran.github.io/ShowcaseView/"));
-        }
-        else if (key.equals("about_library_picasso")) {
-            intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("http://square.github.io/picasso/"));
-        }
-        else if (key.equals("about_library_colorpickerview")) {
-            intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("https://code.google.com/p/color-picker-view/"));
+        switch (key) {
+            case "about_self_copyright":
+                intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("https://github.com/TheKeeperOfPie/AutoBackground"));
+                break;
+            case "about_library_jsoup":
+                intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("http://jsoup.org/"));
+                break;
+            case "about_library_showcaseview":
+                intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("http://amlcurran.github.io/ShowcaseView/"));
+                break;
+            case "about_library_picasso":
+                intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("http://square.github.io/picasso/"));
+                break;
+            case "about_library_colorpickerview":
+                intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("https://code.google.com/p/color-picker-view/"));
+                break;
         }
 
 

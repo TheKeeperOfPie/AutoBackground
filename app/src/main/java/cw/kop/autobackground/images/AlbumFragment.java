@@ -19,7 +19,9 @@ package cw.kop.autobackground.images;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -79,7 +81,7 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.album_list_layout, null);
+        final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.album_list_layout, container, false);
 
         albumListView = (ListView) view.findViewById(R.id.album_listview);
 
@@ -125,16 +127,22 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-        SourceListFragment sourceListFragment = ((SourceListFragment) getFragmentManager().findFragmentByTag("source_fragment"));
-
-        if (sourceListFragment != null) {
-            if (changePosition > -1) {
-                sourceListFragment.setEntry(changePosition, type, albumNames.get(position), albumLinks.get(position), albumNums.get(position));
-            }
-            else {
-                sourceListFragment.addEntry(type, albumNames.get(position), albumLinks.get(position), albumNums.get(position));
-            }
-            getActivity().onBackPressed();
+        Intent returnEntryIntent = new Intent();
+        if (position > -1) {
+            returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
+            returnEntryIntent.putExtra("position", position);
         }
+        else {
+            returnEntryIntent.setAction(SourceListFragment.ADD_ENTRY);
+        }
+
+        returnEntryIntent.putExtra("type", AppSettings.FOLDER);
+        returnEntryIntent.putExtra("title", albumNames.get(position));
+        returnEntryIntent.putExtra("data", albumLinks.get(position));
+        returnEntryIntent.putExtra("num", albumNums.get(position));
+
+        LocalBroadcastManager.getInstance(appContext).sendBroadcast(returnEntryIntent);
+
+        getActivity().onBackPressed();
     }
 }

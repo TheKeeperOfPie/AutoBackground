@@ -243,14 +243,19 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
             if (key != null) {
                 if (!key.contains("switch")) {
-                    if (key.equals("effect_brightness") || key.equals("effect_contrast") || key.equals("effect_saturate") || key.equals("effects_frequency")) {
-                        AppSettings.setEffect(key, 100);
-                    }
-                    else if (key.equals("effect_temperature")) {
-                        AppSettings.setEffect(key, 50);
-                    }
-                    else {
-                        AppSettings.setEffect(key, 0);
+                    switch (key) {
+                        case "effect_brightness":
+                        case "effect_contrast":
+                        case "effect_saturate":
+                        case "effects_frequency":
+                            AppSettings.setEffect(key, 100);
+                            break;
+                        case "effect_temperature":
+                            AppSettings.setEffect(key, 50);
+                            break;
+                        default:
+                            AppSettings.setEffect(key, 0);
+                            break;
                     }
 
                     EffectPreference effectPref = (EffectPreference) findPreference(key);
