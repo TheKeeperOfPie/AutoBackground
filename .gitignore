@@ -38,3 +38,6 @@ Thumbs.db
 
 # Android Studio
 .idea
+
+# Hidden Files
+/app/src/main/java/cw.kop.autobackground/settings/AppSettings.java

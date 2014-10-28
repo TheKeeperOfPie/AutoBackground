@@ -1000,6 +1000,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 if (Build.VERSION.SDK_INT >= 19 && AppSettings.showAlbumArt()) {
                     Intent musicReceiverIntent = new Intent(LiveWallpaperService.this, MusicReceiverService.class);
                     startService(musicReceiverIntent);
+                    Log.i(TAG, "Starting service, showAlbumArt = true");
                 }
 
                 Log.i(TAG, "Registered");
