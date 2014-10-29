@@ -54,6 +54,7 @@ import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -1367,6 +1368,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                                 @Override
                                 public void run() {
                                     Downloader.getNextImage();
+                                    Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
+                                    LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(loadNavPictureIntent);
                                     renderer.loadCurrent = true;
 
                                     if (AppSettings.useNotification()) {
@@ -1527,6 +1530,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                                 }
 
                                 previousBitmaps.remove(0);
+
+                                Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
+                                LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(loadNavPictureIntent);
                             }
                         }
                         catch (NullPointerException e) {
@@ -1595,6 +1601,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                                 if (previousBitmaps.size() > AppSettings.getHistorySize()) {
                                     previousBitmaps.remove(previousBitmaps.size() - 1);
                                 }
+
+                                Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
+                                LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(loadNavPictureIntent);
                             }
                         }
                         catch (NullPointerException e) {

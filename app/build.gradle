@@ -17,7 +17,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 19
+    compileSdkVersion 21
     buildToolsVersion '20.0.0'
 
     defaultConfig {
@@ -58,9 +58,10 @@ dependencies {
     compile project(':libraries:colorpickerpreference')
     compile 'com.github.amlcurran.showcaseview:library:5.0.0@aar'
     compile 'com.android.support:support-v4:21.0.0'
+    compile 'com.android.support:appcompat-v7:21.0.0'
     compile 'com.android.support:recyclerview-v7:21.0.0'
     compile group:'com.squareup.picasso', name:'picasso', version:'2.3.3'
-    compile (group:'com.google.android.gms', name:'play-services', version:'5.0.89') {
+    compile (group:'com.google.android.gms', name:'play-services', version:'6.1+') {
         exclude (group: 'xpp3', module: 'xpp3')
         exclude (group: 'org.apache.httpcomponents', module: 'httpclient')
         exclude (group: 'junit', module: 'junit')

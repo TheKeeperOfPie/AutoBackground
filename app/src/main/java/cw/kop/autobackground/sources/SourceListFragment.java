@@ -39,6 +39,9 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -53,6 +56,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.ActionItemTarget;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
@@ -92,9 +96,7 @@ public class SourceListFragment extends ListFragment {
     private Handler handler;
     private Button setButton;
     private ImageButton addButton;
-    private ImageView downloadButton;
-    private ImageView sortButton;
-    private ImageView cycleButton;
+    private Menu toolbarMenu;
 
     private ShowcaseView sourceListTutorial;
     private ShowcaseView addSourceTutorial;
@@ -119,6 +121,21 @@ public class SourceListFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         handler = new Handler();
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+
+        inflater.inflate(R.menu.source_list_menu, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+        toolbarMenu = menu;
+
+        if (!AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+            menu.getItem(0).setIcon(R.drawable.ic_action_refresh_white);
+            menu.getItem(1).setIcon(R.drawable.ic_action_download_white);
+            menu.getItem(2).setIcon(R.drawable.ic_action_storage_white);
+        }
     }
 
     @Override
@@ -169,68 +186,33 @@ public class SourceListFragment extends ListFragment {
 
         });
 
-        downloadButton = (ImageView) getActivity().getActionBar().getCustomView().findViewById(R.id.download_wallpaper);
-        downloadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startDownload();
-            }
-        });
-        downloadButton.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (AppSettings.useToast()) {
-                    Toast.makeText(appContext, "Download images", Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            }
-        });
-
-        sortButton = (ImageView) getActivity().getActionBar().getCustomView().findViewById(R.id.sort_sources);
-        sortButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showSourceSortMenu();
-            }
-        });
-        sortButton.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (AppSettings.useToast()) {
-                    Toast.makeText(appContext, "Sort sources", Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            }
-        });
-
-        cycleButton = (ImageView) getActivity().getActionBar().getCustomView().findViewById(R.id.cycle_wallpaper);
-        cycleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cycleWallpaper();
-                if (AppSettings.useToast()) {
-                    Toast.makeText(appContext, "Cycling wallpaper...", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        cycleButton.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (AppSettings.useToast()) {
-                    Toast.makeText(appContext, "Cycle wallpaper", Toast.LENGTH_SHORT).show();
-                }
-                return true;
-            }
-        });
-
         if (!AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            downloadButton.setImageResource(R.drawable.ic_action_download_white);
-            sortButton.setImageResource(R.drawable.ic_action_storage_white);
-            cycleButton.setImageResource(R.drawable.ic_action_refresh_white);
             addButton.setBackgroundResource(R.drawable.floating_button_white);
         }
 
         return view;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+
+            case R.id.cycle_wallpaper:
+                cycleWallpaper();
+                if (AppSettings.useToast()) {
+                    Toast.makeText(appContext, "Cycling wallpaper...", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case R.id.download_wallpaper:
+                startDownload();
+                break;
+            case R.id.sort_sources:
+                showSourceSortMenu();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void cycleWallpaper() {
@@ -248,10 +230,10 @@ public class SourceListFragment extends ListFragment {
         }
         if (Downloader.download(appContext)) {
             if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                downloadButton.setImageResource(R.drawable.ic_action_cancel);
+                toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_cancel);
             }
             else {
-                downloadButton.setImageResource(R.drawable.ic_action_cancel_white);
+                toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_cancel_white);
             }
 
             if (AppSettings.resetOnManualDownload() && AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
@@ -882,7 +864,7 @@ public class SourceListFragment extends ListFragment {
                                 "go into the Downloader settings \n" +
                                 "and enable mobile data.")
                         .setStyle(R.style.ShowcaseStyle)
-                        .setTarget(new ViewTarget(downloadButton))
+                        .setTarget(new ActionItemTarget(getActivity(), R.id.download_wallpaper))
                         .setOnClickListener(downloadListener)
                         .build();
                 downloadTutorial.setButtonPosition(buttonParams);
@@ -979,18 +961,15 @@ public class SourceListFragment extends ListFragment {
     @Override
     public void onResume() {
         super.onResume();
-        sortButton.setVisibility(View.VISIBLE);
-        downloadButton.setVisibility(View.VISIBLE);
-        cycleButton.setVisibility(View.VISIBLE);
 
         LocalBroadcastManager.getInstance(appContext).registerReceiver(downloadButtonReceiver, new IntentFilter(Downloader.DOWNLOAD_TERMINATED));
 
         if (Downloader.isDownloading) {
             if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                downloadButton.setImageResource(R.drawable.ic_action_cancel);
+                toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_cancel);
             }
             else {
-                downloadButton.setImageResource(R.drawable.ic_action_cancel_white);
+                toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_cancel_white);
             }
         }
         else {
@@ -1042,30 +1021,24 @@ public class SourceListFragment extends ListFragment {
     public void onPause() {
         super.onPause();
         listAdapter.saveData();
-        sortButton.setVisibility(View.GONE);
-        downloadButton.setVisibility(View.GONE);
-        cycleButton.setVisibility(View.GONE);
 
         LocalBroadcastManager.getInstance(appContext).unregisterReceiver(downloadButtonReceiver);
     }
 
     public void resetActionBarDownload() {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                    downloadButton.setImageResource(R.drawable.ic_action_download);
+        if (toolbarMenu != null) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+                        toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_download);
+                    }
+                    else {
+                        toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_download_white);
+                    }
                 }
-                else {
-                    downloadButton.setImageResource(R.drawable.ic_action_download_white);
-                }
-                downloadButton.postInvalidate();
-            }
-        });
-    }
-
-    public void resetDownload() {
-        resetActionBarDownload();
+            });
+        }
     }
 
     private boolean isServiceRunning(final String className) {

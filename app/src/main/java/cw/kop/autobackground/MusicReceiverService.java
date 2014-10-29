@@ -50,14 +50,20 @@ public class MusicReceiverService extends NotificationListenerService implements
     public void onCreate() {
         super.onCreate();
 
-        if (Build.VERSION.SDK_INT >= 19) {
-            registerAudioController();
-        }
-
         Log.i(TAG, "MusicReceiverService created");
 
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+
+
+        if (Build.VERSION.SDK_INT >= 19) {
+            registerAudioController();
+        }
+
+        return super.onStartCommand(intent, flags, startId);
+    }
 
     @SuppressLint("NewApi")
     @TargetApi(Build.VERSION_CODES.KITKAT)

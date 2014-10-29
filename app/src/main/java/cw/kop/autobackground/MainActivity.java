@@ -16,6 +16,7 @@
 
 package cw.kop.autobackground;
 
+import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -24,21 +25,37 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
+
+import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.images.AlbumFragment;
 import cw.kop.autobackground.images.ImageHistoryFragment;
 import cw.kop.autobackground.images.LocalImageFragment;
@@ -46,35 +63,43 @@ import cw.kop.autobackground.notification.NotificationSettingsFragment;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.SourceListFragment;
 
-public class MainActivity extends Activity {
+public class MainActivity extends ActionBarActivity {
 
-    public SourceListFragment sourceListFragment;
+    public static final String LOAD_NAV_PICTURE = "cw.kop.autobackground.LOAD_NAV_PICTURE";
+
+
+    private SourceListFragment sourceListFragment;
     private ActionBarDrawerToggle drawerToggle;
     private String[] fragmentList;
     private DrawerLayout drawerLayout;
+    private LinearLayout navLayout;
+    private ImageView navPicture;
     private ListView drawerList;
     private TextView actionBarTitle;
     private CharSequence mTitle;
+    private IntentFilter entryFilter;
     private BroadcastReceiver entryReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
-            String action = intent.getAction();
-
-            if (action.equals(SourceListFragment.ADD_ENTRY)) {
-                sourceListFragment.addEntry(
-                        intent.getStringExtra("type"),
-                        intent.getStringExtra("title"),
-                        intent.getStringExtra("data"),
-                        intent.getStringExtra("num"));
-            }
-            if (action.equals(SourceListFragment.SET_ENTRY)) {
-                sourceListFragment.setEntry(
-                        intent.getIntExtra("position", -1),
-                        intent.getStringExtra("type"),
-                        intent.getStringExtra("title"),
-                        intent.getStringExtra("data"),
-                        intent.getStringExtra("num"));
+            switch (intent.getAction()) {
+                case SourceListFragment.ADD_ENTRY:
+                    sourceListFragment.addEntry(
+                            intent.getStringExtra("type"),
+                            intent.getStringExtra("title"),
+                            intent.getStringExtra("data"),
+                            intent.getStringExtra("num"));
+                    break;
+                case SourceListFragment.SET_ENTRY:
+                    sourceListFragment.setEntry(
+                            intent.getIntExtra("position", -1),
+                            intent.getStringExtra("type"),
+                            intent.getStringExtra("title"),
+                            intent.getStringExtra("data"),
+                            intent.getStringExtra("num"));
+                    break;
+                case LOAD_NAV_PICTURE:
+                    loadNavPicture();
+                    break;
             }
 
         }
@@ -97,7 +122,6 @@ public class MainActivity extends Activity {
 
         AppSettings.initPrefs(prefs, getApplicationContext());
 
-        super.onCreate(savedInstanceState);
 
         int[] colors = {0, 0xFFFFFFFF, 0};
 
@@ -112,6 +136,8 @@ public class MainActivity extends Activity {
             setTheme(R.style.AppTransparentTheme);
         }
 
+        super.onCreate(savedInstanceState);
+
         if (AppSettings.useRightDrawer()) {
             setContentView(R.layout.activity_right_layout);
         }
@@ -125,59 +151,40 @@ public class MainActivity extends Activity {
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
 
-        drawerList = (ListView) findViewById(R.id.navigation_drawer);
+        navLayout = (LinearLayout) findViewById(R.id.navigation_drawer);
+        navPicture = (ImageView) findViewById(R.id.nav_drawer_picture);
+
+        drawerList = (ListView) findViewById(R.id.nav_list);
         drawerList.setAdapter(new NavListAdapter(this, fragmentList));
         drawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+            drawerLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
+            navLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
             drawerList.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
         }
         else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)) {
+            drawerLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+            navLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
             drawerList.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
         }
         else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
+            drawerLayout.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
+            navLayout.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
             drawerList.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
         }
 
         drawerList.setDivider(new GradientDrawable(GradientDrawable.Orientation.RIGHT_LEFT, colors));
         drawerList.setDividerHeight(1);
 
-        final ActionBar actionBar = getActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setHomeButtonEnabled(true);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
-        int drawerLayoutId = AppSettings.useRightDrawer() ? R.layout.action_bar_right_layout : R.layout.action_bar_layout;
-
-        View actionBarView = getLayoutInflater().inflate(drawerLayoutId, null);
-        actionBarTitle = (TextView) actionBarView.findViewById(R.id.action_bar_title);
-
-        ImageView drawerIndicator = (ImageView) actionBarView.findViewById(R.id.drawer_indicator);
-        drawerIndicator.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleDrawer();
-            }
-        });
-
-        TextView actionBarTitle = (TextView) actionBarView.findViewById(R.id.action_bar_title);
-        actionBarTitle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleDrawer();
-            }
-        });
-
-        if (!AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            drawerIndicator.setImageResource(R.drawable.drawer_menu_white);
-        }
-
-        actionBar.setCustomView(actionBarView);
-        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        setSupportActionBar(toolbar);
 
         drawerToggle = new ActionBarDrawerToggle(
                 this,
                 drawerLayout,
-                R.drawable.drawer_menu,
+                toolbar,
                 R.string.drawer_open,
                 R.string.drawer_close) {
 
@@ -210,6 +217,18 @@ public class MainActivity extends Activity {
             selectItem(0);
         }
 
+        loadNavPicture();
+
+        entryFilter = new IntentFilter();
+        entryFilter.addAction(SourceListFragment.ADD_ENTRY);
+        entryFilter.addAction(SourceListFragment.SET_ENTRY);
+        entryFilter.addAction(MainActivity.LOAD_NAV_PICTURE);
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -226,6 +245,17 @@ public class MainActivity extends Activity {
         super.onStop();
     }
 
+    private void loadNavPicture() {
+
+
+        if (Build.VERSION.SDK_INT >= 16 && navPicture != null && Downloader.getCurrentBitmapFile() != null && Downloader.getCurrentBitmapFile().exists()) {
+            int width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 320, getResources().getDisplayMetrics()));
+            int height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 180, getResources().getDisplayMetrics()));
+
+            Picasso.with(getApplicationContext()).load(Downloader.getCurrentBitmapFile()).resize(width ,height).centerCrop().into(navPicture);
+        }
+    }
+
     public void toggleDrawer() {
         LocalImageFragment localImageFragment = (LocalImageFragment) getFragmentManager().findFragmentByTag("image_fragment");
         AlbumFragment albumFragment = (AlbumFragment) getFragmentManager().findFragmentByTag("album_fragment");
@@ -233,11 +263,11 @@ public class MainActivity extends Activity {
             onBackPressed();
         }
 
-        if (drawerLayout.isDrawerOpen(drawerList)) {
-            drawerLayout.closeDrawer(drawerList);
+        if (drawerLayout.isDrawerOpen(navLayout)) {
+            drawerLayout.closeDrawer(navLayout);
         }
         else {
-            drawerLayout.openDrawer(drawerList);
+            drawerLayout.openDrawer(navLayout);
         }
 
     }
@@ -297,14 +327,7 @@ public class MainActivity extends Activity {
 
         drawerList.setItemChecked(position, true);
         setTitle(fragmentList[position]);
-        drawerLayout.closeDrawer(drawerList);
-    }
-
-    @Override
-    public void setTitle(CharSequence title) {
-        mTitle = title;
-        actionBarTitle.setText(title);
-
+        drawerLayout.closeDrawer(navLayout);
     }
 
     @Override
@@ -341,16 +364,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        IntentFilter entryFilter = new IntentFilter();
-        entryFilter.addAction(SourceListFragment.ADD_ENTRY);
-        entryFilter.addAction(SourceListFragment.SET_ENTRY);
-
         LocalBroadcastManager.getInstance(this).registerReceiver(entryReceiver, entryFilter);
-
-        View view = getWindow().getDecorView().findViewById(getResources().getIdentifier("action_bar_container", "id", "android"));
-        if (view == null) {
-            Log.i("MP", "Home null");
-        }
     }
 
     @Override
