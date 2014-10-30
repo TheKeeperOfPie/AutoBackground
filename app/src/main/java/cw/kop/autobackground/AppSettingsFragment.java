@@ -117,7 +117,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     private void showThemeDialogMenu() {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext, R.style.DarkDialogTheme);
 
         dialog.setItems(R.array.theme_entry_menu, new DialogInterface.OnClickListener() {
 

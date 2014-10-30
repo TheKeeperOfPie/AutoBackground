@@ -18,19 +18,28 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:layout_height="wrap_content"
     >
 
     <TextView
         android:id="@+id/dialog_title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginTop="4dp"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginBottom="8dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
+        />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:minHeight="1px"
+        android:layout_below="@id/dialog_title"
+        android:background="@color/DARK_BLUE_OPAQUE"
         />
 
     <EditText
@@ -39,9 +48,11 @@
         android:layout_below="@id/dialog_title"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginBottom="4dp"
         android:hint="@string/source_title"
         android:textAppearance="?android:attr/textAppearanceMedium"
@@ -57,18 +68,22 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_marginTop="4dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginLeft="4dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
         android:layout_marginEnd="0dp"
         android:layout_marginRight="0dp"
         android:layout_marginBottom="8dp"
+        android:paddingStart="2dp"
+        android:paddingLeft="2dp"
+        android:paddingEnd="2dp"
+        android:paddingRight="2dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
 
     <EditText
         android:id="@+id/source_data"
         android:inputType="textUri"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/source_title"
         android:layout_toStartOf="@+id/source_data_suffix"
@@ -85,7 +100,6 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
 
-
     <TextView
         android:id="@+id/source_data_suffix"
         android:layout_width="wrap_content"
@@ -96,8 +110,8 @@
         android:layout_marginTop="4dp"
         android:layout_marginStart="0dp"
         android:layout_marginLeft="0dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginRight="4dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginBottom="8dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
@@ -106,14 +120,52 @@
         android:id="@+id/source_num"
         android:inputType="number"
     	android:layout_below="@id/source_data"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginBottom="4dp"
         android:hint="@string/num_images"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:id="@+id/source_negative_button"
+        android:background="@drawable/button"
+        android:layout_below="@id/source_num"
+        android:layout_toStartOf="@+id/source_positive_button"
+        android:layout_toLeftOf="@+id/source_positive_button"
+        android:paddingStart="8dp"
+        android:paddingLeft="8dp"
+        android:paddingEnd="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:text="@string/cancel_button"
+        android:textAllCaps="true"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:id="@+id/source_positive_button"
+        android:background="@drawable/button"
+        android:layout_below="@id/source_num"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:paddingStart="8dp"
+        android:paddingLeft="8dp"
+        android:paddingEnd="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:text="@string/ok_button"
+        android:textAllCaps="true"
         />
 
 </RelativeLayout>

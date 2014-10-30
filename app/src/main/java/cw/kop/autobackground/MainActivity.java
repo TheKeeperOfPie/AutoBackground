@@ -75,8 +75,6 @@ public class MainActivity extends ActionBarActivity {
     private LinearLayout navLayout;
     private ImageView navPicture;
     private ListView drawerList;
-    private TextView actionBarTitle;
-    private CharSequence mTitle;
     private IntentFilter entryFilter;
     private BroadcastReceiver entryReceiver = new BroadcastReceiver() {
         @Override
@@ -145,8 +143,6 @@ public class MainActivity extends ActionBarActivity {
             setContentView(R.layout.activity_layout);
         }
 
-        mTitle = getTitle();
-
         fragmentList = getResources().getStringArray(R.array.fragment_titles);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
@@ -158,28 +154,24 @@ public class MainActivity extends ActionBarActivity {
         drawerList.setAdapter(new NavListAdapter(this, fragmentList));
         drawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            drawerLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
-            navLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
-            drawerList.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
-        }
-        else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)) {
-            drawerLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
-            navLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
-            drawerList.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
-        }
-        else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
-            drawerLayout.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
-            navLayout.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
-            drawerList.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
-        }
-
         drawerList.setDivider(new GradientDrawable(GradientDrawable.Orientation.RIGHT_LEFT, colors));
         drawerList.setDividerHeight(1);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-
         setSupportActionBar(toolbar);
+
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+            navLayout.setBackgroundColor(getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
+            toolbar.setTitleTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+        }
+        else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)) {
+            navLayout.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
+            toolbar.setTitleTextColor(getResources().getColor(R.color.WHITE_OPAQUE));
+        }
+        else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
+            navLayout.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
+            toolbar.setTitleTextColor(getResources().getColor(R.color.WHITE_OPAQUE));
+        }
 
         drawerToggle = new ActionBarDrawerToggle(
                 this,
@@ -188,17 +180,13 @@ public class MainActivity extends ActionBarActivity {
                 R.string.drawer_open,
                 R.string.drawer_close) {
 
-            /** Called when a drawer has settled in a completely closed state. */
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
-                setTitle(mTitle);
             }
 
-            /** Called when a drawer has settled in a completely open state. */
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                Log.i("MP", "Title: Settings");
-                setTitle("Settings");
+                getFragmentManager().popBackStack();
             }
         };
 
@@ -351,7 +339,7 @@ public class MainActivity extends ActionBarActivity {
         if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
             Log.i("MP", "Back directory");
             if (((LocalImageFragment) getFragmentManager().findFragmentByTag("image_fragment")).onBackPressed()) {
-                super.onBackPressed();
+                getFragmentManager().popBackStack();
             }
         }
         else {

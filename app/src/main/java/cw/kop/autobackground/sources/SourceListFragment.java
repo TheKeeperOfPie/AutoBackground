@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ListFragment;
 import android.app.PendingIntent;
 import android.app.WallpaperManager;
@@ -30,6 +31,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,6 +47,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -502,18 +505,20 @@ public class SourceListFragment extends ListFragment {
                                  String data, final String suffix, String num, String mainTitle,
                                  final int position) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
         View dialogView = View.inflate(appContext, R.layout.add_source_dialog, null);
 
-        builder.setView(dialogView);
+        dialog.setContentView(dialogView);
 
+        dialog.setTitle(mainTitle);
+
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
         final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
         final TextView sourcePrefix = (TextView) dialogView.findViewById(R.id.source_data_prefix);
         final EditText sourceData = (EditText) dialogView.findViewById(R.id.source_data);
         final TextView sourceSuffix = (TextView) dialogView.findViewById(R.id.source_data_suffix);
         final EditText sourceNum = (EditText) dialogView.findViewById(R.id.source_num);
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
 
         dialogTitle.setText(mainTitle);
         sourceTitle.setText(title);
@@ -523,21 +528,16 @@ public class SourceListFragment extends ListFragment {
         sourceSuffix.setText(suffix);
         sourceNum.setText(num);
 
-        builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                // Empty due to overriding action further down
+        Button negativeButton = (Button) dialogView.findViewById(R.id.source_negative_button);
+        negativeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
             }
         });
-        builder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-            }
-        });
 
-        final AlertDialog dialog = builder.create();
-
-        dialog.show();
-
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+        Button positiveButton = (Button) dialogView.findViewById(R.id.source_positive_button);
+        positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals("")) {
@@ -588,21 +588,43 @@ public class SourceListFragment extends ListFragment {
                 }
             }
         });
+
+
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+        }
+        else {
+            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+        }
+
+        dialog.show();
+
     }
 
     private void showDialogMenu(final int position) {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
 
         listAdapter.saveData();
+
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
+
+        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
+
+        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
+
+        dialog.setContentView(dialogView);
+
         dialog.setTitle(AppSettings.getSourceTitle(position));
 
-        dialog.setItems(R.array.source_edit_menu, new DialogInterface.OnClickListener() {
+        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.source_edit_menu)));
 
+        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
                 HashMap<String, String> item = listAdapter.getItem(position);
                 String type = item.get("type");
-                switch (which) {
+                switch (positionInList) {
                     case 0:
                         String directory;
                         if (type.equals(AppSettings.WEBSITE) ||
@@ -621,14 +643,14 @@ public class SourceListFragment extends ListFragment {
                         switch (type) {
                             case AppSettings.WEBSITE:
                                 showInputDialog(AppSettings.WEBSITE,
-                                        AppSettings.getSourceTitle(position),
-                                        "",
-                                        "",
-                                        AppSettings.getSourceData(position),
-                                        "",
-                                        "" + AppSettings.getSourceNum(position),
-                                        "Edit website:",
-                                        position);
+                                                AppSettings.getSourceTitle(position),
+                                                "",
+                                                "",
+                                                AppSettings.getSourceData(position),
+                                                "",
+                                                "" + AppSettings.getSourceNum(position),
+                                                "Edit website:",
+                                                position);
                                 break;
                             case AppSettings.IMGUR: {
                                 String prefix = "", hint = "";
@@ -643,14 +665,14 @@ public class SourceListFragment extends ListFragment {
                                 }
 
                                 showInputDialog(AppSettings.IMGUR,
-                                        AppSettings.getSourceTitle(position),
-                                        hint,
-                                        prefix,
-                                        data.substring(data.indexOf(prefix) + prefix.length()),
-                                        "",
-                                        "" + AppSettings.getSourceNum(position),
-                                        "Edit Imgur source:",
-                                        position);
+                                                AppSettings.getSourceTitle(position),
+                                                hint,
+                                                prefix,
+                                                data.substring(data.indexOf(prefix) + prefix.length()),
+                                                "",
+                                                "" + AppSettings.getSourceNum(position),
+                                                "Edit Imgur source:",
+                                                position);
                                 break;
                             }
                             case AppSettings.PICASA:
@@ -658,14 +680,14 @@ public class SourceListFragment extends ListFragment {
                                 break;
                             case AppSettings.TUMBLR_BLOG:
                                 showInputDialog(AppSettings.TUMBLR_BLOG,
-                                        AppSettings.getSourceTitle(position),
-                                        "Blog name",
-                                        "",
-                                        AppSettings.getSourceData(position),
-                                        "",
-                                        "" + AppSettings.getSourceNum(position),
-                                        "Edit Tumblr Blog:",
-                                        position);
+                                                AppSettings.getSourceTitle(position),
+                                                "Blog name",
+                                                "",
+                                                AppSettings.getSourceData(position),
+                                                "",
+                                                "" + AppSettings.getSourceNum(position),
+                                                "Edit Tumblr Blog:",
+                                                position);
                                 break;
                             case AppSettings.TUMBLR_TAG: {
                                 String data = AppSettings.getSourceData(position);
@@ -675,14 +697,14 @@ public class SourceListFragment extends ListFragment {
                                 }
 
                                 showInputDialog(AppSettings.TUMBLR_TAG,
-                                        AppSettings.getSourceTitle(position),
-                                        "Tag",
-                                        "",
-                                        data,
-                                        "",
-                                        "" + AppSettings.getSourceNum(position),
-                                        "Edit Tumblr Tag:",
-                                        position);
+                                                AppSettings.getSourceTitle(position),
+                                                "Tag",
+                                                "",
+                                                data,
+                                                "",
+                                                "" + AppSettings.getSourceNum(position),
+                                                "Edit Tumblr Tag:",
+                                                position);
                                 break;
                             }
                             case AppSettings.FOLDER:
@@ -734,6 +756,7 @@ public class SourceListFragment extends ListFragment {
                         break;
                     default:
                 }
+                dialog.dismiss();
 
             }
         });
