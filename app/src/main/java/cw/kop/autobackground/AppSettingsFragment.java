@@ -18,6 +18,7 @@ package cw.kop.autobackground;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,6 +33,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import cw.kop.autobackground.settings.AppSettings;
@@ -117,14 +122,21 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     private void showThemeDialogMenu() {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext, R.style.DarkDialogTheme);
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-        dialog.setItems(R.array.theme_entry_menu, new DialogInterface.OnClickListener() {
+        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
+        dialog.setContentView(dialogView);
 
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        dialogTitle.setText("Theme:");
+
+        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
+        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.theme_entry_menu)));
+        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
 
-                switch (which) {
+                switch (positionInList) {
                     case 0:
                         AppSettings.setTheme(R.style.AppLightTheme);
                         break;
@@ -144,11 +156,9 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                 appContext.startActivity(intent);
 
                 getActivity().finish();
-
+                dialog.dismiss();
             }
         });
-
-        dialog.create();
         dialog.show();
     }
 

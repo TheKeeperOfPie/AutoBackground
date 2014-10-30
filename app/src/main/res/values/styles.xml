@@ -76,7 +76,7 @@
         <item name="android:alertDialogTheme">@style/DarkDialogTheme</item>
         <item name="android:popupMenuStyle">@style/DarkPopup</item>
         <item name="android:editTextStyle">@style/DarkEditText</item>
-        <item name="android:seekBarStyle">@style/DarkSeekBar</item>
+        <item name="android:seekBarStyle">@style/DarkSeekBar</item>"
     </style>
 
     <style name="LightSwitch" parent="@android:style/TextAppearance.Holo.Small">
@@ -186,7 +186,7 @@
 
     <style name="DarkDialogTheme" parent="android:style/Theme.Holo.Dialog">
         <item name="android:textColor">@color/LIGHT_GRAY_OPAQUE</item>
-        <item name="android:windowBackground">@drawable/dialog_full_holo_dark</item>
+        <!--<item name="android:windowBackground">@drawable/dialog_full_holo_dark</item>-->
         <item name="android:shadowColor">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:windowNoTitle">true</item>
     </style>

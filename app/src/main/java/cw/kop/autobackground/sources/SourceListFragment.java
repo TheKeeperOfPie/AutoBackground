@@ -370,13 +370,22 @@ public class SourceListFragment extends ListFragment {
     }
 
     private void showSourceMenu() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
-        dialog.setItems(R.array.source_menu, new DialogInterface.OnClickListener() {
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
+        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
+        dialog.setContentView(dialogView);
+
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        dialogTitle.setText("Source:");
+
+        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
+        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.source_menu)));
+        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
+            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+
+                switch (positionInList) {
                     case 0:
                         showInputDialog(AppSettings.WEBSITE,
                                 "",
@@ -445,6 +454,7 @@ public class SourceListFragment extends ListFragment {
                         break;
                     default:
                 }
+                dialog.dismiss();
             }
         });
 
@@ -452,15 +462,22 @@ public class SourceListFragment extends ListFragment {
     }
 
     private void showSourceSortMenu() {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
-        dialog.setTitle("Sort by:");
 
-        dialog.setItems(R.array.source_sort_menu, new DialogInterface.OnClickListener() {
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
+        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
+        dialog.setContentView(dialogView);
+
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        dialogTitle.setText("Sort by:");
+
+        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
+        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.source_sort_menu)));
+        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
+            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+                switch (positionInList) {
                     case 0:
                         listAdapter.sortData("use");
                         break;
@@ -475,7 +492,7 @@ public class SourceListFragment extends ListFragment {
                         break;
                     default:
                 }
-
+                dialog.dismiss();
             }
         });
 
@@ -510,8 +527,6 @@ public class SourceListFragment extends ListFragment {
         View dialogView = View.inflate(appContext, R.layout.add_source_dialog, null);
 
         dialog.setContentView(dialogView);
-
-        dialog.setTitle(mainTitle);
 
         TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
         final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
@@ -610,15 +625,13 @@ public class SourceListFragment extends ListFragment {
         final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
         View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
-
-        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
-
         dialog.setContentView(dialogView);
 
-        dialog.setTitle(AppSettings.getSourceTitle(position));
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        dialogTitle.setText(AppSettings.getSourceTitle(position));
 
+        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
         dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.source_edit_menu)));
-
         dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
