@@ -1216,7 +1216,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         loadNextImage();
                         toChange = false;
                     }
-                    else if (AppSettings.changeOnReturn()) {
+                    else if (AppSettings.useInterval() && AppSettings.getIntervalDuration() == 0) {
                         loadNextImage();
                     }
                 }

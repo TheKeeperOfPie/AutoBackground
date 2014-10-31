@@ -19,8 +19,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
-        android:key="title_app_settings"
-        android:title="@string/title_app_settings"
+        android:key="title_account_settings"
+        android:title="@string/title_account_settings"
         >
 
         <cw.kop.autobackground.CustomSwitchPreference

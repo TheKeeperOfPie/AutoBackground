@@ -22,7 +22,6 @@ import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -156,24 +155,27 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
                 switch (which) {
                     case 0:
-                        AppSettings.setIntervalDuration(5 * CONVERT_MILLES_TO_MIN);
+                        AppSettings.setIntervalDuration(0);
                         break;
                     case 1:
-                        AppSettings.setIntervalDuration(15 * CONVERT_MILLES_TO_MIN);
+                        AppSettings.setIntervalDuration(5 * CONVERT_MILLES_TO_MIN);
                         break;
                     case 2:
-                        AppSettings.setIntervalDuration(30 * CONVERT_MILLES_TO_MIN);
+                        AppSettings.setIntervalDuration(15 * CONVERT_MILLES_TO_MIN);
                         break;
                     case 3:
-                        AppSettings.setIntervalDuration(AlarmManager.INTERVAL_HOUR);
+                        AppSettings.setIntervalDuration(30 * CONVERT_MILLES_TO_MIN);
                         break;
                     case 4:
-                        AppSettings.setIntervalDuration(2 * AlarmManager.INTERVAL_HOUR);
+                        AppSettings.setIntervalDuration(AlarmManager.INTERVAL_HOUR);
                         break;
                     case 5:
-                        AppSettings.setIntervalDuration(6 * AlarmManager.INTERVAL_HOUR);
+                        AppSettings.setIntervalDuration(2 * AlarmManager.INTERVAL_HOUR);
                         break;
                     case 6:
+                        AppSettings.setIntervalDuration(6 * AlarmManager.INTERVAL_HOUR);
+                        break;
+                    case 7:
                         AppSettings.setIntervalDuration(AlarmManager.INTERVAL_HALF_DAY);
                         break;
                     default:
@@ -182,6 +184,9 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 if (AppSettings.getIntervalDuration() > 0) {
                     intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
                 }
+                else {
+                    intervalPref.setSummary("Change on return");
+                }
 
                 setIntervalAlarm();
 
@@ -189,17 +194,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         });
 
         AlertDialog dialog = dialogBuilder.create();
-
-        dialog.setOnDismissListener(new OnDismissListener() {
-
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                if (AppSettings.getIntervalDuration() <= 0) {
-                    intervalPref.setChecked(false);
-                }
-            }
-
-        });
 
         dialog.show();
     }
@@ -222,34 +216,30 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
-                if (inputField.getText().toString().equals("")) {
+                int inputValue = Integer.parseInt(inputField.getText().toString());
+
+                if (inputField.getText().toString().equals("") || inputValue < 0) {
                     intervalPref.setChecked(false);
                     return;
                 }
                 AppSettings.setIntervalDuration(Integer.parseInt(inputField.getText().toString()) * CONVERT_MILLES_TO_MIN);
                 setIntervalAlarm();
-                intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
+                if (inputValue > 0) {
+                    intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
+                }
+                else {
+                    intervalPref.setSummary("Change on return");
+                }
             }
         });
         dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
-                AppSettings.setIntervalDuration(0);
                 intervalPref.setChecked(false);
             }
         });
 
         AlertDialog dialog = dialogBuilder.create();
-
-        dialog.setOnDismissListener(new OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                if (AppSettings.getIntervalDuration() <= 0) {
-                    intervalPref.setChecked(false);
-                }
-            }
-
-        });
 
         dialog.show();
     }
@@ -295,7 +285,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                     }
                 }
                 else {
-                    AppSettings.setIntervalDuration(0);
                     intervalPref.setSummary("Change image after certain period");
                     setIntervalAlarm();
                 }

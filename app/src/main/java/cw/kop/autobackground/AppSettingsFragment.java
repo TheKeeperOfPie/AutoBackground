@@ -35,6 +35,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -168,23 +169,48 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     private void showToastDialog() {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
-        dialog.setTitle("Are you sure you want to disable toast messages?");
-        dialog.setMessage("You will not be notified of errors or info about the app.");
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-        dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+        View dialogView = View.inflate(appContext, R.layout.action_dialog, null);
+        dialog.setContentView(dialogView);
+
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
+
+        dialogTitle.setText("Are you sure you want to disable toast messages?");
+        dialogSummary.setText("You will not be notified of errors or info about the app.");
+
+        Button positiveButton = (Button) dialogView.findViewById(R.id.action_button_3);
+        positiveButton.setText(getResources().getString(R.string.ok_button));
+        positiveButton.setVisibility(View.VISIBLE);
+        positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {
+            public void onClick(View v) {
                 toastPref.setChecked(false);
+                dialog.dismiss();
             }
         });
-        dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+
+        Button negativeButton = (Button) dialogView.findViewById(R.id.action_button_2);
+        negativeButton.setText(getResources().getString(R.string.cancel_button));
+        negativeButton.setVisibility(View.VISIBLE);
+        negativeButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {
+            public void onClick(View v) {
                 toastPref.setChecked(true);
+                dialog.dismiss();
             }
         });
+
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+        }
+        else {
+            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+        }
 
         dialog.show();
     }

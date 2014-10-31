@@ -49,6 +49,20 @@
             android:summary="@string/full_resolution_description"
             />
 
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_wifi"
+            android:defaultValue="true"
+            android:title="@string/use_wifi"
+            android:summary="@string/use_wifi_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_data"
+            android:defaultValue="false"
+            android:title="@string/use_data"
+            android:summary="@string/use_data_description"
+            />
+
 	    <cw.kop.autobackground.CustomSwitchPreference
 		    android:key="use_timer"
     		android:defaultValue="false"
@@ -69,20 +83,6 @@
             android:title="@string/reset_on_manual_download"
             android:summary="@string/reset_on_manual_download_description"
             />
-
-        <cw.kop.autobackground.CustomSwitchPreference
-		    android:key="use_wifi"
-    		android:defaultValue="true"
-		    android:title="@string/use_wifi"
-		    android:summary="@string/use_wifi_description"
-         	/>
-        
-        <cw.kop.autobackground.CustomSwitchPreference
-		    android:key="use_data"
-    		android:defaultValue="false"
-		    android:title="@string/use_data"
-		    android:summary="@string/use_data_description"
-         	/>
 
         <cw.kop.autobackground.CustomSwitchPreference
             android:key="download_on_connection"
@@ -128,7 +128,7 @@
 
         <EditTextPreference
             android:key="image_history_size"
-            android:defaultValue="100"
+            android:defaultValue="250"
             android:title="@string/image_history_size"
             android:inputType="number"
             android:numeric="integer"

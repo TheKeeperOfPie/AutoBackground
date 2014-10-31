@@ -87,13 +87,6 @@
             android:summary="@string/reset_on_manual_cycle_description"
             />
 
-		<cw.kop.autobackground.CustomSwitchPreference
-			android:key="on_return"
-			android:defaultValue="true"
-			android:title="@string/on_return"
-			android:summary="@string/on_return_description"
-			/>
-
         <cw.kop.autobackground.CustomSwitchPreference
             android:key="when_locked"
             android:defaultValue="true"

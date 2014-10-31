@@ -19,6 +19,7 @@ package cw.kop.autobackground;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -37,7 +38,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -53,6 +56,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     private final static long CONVERT_MILLES_TO_MIN = 60000;
     private final static int REQUEST_FILE_ID = 0;
     private SwitchPreference timerPref;
+    private Preference startTimePref;
     private Context appContext;
     private PendingIntent pendingIntent;
     private AlarmManager alarmManager;
@@ -89,20 +93,30 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                              Bundle savedInstanceState) {
 
         timerPref = (SwitchPreference) findPreference("use_timer");
+        startTimePref = findPreference("timer_time");
 
         Preference deletePref = findPreference("delete_images");
         deletePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
 
-                AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
+                final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-                dialog.setTitle("Are you sure you want to delete all images?");
-                dialog.setMessage("This cannot be undone.");
+                View dialogView = View.inflate(appContext, R.layout.action_dialog, null);
+                dialog.setContentView(dialogView);
 
-                dialog.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+                TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+                TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
+
+                dialogTitle.setText("Are you sure you want to delete all images?");
+                dialogSummary.setText("This cannot be undone.");
+
+                Button positiveButton = (Button) dialogView.findViewById(R.id.action_button_3);
+                positiveButton.setText(getResources().getString(R.string.ok_button));
+                positiveButton.setVisibility(View.VISIBLE);
+                positiveButton.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int id) {
+                    public void onClick(View v) {
                         Downloader.deleteAllBitmaps(appContext);
                         for (int i = 0; i < AppSettings.getNumSources(); i++) {
                             if (AppSettings.getSourceType(i).equals("website")) {
@@ -110,13 +124,28 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                             }
                         }
                         Toast.makeText(appContext, "Deleted images with prefix\n" + AppSettings.getImagePrefix(), Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
                     }
                 });
-                dialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
+
+                Button negativeButton = (Button) dialogView.findViewById(R.id.action_button_2);
+                negativeButton.setText(getResources().getString(R.string.cancel_button));
+                negativeButton.setVisibility(View.VISIBLE);
+                negativeButton.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int id) {
+                    public void onClick(View v) {
+                        dialog.dismiss();
                     }
                 });
+
+                if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+                    negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+                    positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+                }
+                else {
+                    negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+                    positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+                }
 
                 dialog.show();
                 return true;
@@ -217,20 +246,23 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         AppSettings.setTimerDuration(0);
 
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
-        dialogBuilder.setMessage("Download Interval");
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
         View dialogView = View.inflate(appContext, R.layout.numeric_dialog, null);
+        dialog.setContentView(dialogView);
 
-        dialogBuilder.setView(dialogView);
-
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
         final EditText inputField = (EditText) dialogView.findViewById(R.id.input_field);
 
+        dialogTitle.setText("Download Interval");
         inputField.setHint("Enter number of minutes");
 
-        dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+        Button positiveButton = (Button) dialogView.findViewById(R.id.numeric_positive_button);
+        positiveButton.setText(getResources().getString(R.string.ok_button));
+        positiveButton.setVisibility(View.VISIBLE);
+        positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {
+            public void onClick(View v) {
                 if (inputField.getText().toString().equals("")) {
                     timerPref.setChecked(false);
                     return;
@@ -238,17 +270,30 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 AppSettings.setTimerDuration(Integer.parseInt(inputField.getText().toString()) * CONVERT_MILLES_TO_MIN);
                 setDownloadAlarm();
                 timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
-            }
-        });
-        dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                AppSettings.setTimerDuration(0);
-                timerPref.setChecked(false);
+                dialog.dismiss();
             }
         });
 
-        AlertDialog dialog = dialogBuilder.create();
+        Button negativeButton = (Button) dialogView.findViewById(R.id.numeric_negative_button);
+        negativeButton.setText(getResources().getString(R.string.cancel_button));
+        negativeButton.setVisibility(View.VISIBLE);
+        negativeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AppSettings.setTimerDuration(0);
+                timerPref.setChecked(false);
+                dialog.dismiss();
+            }
+        });
+
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+        }
+        else {
+            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+        }
 
         dialog.setOnDismissListener(new OnDismissListener() {
             @Override
@@ -296,15 +341,20 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         if (!AppSettings.useAdvanced()) {
             PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_download_settings");
             preferenceCategory.removePreference(findPreference("full_resolution"));
+            preferenceCategory.removePreference(findPreference("reset_on_manual_download"));
+            preferenceCategory.removePreference(findPreference("download_on_connection"));
             preferenceCategory.removePreference(findPreference("use_download_notification"));
             preferenceCategory.removePreference(findPreference("use_high_quality"));
             preferenceCategory.removePreference(findPreference("force_download"));
             preferenceCategory.removePreference(findPreference("use_download_path"));
+            preferenceCategory.removePreference(findPreference("use_image_history"));
             preferenceCategory.removePreference(findPreference("image_history_size"));
+            preferenceCategory.removePreference(findPreference("use_thumbnails"));
             preferenceCategory.removePreference(findPreference("thumbnail_size"));
             preferenceCategory.removePreference(findPreference("delete_old_images"));
             preferenceCategory.removePreference(findPreference("check_duplicates"));
             preferenceCategory.removePreference(findPreference("image_prefix_adv"));
+            preferenceCategory.removePreference(findPreference("delete_images"));
         }
 
         EditTextPreference widthPref = (EditTextPreference) findPreference("user_width");
@@ -315,6 +365,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
             timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
         }
+        startTimePref.setSummary("Time to begin download timer: " + AppSettings.getTimerHour() + ":" + String.format("%02d", AppSettings.getTimerMinute()));
     }
 
     @Override

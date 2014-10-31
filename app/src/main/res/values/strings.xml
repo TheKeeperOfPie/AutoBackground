@@ -36,6 +36,7 @@
     <string name="title_effects_parameters">Effect Parameters</string>
     <string name="title_interval_settings">Interval Settings</string>
     <string name="title_download_settings">Download Settings</string>
+    <string name="title_account_settings">Account Settings</string>
     <string name="title_notification_settings">Notification Settings</string>
     <string name="title_app_settings">Application Settings</string>
     <string name="title_transition_settings">Transition Settings</string>
@@ -146,6 +147,7 @@
     <string name="cancel_button">Cancel</string>
     <string name="yes_button">Yes</string>
     <string name="no_button">No</string>
+    <string name="default_button">Default</string>
     <string name="use_directory_button">Use Directory</string>
     <string name="reset_directory_button">Reset Directory</string>
     <string name="clear_history_button">Clear History</string>
@@ -474,6 +476,7 @@
 	</string-array>
 	
 	<string-array name="interval_entry_menu">
+        <item>On Return</item>
     	<item>5 Minutes</item>
     	<item>15 Minutes</item>
     	<item>30 Minutes</item>

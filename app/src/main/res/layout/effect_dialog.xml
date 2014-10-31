@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!--
   ~ Copyright (C) Winson Chiu
   ~
@@ -16,15 +15,15 @@
   ~ limitations under the License.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:layout_height="wrap_content"
     >
 
     <TextView
         android:id="@+id/dialog_title"
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
@@ -46,26 +45,67 @@
         android:background="@color/DARK_BLUE_OPAQUE"
         />
 
-    <EditText
-        android:id="@+id/input_field"
-        android:inputType="number"
-        android:layout_width="fill_parent"
+
+    <cw.kop.autobackground.CustomNumberPicker
+        android:id="@+id/effect_number_picker"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/dialog_underline"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        android:layout_marginBottom="4dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_toStartOf="@+id/effect_suffix"
+        android:layout_toLeftOf="@+id/effect_suffix"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginRight="0dp"
         />
 
+    <TextView
+        android:id="@+id/effect_suffix"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignTop="@id/effect_number_picker"
+        android:layout_alignBottom="@id/effect_number_picker"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:gravity="center"
+        android:paddingStart="0dp"
+        android:paddingLeft="0dp"
+        android:paddingEnd="16dp"
+        android:paddingRight="16dp"
+        />
+
+
     <Button
-        android:id="@+id/numeric_negative_button"
+        android:id="@+id/effect_default_button"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
         android:background="@drawable/button"
-        android:layout_below="@id/input_field"
-        android:layout_toStartOf="@+id/numeric_positive_button"
-        android:layout_toLeftOf="@+id/numeric_positive_button"
+        android:layout_below="@id/effect_number_picker"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_toStartOf="@+id/effect_cancel_button"
+        android:layout_toLeftOf="@+id/effect_cancel_button"
+        android:paddingStart="8dp"
+        android:paddingLeft="8dp"
+        android:paddingEnd="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:text="@string/default_button"
+        android:textAllCaps="true"
+        />
+
+    <Button
+        android:id="@+id/effect_cancel_button"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:background="@drawable/button"
+        android:layout_below="@id/effect_number_picker"
+        android:layout_toStartOf="@+id/effect_ok_button"
+        android:layout_toLeftOf="@+id/effect_ok_button"
         android:paddingStart="8dp"
         android:paddingLeft="8dp"
         android:paddingEnd="8dp"
@@ -77,11 +117,11 @@
         />
 
     <Button
-        android:id="@+id/numeric_positive_button"
+        android:id="@+id/effect_ok_button"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
         android:background="@drawable/button"
-        android:layout_below="@id/input_field"
+        android:layout_below="@id/effect_number_picker"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:paddingStart="8dp"
@@ -93,5 +133,6 @@
         android:text="@string/ok_button"
         android:textAllCaps="true"
         />
+
 
 </RelativeLayout>

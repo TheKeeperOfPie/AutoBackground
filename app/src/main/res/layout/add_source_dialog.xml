@@ -37,6 +37,7 @@
         />
 
     <View
+        android:id="@+id/dialog_underline"
         android:layout_width="match_parent"
         android:layout_height="2dp"
         android:minHeight="1px"
@@ -47,7 +48,7 @@
     <EditText
         android:id="@+id/source_title"
         android:inputType="text"
-        android:layout_below="@id/dialog_title"
+        android:layout_below="@id/dialog_underline"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -135,9 +136,9 @@
         />
 
     <Button
+        android:id="@+id/source_negative_button"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:id="@+id/source_negative_button"
         android:background="@drawable/button"
         android:layout_below="@id/source_num"
         android:layout_toStartOf="@+id/source_positive_button"
@@ -153,9 +154,9 @@
         />
 
     <Button
+        android:id="@+id/source_positive_button"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:id="@+id/source_positive_button"
         android:background="@drawable/button"
         android:layout_below="@id/source_num"
         android:layout_alignParentEnd="true"

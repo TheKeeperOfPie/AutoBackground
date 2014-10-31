@@ -17,90 +17,38 @@
 package cw.kop.autobackground;
 
 import android.content.Context;
-import android.preference.DialogPreference;
+import android.preference.Preference;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.NumberPicker;
-import android.widget.TextView;
 
-import cw.kop.autobackground.settings.AppSettings;
-
-public class EffectPreference extends DialogPreference {
+public class EffectPreference extends Preference {
 
     private static final String androidNamespace = "http://schemas.android.com/apk/res/android";
 
-    private final Context appContext;
-    private NumberPicker valuePicker;
-
-    private String key;
+    private String title, summary;
     private int defaultValue, maxValue;
 
     public EffectPreference(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        appContext = context;
+        super(context, attrs);//, AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? R.style.LightDialogTheme : R.style.DarkDialogTheme);
 
-        key = attrs.getAttributeValue(androidNamespace, "key");
+        title = context.getResources().getString(attrs.getAttributeResourceValue(androidNamespace, "title", R.string.title_effects_settings));
+        summary = context.getResources().getString(attrs.getAttributeResourceValue(androidNamespace, "summary", R.string.title_effects_settings));
         maxValue = attrs.getAttributeIntValue(androidNamespace, "max", 1);
         defaultValue = attrs.getAttributeIntValue(androidNamespace, "defaultValue", 0);
 
-        Log.i("EP", "EffectPreference key: " + key);
+        setTitle(title);
+        setSummary(summary);
+
     }
 
-    @Override
-    protected View onCreateDialogView() {
-        final LinearLayout valueLayout = new LinearLayout(appContext);
-
-        valuePicker = new CustomNumberPicker(appContext);
-        valuePicker.setMaxValue(maxValue);
-
-        TextView suffixText = new TextView(appContext);
-        suffixText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-        suffixText.setText("%");
-        suffixText.setGravity(Gravity.CENTER);
-
-        Log.i("EP", "Value set: " + AppSettings.getEffectValue(key));
-        valuePicker.setValue(AppSettings.getEffectValue(key));
-
-        LinearLayout.LayoutParams valueParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, 0.75f);
-        LinearLayout.LayoutParams suffixParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER);
-        suffixParams.weight = 0.25f;
-
-        valueLayout.addView(valuePicker, valueParams);
-        valueLayout.addView(suffixText, suffixParams);
-
-        LinearLayout containerLayout = new LinearLayout(appContext);
-        containerLayout.setOrientation(LinearLayout.VERTICAL);
-        int padding = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14, appContext.getResources().getDisplayMetrics()));
-        valueLayout.setPadding(padding, padding, padding, padding);
-
-        Button defaultButton = new Button(appContext);
-        defaultButton.setText("Default");
-        defaultButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                valuePicker.setValue(defaultValue);
-            }
-        });
-
-        LinearLayout.LayoutParams defaultParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
-
-        containerLayout.addView(valueLayout);
-        containerLayout.addView(defaultButton, defaultParams);
-
-        return containerLayout;
+    public String getTitle() {
+        return title;
     }
 
-    @Override
-    protected void onDialogClosed(boolean positiveResult) {
-        super.onDialogClosed(positiveResult);
-        if (positiveResult) {
-            AppSettings.setEffect(key, valuePicker.getValue());
-        }
+    public int getMaxValue() {
+        return maxValue;
+    }
+
+    public int getDefaultValue() {
+        return defaultValue;
     }
 }

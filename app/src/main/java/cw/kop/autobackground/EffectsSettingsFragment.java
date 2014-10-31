@@ -18,6 +18,7 @@ package cw.kop.autobackground;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -32,12 +33,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import afzkl.development.colorpickerview.view.ColorPickerView;
 import cw.kop.autobackground.settings.AppSettings;
 
-public class EffectsSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
+public class EffectsSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener{
 
     private Context appContext;
 
@@ -85,10 +87,6 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
         duotonePref = (SwitchPreference) findPreference("effect_duotone_switch");
 
-//        final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), AppSettings.getTheme());
-//
-//        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
         return inflater.inflate(R.layout.fragment_list, container, false);
 
     }
@@ -100,6 +98,9 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
         if (!AppSettings.useAdvanced()) {
 
             PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_effects_settings");
+
+            findPreference("effects_frequency").setOnPreferenceClickListener(this);
+            findPreference("random_effects_frequency").setOnPreferenceClickListener(this);
 
             preferenceCategory.removePreference(findPreference("use_effects_override"));
             preferenceCategory.removePreference(findPreference("use_toast_effects"));
@@ -113,6 +114,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
             if (key != null && !key.contains("switch")) {
                 EffectPreference effectPref = (EffectPreference) findPreference(key);
                 effectPref.setSummary(effectPref.getTitle() + ": " + AppSettings.getEffectValue(key) + "%");
+                effectPref.setOnPreferenceClickListener(this);
             }
         }
 
@@ -356,4 +358,68 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
     }
 
+    @Override
+    public boolean onPreferenceClick(Preference preference) {
+
+        EffectPreference effectPreference = (EffectPreference) preference;
+        String title = effectPreference.getTitle();
+        final String key = effectPreference.getKey();
+        int maxValue = effectPreference.getMaxValue();
+        final int defaultValue = effectPreference.getDefaultValue();
+
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
+
+        View dialogView = View.inflate(appContext, R.layout.effect_dialog, null);
+        dialog.setContentView(dialogView);
+
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        dialogTitle.setText(title);
+
+        final CustomNumberPicker valuePicker = (CustomNumberPicker) dialogView.findViewById(R.id.effect_number_picker);
+        valuePicker.setMaxValue(maxValue);
+        valuePicker.setValue(AppSettings.getEffectValue(key));
+
+        TextView suffixText = (TextView) dialogView.findViewById(R.id.effect_suffix);
+        suffixText.setText("%");
+
+        Button defaultButton = (Button) dialogView.findViewById(R.id.effect_default_button);
+        defaultButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                valuePicker.setValue(defaultValue);
+            }
+        });
+
+        Button positiveButton = (Button) dialogView.findViewById(R.id.effect_ok_button);
+        positiveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AppSettings.setEffect(key, valuePicker.getValue());
+                dialog.dismiss();
+            }
+        });
+
+        Button negativeButton = (Button) dialogView.findViewById(R.id.effect_cancel_button);
+        negativeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+            defaultButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+        }
+        else {
+            defaultButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+        }
+
+        dialog.show();
+
+        return true;
+    }
 }

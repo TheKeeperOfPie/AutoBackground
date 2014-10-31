@@ -18,7 +18,6 @@ package cw.kop.autobackground.sources;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,7 +29,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
