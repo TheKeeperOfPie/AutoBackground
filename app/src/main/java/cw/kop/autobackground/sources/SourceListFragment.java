@@ -37,6 +37,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -87,6 +89,7 @@ import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.images.AlbumFragment;
 import cw.kop.autobackground.images.LocalImageFragment;
+import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListFragment extends ListFragment {
@@ -180,10 +183,10 @@ public class SourceListFragment extends ListFragment {
 
             @Override
             public void onClick(View v) {
-                if (setTutorial != null) {
-                    hide(setTutorial);
-                    showTutorial(4);
-                }
+//                if (setTutorial != null) {
+//                    hide(setTutorial);
+//                    showTutorial(4);
+//                }
                 setWallpaper();
             }
 
@@ -227,10 +230,10 @@ public class SourceListFragment extends ListFragment {
 
     private void startDownload() {
         listAdapter.saveData();
-        if (downloadTutorial != null) {
-            hide(downloadTutorial);
-            showTutorial(3);
-        }
+//        if (downloadTutorial != null) {
+//            hide(downloadTutorial);
+//            showTutorial(3);
+//        }
         if (Downloader.download(appContext)) {
             if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
                 toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_cancel);
@@ -388,39 +391,39 @@ public class SourceListFragment extends ListFragment {
                 switch (positionInList) {
                     case 0:
                         showInputDialog(AppSettings.WEBSITE,
-                                "",
-                                "URL",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "Enter website:",
-                                -1);
+                                        "",
+                                        "URL",
+                                        "",
+                                        "",
+                                        "",
+                                        "",
+                                        "Enter website:",
+                                        -1);
                         break;
                     case 1:
                         showImageFragment(false, "", -1);
                         break;
                     case 2:
                         showInputDialog(AppSettings.IMGUR,
-                                "",
-                                "Subreddit",
-                                "imgur.com/r/",
-                                "",
-                                "",
-                                "",
-                                "Enter Imgur subreddit:",
-                                -1);
+                                        "",
+                                        "Subreddit",
+                                        "imgur.com/r/",
+                                        "",
+                                        "",
+                                        "",
+                                        "Enter Imgur subreddit:",
+                                        -1);
                         break;
                     case 3:
                         showInputDialog(AppSettings.IMGUR,
-                                "",
-                                "Album ID",
-                                "imgur.com/a/",
-                                "",
-                                "",
-                                "",
-                                "Enter Imgur album:",
-                                -1);
+                                        "",
+                                        "Album ID",
+                                        "imgur.com/a/",
+                                        "",
+                                        "",
+                                        "",
+                                        "Enter Imgur album:",
+                                        -1);
                         break;
                     case 4:
                         if (AppSettings.getGoogleAccountName().equals("")) {
@@ -432,25 +435,25 @@ public class SourceListFragment extends ListFragment {
                         break;
                     case 5:
                         showInputDialog(AppSettings.TUMBLR_BLOG,
-                                "",
-                                "Blog name",
-                                "",
-                                "",
-                                ".tumblr.com",
-                                "",
-                                "Enter Tumblr blog:",
-                                -1);
+                                        "",
+                                        "Blog name",
+                                        "",
+                                        "",
+                                        ".tumblr.com",
+                                        "",
+                                        "Enter Tumblr blog:",
+                                        -1);
                         break;
                     case 6:
                         showInputDialog(AppSettings.TUMBLR_TAG,
-                                "",
-                                "Tag",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "Enter Tumblr tag:",
-                                -1);
+                                        "",
+                                        "Tag",
+                                        "",
+                                        "",
+                                        "",
+                                        "",
+                                        "Enter Tumblr tag:",
+                                        -1);
                         break;
                     default:
                 }
@@ -824,146 +827,150 @@ public class SourceListFragment extends ListFragment {
         }
     }
 
-    private void showTutorial(int page) {
-
-        switch (page) {
-            case 0:
-                View.OnClickListener websiteListListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        hide(sourceListTutorial);
-                        showTutorial(1);
-                        sourceListTutorial = null;
-                        Log.i("SLF", "Shown");
-                    }
-                };
-
-                sourceListTutorial = new ShowcaseView.Builder(getActivity())
-                        .setContentTitle("Sources List")
-                        .setContentText("This is a list of your sources. \n" +
-                                "These can include both sources and your \n" +
-                                "own image folders. You can edit them by \n" +
-                                "tapping on their boxes.")
-                        .setStyle(R.style.ShowcaseStyle)
-                        .setOnClickListener(websiteListListener)
-                        .setTarget((new ViewTarget(getActivity().getActionBar().getCustomView().findViewById(R.id.action_bar_title))))
-                        .build();
-                sourceListTutorial.setButtonPosition(buttonParams);
-                break;
-            case 1:
-                View.OnClickListener addWebsiteListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        hide(addSourceTutorial);
-                        showTutorial(2);
-                        addSourceTutorial = null;
-                    }
-                };
-
-                addSourceTutorial = new ShowcaseView.Builder(getActivity())
-                        .setContentTitle("Adding Sources")
-                        .setContentText(
-                                "To add a new source entry, \n" +
-                                        "click the plus (+) sign. \n" +
-                                        "\n" +
-                                        "Not all sources will work, \n" +
-                                        "so if there are no images, \n" +
-                                        "try a different source. \n" +
-                                        "\n" +
-                                        "Provided is a page \n" +
-                                        "of some landscape photos \n" +
-                                        "taken by Kai Lehnberg.")
-                        .setStyle(R.style.ShowcaseStyle)
-                        .setOnClickListener(addWebsiteListener)
-                        .setTarget(new ViewTarget(addButton))
-                        .build();
-                addSourceTutorial.setButtonPosition(buttonParams);
-                break;
-            case 2:
-                View.OnClickListener downloadListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        hide(downloadTutorial);
-                        showTutorial(3);
-                        downloadTutorial = null;
-                    }
-                };
-                downloadTutorial = new ShowcaseView.Builder(getActivity())
-                        .setContentTitle("Downloading Images")
-                        .setContentText("Once you have a website entered, \n" +
-                                "click this download button to start \n" +
-                                "downloading some images. \n" +
-                                "\n" +
-                                "The app will only use WiFi to \n" +
-                                "download as a default. If you \n" +
-                                "wish to change this setting, \n" +
-                                "go into the Downloader settings \n" +
-                                "and enable mobile data.")
-                        .setStyle(R.style.ShowcaseStyle)
-                        .setTarget(new ActionItemTarget(getActivity(), R.id.download_wallpaper))
-                        .setOnClickListener(downloadListener)
-                        .build();
-                downloadTutorial.setButtonPosition(buttonParams);
-                break;
-            case 3:
-                View.OnClickListener setListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        hide(setTutorial);
-                        showTutorial(4);
-                        setTutorial = null;
-                    }
-                };
-                if (setButton.getVisibility() == View.VISIBLE) {
-                    setTutorial = new ShowcaseView.Builder(getActivity())
-                            .setContentTitle("Setting the wallpaper")
-                            .setContentText("Now that it's downloading, \n" +
-                                    "it's time to set the app \n" +
-                                    "as your system wallpaper. \n" +
-                                    "Click the set button and \n" +
-                                    "hit apply on next page.")
-                            .setStyle(R.style.ShowcaseStyle)
-                            .setTarget(new ViewTarget(setButton))
-                            .setOnClickListener(setListener)
-                            .build();
-                    setTutorial.setButtonPosition(buttonParams);
-                    setShown = true;
-                }
-                else {
-                    showTutorial(4);
-                }
-                break;
-            case 4:
-                if (setShown) {
-                    hide(setTutorial);
-                }
-                View.OnClickListener settingsListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        hide(settingsTutorial);
-                        showTutorial(5);
-                        settingsTutorial = null;
-                    }
-                };
-                settingsTutorial = new ShowcaseView.Builder(getActivity())
-                        .setContentTitle("Accessing Settings")
-                        .setContentText("To open the other settings, \n" +
-                                "click the entry in the top left, \n" +
-                                "which opens a list of settings.")
-                        .setStyle(R.style.ShowcaseStyle)
-                        .setOnClickListener(settingsListener)
-                        .setTarget((new ViewTarget(getActivity().getActionBar().getCustomView().findViewById(R.id.drawer_indicator))))
-                        .build();
-                settingsTutorial.setButtonPosition(buttonParams);
-                ((MainActivity) appContext).toggleDrawer();
-                break;
-            case 5:
-                AppSettings.setTutorial(false, "source");
-                break;
-            default:
-        }
+    private void showTutorial() {
 
     }
+
+//    private void showTutorial(int page) {
+//
+//        switch (page) {
+//            case 0:
+//                View.OnClickListener websiteListListener = new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        hide(sourceListTutorial);
+//                        showTutorial(1);
+//                        sourceListTutorial = null;
+//                        Log.i("SLF", "Shown");
+//                    }
+//                };
+//
+//                sourceListTutorial = new ShowcaseView.Builder(getActivity())
+//                        .setContentTitle("Sources List")
+//                        .setContentText("This is a list of your sources. \n" +
+//                                "These can include both sources and your \n" +
+//                                "own image folders. You can edit them by \n" +
+//                                "tapping on their boxes.")
+//                        .setStyle(R.style.ShowcaseStyle)
+//                        .setOnClickListener(websiteListListener)
+//                        .setTarget((new ViewTarget(getActivity().findViewById(R.id.toolbar))))
+//                        .build();
+//                sourceListTutorial.setButtonPosition(buttonParams);
+//                break;
+//            case 1:
+//                View.OnClickListener addWebsiteListener = new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        hide(addSourceTutorial);
+//                        showTutorial(2);
+//                        addSourceTutorial = null;
+//                    }
+//                };
+//
+//                addSourceTutorial = new ShowcaseView.Builder(getActivity())
+//                        .setContentTitle("Adding Sources")
+//                        .setContentText(
+//                                "To add a new source entry, \n" +
+//                                        "click the plus (+) sign. \n" +
+//                                        "\n" +
+//                                        "Not all sources will work, \n" +
+//                                        "so if there are no images, \n" +
+//                                        "try a different source. \n" +
+//                                        "\n" +
+//                                        "Provided is a page \n" +
+//                                        "of some landscape photos \n" +
+//                                        "taken by Kai Lehnberg.")
+//                        .setStyle(R.style.ShowcaseStyle)
+//                        .setOnClickListener(addWebsiteListener)
+//                        .setTarget(new ViewTarget(addButton))
+//                        .build();
+//                addSourceTutorial.setButtonPosition(buttonParams);
+//                break;
+//            case 2:
+//                View.OnClickListener downloadListener = new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        hide(downloadTutorial);
+//                        showTutorial(3);
+//                        downloadTutorial = null;
+//                    }
+//                };
+//                downloadTutorial = new ShowcaseView.Builder(getActivity())
+//                        .setContentTitle("Downloading Images")
+//                        .setContentText("Once you have a website entered, \n" +
+//                                "click this download button to start \n" +
+//                                "downloading some images. \n" +
+//                                "\n" +
+//                                "The app will only use WiFi to \n" +
+//                                "download as a default. If you \n" +
+//                                "wish to change this setting, \n" +
+//                                "go into the Downloader settings \n" +
+//                                "and enable mobile data.")
+//                        .setStyle(R.style.ShowcaseStyle)
+//                        .setTarget(new ActionItemTarget(getActivity(), toolbarMenu.getItem(1).getItemId()))
+//                        .setOnClickListener(downloadListener)
+//                        .build();
+//                downloadTutorial.setButtonPosition(buttonParams);
+//                break;
+//            case 3:
+//                View.OnClickListener setListener = new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        hide(setTutorial);
+//                        showTutorial(4);
+//                        setTutorial = null;
+//                    }
+//                };
+//                if (setButton.getVisibility() == View.VISIBLE) {
+//                    setTutorial = new ShowcaseView.Builder(getActivity())
+//                            .setContentTitle("Setting the wallpaper")
+//                            .setContentText("Now that it's downloading, \n" +
+//                                    "it's time to set the app \n" +
+//                                    "as your system wallpaper. \n" +
+//                                    "Click the set button and \n" +
+//                                    "hit apply on next page.")
+//                            .setStyle(R.style.ShowcaseStyle)
+//                            .setTarget(new ViewTarget(setButton))
+//                            .setOnClickListener(setListener)
+//                            .build();
+//                    setTutorial.setButtonPosition(buttonParams);
+//                    setShown = true;
+//                }
+//                else {
+//                    showTutorial(4);
+//                }
+//                break;
+//            case 4:
+//                if (setShown) {
+//                    hide(setTutorial);
+//                }
+//                View.OnClickListener settingsListener = new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        hide(settingsTutorial);
+//                        showTutorial(5);
+//                        settingsTutorial = null;
+//                    }
+//                };
+//                settingsTutorial = new ShowcaseView.Builder(getActivity())
+//                        .setContentTitle("Accessing Settings")
+//                        .setContentText("To open the other settings, \n" +
+//                                "click the entry in the top left, \n" +
+//                                "which opens a list of settings.")
+//                        .setStyle(R.style.ShowcaseStyle)
+//                        .setOnClickListener(settingsListener)
+//                        .setTarget((new ViewTarget(((Toolbar) getActivity().findViewById(R.id.toolbar)))))
+//                        .build();
+//                settingsTutorial.setButtonPosition(buttonParams);
+//                ((MainActivity) appContext).toggleDrawer();
+//                break;
+//            case 5:
+//                AppSettings.setTutorial(false, "source");
+//                break;
+//            default:
+//        }
+//
+//    }
 
 
     @Override
@@ -1029,7 +1036,7 @@ public class SourceListFragment extends ListFragment {
             dialogBuilder.setPositiveButton(R.string.yes_button, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int id) {
-                    showTutorial(0);
+                    showTutorial();
                 }
             });
 
@@ -1125,7 +1132,7 @@ public class SourceListFragment extends ListFragment {
             HttpClient httpClient = new DefaultHttpClient();
             HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/user/" + AppSettings.getGoogleAccountName());
             httpGet.setHeader("Authorization", "OAuth " + authToken);
-            httpGet.setHeader("X-GData-Client", AppSettings.PICASA_CLIENT_ID);
+            httpGet.setHeader("X-GData-Client", ApiKeys.PICASA_CLIENT_ID);
             httpGet.setHeader("GData-Version", "2");
 
             InputStream inputStream = null;

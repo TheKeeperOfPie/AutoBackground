@@ -77,18 +77,8 @@ public class SourceListAdapter extends BaseAdapter {
         View view = convertView;
 
         if (convertView == null) {
-            view = inflater.inflate(R.layout.source_list_row, parent, false);
+            view = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? inflater.inflate(R.layout.source_list_row, parent, false) : inflater.inflate(R.layout.source_list_row_dark, parent, false);
         }
-
-        CardView card = (CardView) view.findViewById(R.id.source_card);
-//        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-////            card.setBackgroundColor(mainActivity.getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
-//            card.setBackgroundResource(R.color.LIGHT_THEME_BACKGROUND);
-//        }
-//        else {
-////            card.setBackgroundColor(mainActivity.getResources().getColor(R.color.DARK_THEME_BACKGROUND));
-//            card.setBackgroundResource(R.color.DARK_THEME_BACKGROUND);
-//        }
 
         TextView title = (TextView) view.findViewById(R.id.title_text);
         TextView summary = (TextView) view.findViewById(R.id.summary_text);

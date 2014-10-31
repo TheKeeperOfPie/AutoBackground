@@ -95,31 +95,39 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         if (!AppSettings.useAdvanced()) {
             PreferenceCategory wallpaperPreferences = (PreferenceCategory) findPreference("title_wallpaper_settings");
 
+            wallpaperPreferences.removePreference(findPreference("fill_images"));
             wallpaperPreferences.removePreference(findPreference("preserve_context"));
             wallpaperPreferences.removePreference(findPreference("scale_images"));
             wallpaperPreferences.removePreference(findPreference("show_album_art"));
 
             PreferenceCategory intervalPreferences = (PreferenceCategory) findPreference("title_interval_settings");
 
+
+            intervalPreferences.removePreference(findPreference("reset_on_manual_cycle"));
             intervalPreferences.removePreference(findPreference("force_interval"));
             intervalPreferences.removePreference(findPreference("when_locked"));
 
-            PreferenceCategory animationPreferences = (PreferenceCategory) findPreference("title_animation_settings");
-
-            animationPreferences.removePreference(frameRatePref);
-            animationPreferences.removePreference(findPreference("animation_safety_adv"));
-            animationPreferences.removePreference(findPreference("scale_animation_speed"));
-
             PreferenceCategory transitionPreferences = (PreferenceCategory) findPreference("title_transition_settings");
 
+            transitionPreferences.removePreference(findPreference("transition_speed"));
+            transitionPreferences.removePreference(findPreference("reverse_overshoot"));
+            transitionPreferences.removePreference(findPreference("overshoot_intensity"));
+            transitionPreferences.removePreference(findPreference("reverse_overshoot_vertical"));
+            transitionPreferences.removePreference(findPreference("overshoot_intensity_vertical"));
             transitionPreferences.removePreference(findPreference("reverse_spin_in"));
             transitionPreferences.removePreference(findPreference("spin_in_angle"));
             transitionPreferences.removePreference(findPreference("reverse_spin_out"));
             transitionPreferences.removePreference(findPreference("spin_out_angle"));
 
-            PreferenceCategory gesturePreferences = (PreferenceCategory) findPreference("title_gesture_settings");
+            PreferenceCategory animationPreferences = (PreferenceCategory) findPreference("title_animation_settings");
 
-            gesturePreferences.removePreference(findPreference("extend_scale"));
+            animationPreferences.removePreference(findPreference("animation_speed"));
+            animationPreferences.removePreference(findPreference("animation_speed_vertical"));
+            animationPreferences.removePreference(findPreference("scale_animation_speed"));
+            animationPreferences.removePreference(frameRatePref);
+            animationPreferences.removePreference(findPreference("animation_safety_adv"));
+
+            getPreferenceScreen().removePreference(findPreference("title_gesture_settings"));
 
         }
 

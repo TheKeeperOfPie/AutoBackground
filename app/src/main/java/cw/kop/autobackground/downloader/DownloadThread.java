@@ -58,6 +58,7 @@ import java.util.Set;
 
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
 
 /**
@@ -382,7 +383,7 @@ public class DownloadThread extends Thread {
 
         try {
             HttpGet httpGet = new HttpGet(apiUrl);
-            httpGet.setHeader("Authorization", "Client-ID " + AppSettings.IMGUR_CLIENT_ID);
+            httpGet.setHeader("Authorization", "Client-ID " + ApiKeys.IMGUR_CLIENT_ID);
             httpGet.setHeader("Content-type", "application/json");
 
             String response = getResponse(httpGet);
@@ -435,7 +436,7 @@ public class DownloadThread extends Thread {
         try {
             HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/" + data + "?imgmax=d");
             httpGet.setHeader("Authorization", "OAuth " + AppSettings.getGoogleAccountToken());
-            httpGet.setHeader("X-GData-Client", AppSettings.PICASA_CLIENT_ID);
+            httpGet.setHeader("X-GData-Client", ApiKeys.PICASA_CLIENT_ID);
             httpGet.setHeader("GData-Version", "2");
 
             String response = getResponse(httpGet);
@@ -468,7 +469,7 @@ public class DownloadThread extends Thread {
         String data = url.substring(url.indexOf("://") + 3);
 
         try {
-            HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/blog/" + data + "/posts/photo?api_key=" + AppSettings.TUMBLR_CLIENT_ID);
+            HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/blog/" + data + "/posts/photo?api_key=" + ApiKeys.TUMBLR_CLIENT_ID);
 
             String response = getResponse(httpGet);
             if (response == null) {
@@ -516,7 +517,7 @@ public class DownloadThread extends Thread {
         Log.i(TAG, "Tumblr Tag: " + tag);
 
         try {
-            HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/tagged?tag=" + tag + "&api_key=" + AppSettings.TUMBLR_CLIENT_ID);
+            HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/tagged?tag=" + tag + "&api_key=" + ApiKeys.TUMBLR_CLIENT_ID);
 
             String response = getResponse(httpGet);
             if (response == null) {

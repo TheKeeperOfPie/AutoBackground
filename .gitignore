@@ -40,4 +40,4 @@ Thumbs.db
 .idea
 
 # Hidden Files
-app/src/main/java/cw/kop/autobackground/settings/AppSettings.java
+app/src/main/java/cw/kop/autobackground/settings/ApiKeys.java
