@@ -168,8 +168,6 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
     }
 
     private void showToastDialog() {
-
-
         final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
         View dialogView = View.inflate(appContext, R.layout.action_dialog, null);

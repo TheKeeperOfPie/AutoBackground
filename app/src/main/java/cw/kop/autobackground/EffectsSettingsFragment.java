@@ -32,7 +32,10 @@ import android.preference.SwitchPreference;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -182,19 +185,24 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
     }
 
     private void showEffectDialogMenu() {
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext, R.style.DarkDialogTheme);
+        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
+        dialog.setContentView(dialogView);
 
-        dialogBuilder.setItems(R.array.random_effects_entry_menu, new DialogInterface.OnClickListener() {
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        dialogTitle.setText("Random Effect:");
 
+        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
+        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.random_effects_entry_menu)));
+        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String[] randomEffectsList = getResources().getStringArray(R.array.random_effects_entry_menu);
-                AppSettings.setRandomEffect(randomEffectsList[which]);
+                AppSettings.setRandomEffect(randomEffectsList[position]);
+                dialog.dismiss();
             }
         });
-
-        AlertDialog dialog = dialogBuilder.create();
 
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
 
@@ -207,8 +215,6 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
             }
 
         });
-
-        AppSettings.setRandomEffect("None");
 
         dialog.show();
     }
@@ -272,11 +278,13 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
     }
 
     private void showDuotoneDialog() {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-        dialogBuilder.setTitle("Choose dual tone colors:");
+        View dialogView = View.inflate(appContext, R.layout.duotone_dialog, null);
+        dialog.setContentView(dialogView);
 
-        View dialogView = getActivity().getLayoutInflater().inflate(R.layout.duotone_dialog, null);
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        dialogTitle.setText("Choose dual tone colors:");
 
         final ColorPickerView duoToneView1 = (ColorPickerView) dialogView.findViewById(R.id.duotone_color_picker_one);
         final ColorPickerView duoToneView2 = (ColorPickerView) dialogView.findViewById(R.id.duotone_color_picker_two);
@@ -309,23 +317,36 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
             }
         });
 
-        dialogBuilder.setView(dialogView);
-
-        dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+        Button positiveButton = (Button) dialogView.findViewById(R.id.dialog_positive_button);
+        positiveButton.setVisibility(View.VISIBLE);
+        positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {
+            public void onClick(View v) {
                 AppSettings.setDuotoneColor(1, duoToneView1.getColor());
                 AppSettings.setDuotoneColor(2, duoToneView2.getColor());
-            }
-        });
-        dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                duotonePref.setChecked(false);
+                dialog.dismiss();
             }
         });
 
-        AlertDialog dialog = dialogBuilder.create();
+        Button negativeButton = (Button) dialogView.findViewById(R.id.dialog_negative_button);
+        negativeButton.setVisibility(View.VISIBLE);
+        negativeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                duotonePref.setChecked(false);
+                dialog.dismiss();
+            }
+        });
+
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+        }
+        else {
+            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+        }
+
         dialog.show();
     }
 

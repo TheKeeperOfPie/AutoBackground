@@ -18,6 +18,7 @@ package cw.kop.autobackground.images;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -31,6 +32,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -142,37 +144,68 @@ public class ImageHistoryFragment extends Fragment {
 
     private void showClearHistoryDialog() {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-        builder.setTitle("Clear History?");
+        View dialogView = View.inflate(appContext, R.layout.action_dialog, null);
+        dialog.setContentView(dialogView);
 
-        builder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
+
+        dialogTitle.setText("Clear History?");
+        dialogSummary.setText("You will not be notified of errors or info about the app.");
+
+        Button positiveButton = (Button) dialogView.findViewById(R.id.action_button_3);
+        positiveButton.setText(getResources().getString(R.string.ok_button));
+        positiveButton.setVisibility(View.VISIBLE);
+        positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {
+            public void onClick(View v) {
                 AppSettings.clearUsedLinks();
                 historyAdapter.clearHistory();
-            }
-        });
-        builder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
             }
         });
 
-        builder.show();
+        Button negativeButton = (Button) dialogView.findViewById(R.id.action_button_2);
+        negativeButton.setText(getResources().getString(R.string.cancel_button));
+        negativeButton.setVisibility(View.VISIBLE);
+        negativeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+        }
+        else {
+            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+        }
+
+        dialog.show();
 
     }
 
     private void showHistoryItemDialog(final HistoryItem item) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-        builder.setTitle(DateFormat.getDateTimeInstance().format(new Date(item.getTime())));
+        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
+        dialog.setContentView(dialogView);
 
-        builder.setItems(R.array.history_menu, new DialogInterface.OnClickListener() {
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        dialogTitle.setText(DateFormat.getDateTimeInstance().format(new Date(item.getTime())));
+
+        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
+        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.history_menu)));
+        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
                     case 0:
                         Intent intent = new Intent(Intent.ACTION_VIEW);
                         intent.setData(Uri.parse(item.getUrl()));
@@ -183,10 +216,11 @@ public class ImageHistoryFragment extends Fragment {
                         break;
                     default:
                 }
+                dialog.dismiss();
             }
         });
 
-        builder.show();
+        dialog.show();
 
     }
 

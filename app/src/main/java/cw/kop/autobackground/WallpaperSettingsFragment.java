@@ -19,6 +19,7 @@ package cw.kop.autobackground;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -35,7 +36,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -200,22 +203,23 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
     private void showDialogIntervalForInput() {
 
-        AppSettings.setIntervalDuration(0);
-
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
-        dialogBuilder.setMessage("Update Interval");
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
         View dialogView = View.inflate(appContext, R.layout.numeric_dialog, null);
+        dialog.setContentView(dialogView);
 
-        dialogBuilder.setView(dialogView);
-
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
         final EditText inputField = (EditText) dialogView.findViewById(R.id.input_field);
 
+        dialogTitle.setText("Update Interval");
         inputField.setHint("Enter number of minutes");
 
-        dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
+        Button positiveButton = (Button) dialogView.findViewById(R.id.numeric_positive_button);
+        positiveButton.setText(getResources().getString(R.string.ok_button));
+        positiveButton.setVisibility(View.VISIBLE);
+        positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int id) {
+            public void onClick(View v) {
                 int inputValue = Integer.parseInt(inputField.getText().toString());
 
                 if (inputField.getText().toString().equals("") || inputValue < 0) {
@@ -230,16 +234,29 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 else {
                     intervalPref.setSummary("Change on return");
                 }
-            }
-        });
-        dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                intervalPref.setChecked(false);
+                dialog.dismiss();
             }
         });
 
-        AlertDialog dialog = dialogBuilder.create();
+        Button negativeButton = (Button) dialogView.findViewById(R.id.numeric_negative_button);
+        negativeButton.setText(getResources().getString(R.string.cancel_button));
+        negativeButton.setVisibility(View.VISIBLE);
+        negativeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                intervalPref.setChecked(false);
+                dialog.dismiss();
+            }
+        });
+
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+        }
+        else {
+            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+        }
 
         dialog.show();
     }

@@ -99,4 +99,41 @@
         android:visibility="gone"
         />
 
+
+    <Button
+        android:id="@+id/dialog_negative_button"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:background="@drawable/button"
+        android:layout_below="@id/duotone_color_picker_one"
+        android:layout_toStartOf="@+id/dialog_positive_button"
+        android:layout_toLeftOf="@+id/dialog_positive_button"
+        android:paddingStart="8dp"
+        android:paddingLeft="8dp"
+        android:paddingEnd="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:text="@string/cancel_button"
+        android:textAllCaps="true"
+        />
+
+    <Button
+        android:id="@+id/dialog_positive_button"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:background="@drawable/button"
+        android:layout_below="@id/duotone_color_picker_one"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:paddingStart="8dp"
+        android:paddingLeft="8dp"
+        android:paddingEnd="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:text="@string/ok_button"
+        android:textAllCaps="true"
+        />
+
 </RelativeLayout>

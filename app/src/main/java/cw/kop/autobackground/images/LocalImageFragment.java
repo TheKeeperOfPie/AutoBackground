@@ -18,6 +18,7 @@ package cw.kop.autobackground.images;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -32,6 +33,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -40,6 +42,8 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.text.DateFormat;
+import java.util.Date;
 
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
@@ -208,12 +212,17 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 
     private void showImageDialog(final int index) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(appContext);
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-        builder.setItems(R.array.history_menu, new DialogInterface.OnClickListener() {
+        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
+        dialog.setContentView(dialogView);
+
+        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
+        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.history_menu)));
+        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
                     case 0:
                         openImage(index);
                         break;
@@ -231,9 +240,11 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                             imageAdapter.remove(index);
                         }
                 }
+                dialog.dismiss();
             }
         });
-        builder.show();
+
+        dialog.show();
     }
 
     private void openImage(int index) {

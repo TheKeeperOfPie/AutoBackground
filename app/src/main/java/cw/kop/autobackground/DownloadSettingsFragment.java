@@ -38,8 +38,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -185,14 +188,21 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         AppSettings.setTimerDuration(0);
 
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
-        dialogBuilder.setItems(R.array.timer_entry_menu, new DialogInterface.OnClickListener() {
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
+        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
+        dialog.setContentView(dialogView);
+
+//        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+//        dialogTitle.setText("Title:");
+
+        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
+        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.timer_entry_menu)));
+        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-                switch (which) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
                     case 0:
                         AppSettings.setTimerDuration(AlarmManager.INTERVAL_HOUR);
                         break;
@@ -222,11 +232,9 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 }
 
                 setDownloadAlarm();
-
+                dialog.dismiss();
             }
         });
-
-        AlertDialog dialog = dialogBuilder.create();
 
         dialog.setOnDismissListener(new OnDismissListener() {
 
