@@ -16,85 +16,88 @@
   -->
 <android.support.v7.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/source_card"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="5dp"
     >
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    >
-
-    <Switch
-        android:id="@+id/use_source_checkbox"
-        android:layout_width="wrap_content"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:focusable="false"
-        />
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        >
 
-    <TextView
-        android:id="@+id/title_text"
-        android:layout_toStartOf="@id/use_source_checkbox"
-        android:layout_toLeftOf="@id/use_source_checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:paddingStart="8dp"
-        android:paddingLeft="8dp"
-        android:paddingEnd="8dp"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:background="@android:color/transparent"
-        android:focusable="false"
-        android:singleLine="true"
-        android:ellipsize="marquee"
-        android:marqueeRepeatLimit ="marquee_forever"
-        android:scrollHorizontally="true"
-        />
+        <Switch
+            android:id="@+id/use_source_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:focusable="false"
+            />
 
-    <TextView
-        android:id="@+id/num_text"
-        android:layout_gravity="end"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:paddingTop="4dp"
-        android:textSize="14sp"
-        android:singleLine="true"
-        android:background="@android:color/transparent"
-        android:focusable="false"
-        />
+        <TextView
+            android:id="@+id/title_text"
+            android:layout_toStartOf="@id/use_source_checkbox"
+            android:layout_toLeftOf="@id/use_source_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:paddingStart="8dp"
+            android:paddingLeft="8dp"
+            android:paddingEnd="8dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:background="@android:color/transparent"
+            android:focusable="false"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit ="marquee_forever"
+            android:scrollHorizontally="true"
+            />
 
-    <TextView
-        android:id="@+id/summary_text"
-        android:layout_below="@id/title_text"
-        android:layout_toStartOf="@id/num_text"
-        android:layout_toLeftOf="@id/num_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:paddingTop="4dp"
-        android:paddingStart="8dp"
-        android:paddingLeft="8dp"
-        android:paddingEnd="8dp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:background="@android:color/transparent"
-        android:focusable="false"
-        android:singleLine="true"
-        android:ellipsize="marquee"
-        android:marqueeRepeatLimit ="marquee_forever"
-        android:scrollHorizontally="true"
-        />
+        <TextView
+            android:id="@+id/num_text"
+            android:layout_gravity="end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:paddingTop="4dp"
+            android:textSize="14sp"
+            android:singleLine="true"
+            android:background="@android:color/transparent"
+            android:focusable="false"
+            />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/summary_text"
+            android:layout_below="@id/title_text"
+            android:layout_toStartOf="@id/num_text"
+            android:layout_toLeftOf="@id/num_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:paddingTop="4dp"
+            android:paddingStart="8dp"
+            android:paddingLeft="8dp"
+            android:paddingEnd="8dp"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:background="@android:color/transparent"
+            android:focusable="false"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit ="marquee_forever"
+            android:scrollHorizontally="true"
+            />
+
+    </RelativeLayout>
 </android.support.v7.widget.CardView>

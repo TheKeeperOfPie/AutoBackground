@@ -18,6 +18,7 @@ package cw.kop.autobackground.sources;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -78,6 +79,16 @@ public class SourceListAdapter extends BaseAdapter {
         if (convertView == null) {
             view = inflater.inflate(R.layout.source_list_row, parent, false);
         }
+
+        CardView card = (CardView) view.findViewById(R.id.source_card);
+//        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+////            card.setBackgroundColor(mainActivity.getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
+//            card.setBackgroundResource(R.color.LIGHT_THEME_BACKGROUND);
+//        }
+//        else {
+////            card.setBackgroundColor(mainActivity.getResources().getColor(R.color.DARK_THEME_BACKGROUND));
+//            card.setBackgroundResource(R.color.DARK_THEME_BACKGROUND);
+//        }
 
         TextView title = (TextView) view.findViewById(R.id.title_text);
         TextView summary = (TextView) view.findViewById(R.id.summary_text);
