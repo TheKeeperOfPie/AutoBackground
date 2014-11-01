@@ -17,11 +17,9 @@
 package cw.kop.autobackground.images;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -42,8 +40,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.text.DateFormat;
-import java.util.Date;
 
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;

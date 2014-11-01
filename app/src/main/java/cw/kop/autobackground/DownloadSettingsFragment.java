@@ -18,7 +18,6 @@ package cw.kop.autobackground;
 
 import android.app.Activity;
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
@@ -34,6 +33,7 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -188,14 +188,13 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         AppSettings.setTimerDuration(0);
 
-
         final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
         View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
         dialog.setContentView(dialogView);
 
-//        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-//        dialogTitle.setText("Title:");
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        dialogTitle.setText("Download Interval:");
 
         ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
         dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.timer_entry_menu)));
@@ -256,16 +255,17 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-        View dialogView = View.inflate(appContext, R.layout.numeric_dialog, null);
+        View dialogView = View.inflate(appContext, R.layout.text_dialog, null);
         dialog.setContentView(dialogView);
 
         TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
         final EditText inputField = (EditText) dialogView.findViewById(R.id.input_field);
+        inputField.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         dialogTitle.setText("Download Interval");
         inputField.setHint("Enter number of minutes");
 
-        Button positiveButton = (Button) dialogView.findViewById(R.id.numeric_positive_button);
+        Button positiveButton = (Button) dialogView.findViewById(R.id.dialog_positive_button);
         positiveButton.setText(getResources().getString(R.string.ok_button));
         positiveButton.setVisibility(View.VISIBLE);
         positiveButton.setOnClickListener(new View.OnClickListener() {
@@ -282,7 +282,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             }
         });
 
-        Button negativeButton = (Button) dialogView.findViewById(R.id.numeric_negative_button);
+        Button negativeButton = (Button) dialogView.findViewById(R.id.dialog_negative_button);
         negativeButton.setText(getResources().getString(R.string.cancel_button));
         negativeButton.setVisibility(View.VISIBLE);
         negativeButton.setOnClickListener(new View.OnClickListener() {

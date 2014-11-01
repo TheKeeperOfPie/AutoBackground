@@ -728,35 +728,68 @@ public class SourceListFragment extends ListFragment {
                                 type.equals(AppSettings.TUMBLR_BLOG) ||
                                 type.equals(AppSettings.TUMBLR_TAG)) {
                             listAdapter.saveData();
-                            AlertDialog.Builder deleteDialog = new AlertDialog.Builder(appContext);
 
-                            deleteDialog.setTitle("Delete images associated with this source?");
-                            deleteDialog.setMessage("This cannot be undone.");
+                            final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-                            deleteDialog.setPositiveButton(R.string.yes_button, new DialogInterface.OnClickListener() {
+                            View dialogView = View.inflate(appContext, R.layout.action_dialog, null);
+                            dialog.setContentView(dialogView);
+
+                            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+                            TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
+
+                            dialogTitle.setText("Delete images associated with this source?");
+                            dialogSummary.setText("This cannot be undone.");
+
+                            Button yesButton = (Button) dialogView.findViewById(R.id.action_button_3);
+                            yesButton.setText(getResources().getString(R.string.ok_button));
+                            yesButton.setVisibility(View.VISIBLE);
+                            yesButton.setOnClickListener(new View.OnClickListener() {
                                 @Override
-                                public void onClick(DialogInterface dialog, int id) {
+                                public void onClick(View v) {
                                     Downloader.deleteBitmaps(appContext, position);
                                     Toast.makeText(appContext, "Deleting " + AppSettings.getSourceTitle(position) + " images", Toast.LENGTH_SHORT).show();
-                                    listAdapter.removeItem(position);
-                                    listAdapter.saveData();
-                                }
-                            });
-                            deleteDialog.setNeutralButton(R.string.no_button, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int id) {
-                                    listAdapter.removeItem(position);
                                     AppSettings.setSourceSet(AppSettings.getSourceTitle(position), new HashSet<String>());
+                                    listAdapter.removeItem(position);
                                     listAdapter.saveData();
-                                }
-                            });
-                            deleteDialog.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.dismiss();
                                 }
                             });
 
-                            deleteDialog.show();
+                            Button noButton = (Button) dialogView.findViewById(R.id.action_button_2);
+                            noButton.setText(getResources().getString(R.string.no_button));
+                            noButton.setVisibility(View.VISIBLE);
+                            noButton.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    AppSettings.setSourceSet(AppSettings.getSourceTitle(position), new HashSet<String>());
+                                    listAdapter.removeItem(position);
+                                    listAdapter.saveData();
+                                    dialog.dismiss();
+                                }
+                            });
+
+                            Button cancelButton = (Button) dialogView.findViewById(R.id.action_button_1);
+                            cancelButton.setText(getResources().getString(R.string.cancel_button));
+                            cancelButton.setVisibility(View.VISIBLE);
+                            cancelButton.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    dialog.dismiss();
+                                }
+                            });
+
+                            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+                                yesButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+                                noButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+                                cancelButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+                            }
+                            else {
+                                yesButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+                                noButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+                                cancelButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+                            }
+
+                            dialog.show();
                         }
                         else {
                             listAdapter.removeItem(position);
@@ -1022,24 +1055,47 @@ public class SourceListFragment extends ListFragment {
         if (AppSettings.useSourceTutorial() && sourceListTutorial == null && !tutorialShowing) {
             Log.i("WLF", "Showing tutorial");
             tutorialShowing = true;
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
-            dialogBuilder.setMessage("Show Sources Tutorial?");
 
-            dialogBuilder.setPositiveButton(R.string.yes_button, new DialogInterface.OnClickListener() {
+            final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
+
+            View dialogView = View.inflate(appContext, R.layout.action_dialog, null);
+            dialog.setContentView(dialogView);
+
+            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+            TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
+
+            dialogTitle.setText("Show Sources Tutorial?");
+
+            Button positiveButton = (Button) dialogView.findViewById(R.id.action_button_3);
+            positiveButton.setText(getResources().getString(R.string.ok_button));
+            positiveButton.setVisibility(View.VISIBLE);
+            positiveButton.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialog, int id) {
+                public void onClick(View v) {
                     showTutorial();
+                    dialog.dismiss();
                 }
             });
 
-            dialogBuilder.setNegativeButton(R.string.no_button, new DialogInterface.OnClickListener() {
+            Button negativeButton = (Button) dialogView.findViewById(R.id.action_button_2);
+            negativeButton.setText(getResources().getString(R.string.cancel_button));
+            negativeButton.setVisibility(View.VISIBLE);
+            negativeButton.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialog, int id) {
+                public void onClick(View v) {
+                    dialog.dismiss();
                 }
             });
 
-            AlertDialog dialog = dialogBuilder.create();
+            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+                negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+                positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+            }
+            else {
+                negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+                positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+            }
 
             dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override

@@ -32,12 +32,16 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import cw.kop.autobackground.settings.AppSettings;
@@ -149,14 +153,20 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         AppSettings.setIntervalDuration(0);
 
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-        dialogBuilder.setItems(R.array.interval_entry_menu, new DialogInterface.OnClickListener() {
+        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
+        dialog.setContentView(dialogView);
 
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        dialogTitle.setText("Update Interval:");
+
+        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
+        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.theme_entry_menu)));
+        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-
-                switch (which) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
                     case 0:
                         AppSettings.setIntervalDuration(0);
                         break;
@@ -192,11 +202,9 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 }
 
                 setIntervalAlarm();
-
+                dialog.dismiss();
             }
         });
-
-        AlertDialog dialog = dialogBuilder.create();
 
         dialog.show();
     }
@@ -205,16 +213,17 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-        View dialogView = View.inflate(appContext, R.layout.numeric_dialog, null);
+        View dialogView = View.inflate(appContext, R.layout.text_dialog, null);
         dialog.setContentView(dialogView);
 
         TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
         final EditText inputField = (EditText) dialogView.findViewById(R.id.input_field);
+        inputField.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         dialogTitle.setText("Update Interval");
         inputField.setHint("Enter number of minutes");
 
-        Button positiveButton = (Button) dialogView.findViewById(R.id.numeric_positive_button);
+        Button positiveButton = (Button) dialogView.findViewById(R.id.dialog_positive_button);
         positiveButton.setText(getResources().getString(R.string.ok_button));
         positiveButton.setVisibility(View.VISIBLE);
         positiveButton.setOnClickListener(new View.OnClickListener() {
@@ -238,7 +247,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
             }
         });
 
-        Button negativeButton = (Button) dialogView.findViewById(R.id.numeric_negative_button);
+        Button negativeButton = (Button) dialogView.findViewById(R.id.dialog_negative_button);
         negativeButton.setText(getResources().getString(R.string.cancel_button));
         negativeButton.setVisibility(View.VISIBLE);
         negativeButton.setOnClickListener(new View.OnClickListener() {

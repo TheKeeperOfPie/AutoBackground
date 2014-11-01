@@ -63,7 +63,6 @@ import java.util.ArrayList;
 
 import afzkl.development.colorpickerview.view.ColorPickerView;
 import cw.kop.autobackground.LiveWallpaperService;
-import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.downloader.Downloader;
 import cw.kop.autobackground.settings.AppSettings;
@@ -829,18 +828,25 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private void showOptionColorDialog(final int position, final String title, final int drawable) {
 
-        AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
 
-        dialog.setTitle("Enter icon and text color:");
 
-        final ColorPickerView colorPickerView = new ColorPickerView(appContext);
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
+
+        View dialogView = View.inflate(appContext, R.layout.duotone_dialog, null);
+        dialog.setContentView(dialogView);
+
+        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+        dialogTitle.setText("Enter icon and text color:");
+
+        final ColorPickerView colorPickerView = (ColorPickerView) dialogView.findViewById(R.id.dialog_color_picker);
         colorPickerView.setAlphaSliderVisible(true);
         colorPickerView.setColor(AppSettings.getNotificationOptionPreviousColor());
 
-        dialog.setView(colorPickerView);
-
-        dialog.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
+        Button positiveButton = (Button) dialogView.findViewById(R.id.dialog_positive_button);
+        positiveButton.setVisibility(View.VISIBLE);
+        positiveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 clearHighlights();
                 AppSettings.setNotificationOptionTitle(position, title);
                 AppSettings.setNotificationOptionDrawable(position, drawable);
@@ -872,13 +878,27 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                         optionThreeImage.setImageDrawable(coloredDrawableThree);
                         break;
                 }
+                dialog.dismiss();
             }
         });
 
-        dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
+        Button negativeButton = (Button) dialogView.findViewById(R.id.dialog_negative_button);
+        negativeButton.setVisibility(View.VISIBLE);
+        negativeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
             }
         });
+
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+        }
+        else {
+            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+        }
 
         dialog.show();
 
@@ -896,7 +916,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
         dialogTitle.setText("Enter text:");
 
-        Button positiveButton = (Button) dialogView.findViewById(R.id.numeric_positive_button);
+        Button positiveButton = (Button) dialogView.findViewById(R.id.dialog_positive_button);
         positiveButton.setText(getResources().getString(R.string.ok_button));
         positiveButton.setVisibility(View.VISIBLE);
         positiveButton.setOnClickListener(new View.OnClickListener() {
@@ -907,7 +927,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             }
         });
 
-        Button negativeButton = (Button) dialogView.findViewById(R.id.numeric_negative_button);
+        Button negativeButton = (Button) dialogView.findViewById(R.id.dialog_negative_button);
         negativeButton.setText(getResources().getString(R.string.cancel_button));
         negativeButton.setVisibility(View.VISIBLE);
         negativeButton.setOnClickListener(new View.OnClickListener() {
