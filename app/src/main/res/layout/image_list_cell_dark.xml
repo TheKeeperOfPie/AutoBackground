@@ -15,26 +15,28 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <android.support.v7.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    card_view:cardBackgroundColor="@color/DARK_THEME_DIALOG"
+    card_view:cardElevation="4dp"
     >
 
-    <LinearLayout
+    <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
         android:orientation="vertical"
-        >
+        android:padding="1dp">
 
         <ImageView
-            android:id="@+id/album_image"
+            android:id="@+id/file_image"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:adjustViewBounds="true"
             android:focusable="false"
             android:src="@drawable/app_icon"
@@ -42,19 +44,31 @@
             />
 
         <TextView
-            android:id="@+id/album_name"
-            android:layout_width="0px"
-            android:layout_height="fill_parent"
-            android:layout_weight="1"
-            android:ellipsize="marquee"
+            android:id="@+id/file_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/file_image"
+            android:layout_toRightOf="@id/file_image"
             android:focusable="false"
-            android:gravity="center_vertical"
-            android:marqueeRepeatLimit="marquee_forever"
             android:scrollHorizontally="true"
             android:scrollbars="horizontal"
             android:singleLine="true"
             android:textSize="22sp"
             />
 
-    </LinearLayout>
+        <TextView
+            android:id="@+id/file_summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/file_title"
+            android:layout_toEndOf="@id/file_image"
+            android:layout_toRightOf="@id/file_image"
+            android:focusable="false"
+            android:scrollHorizontally="true"
+            android:scrollbars="horizontal"
+            android:singleLine="true"
+            android:textSize="14sp"
+            />
+
+    </RelativeLayout>
 </android.support.v7.widget.CardView>

@@ -17,7 +17,6 @@
 package cw.kop.autobackground;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -32,10 +31,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import cw.kop.autobackground.settings.AppSettings;
@@ -77,7 +72,8 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_app_settings");
+        PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference(
+                "title_app_settings");
         preferenceCategory.removePreference(findPreference("force_multipane"));
 
 
@@ -88,7 +84,9 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                 if (appContext != null) {
                     AppSettings.clearPrefs(appContext);
                     if (AppSettings.useToast()) {
-                        Toast.makeText(appContext, "Resetting settings to default", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(appContext,
+                                       "Resetting settings to default",
+                                       Toast.LENGTH_SHORT).show();
                     }
                 }
                 return false;
@@ -111,7 +109,9 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 AppSettings.setTutorial(true, "source");
-                Toast.makeText(appContext, "Will reshow source tutorial", Toast.LENGTH_SHORT).show();
+                Toast.makeText(appContext,
+                               "Will reshow source tutorial",
+                               Toast.LENGTH_SHORT).show();
                 return false;
             }
         });
@@ -121,21 +121,10 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     private void showThemeDialogMenu() {
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        dialogTitle.setText("Theme:");
-
-        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
-        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.theme_entry_menu)));
-        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
-
-                switch (positionInList) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
                     case 0:
                         AppSettings.setTheme(R.style.AppLightTheme);
                         break;
@@ -153,12 +142,15 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                 Intent intent = new Intent(appContext, MainActivity.class);
                 intent.putExtra("fragment", 6);
                 appContext.startActivity(intent);
-
                 getActivity().finish();
-                dialog.dismiss();
+                dismissDialog();
             }
-        });
-        dialog.show();
+        };
+
+        DialogFactory.showListDialog(appContext,
+                                     "Theme:",
+                                     clickListener,
+                                     R.array.theme_entry_menu);
     }
 
     private void setThemePrefSummary() {
@@ -166,49 +158,30 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
     }
 
     private void showToastDialog() {
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-        View dialogView = View.inflate(appContext, R.layout.action_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
-
-        dialogTitle.setText("Are you sure you want to disable toast messages?");
-        dialogSummary.setText("You will not be notified of errors or info about the app.");
-
-        Button positiveButton = (Button) dialogView.findViewById(R.id.action_button_3);
-        positiveButton.setText(getResources().getString(R.string.ok_button));
-        positiveButton.setVisibility(View.VISIBLE);
-        positiveButton.setOnClickListener(new View.OnClickListener() {
+        DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
             @Override
-            public void onClick(View v) {
-                toastPref.setChecked(false);
-                dialog.dismiss();
-            }
-        });
-
-        Button negativeButton = (Button) dialogView.findViewById(R.id.action_button_2);
-        negativeButton.setText(getResources().getString(R.string.cancel_button));
-        negativeButton.setVisibility(View.VISIBLE);
-        negativeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            public void onClickMiddle(View v) {
                 toastPref.setChecked(true);
-                dialog.dismiss();
+                this.dismissDialog();
             }
-        });
 
-        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-        }
-        else {
-            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-        }
+            @Override
+            public void onClickRight(View v) {
+                toastPref.setChecked(false);
+                this.dismissDialog();
+            }
 
-        dialog.show();
+        };
+
+        DialogFactory.showActionDialog(appContext,
+                                       "Are you sure you want to disable toast messages?",
+                                       "",
+                                       clickListener,
+                                       -1,
+                                       R.string.cancel_button,
+                                       R.string.ok_button);
+
     }
 
     @Override

@@ -21,7 +21,7 @@ import java.io.File;
 /**
  * Created by TheKeeperOfPie on 9/22/2014.
  */
-public class HistoryItem implements Comparable<HistoryItem>{
+public class HistoryItem implements Comparable<HistoryItem> {
 
     private long time;
     private String url;

@@ -17,6 +17,9 @@
 package cw.kop.autobackground.images;
 
 import android.content.Context;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,7 +68,9 @@ public class ImageHistoryAdapter extends BaseAdapter {
             catch (Exception e) {
             }
 
-            historyItems.add(new HistoryItem(time, url, new File(AppSettings.getDownloadPath() + "/HistoryCache/" + time + ".png")));
+            historyItems.add(new HistoryItem(time,
+                                             url,
+                                             new File(AppSettings.getDownloadPath() + "/HistoryCache/" + time + ".png")));
 
         }
 
@@ -95,7 +100,14 @@ public class ImageHistoryAdapter extends BaseAdapter {
             View view = convertView;
 
             if (convertView == null) {
-                view = inflater.inflate(R.layout.image_list_cell, parent, false);
+                view = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
+                        inflater.inflate(R.layout.image_list_cell,
+                                         parent,
+                                         false) :
+                        inflater.inflate(
+                                R.layout.image_list_cell_dark,
+                                parent,
+                                false);
             }
 
             TextView fileTitle = (TextView) view.findViewById(R.id.file_title);
@@ -103,7 +115,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
             ImageView fileImage = (ImageView) view.findViewById(R.id.file_image);
 
             File thumbnailFile = new File(AppSettings.getDownloadPath() + "/HistoryCache/"
-                    + historyItems.get(position).getTime() + ".png");
+                                                  + historyItems.get(position).getTime() + ".png");
 
             if (thumbnailFile.exists() && thumbnailFile.isFile()) {
                 Picasso.with(parent.getContext())
@@ -111,19 +123,16 @@ public class ImageHistoryAdapter extends BaseAdapter {
                         .into(fileImage);
             }
             else {
-                if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                    Picasso.with(parent.getContext())
-                            .load(R.drawable.ic_action_view_as_list)
-                            .into(fileImage);
-                }
-                else {
-                    Picasso.with(parent.getContext())
-                            .load(R.drawable.ic_action_view_as_list_white)
-                            .into(fileImage);
-                }
+
+                Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_action_view_as_list_white);
+                drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
+                                        PorterDuff.Mode.MULTIPLY);
+
+                fileImage.setImageDrawable(drawable);
             }
 
-            fileTitle.setText(DateFormat.getDateTimeInstance().format(new Date(historyItems.get(position).getTime())));
+            fileTitle.setText(DateFormat.getDateTimeInstance().format(new Date(historyItems.get(
+                    position).getTime())));
             fileSummary.setText(historyItems.get(position).getUrl());
             return view;
         }
@@ -139,7 +148,8 @@ public class ImageHistoryAdapter extends BaseAdapter {
             @Override
             public boolean accept(File dir, String filename) {
 
-                return filename.length() > 4 && filename.substring(filename.length() - 4, filename.length()).equals(".png");
+                return filename.length() > 4 && filename.substring(filename.length() - 4,
+                                                                   filename.length()).equals(".png");
 
             }
         };

@@ -112,7 +112,8 @@ public class DownloadThread extends Thread {
 
             List<Integer> indexes = new ArrayList<>();
             for (int index = 0; index < AppSettings.getNumSources(); index++) {
-                if (!AppSettings.getSourceType(index).equals(AppSettings.FOLDER) && AppSettings.useSource(index)) {
+                if (!AppSettings.getSourceType(index).equals(AppSettings.FOLDER) && AppSettings.useSource(
+                        index)) {
                     indexes.add(index);
                     progressMax += AppSettings.getSourceNum(index);
                 }
@@ -143,7 +144,8 @@ public class DownloadThread extends Thread {
 
                     if (AppSettings.deleteOldImages()) {
                         Downloader.deleteBitmaps(appContext, index);
-                        AppSettings.setSourceSet(AppSettings.getSourceTitle(index), new HashSet<String>());
+                        AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
+                                                 new HashSet<String>());
                     }
 
                     String title = AppSettings.getSourceTitle(index);
@@ -183,8 +185,8 @@ public class DownloadThread extends Thread {
                     }
                     if (imagesDownloaded < AppSettings.getSourceNum(index)) {
                         sendToast("Not enough photos from " + AppSettings.getSourceData(index) + " " +
-                                "Try lowering the resolution or changing sources. " +
-                                "There may also have been too many duplicates.");
+                                          "Try lowering the resolution or changing sources. " +
+                                          "There may also have been too many duplicates.");
                     }
 
                     totalDownloaded += imagesDownloaded;
@@ -221,7 +223,8 @@ public class DownloadThread extends Thread {
             }
             if (link.attr("width") != null && !link.attr("width").equals("")) {
                 try {
-                    if (Integer.parseInt(link.attr("width")) < AppSettings.getWidth() || Integer.parseInt(link.attr("height")) < AppSettings.getHeight()) {
+                    if (Integer.parseInt(link.attr("width")) < AppSettings.getWidth() || Integer.parseInt(
+                            link.attr("height")) < AppSettings.getHeight()) {
                         continue;
                     }
                 }
@@ -231,7 +234,8 @@ public class DownloadThread extends Thread {
             if (url.contains(".png") || url.contains(".jpg") || url.contains(".jpeg")) {
                 links.add(url);
             }
-            else if (AppSettings.forceDownload() && url.length() > 5 && (url.contains(".com") || url.contains(".org") || url.contains(".net"))) {
+            else if (AppSettings.forceDownload() && url.length() > 5 && (url.contains(".com") || url.contains(
+                    ".org") || url.contains(".net"))) {
                 links.add(url + ".png");
                 links.add(url + ".jpg");
                 links.add(url);
@@ -267,7 +271,12 @@ public class DownloadThread extends Thread {
                             long time = System.currentTimeMillis();
                             AppSettings.addUsedLink(randLink, time);
                             if (AppSettings.cacheThumbnails()) {
-                                writeToFileWithThumbnail(bitmap, data.get(count), dir, title, num, time);
+                                writeToFileWithThumbnail(bitmap,
+                                                         data.get(count),
+                                                         dir,
+                                                         title,
+                                                         num,
+                                                         time);
                             }
                             else {
                                 writeToFile(bitmap, data.get(count), dir, title, num);
@@ -332,7 +341,8 @@ public class DownloadThread extends Thread {
             oldImageFile.renameTo(new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + oldIndex++ + ".png"));
 
             Log.i(TAG, "renamedFile: " + oldImageFile.getAbsolutePath());
-            Log.i(TAG, "renamed to: " + mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + oldIndex + ".png");
+            Log.i(TAG,
+                  "renamed to: " + mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + oldIndex + ".png");
         }
 
     }
@@ -490,7 +500,8 @@ public class DownloadThread extends Thread {
                 JSONArray imageArray = postObject.getJSONArray("photos");
 
                 for (int imageIndex = 0; imageIndex < imageArray.length(); imageIndex++) {
-                    imageList.add(imageArray.getJSONObject(imageIndex).getJSONObject("original_size").getString("url"));
+                    imageList.add(imageArray.getJSONObject(imageIndex).getJSONObject("original_size").getString(
+                            "url"));
                     imagePages.add(postUrl);
                 }
 
@@ -539,7 +550,8 @@ public class DownloadThread extends Thread {
                     JSONArray imageArray = postObject.getJSONArray("photos");
 
                     for (int imageIndex = 0; imageIndex < imageArray.length(); imageIndex++) {
-                        imageList.add(imageArray.getJSONObject(imageIndex).getJSONObject("original_size").getString("url"));
+                        imageList.add(imageArray.getJSONObject(imageIndex).getJSONObject(
+                                "original_size").getString("url"));
                         imagePages.add(postUrl);
                     }
                 }

@@ -81,18 +81,22 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.album_list_layout, container, false);
+        final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.album_list_layout,
+                                                            container,
+                                                            false);
 
         albumListView = (ListView) view.findViewById(R.id.album_listview);
 
         TextView emptyText = new TextView(getActivity());
         emptyText.setText("No Albums");
         emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                             ViewGroup.LayoutParams.MATCH_PARENT));
         emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
 
         LinearLayout emptyLayout = new LinearLayout(getActivity());
-        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                                  ViewGroup.LayoutParams.MATCH_PARENT));
         emptyLayout.setGravity(Gravity.TOP);
         emptyLayout.addView(emptyText);
 

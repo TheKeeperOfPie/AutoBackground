@@ -20,7 +20,6 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListFragment;
 import android.app.PendingIntent;
@@ -28,9 +27,10 @@ import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -46,7 +46,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -76,6 +75,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
@@ -130,11 +130,17 @@ public class SourceListFragment extends ListFragment {
         super.onCreateOptionsMenu(menu, inflater);
         toolbarMenu = menu;
 
-        if (!AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            menu.getItem(0).setIcon(R.drawable.ic_action_refresh_white);
-            menu.getItem(1).setIcon(R.drawable.ic_action_download_white);
-            menu.getItem(2).setIcon(R.drawable.ic_action_storage_white);
-        }
+        int colorFilterInt = AppSettings.getColorFilterInt(appContext);
+        Drawable refreshIcon = getResources().getDrawable(R.drawable.ic_action_refresh_white);
+        Drawable downloadIcon = getResources().getDrawable(R.drawable.ic_action_download_white);
+        Drawable storageIcon = getResources().getDrawable(R.drawable.ic_action_storage_white);
+        refreshIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+        downloadIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+        storageIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+
+        menu.getItem(0).setIcon(refreshIcon);
+        menu.getItem(1).setIcon(downloadIcon);
+        menu.getItem(2).setIcon(storageIcon);
     }
 
     @Override
@@ -155,10 +161,16 @@ public class SourceListFragment extends ListFragment {
 
         View view = inflater.inflate(R.layout.fragment_sources, container, false);
 
-        buttonParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        buttonParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                                       ViewGroup.LayoutParams.WRAP_CONTENT);
         buttonParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
         buttonParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        buttonParams.setMargins(0, 0, 0, Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, appContext.getResources().getDisplayMetrics())));
+        buttonParams.setMargins(0,
+                                0,
+                                0,
+                                Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                                                     100,
+                                                                     appContext.getResources().getDisplayMetrics())));
 
         addButton = (ImageButton) view.findViewById(R.id.floating_button);
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -228,12 +240,10 @@ public class SourceListFragment extends ListFragment {
 //            showTutorial(3);
 //        }
         if (Downloader.download(appContext)) {
-            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_cancel);
-            }
-            else {
-                toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_cancel_white);
-            }
+            Drawable drawable = getResources().getDrawable(R.drawable.ic_action_cancel_white);
+            drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                                    PorterDuff.Mode.MULTIPLY);
+            toolbarMenu.getItem(1).setIcon(drawable);
 
             if (AppSettings.resetOnManualDownload() && AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
                 Intent intent = new Intent();
@@ -242,29 +252,32 @@ public class SourceListFragment extends ListFragment {
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(appContext, 0, intent, 0);
                 AlarmManager alarmManager = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
                 alarmManager.cancel(pendingIntent);
-                alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + AppSettings.getTimerDuration(), AppSettings.getTimerDuration(), pendingIntent);
+                alarmManager.setInexactRepeating(AlarmManager.RTC,
+                                                 System.currentTimeMillis() + AppSettings.getTimerDuration(),
+                                                 AppSettings.getTimerDuration(),
+                                                 pendingIntent);
             }
 
         }
         else {
-            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(appContext);
 
-            dialogBuilder.setTitle("Cancel download?");
+            DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
 
-            dialogBuilder.setPositiveButton(R.string.ok_button, new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(DialogInterface dialog, int id) {
+                public void onClickRight(View v) {
                     Downloader.cancel(appContext);
                     resetActionBarDownload();
+                    dismissDialog();
                 }
-            });
-            dialogBuilder.setNegativeButton(R.string.cancel_button, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int id) {
-                }
-            });
+            };
 
-            dialogBuilder.show();
+            DialogFactory.showActionDialog(appContext,
+                                           "Cancel download?",
+                                           "",
+                                           listener,
+                                           -1,
+                                           R.string.cancel_button,
+                                           R.string.ok_button);
         }
     }
 
@@ -311,7 +324,9 @@ public class SourceListFragment extends ListFragment {
                     @Override
                     protected Void doInBackground(Void... params) {
                         try {
-                            String authToken = GoogleAuthUtil.getToken(appContext, accountName, "oauth2:https://picasaweb.google.com/data/");
+                            String authToken = GoogleAuthUtil.getToken(appContext,
+                                                                       accountName,
+                                                                       "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             AppSettings.setGoogleAccount(true);
                             new PicasaAlbumTask(-1).execute();
@@ -341,7 +356,9 @@ public class SourceListFragment extends ListFragment {
                     @Override
                     protected Void doInBackground(Void... params) {
                         try {
-                            String authToken = GoogleAuthUtil.getToken(appContext, AppSettings.getGoogleAccountName(), "oauth2:https://picasaweb.google.com/data/");
+                            String authToken = GoogleAuthUtil.getToken(appContext,
+                                                                       AppSettings.getGoogleAccountName(),
+                                                                       "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             AppSettings.setGoogleAccount(true);
                             new PicasaAlbumTask(-1).execute();
@@ -367,21 +384,11 @@ public class SourceListFragment extends ListFragment {
 
     private void showSourceMenu() {
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        dialogTitle.setText("Source:");
-
-        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
-        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.source_menu)));
-        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                switch (positionInList) {
+                switch (position) {
                     case 0:
                         showInputDialog(AppSettings.WEBSITE,
                                         "",
@@ -420,7 +427,8 @@ public class SourceListFragment extends ListFragment {
                         break;
                     case 4:
                         if (AppSettings.getGoogleAccountName().equals("")) {
-                            startActivityForResult(GoogleAccount.getPickerIntent(), GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
+                            startActivityForResult(GoogleAccount.getPickerIntent(),
+                                                   GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
                         }
                         else {
                             new PicasaAlbumTask(-1).execute();
@@ -450,30 +458,21 @@ public class SourceListFragment extends ListFragment {
                         break;
                     default:
                 }
-                dialog.dismiss();
             }
-        });
+        };
 
-        dialog.show();
+        DialogFactory.showListDialog(appContext,
+                                     "Source:",
+                                     clickListener,
+                                     R.array.source_menu);
     }
 
     private void showSourceSortMenu() {
 
-
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        dialogTitle.setText("Sort by:");
-
-        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
-        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.source_sort_menu)));
-        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
-                switch (positionInList) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
                     case 0:
                         listAdapter.sortData("use");
                         break;
@@ -488,11 +487,14 @@ public class SourceListFragment extends ListFragment {
                         break;
                     default:
                 }
-                dialog.dismiss();
+                dismissDialog();
             }
-        });
+        };
 
-        dialog.show();
+        DialogFactory.showListDialog(appContext,
+                                     "Sort by:",
+                                     clickListener,
+                                     R.array.source_sort_menu);
     }
 
     public void addEntry(String type, String title, String data, String num) {
@@ -500,7 +502,9 @@ public class SourceListFragment extends ListFragment {
             listAdapter.saveData();
         }
         else {
-            Toast.makeText(appContext, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(appContext,
+                           "Error: Title in use.\nPlease use a different title.",
+                           Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -510,15 +514,21 @@ public class SourceListFragment extends ListFragment {
             listAdapter.saveData();
         }
         else {
-            Toast.makeText(appContext, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(appContext,
+                           "Error: Title in use.\nPlease use a different title.",
+                           Toast.LENGTH_SHORT).show();
         }
     }
 
     private void showInputDialog(final String type, String title, String hint, final String prefix,
                                  String data, final String suffix, String num, String mainTitle,
-                                 final int position) {
+                                 final int index) {
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
+                new Dialog(
+                        appContext,
+                        R.style.LightDialogTheme) :
+                new Dialog(appContext, R.style.DarkDialogTheme);
 
         View dialogView = View.inflate(appContext, R.layout.add_source_dialog, null);
 
@@ -551,7 +561,8 @@ public class SourceListFragment extends ListFragment {
         positiveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals("")) {
+                if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals(
+                        "")) {
 
                     if (sourceNum.getText().toString().equals("")) {
                         sourceNum.setText("1");
@@ -571,29 +582,43 @@ public class SourceListFragment extends ListFragment {
                         data = "Tumblr Tag: " + data;
                     }
 
-                    if (position >= 0) {
-                        String previousTitle = AppSettings.getSourceTitle(position);
-                        if (listAdapter.setItem(position, type, newTitle, data.trim(), AppSettings.useSource(position), sourceNum.getText().toString())) {
+                    if (index >= 0) {
+                        String previousTitle = AppSettings.getSourceTitle(index);
+                        if (listAdapter.setItem(index,
+                                                type,
+                                                newTitle,
+                                                data.trim(),
+                                                AppSettings.useSource(index),
+                                                sourceNum.getText().toString())) {
                             if (!previousTitle.equals(newTitle)) {
-                                AppSettings.setSourceSet(newTitle, AppSettings.getSourceSet(previousTitle));
+                                AppSettings.setSourceSet(newTitle,
+                                                         AppSettings.getSourceSet(previousTitle));
                                 Downloader.renameFiles(appContext, previousTitle, newTitle);
                             }
                             listAdapter.saveData();
                             dialog.dismiss();
                         }
                         else {
-                            Toast.makeText(appContext, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(appContext,
+                                           "Error: Title in use.\nPlease use a different title.",
+                                           Toast.LENGTH_SHORT).show();
                         }
                     }
                     else {
-                        if (listAdapter.addItem(type, newTitle, data.trim(), true, sourceNum.getText().toString())) {
+                        if (listAdapter.addItem(type,
+                                                newTitle,
+                                                data.trim(),
+                                                true,
+                                                sourceNum.getText().toString())) {
                             listAdapter.saveData();
                             AppSettings.setSourceSet(newTitle, new HashSet<String>());
                             hide(addSourceTutorial);
                             dialog.dismiss();
                         }
                         else {
-                            Toast.makeText(appContext, "Error: Title in use.\nPlease use a different title.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(appContext,
+                                           "Error: Title in use.\nPlease use a different title.",
+                                           Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -614,26 +639,16 @@ public class SourceListFragment extends ListFragment {
 
     }
 
-    private void showDialogMenu(final int position) {
+    private void showDialogMenu(final int index) {
 
         listAdapter.saveData();
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        dialogTitle.setText(AppSettings.getSourceTitle(position));
-
-        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
-        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.source_edit_menu)));
-        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
-                HashMap<String, String> item = listAdapter.getItem(position);
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                HashMap<String, String> item = listAdapter.getItem(index);
                 String type = item.get("type");
-                switch (positionInList) {
+                switch (position) {
                     case 0:
                         String directory;
                         if (type.equals(AppSettings.WEBSITE) ||
@@ -641,29 +656,30 @@ public class SourceListFragment extends ListFragment {
                                 type.equals(AppSettings.PICASA) ||
                                 type.equals(AppSettings.TUMBLR_BLOG) ||
                                 type.equals(AppSettings.TUMBLR_TAG)) {
-                            directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(position) + " " + AppSettings.getImagePrefix();
+                            directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(
+                                    index) + " " + AppSettings.getImagePrefix();
                         }
                         else {
-                            directory = AppSettings.getSourceData(position);
+                            directory = AppSettings.getSourceData(index);
                         }
-                        showImageFragment(false, directory, position);
+                        showImageFragment(false, directory, index);
                         break;
                     case 1:
                         switch (type) {
                             case AppSettings.WEBSITE:
                                 showInputDialog(AppSettings.WEBSITE,
-                                                AppSettings.getSourceTitle(position),
+                                                AppSettings.getSourceTitle(index),
                                                 "",
                                                 "",
-                                                AppSettings.getSourceData(position),
+                                                AppSettings.getSourceData(index),
                                                 "",
-                                                "" + AppSettings.getSourceNum(position),
+                                                "" + AppSettings.getSourceNum(index),
                                                 "Edit website:",
-                                                position);
+                                                index);
                                 break;
                             case AppSettings.IMGUR: {
                                 String prefix = "", hint = "";
-                                String data = AppSettings.getSourceData(position);
+                                String data = AppSettings.getSourceData(index);
                                 if (data.contains("imgur.com/a/")) {
                                     prefix = "imgur.com/a/";
                                     hint = "Album ID";
@@ -674,50 +690,50 @@ public class SourceListFragment extends ListFragment {
                                 }
 
                                 showInputDialog(AppSettings.IMGUR,
-                                                AppSettings.getSourceTitle(position),
+                                                AppSettings.getSourceTitle(index),
                                                 hint,
                                                 prefix,
                                                 data.substring(data.indexOf(prefix) + prefix.length()),
                                                 "",
-                                                "" + AppSettings.getSourceNum(position),
+                                                "" + AppSettings.getSourceNum(index),
                                                 "Edit Imgur source:",
-                                                position);
+                                                index);
                                 break;
                             }
                             case AppSettings.PICASA:
-                                new PicasaAlbumTask(position).execute();
+                                new PicasaAlbumTask(index).execute();
                                 break;
                             case AppSettings.TUMBLR_BLOG:
                                 showInputDialog(AppSettings.TUMBLR_BLOG,
-                                                AppSettings.getSourceTitle(position),
+                                                AppSettings.getSourceTitle(index),
                                                 "Blog name",
                                                 "",
-                                                AppSettings.getSourceData(position),
+                                                AppSettings.getSourceData(index),
                                                 "",
-                                                "" + AppSettings.getSourceNum(position),
+                                                "" + AppSettings.getSourceNum(index),
                                                 "Edit Tumblr Blog:",
-                                                position);
+                                                index);
                                 break;
                             case AppSettings.TUMBLR_TAG: {
-                                String data = AppSettings.getSourceData(position);
+                                String data = AppSettings.getSourceData(index);
 
                                 if (data.length() > 12) {
                                     data = data.substring(12);
                                 }
 
                                 showInputDialog(AppSettings.TUMBLR_TAG,
-                                                AppSettings.getSourceTitle(position),
+                                                AppSettings.getSourceTitle(index),
                                                 "Tag",
                                                 "",
                                                 data,
                                                 "",
-                                                "" + AppSettings.getSourceNum(position),
+                                                "" + AppSettings.getSourceNum(index),
                                                 "Edit Tumblr Tag:",
-                                                position);
+                                                index);
                                 break;
                             }
                             case AppSettings.FOLDER:
-                                showImageFragment(false, "", position);
+                                showImageFragment(false, "", index);
                                 break;
                         }
                         break;
@@ -729,81 +745,65 @@ public class SourceListFragment extends ListFragment {
                                 type.equals(AppSettings.TUMBLR_TAG)) {
                             listAdapter.saveData();
 
-                            final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
-
-                            View dialogView = View.inflate(appContext, R.layout.action_dialog, null);
-                            dialog.setContentView(dialogView);
-
-                            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-                            TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
-
-                            dialogTitle.setText("Delete images associated with this source?");
-                            dialogSummary.setText("This cannot be undone.");
-
-                            Button yesButton = (Button) dialogView.findViewById(R.id.action_button_3);
-                            yesButton.setText(getResources().getString(R.string.ok_button));
-                            yesButton.setVisibility(View.VISIBLE);
-                            yesButton.setOnClickListener(new View.OnClickListener() {
+                            DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
                                 @Override
-                                public void onClick(View v) {
-                                    Downloader.deleteBitmaps(appContext, position);
-                                    Toast.makeText(appContext, "Deleting " + AppSettings.getSourceTitle(position) + " images", Toast.LENGTH_SHORT).show();
-                                    AppSettings.setSourceSet(AppSettings.getSourceTitle(position), new HashSet<String>());
-                                    listAdapter.removeItem(position);
+                                public void onClickLeft(View v) {
+                                    this.dismissDialog();
+                                }
+
+                                @Override
+                                public void onClickMiddle(View v) {
+                                    this.dismissDialog();
+                                    AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
+                                                             new HashSet<String>());
+                                    listAdapter.removeItem(index);
                                     listAdapter.saveData();
-                                    dialog.dismiss();
                                 }
-                            });
 
-                            Button noButton = (Button) dialogView.findViewById(R.id.action_button_2);
-                            noButton.setText(getResources().getString(R.string.no_button));
-                            noButton.setVisibility(View.VISIBLE);
-                            noButton.setOnClickListener(new View.OnClickListener() {
                                 @Override
-                                public void onClick(View v) {
-                                    AppSettings.setSourceSet(AppSettings.getSourceTitle(position), new HashSet<String>());
-                                    listAdapter.removeItem(position);
+                                public void onClickRight(View v) {
+                                    Downloader.deleteBitmaps(appContext, index);
+                                    Toast.makeText(appContext,
+                                                   "Deleting " + AppSettings.getSourceTitle(index) + " images",
+                                                   Toast.LENGTH_SHORT).show();
+                                    AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
+                                                             new HashSet<String>());
+                                    listAdapter.removeItem(index);
                                     listAdapter.saveData();
-                                    dialog.dismiss();
+                                    this.dismissDialog();
                                 }
-                            });
 
-                            Button cancelButton = (Button) dialogView.findViewById(R.id.action_button_1);
-                            cancelButton.setText(getResources().getString(R.string.cancel_button));
-                            cancelButton.setVisibility(View.VISIBLE);
-                            cancelButton.setOnClickListener(new View.OnClickListener() {
                                 @Override
-                                public void onClick(View v) {
-                                    dialog.dismiss();
+                                public void onDismiss() {
+                                    AppSettings.setTutorial(false, "source");
+                                    tutorialShowing = false;
                                 }
-                            });
+                            };
 
-                            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                                yesButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-                                noButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-                                cancelButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-                            }
-                            else {
-                                yesButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-                                noButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-                                cancelButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-                            }
+                            DialogFactory.showActionDialog(appContext,
+                                                           "Delete images associated with this source?",
+                                                           "This cannot be undone.",
+                                                           clickListener,
+                                                           R.string.cancel_button,
+                                                           R.string.no_button,
+                                                           R.string.yes_button);
 
-                            dialog.show();
                         }
                         else {
-                            listAdapter.removeItem(position);
+                            listAdapter.removeItem(index);
                             listAdapter.saveData();
                         }
                         break;
                     default:
                 }
-                dialog.dismiss();
-
+                dismissDialog();
             }
-        });
+        };
 
-        dialog.show();
+        DialogFactory.showListDialog(appContext,
+                                     AppSettings.getSourceTitle(index),
+                                     clickListener,
+                                     R.array.source_edit_menu);
     }
 
     @Override
@@ -813,7 +813,11 @@ public class SourceListFragment extends ListFragment {
         if (listAdapter == null) {
             listAdapter = new SourceListAdapter(getActivity());
             for (int i = 0; i < AppSettings.getNumSources(); i++) {
-                listAdapter.addItem(AppSettings.getSourceType(i), AppSettings.getSourceTitle(i), AppSettings.getSourceData(i), AppSettings.useSource(i), "" + AppSettings.getSourceNum(i));
+                listAdapter.addItem(AppSettings.getSourceType(i),
+                                    AppSettings.getSourceTitle(i),
+                                    AppSettings.getSourceData(i),
+                                    AppSettings.useSource(i),
+                                    "" + AppSettings.getSourceNum(i));
                 Log.i("WLF", "Added: " + AppSettings.getSourceTitle(i));
             }
         }
@@ -822,26 +826,33 @@ public class SourceListFragment extends ListFragment {
         TextView emptyText = new TextView(getActivity());
         emptyText.setText("List is empty. Please add a new source entry.");
         emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                             ViewGroup.LayoutParams.MATCH_PARENT));
         emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
 
         LinearLayout emptyLayout = new LinearLayout(getActivity());
-        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                                  ViewGroup.LayoutParams.MATCH_PARENT));
         emptyLayout.setGravity(Gravity.TOP);
         emptyLayout.addView(emptyText);
 
         ((ViewGroup) getListView().getParent()).addView(emptyLayout, 0);
 
         getListView().setEmptyView(emptyLayout);
-        getListView().setDividerHeight(1);
+        getListView().setDividerHeight(0);
 
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position,
+                                           long id) {
                 showDialogMenu(position);
                 return true;
             }
         });
+
+        if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
+            getListView().setBackgroundColor(getResources().getColor(android.R.color.transparent));
+        }
 
         listAdapter.updateNum();
 
@@ -1031,15 +1042,14 @@ public class SourceListFragment extends ListFragment {
     public void onResume() {
         super.onResume();
 
-        LocalBroadcastManager.getInstance(appContext).registerReceiver(downloadButtonReceiver, new IntentFilter(Downloader.DOWNLOAD_TERMINATED));
+        LocalBroadcastManager.getInstance(appContext).registerReceiver(downloadButtonReceiver,
+                                                                       new IntentFilter(Downloader.DOWNLOAD_TERMINATED));
 
         if (Downloader.isDownloading) {
-            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_cancel);
-            }
-            else {
-                toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_cancel_white);
-            }
+            Drawable drawable = getResources().getDrawable(R.drawable.ic_action_cancel_white);
+            drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                                    PorterDuff.Mode.MULTIPLY);
+            toolbarMenu.getItem(1).setIcon(drawable);
         }
         else {
             resetActionBarDownload();
@@ -1056,56 +1066,38 @@ public class SourceListFragment extends ListFragment {
             Log.i("WLF", "Showing tutorial");
             tutorialShowing = true;
 
-
-            final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
-
-            View dialogView = View.inflate(appContext, R.layout.action_dialog, null);
-            dialog.setContentView(dialogView);
-
-            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-            TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
-
-            dialogTitle.setText("Show Sources Tutorial?");
-
-            Button positiveButton = (Button) dialogView.findViewById(R.id.action_button_3);
-            positiveButton.setText(getResources().getString(R.string.ok_button));
-            positiveButton.setVisibility(View.VISIBLE);
-            positiveButton.setOnClickListener(new View.OnClickListener() {
+            DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
                 @Override
-                public void onClick(View v) {
+                public void onClickLeft(View v) {
+
+                }
+
+                @Override
+                public void onClickMiddle(View v) {
+                    this.dismissDialog();
+                }
+
+                @Override
+                public void onClickRight(View v) {
                     showTutorial();
-                    dialog.dismiss();
+                    this.dismissDialog();
                 }
-            });
 
-            Button negativeButton = (Button) dialogView.findViewById(R.id.action_button_2);
-            negativeButton.setText(getResources().getString(R.string.cancel_button));
-            negativeButton.setVisibility(View.VISIBLE);
-            negativeButton.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                }
-            });
-
-            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-                positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-            }
-            else {
-                negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-                positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            }
-
-            dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
+                public void onDismiss() {
                     AppSettings.setTutorial(false, "source");
                     tutorialShowing = false;
                 }
-            });
+            };
 
-            dialog.show();
+            DialogFactory.showActionDialog(appContext,
+                                           "Show Sources Tutorial?",
+                                           "",
+                                           clickListener,
+                                           -1,
+                                           R.string.cancel_button,
+                                           R.string.ok_button);
+
         }
     }
 
@@ -1166,7 +1158,9 @@ public class SourceListFragment extends ListFragment {
             publishProgress("Loading albums...");
             String authToken = null;
             try {
-                authToken = GoogleAuthUtil.getToken(appContext, AppSettings.getGoogleAccountName(), "oauth2:https://picasaweb.google.com/data/");
+                authToken = GoogleAuthUtil.getToken(appContext,
+                                                    AppSettings.getGoogleAccountName(),
+                                                    "oauth2:https://picasaweb.google.com/data/");
             }
             catch (IOException e) {
                 publishProgress("Error loading albums");
@@ -1230,7 +1224,12 @@ public class SourceListFragment extends ListFragment {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            showAlbumFragment(AppSettings.PICASA, changePosition, albumNames, albumImageLinks, albumLinks, albumNums);
+            showAlbumFragment(AppSettings.PICASA,
+                              changePosition,
+                              albumNames,
+                              albumImageLinks,
+                              albumLinks,
+                              albumNums);
         }
     }
 

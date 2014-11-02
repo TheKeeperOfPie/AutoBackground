@@ -71,18 +71,24 @@ public class MusicReceiverService extends NotificationListenerService implements
 
         audioRemoteController = new RemoteController(getApplicationContext(), this);
         audioRemoteController.setArtworkConfiguration(4096, 4096);
-        boolean registered = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).registerRemoteController(audioRemoteController);
+        boolean registered = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).registerRemoteController(
+                audioRemoteController);
         Log.i(TAG, "Audio registered: " + registered);
-        Toast.makeText(MusicReceiverService.this, "Audio registered: " + registered, Toast.LENGTH_SHORT).show();
+        Toast.makeText(MusicReceiverService.this,
+                       "Audio registered: " + registered,
+                       Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onDestroy() {
 
-        ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).unregisterRemoteController(audioRemoteController);
+        ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).unregisterRemoteController(
+                audioRemoteController);
 
         Log.i(TAG, "MusicReceiverService destroyed");
-        Toast.makeText(MusicReceiverService.this, "MusicReceiverService destroyed", Toast.LENGTH_SHORT).show();
+        Toast.makeText(MusicReceiverService.this,
+                       "MusicReceiverService destroyed",
+                       Toast.LENGTH_SHORT).show();
 
         super.onDestroy();
     }
@@ -132,7 +138,8 @@ public class MusicReceiverService extends NotificationListenerService implements
     public void onClientMetadataUpdate(RemoteController.MetadataEditor metadataEditor) {
 
         String artist = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_ARTIST, null);
-        String albumArtist = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST, "Error");
+        String albumArtist = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST,
+                                                      "Error");
         String album = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_ALBUM, "Error");
         String track = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_TITLE, "Error");
 
@@ -141,13 +148,18 @@ public class MusicReceiverService extends NotificationListenerService implements
         }
 
         Log.i(TAG, "Artist: " + artist + " Album: " + album);
-        Toast.makeText(MusicReceiverService.this, "Metadata changed, \nArtist: " + artist + " Album: " + album, Toast.LENGTH_SHORT).show();
+        Toast.makeText(MusicReceiverService.this,
+                       "Metadata changed, \nArtist: " + artist + " Album: " + album,
+                       Toast.LENGTH_SHORT).show();
 
         if (!album.equals(previousAlbum) || !artist.equals(previousArtist)) {
 
-            Bitmap bitmap = metadataEditor.getBitmap(RemoteController.MetadataEditor.BITMAP_KEY_ARTWORK, null);
+            Bitmap bitmap = metadataEditor.getBitmap(RemoteController.MetadataEditor.BITMAP_KEY_ARTWORK,
+                                                     null);
             if (bitmap != null) {
-                Toast.makeText(MusicReceiverService.this, "Bitmap ID: " + bitmap.getGenerationId(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MusicReceiverService.this,
+                               "Bitmap ID: " + bitmap.getGenerationId(),
+                               Toast.LENGTH_SHORT).show();
 
                 Downloader.setMusicBitmap(bitmap);
 

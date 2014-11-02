@@ -16,54 +16,58 @@
   -->
 <android.support.v7.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    card_view:cardBackgroundColor="@color/LIGHT_THEME_DIALOG"
+    card_view:cardElevation="4dp"
     >
 
-<RelativeLayout
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical"
-	android:padding="1dp" >
-    
-    <ImageView
-    	android:id="@+id/file_image"
-    	android:layout_width="wrap_content"
-    	android:layout_height="wrap_content"
-    	android:adjustViewBounds="true"
-    	android:src="@drawable/app_icon"
-    	android:focusable="false"
-        tools:ignore="ContentDescription"
-    	/>
-    
-   	<TextView
-    	android:id="@+id/file_title"
-        android:layout_toEndOf="@id/file_image"
-        android:layout_toRightOf="@id/file_image"
-    	android:layout_width="match_parent"
-    	android:layout_height="wrap_content"
-    	android:textSize="22sp"
-    	android:scrollHorizontally="true"
-    	android:singleLine="true"
-		android:scrollbars="horizontal"
-    	android:focusable="false"
-    	/>
-   	
-   	<TextView
-    	android:id="@+id/file_summary"
-        android:layout_toEndOf="@id/file_image"
-        android:layout_toRightOf="@id/file_image"
-        android:layout_below="@id/file_title"
-    	android:layout_width="match_parent"
-    	android:layout_height="wrap_content"
-    	android:textSize="14sp"
-    	android:scrollHorizontally="true"
-    	android:singleLine="true"
-		android:scrollbars="horizontal"
-    	android:focusable="false"
-    	/>
-   	
-</RelativeLayout>
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:padding="1dp">
+
+        <ImageView
+            android:id="@+id/file_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:focusable="false"
+            android:src="@drawable/app_icon"
+            tools:ignore="ContentDescription"
+            />
+
+        <TextView
+            android:id="@+id/file_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/file_image"
+            android:layout_toRightOf="@id/file_image"
+            android:focusable="false"
+            android:scrollHorizontally="true"
+            android:scrollbars="horizontal"
+            android:singleLine="true"
+            android:textSize="22sp"
+            />
+
+        <TextView
+            android:id="@+id/file_summary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/file_title"
+            android:layout_toEndOf="@id/file_image"
+            android:layout_toRightOf="@id/file_image"
+            android:focusable="false"
+            android:scrollHorizontally="true"
+            android:scrollbars="horizontal"
+            android:singleLine="true"
+            android:textSize="14sp"
+            />
+
+    </RelativeLayout>
 </android.support.v7.widget.CardView>

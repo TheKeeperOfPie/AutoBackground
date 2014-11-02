@@ -15,59 +15,59 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-    
-	<PreferenceCategory
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
         android:key="title_app_settings"
-		android:title="@string/title_app_settings"
-		>
+        android:title="@string/title_app_settings"
+        >
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_toast"
             android:defaultValue="true"
-            android:title="@string/use_toast"
+            android:key="use_toast"
             android:summary="@string/use_toast_description"
+            android:title="@string/use_toast"
             />
 
-		<cw.kop.autobackground.CustomSwitchPreference
-			android:key="force_multipane"
-			android:defaultValue="false"
-			android:title="@string/force_multipane" 
-			android:summary="@string/force_multipane_description"
-			/>
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
+            android:key="force_multipane"
+            android:summary="@string/force_multipane_description"
+            android:title="@string/force_multipane"
+            />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
             android:key="use_right_drawer"
-            android:defaultValue="false"
-            android:title="@string/use_right_drawer"
             android:summary="@string/use_right_drawer_description"
+            android:title="@string/use_right_drawer"
             />
-		
-		<Preference
-			android:key="change_theme"
-			android:title="@string/change_theme"
-			android:summary="@string/change_theme_description"
-			/>
+
+        <Preference
+            android:key="change_theme"
+            android:summary="@string/change_theme_description"
+            android:title="@string/change_theme"
+            />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_advanced"
             android:defaultValue="false"
-            android:title="@string/use_advanced"
+            android:key="use_advanced"
             android:summary="@string/use_advanced_description"
+            android:title="@string/use_advanced"
             />
 
         <Preference
             android:key="clear_pref"
-            android:title="@string/clear_pref"
             android:summary="@string/clear_pref_description"
+            android:title="@string/clear_pref"
             />
 
         <Preference
             android:key="show_tutorial_source"
-            android:title="@string/show_tutorial_source"
             android:summary="@string/show_tutorial_source_description"
+            android:title="@string/show_tutorial_source"
             />
 
-	</PreferenceCategory>
+    </PreferenceCategory>
 
 </PreferenceScreen>

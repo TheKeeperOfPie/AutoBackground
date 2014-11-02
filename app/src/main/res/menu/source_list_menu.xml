@@ -20,16 +20,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     >
 
-    <item android:id="@+id/cycle_wallpaper"
-          android:icon="@drawable/ic_action_refresh"
-          android:title="@string/cycle_wallpaper"
-          app:showAsAction="ifRoom"/>
-    <item android:id="@+id/download_wallpaper"
-          android:icon="@drawable/ic_action_download"
-          android:title="@string/download_wallpaper"
-          app:showAsAction="ifRoom"/>
-    <item android:id="@+id/sort_sources"
-          android:icon="@drawable/ic_action_storage"
-          android:title="@string/sort_sources"
-          app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/cycle_wallpaper"
+        android:icon="@drawable/ic_action_refresh_white"
+        android:title="@string/cycle_wallpaper"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/download_wallpaper"
+        android:icon="@drawable/ic_action_download_white"
+        android:title="@string/download_wallpaper"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/sort_sources"
+        android:icon="@drawable/ic_action_storage_white"
+        android:title="@string/sort_sources"
+        app:showAsAction="ifRoom"/>
 </menu>

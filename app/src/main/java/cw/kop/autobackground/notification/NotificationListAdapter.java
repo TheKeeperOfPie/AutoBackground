@@ -16,6 +16,9 @@
 
 package cw.kop.autobackground.notification;
 
+import android.content.Context;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,18 +29,34 @@ import android.widget.TextView;
 import java.util.List;
 
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.settings.AppSettings;
 
 public class NotificationListAdapter extends RecyclerView.Adapter<NotificationListAdapter.ViewHolder> {
 
+    private Context appContext;
     private List<NotificationOptionData> optionsList;
     private RecyclerViewListClickListener listClickListener;
-    private int optionPosition;
+    private int optionPosition, colorFilterInt;
 
-    public NotificationListAdapter(List<NotificationOptionData> options, int position,
+    public NotificationListAdapter(Context context, List<NotificationOptionData> options,
+                                   int position,
                                    RecyclerViewListClickListener listener) {
+        appContext = context;
         optionsList = options;
         optionPosition = position;
         listClickListener = listener;
+
+        switch (AppSettings.getTheme()) {
+            default:
+            case AppSettings.APP_LIGHT_THEME:
+                colorFilterInt = context.getResources().getColor(R.color.DARK_GRAY_OPAQUE);
+                break;
+            case AppSettings.APP_DARK_THEME:
+            case AppSettings.APP_TRANSPARENT_THEME:
+                colorFilterInt = context.getResources().getColor(R.color.LIGHT_GRAY_OPAQUE);
+                break;
+        }
+
     }
 
     public void addItem(NotificationOptionData data) {
@@ -48,7 +67,9 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
     @Override
     public NotificationListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        View rowLayout = LayoutInflater.from(parent.getContext()).inflate(R.layout.notification_settings_row, parent, false);
+        View rowLayout = LayoutInflater.from(parent.getContext()).inflate(R.layout.notification_settings_row,
+                                                                          parent,
+                                                                          false);
 
         return new ViewHolder(rowLayout);
     }
@@ -60,12 +81,18 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
 
         viewHolder.optionTitle.setText(optionData.getTitle());
         viewHolder.optionSummary.setText(optionData.getSummary());
-        viewHolder.optionIcon.setImageResource(optionData.getDrawable());
+
+        Drawable iconDrawable = appContext.getResources().getDrawable(optionData.getDrawable());
+        iconDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+
+        viewHolder.optionIcon.setImageDrawable(iconDrawable);
         viewHolder.position = optionPosition;
         viewHolder.rowLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listClickListener.onClick(optionPosition, optionData.getTitle(), optionData.getDrawable());
+                listClickListener.onClick(optionPosition,
+                                          optionData.getTitle(),
+                                          optionData.getDrawable());
             }
         });
 

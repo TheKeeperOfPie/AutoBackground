@@ -28,7 +28,14 @@ public class GoogleAccount {
     public static final int GOOGLE_AUTH_CODE = 2;
 
     public static Intent getPickerIntent() {
-        return AccountPicker.newChooseAccountIntent(null, null, new String[]{"com.google"}, false, null, null, null, null);
+        return AccountPicker.newChooseAccountIntent(null,
+                                                    null,
+                                                    new String[] {"com.google"},
+                                                    false,
+                                                    null,
+                                                    null,
+                                                    null,
+                                                    null);
     }
 
     public static void deleteAccount() {

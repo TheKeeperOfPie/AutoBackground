@@ -17,8 +17,8 @@
   -->
 
 <RelativeLayout
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -34,9 +34,9 @@
             android:id="@+id/notification_options_icon"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
             android:src="@drawable/app_icon"
             tools:ignore="contentDescription"
             />
@@ -45,33 +45,33 @@
             android:id="@+id/notification_icon_action_indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@id/notification_options_icon"
             android:layout_alignBottom="@id/notification_options_icon"
-            android:layout_alignStart="@id/notification_options_icon"
-            android:layout_alignLeft="@id/notification_options_icon"
             android:layout_alignEnd="@id/notification_options_icon"
+            android:layout_alignLeft="@id/notification_options_icon"
             android:layout_alignRight="@id/notification_options_icon"
-            android:src="@color/TRANSPARENT_BACKGROUND"
+            android:layout_alignStart="@id/notification_options_icon"
+            android:layout_alignTop="@id/notification_options_icon"
             android:contentDescription="@string/notification_highlight"
             android:focusable="false"
             android:focusableInTouchMode="false"
+            android:src="@color/TRANSPARENT_BACKGROUND"
             />
 
         <ImageView
             android:id="@+id/notification_icon_highlight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@id/notification_options_icon"
             android:layout_alignBottom="@id/notification_options_icon"
-            android:layout_alignStart="@id/notification_options_icon"
-            android:layout_alignLeft="@id/notification_options_icon"
             android:layout_alignEnd="@id/notification_options_icon"
+            android:layout_alignLeft="@id/notification_options_icon"
             android:layout_alignRight="@id/notification_options_icon"
-            android:src="@drawable/highlight_border"
+            android:layout_alignStart="@id/notification_options_icon"
+            android:layout_alignTop="@id/notification_options_icon"
             android:contentDescription="@string/notification_highlight"
-            android:visibility="gone"
             android:focusable="false"
             android:focusableInTouchMode="false"
+            android:src="@drawable/highlight_border"
+            android:visibility="gone"
             />
 
         <RelativeLayout
@@ -82,73 +82,73 @@
             android:layout_alignParentTop="true"
             android:layout_toEndOf="@id/notification_options_icon"
             android:layout_toRightOf="@id/notification_options_icon"
+            android:focusable="false"
             android:orientation="vertical"
-            android:paddingTop="2dp"
             android:paddingBottom="2dp"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
-            android:focusable="false"
+            android:paddingTop="2dp"
             >
 
             <TextView
                 android:id="@+id/notification_options_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:paddingTop="4dp"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
                 android:text="@string/app_name"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:paddingTop="4dp"
                 android:textStyle="normal"
-                android:singleLine="true"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit ="marquee_forever"
-                android:scrollHorizontally="true"
                 />
 
             <ImageView
                 android:id="@+id/notification_title_highlight"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignTop="@id/notification_options_title"
                 android:layout_alignBottom="@id/notification_options_title"
-                android:layout_alignStart="@id/notification_options_title"
-                android:layout_alignLeft="@id/notification_options_title"
                 android:layout_alignEnd="@id/notification_options_title"
+                android:layout_alignLeft="@id/notification_options_title"
                 android:layout_alignRight="@id/notification_options_title"
-                android:src="@drawable/highlight_border"
+                android:layout_alignStart="@id/notification_options_title"
+                android:layout_alignTop="@id/notification_options_title"
                 android:contentDescription="@string/notification_highlight"
-                android:visibility="gone"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
+                android:src="@drawable/highlight_border"
+                android:visibility="gone"
                 />
 
             <TextView
                 android:id="@+id/notification_options_summary"
-                android:layout_below="@+id/notification_options_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_below="@+id/notification_options_title"
+                android:ellipsize="marquee"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:paddingBottom="6dp"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
                 android:text="@string/app_name"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:paddingBottom="6dp"
                 android:textStyle="normal"
-                android:singleLine="true"
-                android:ellipsize="marquee"
-                android:marqueeRepeatLimit ="marquee_forever"
-                android:scrollHorizontally="true"
                 />
 
             <ImageView
                 android:id="@+id/notification_summary_highlight"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignTop="@id/notification_options_summary"
                 android:layout_alignBottom="@id/notification_options_summary"
                 android:layout_alignLeft="@id/notification_options_summary"
                 android:layout_alignRight="@id/notification_options_summary"
-                android:src="@drawable/highlight_border"
+                android:layout_alignTop="@id/notification_options_summary"
                 android:contentDescription="@string/notification_highlight"
-                android:visibility="gone"
                 android:focusable="false"
                 android:focusableInTouchMode="false"
+                android:src="@drawable/highlight_border"
+                android:visibility="gone"
                 />
 
         </RelativeLayout>
@@ -157,8 +157,8 @@
             android:id="@+id/notification_options"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:orientation="horizontal"
             android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
             >
 
             <View
@@ -180,11 +180,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_alignParentLeft="true"
-                    android:scaleType="centerInside"
                     android:adjustViewBounds="true"
-                    android:src="@drawable/app_icon"
                     android:contentDescription="@string/notification_option_one_image"
                     android:focusable="false"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/app_icon"
                     />
 
                 <TextView
@@ -192,25 +192,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_toRightOf="@id/notification_option_one_image"
+                    android:focusable="false"
+                    android:gravity="center"
                     android:text="@string/notification_option_one_text"
                     android:textSize="14sp"
-                    android:gravity="center"
-                    android:focusable="false"
                     />
 
                 <ImageView
                     android:id="@+id/notification_option_one_highlight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentRight="true"
-                    android:src="@drawable/highlight_border"
+                    android:layout_alignParentTop="true"
                     android:contentDescription="@string/notification_highlight"
-                    android:visibility="gone"
                     android:focusable="false"
                     android:focusableInTouchMode="false"
+                    android:src="@drawable/highlight_border"
+                    android:visibility="gone"
                     />
 
             </RelativeLayout>
@@ -228,11 +228,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_alignParentLeft="true"
-                    android:scaleType="centerInside"
                     android:adjustViewBounds="true"
-                    android:src="@drawable/app_icon"
                     android:contentDescription="@string/notification_option_two_image"
                     android:focusable="false"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/app_icon"
                     />
 
                 <TextView
@@ -240,25 +240,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_toRightOf="@id/notification_option_two_image"
+                    android:focusable="false"
+                    android:gravity="center"
                     android:text="@string/notification_option_two_text"
                     android:textSize="14sp"
-                    android:gravity="center"
-                    android:focusable="false"
                     />
 
                 <ImageView
                     android:id="@+id/notification_option_two_highlight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentRight="true"
-                    android:src="@drawable/highlight_border"
+                    android:layout_alignParentTop="true"
                     android:contentDescription="@string/notification_highlight"
-                    android:visibility="gone"
                     android:focusable="false"
                     android:focusableInTouchMode="false"
+                    android:src="@drawable/highlight_border"
+                    android:visibility="gone"
                     />
 
             </RelativeLayout>
@@ -275,11 +275,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_alignParentLeft="true"
-                    android:scaleType="centerInside"
                     android:adjustViewBounds="true"
-                    android:src="@drawable/app_icon"
                     android:contentDescription="@string/notification_option_three_image"
                     android:focusable="false"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/app_icon"
                     />
 
                 <TextView
@@ -287,25 +287,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_toRightOf="@id/notification_option_three_image"
+                    android:focusable="false"
+                    android:gravity="center"
                     android:text="@string/notification_option_three_text"
                     android:textSize="14sp"
-                    android:gravity="center"
-                    android:focusable="false"
                     />
 
                 <ImageView
                     android:id="@+id/notification_option_three_highlight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentLeft="true"
                     android:layout_alignParentRight="true"
-                    android:src="@drawable/highlight_border"
+                    android:layout_alignParentTop="true"
                     android:contentDescription="@string/notification_highlight"
-                    android:visibility="gone"
                     android:focusable="false"
                     android:focusableInTouchMode="false"
+                    android:src="@drawable/highlight_border"
+                    android:visibility="gone"
                     />
 
             </RelativeLayout>
@@ -318,15 +318,15 @@
         android:id="@+id/notification_preview_highlight"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/notification_preview"
         android:layout_alignBottom="@id/notification_preview"
         android:layout_alignLeft="@id/notification_preview"
         android:layout_alignRight="@id/notification_preview"
-        android:src="@drawable/highlight_border"
+        android:layout_alignTop="@id/notification_preview"
         android:contentDescription="@string/notification_highlight"
-        android:visibility="gone"
         android:focusable="false"
         android:focusableInTouchMode="false"
+        android:src="@drawable/highlight_border"
+        android:visibility="gone"
         />
 
     <android.support.v7.widget.RecyclerView
@@ -341,10 +341,10 @@
         android:id="@android:id/list"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/notification_options_list"
         android:layout_alignBottom="@id/notification_options_list"
         android:layout_alignLeft="@id/notification_options_list"
         android:layout_alignRight="@id/notification_options_list"
+        android:layout_alignTop="@id/notification_options_list"
         android:layout_below="@id/notification_preview"
         />
 

@@ -19,7 +19,6 @@ package cw.kop.autobackground;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.media.effect.EffectFactory;
@@ -32,16 +31,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import afzkl.development.colorpickerview.view.ColorPickerView;
 import cw.kop.autobackground.settings.AppSettings;
 
-public class EffectsSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener{
+public class EffectsSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
 
     private Context appContext;
 
@@ -99,7 +96,8 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
         if (!AppSettings.useAdvanced()) {
 
-            PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference("title_effects_settings");
+            PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference(
+                    "title_effects_settings");
 
             findPreference("effects_frequency").setOnPreferenceClickListener(this);
             findPreference("random_effects_frequency").setOnPreferenceClickListener(this);
@@ -108,7 +106,8 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
             preferenceCategory.removePreference(findPreference("use_toast_effects"));
         }
 
-        PreferenceCategory parametersCategory = (PreferenceCategory) findPreference("title_effects_parameters");
+        PreferenceCategory parametersCategory = (PreferenceCategory) findPreference(
+                "title_effects_parameters");
 
         for (int i = 0; i < parametersCategory.getPreferenceCount(); i++) {
             String key = parametersCategory.getPreference(i).getKey();
@@ -184,38 +183,30 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
     }
 
     private void showEffectDialogMenu() {
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
 
-        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
-        dialog.setContentView(dialogView);
+        DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
 
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        dialogTitle.setText("Random Effect:");
-
-        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
-        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.random_effects_entry_menu)));
-        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String[] randomEffectsList = getResources().getStringArray(R.array.random_effects_entry_menu);
                 AppSettings.setRandomEffect(randomEffectsList[position]);
-                dialog.dismiss();
+                randomPref.setSummary("Effect: " + AppSettings.getRandomEffect());
+                this.dismissDialog();
             }
-        });
-
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
 
             @Override
-            public void onDismiss(DialogInterface dialog) {
+            public void onDismiss() {
                 if (AppSettings.getRandomEffect().equals("None")) {
                     randomPref.setChecked(false);
                 }
                 randomPref.setSummary("Effect: " + AppSettings.getRandomEffect());
             }
+        };
 
-        });
-
-        dialog.show();
+        DialogFactory.showListDialog(appContext,
+                                     "Random Effect:",
+                                     clickListener,
+                                     R.array.random_effects_entry_menu);
     }
 
     @Override
@@ -225,7 +216,8 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
     }
 
     private void resetEffects() {
-        PreferenceCategory settingsCategory = (PreferenceCategory) findPreference("title_effects_settings");
+        PreferenceCategory settingsCategory = (PreferenceCategory) findPreference(
+                "title_effects_settings");
 
         for (int i = 0; i < settingsCategory.getPreferenceCount(); i++) {
             String key = settingsCategory.getPreference(i).getKey();
@@ -243,7 +235,8 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
         AppSettings.setRandomEffect("None");
         randomPref.setSummary("Effect: " + AppSettings.getRandomEffect());
 
-        PreferenceCategory parametersCategory = (PreferenceCategory) findPreference("title_effects_parameters");
+        PreferenceCategory parametersCategory = (PreferenceCategory) findPreference(
+                "title_effects_parameters");
 
         for (int i = 0; i < parametersCategory.getPreferenceCount(); i++) {
             String key = parametersCategory.getPreference(i).getKey();
@@ -266,7 +259,8 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
                     }
 
                     EffectPreference effectPref = (EffectPreference) findPreference(key);
-                    effectPref.setSummary(effectPref.getTitle() + ": " + AppSettings.getEffectValue(key) + "%");
+                    effectPref.setSummary(effectPref.getTitle() + ": " + AppSettings.getEffectValue(
+                            key) + "%");
                 }
                 else {
                     ((SwitchPreference) findPreference(key)).setChecked(false);
@@ -277,7 +271,11 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
     }
 
     private void showDuotoneDialog() {
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
+                new Dialog(
+                        appContext,
+                        R.style.LightDialogTheme) :
+                new Dialog(appContext, R.style.DarkDialogTheme);
 
         View dialogView = View.inflate(appContext, R.layout.duotone_dialog, null);
         dialog.setContentView(dialogView);
@@ -387,7 +385,11 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
         int maxValue = effectPreference.getMaxValue();
         final int defaultValue = effectPreference.getDefaultValue();
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
+                new Dialog(
+                        appContext,
+                        R.style.LightDialogTheme) :
+                new Dialog(appContext, R.style.DarkDialogTheme);
 
         View dialogView = View.inflate(appContext, R.layout.effect_dialog, null);
         dialog.setContentView(dialogView);

@@ -18,8 +18,8 @@
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:state_selected="true"
-        android:drawable="@color/BLUE_OPAQUE"/>
+        android:drawable="@color/BLUE_OPAQUE"
+        android:state_selected="true"/>
     <item
-        android:drawable="@color/TRANSPARENT_BACKGROUND" />
+        android:drawable="@color/TRANSPARENT_BACKGROUND"/>
 </selector>

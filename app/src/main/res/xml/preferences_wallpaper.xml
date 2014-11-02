@@ -15,344 +15,344 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-    
-	<PreferenceCategory
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
         android:key="title_wallpaper_settings"
-		android:title="@string/title_wallpaper_settings"
-		>
+        android:title="@string/title_wallpaper_settings"
+        >
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="true"
             android:key="preserve_context"
-            android:defaultValue="true"
-            android:title="@string/preserve_context"
             android:summary="@string/preserve_context_description"
+            android:title="@string/preserve_context"
             />
 
-		<cw.kop.autobackground.CustomSwitchPreference
-			android:key="fill_images"
-			android:defaultValue="true"
-			android:title="@string/fill_images" 
-			android:summary="@string/fill_images_description"
-			/>
-      
-		<cw.kop.autobackground.CustomSwitchPreference
-			android:key="shuffle_images"
-			android:defaultValue="true"
-			android:title="@string/shuffle_images" 
-			android:summary="@string/shuffle_images_description"
-			/>
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="true"
+            android:key="fill_images"
+            android:summary="@string/fill_images_description"
+            android:title="@string/fill_images"
+            />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="true"
+            android:key="shuffle_images"
+            android:summary="@string/shuffle_images_description"
+            android:title="@string/shuffle_images"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="true"
             android:key="scale_images"
-            android:defaultValue="true"
-            android:title="@string/scale_images"
             android:summary="@string/scale_images_description"
+            android:title="@string/scale_images"
             />
 
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
             android:key="show_album_art"
-            android:defaultValue="false"
-            android:title="@string/show_album_art"
             android:summary="@string/show_album_art_description"
+            android:title="@string/show_album_art"
             />
 
-	</PreferenceCategory>
+    </PreferenceCategory>
 
-	<PreferenceCategory
+    <PreferenceCategory
         android:key="title_interval_settings"
-	    android:title="@string/title_interval_settings">
-	
-		<cw.kop.autobackground.CustomSwitchPreference
-			android:key="use_interval"
-			android:defaultValue="false"
-			android:title="@string/use_interval" 
-			android:dialogTitle="@string/use_interval"
-			android:summary="@string/use_interval_description"
-			/>
-  
-		<cw.kop.autobackground.CustomSwitchPreference
-			android:key="force_interval"
-			android:defaultValue="false"
-			android:title="@string/force_interval" 
-			android:dialogTitle="@string/force_interval"
-			android:summary="@string/force_interval_description"
-			/>
+        android:title="@string/title_interval_settings">
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="reset_on_manual_cycle"
             android:defaultValue="false"
-            android:title="@string/reset_on_manual_cycle"
-            android:summary="@string/reset_on_manual_cycle_description"
+            android:dialogTitle="@string/use_interval"
+            android:key="use_interval"
+            android:summary="@string/use_interval_description"
+            android:title="@string/use_interval"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="when_locked"
-            android:defaultValue="true"
-            android:title="@string/when_locked"
-            android:summary="@string/when_locked_description"
+            android:defaultValue="false"
+            android:dialogTitle="@string/force_interval"
+            android:key="force_interval"
+            android:summary="@string/force_interval_description"
+            android:title="@string/force_interval"
             />
-		
-	</PreferenceCategory>
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
+            android:key="reset_on_manual_cycle"
+            android:summary="@string/reset_on_manual_cycle_description"
+            android:title="@string/reset_on_manual_cycle"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="true"
+            android:key="when_locked"
+            android:summary="@string/when_locked_description"
+            android:title="@string/when_locked"
+            />
+
+    </PreferenceCategory>
 
     <PreferenceCategory
         android:key="title_transition_settings"
         android:title="@string/title_transition_settings">
 
         <cw.kop.autobackground.SeekBarPreference
+            android:defaultValue="10"
+            android:dialogMessage="seconds"
             android:key="transition_speed"
             android:max="100"
-            android:defaultValue="10"
-            android:title="@string/transition_speed"
             android:summary="@string/transition_speed_description"
-            android:dialogMessage="seconds"
+            android:title="@string/transition_speed"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_fade"
             android:defaultValue="true"
-            android:title="@string/use_fade"
+            android:key="use_fade"
             android:summary="@string/use_fade_description"
+            android:title="@string/use_fade"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
             android:key="use_overshoot"
-            android:defaultValue="false"
-            android:title="@string/use_overshoot"
             android:summary="@string/use_overshoot_description"
+            android:title="@string/use_overshoot"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="reverse_overshoot"
             android:defaultValue="false"
-            android:title="@string/reverse_overshoot"
+            android:key="reverse_overshoot"
             android:summary="@string/reverse_overshoot_description"
+            android:title="@string/reverse_overshoot"
             />
 
         <cw.kop.autobackground.SeekBarPreference
+            android:defaultValue="10"
+            android:dialogMessage=" "
             android:key="overshoot_intensity"
             android:max="100"
-            android:defaultValue="10"
-            android:title="@string/overshoot_intensity"
             android:summary="@string/overshoot_intensity_description"
-            android:dialogMessage=" "
+            android:title="@string/overshoot_intensity"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
             android:key="use_overshoot_vertical"
-            android:defaultValue="false"
-            android:title="@string/use_overshoot_vertical"
             android:summary="@string/use_overshoot_vertical_description"
+            android:title="@string/use_overshoot_vertical"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="reverse_overshoot_vertical"
             android:defaultValue="false"
-            android:title="@string/reverse_overshoot_vertical"
+            android:key="reverse_overshoot_vertical"
             android:summary="@string/reverse_overshoot_vertical_description"
+            android:title="@string/reverse_overshoot_vertical"
             />
 
         <cw.kop.autobackground.SeekBarPreference
+            android:defaultValue="10"
+            android:dialogMessage=" "
             android:key="overshoot_intensity_vertical"
             android:max="100"
-            android:defaultValue="10"
-            android:title="@string/overshoot_intensity_vertical"
             android:summary="@string/overshoot_intensity_vertical_description"
-            android:dialogMessage=" "
+            android:title="@string/overshoot_intensity_vertical"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
             android:key="use_zoom_in"
-            android:defaultValue="false"
-            android:title="@string/use_zoom_in"
             android:summary="@string/use_zoom_in_description"
+            android:title="@string/use_zoom_in"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
             android:key="use_zoom_out"
-            android:defaultValue="false"
-            android:title="@string/use_zoom_out"
             android:summary="@string/use_zoom_out_description"
+            android:title="@string/use_zoom_out"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
             android:key="use_spin_in"
-            android:defaultValue="false"
-            android:title="@string/use_spin_in"
             android:summary="@string/use_spin_in_description"
+            android:title="@string/use_spin_in"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="reverse_spin_in"
             android:defaultValue="false"
-            android:title="@string/reverse_spin_in"
+            android:key="reverse_spin_in"
             android:summary="@string/reverse_spin_in_description"
+            android:title="@string/reverse_spin_in"
             />
 
         <cw.kop.autobackground.SeekBarPreference
+            android:defaultValue="2700"
+            android:dialogMessage=" "
             android:key="spin_in_angle"
             android:max="7200"
-            android:defaultValue="2700"
-            android:title="@string/spin_in_angle"
             android:summary="@string/spin_in_angle_description"
-            android:dialogMessage=" "
+            android:title="@string/spin_in_angle"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
             android:key="use_spin_out"
-            android:defaultValue="false"
-            android:title="@string/use_spin_out"
             android:summary="@string/use_spin_out_description"
+            android:title="@string/use_spin_out"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="reverse_spin_out"
             android:defaultValue="false"
-            android:title="@string/reverse_spin_out"
+            android:key="reverse_spin_out"
             android:summary="@string/reverse_spin_out_description"
+            android:title="@string/reverse_spin_out"
             />
 
         <cw.kop.autobackground.SeekBarPreference
+            android:defaultValue="2700"
+            android:dialogMessage=" "
             android:key="spin_out_angle"
             android:max="7200"
-            android:defaultValue="2700"
-            android:title="@string/spin_out_angle"
             android:summary="@string/spin_out_angle_description"
-            android:dialogMessage=" "
+            android:title="@string/spin_out_angle"
             />
 
     </PreferenceCategory>
 
-	<PreferenceCategory
+    <PreferenceCategory
         android:key="title_animation_settings"
-	    android:title="@string/title_animation_settings">
-
-		<cw.kop.autobackground.CustomSwitchPreference
-			android:key="use_animation"
-			android:defaultValue="true"
-			android:title="@string/use_animation"
-			android:summary="@string/use_animation_description"
-			/>
+        android:title="@string/title_animation_settings">
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_animation_vertical"
             android:defaultValue="true"
-            android:title="@string/use_animation_vertical"
+            android:key="use_animation"
+            android:summary="@string/use_animation_description"
+            android:title="@string/use_animation"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="true"
+            android:key="use_animation_vertical"
             android:summary="@string/use_animation_vertical_description"
+            android:title="@string/use_animation_vertical"
             />
 
         <cw.kop.autobackground.SeekBarPreference
+            android:defaultValue="10"
+            android:dialogMessage="pixels per frame"
             android:key="animation_speed"
             android:max="50"
-            android:defaultValue="10"
-            android:title="@string/animation_speed"
             android:summary="@string/animation_speed_description"
-            android:dialogMessage="pixels per frame"
+            android:title="@string/animation_speed"
             />
 
         <cw.kop.autobackground.SeekBarPreference
+            android:defaultValue="10"
+            android:dialogMessage="pixels per frame"
             android:key="animation_speed_vertical"
             android:max="50"
-            android:defaultValue="10"
-            android:title="@string/animation_speed_vertical"
             android:summary="@string/animation_speed_vertical_description"
-            android:dialogMessage="pixels per frame"
+            android:title="@string/animation_speed_vertical"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="scale_animation_speed"
             android:defaultValue="true"
-            android:title="@string/scale_animation_speed"
+            android:key="scale_animation_speed"
             android:summary="@string/scale_animation_speed_description"
+            android:title="@string/scale_animation_speed"
             />
 
         <EditTextPreference
-            android:key="animation_frame_rate"
             android:defaultValue="30"
-            android:title="@string/animation_frame_rate"
-            android:summary="@string/animation_frame_rate_description"
             android:hint="@string/animation_frame_rate_hint"
+            android:key="animation_frame_rate"
+            android:summary="@string/animation_frame_rate_description"
+            android:title="@string/animation_frame_rate"
             />
 
         <EditTextPreference
-            android:key="animation_safety_adv"
             android:defaultValue="50"
-            android:title="@string/animation_safety"
-            android:summary="@string/animation_safety_description"
             android:inputType="number"
-            android:numeric="integer"
+            android:key="animation_safety_adv"
             android:maxLength="3"
+            android:numeric="integer"
+            android:summary="@string/animation_safety_description"
+            android:title="@string/animation_safety"
             />
 
-	</PreferenceCategory>
+    </PreferenceCategory>
 
     <PreferenceCategory
         android:key="title_gesture_settings"
         android:title="@string/title_gesture_settings">
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="double_tap"
             android:defaultValue="true"
-            android:title="@string/double_tap"
             android:dialogTitle="@string/double_tap"
+            android:key="double_tap"
             android:summary="@string/double_tap_description"
+            android:title="@string/double_tap"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_scrolling"
             android:defaultValue="true"
-            android:title="@string/use_scrolling"
+            android:key="use_scrolling"
             android:summary="@string/use_scrolling_description"
+            android:title="@string/use_scrolling"
             />
 
         <!--<cw.kop.autobackground.CustomSwitchPreference-->
-            <!--android:key="exact_scrolling"-->
-            <!--android:defaultValue="false"-->
-            <!--android:title="@string/exact_scrolling"-->
-            <!--android:summary="@string/exact_scrolling_description"-->
-            <!--/>-->
+        <!--android:key="exact_scrolling"-->
+        <!--android:defaultValue="false"-->
+        <!--android:title="@string/exact_scrolling"-->
+        <!--android:summary="@string/exact_scrolling_description"-->
+        <!--/>-->
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
             android:key="force_parallax"
-            android:defaultValue="false"
-            android:title="@string/force_parallax"
             android:summary="@string/force_parallax_description"
+            android:title="@string/force_parallax"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="true"
             android:key="use_drag"
-            android:defaultValue="true"
-            android:title="@string/use_drag"
             android:summary="@string/use_drag_description"
+            android:title="@string/use_drag"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
             android:key="reverse_drag"
-            android:defaultValue="false"
-            android:title="@string/reverse_drag"
             android:summary="@string/reverse_drag_description"
+            android:title="@string/reverse_drag"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="true"
             android:key="use_scale"
-            android:defaultValue="true"
-            android:title="@string/use_scale"
             android:summary="@string/use_scale_description"
+            android:title="@string/use_scale"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="extend_scale"
             android:defaultValue="false"
-            android:title="@string/extend_scale"
+            android:key="extend_scale"
             android:summary="@string/extend_scale_description"
+            android:title="@string/extend_scale"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_long_press_reset"
             android:defaultValue="true"
-            android:title="@string/use_long_press_reset"
+            android:key="use_long_press_reset"
             android:summary="@string/use_long_press_reset_description"
+            android:title="@string/use_long_press_reset"
             />
 
     </PreferenceCategory>

@@ -15,184 +15,184 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     android:style="@style/AppTheme"
-    
-    
-	<PreferenceCategory
+
+
+    <PreferenceCategory
         android:key="title_download_settings"
-	    android:title="@string/title_download_settings"
-	    >
+        android:title="@string/title_download_settings"
+        >
 
         <EditTextPreference
-            android:key="user_width"
             android:defaultValue="1000"
-            android:title="@string/user_width"
             android:inputType="number"
+            android:key="user_width"
             android:numeric="integer"
             android:summary="@string/user_width_description"
+            android:title="@string/user_width"
             />
 
         <EditTextPreference
-            android:key="user_height"
             android:defaultValue="1000"
-            android:title="@string/user_height"
             android:inputType="number"
+            android:key="user_height"
             android:numeric="integer"
             android:summary="@string/user_height_description"
+            android:title="@string/user_height"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
             android:key="full_resolution"
-            android:defaultValue="false"
-            android:title="@string/full_resolution"
             android:summary="@string/full_resolution_description"
+            android:title="@string/full_resolution"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_wifi"
             android:defaultValue="true"
-            android:title="@string/use_wifi"
+            android:key="use_wifi"
             android:summary="@string/use_wifi_description"
+            android:title="@string/use_wifi"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_data"
             android:defaultValue="false"
-            android:title="@string/use_data"
+            android:key="use_data"
             android:summary="@string/use_data_description"
+            android:title="@string/use_data"
             />
 
-	    <cw.kop.autobackground.CustomSwitchPreference
-		    android:key="use_timer"
-    		android:defaultValue="false"
-		    android:title="@string/use_timer" 
-    		android:dialogTitle="@string/use_timer"
-		    android:summary="@string/use_timer_description"
-    		/>
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
+            android:dialogTitle="@string/use_timer"
+            android:key="use_timer"
+            android:summary="@string/use_timer_description"
+            android:title="@string/use_timer"
+            />
 
         <Preference
             android:key="timer_time"
-            android:title="@string/timer_time"
             android:summary="@string/timer_time_description"
+            android:title="@string/timer_time"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
             android:key="reset_on_manual_download"
-            android:defaultValue="false"
-            android:title="@string/reset_on_manual_download"
             android:summary="@string/reset_on_manual_download_description"
+            android:title="@string/reset_on_manual_download"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="true"
             android:key="download_on_connection"
-            android:defaultValue="true"
-            android:title="@string/download_on_connection"
             android:summary="@string/download_on_connection_description"
+            android:title="@string/download_on_connection"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="true"
             android:key="use_download_notification"
-            android:defaultValue="true"
-            android:title="@string/use_download_notification"
             android:summary="@string/use_download_notification_description"
+            android:title="@string/use_download_notification"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-		    android:key="use_high_quality"
-    		android:defaultValue="true"
-		    android:title="@string/use_high_quality"
-		    android:summary="@string/use_high_quality_description"
-         	/>
-        
-        <cw.kop.autobackground.CustomSwitchPreference
-		    android:key="force_download"
-    		android:defaultValue="false"
-		    android:title="@string/force_download"
-		    android:summary="@string/force_download_description"
-         	/>
-
-        <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_download_path"
-            android:defaultValue="false"
-            android:title="@string/use_download_path"
-            android:summary="@string/use_download_path_description"
-            />
-
-        <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_image_history"
             android:defaultValue="true"
-            android:title="@string/use_image_history"
+            android:key="use_high_quality"
+            android:summary="@string/use_high_quality_description"
+            android:title="@string/use_high_quality"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
+            android:key="force_download"
+            android:summary="@string/force_download_description"
+            android:title="@string/force_download"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
+            android:key="use_download_path"
+            android:summary="@string/use_download_path_description"
+            android:title="@string/use_download_path"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="true"
+            android:key="use_image_history"
             android:summary="@string/use_image_history_description"
+            android:title="@string/use_image_history"
             />
 
         <EditTextPreference
-            android:key="image_history_size"
             android:defaultValue="250"
-            android:title="@string/image_history_size"
             android:inputType="number"
+            android:key="image_history_size"
             android:numeric="integer"
             android:summary="@string/image_history_size_description"
+            android:title="@string/image_history_size"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_thumbnails"
             android:defaultValue="true"
-            android:title="@string/use_thumbnails"
+            android:key="use_thumbnails"
             android:summary="@string/use_thumbnails_description"
+            android:title="@string/use_thumbnails"
             />
 
         <EditTextPreference
-            android:key="thumbnail_size"
             android:defaultValue="100"
-            android:title="@string/thumbnail_size"
             android:inputType="number"
+            android:key="thumbnail_size"
             android:numeric="integer"
             android:summary="@string/thumbnail_size_description"
+            android:title="@string/thumbnail_size"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-		    android:key="keep_images"
-    		android:defaultValue="false"
-		    android:title="@string/keep_images"
-		    android:summary="@string/keep_images_description"
-         	/>
-
-        <cw.kop.autobackground.CustomSwitchPreference
-            android:key="delete_old_images"
             android:defaultValue="false"
-            android:title="@string/delete_old_images"
-            android:summary="@string/delete_old_images_description"
+            android:key="keep_images"
+            android:summary="@string/keep_images_description"
+            android:title="@string/keep_images"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="check_duplicates"
+            android:defaultValue="false"
+            android:key="delete_old_images"
+            android:summary="@string/delete_old_images_description"
+            android:title="@string/delete_old_images"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
             android:defaultValue="true"
-            android:title="@string/check_duplicates"
+            android:key="check_duplicates"
             android:summary="@string/check_duplicates_description"
+            android:title="@string/check_duplicates"
             />
 
         <Preference
             android:key="delete_images"
-            android:title="@string/delete_images"
             android:summary="@string/delete_images_description"
+            android:title="@string/delete_images"
             />
 
         <EditTextPreference
-            android:key="image_prefix_adv"
             android:defaultValue="AutoBackground"
-            android:inputType="textWebEditText"
             android:digits="@string/letters_and_numbers"
-            android:title="@string/image_prefix"
+            android:inputType="textWebEditText"
+            android:key="image_prefix_adv"
             android:summary="@string/image_prefix_description"
+            android:title="@string/image_prefix"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_experimental_downloader_adv"
             android:defaultValue="false"
-            android:title="@string/use_experimental_downloader"
+            android:key="use_experimental_downloader_adv"
             android:summary="@string/use_experimental_downloader_description"
+            android:title="@string/use_experimental_downloader"
             />
     </PreferenceCategory>
-    
+
 </PreferenceScreen>

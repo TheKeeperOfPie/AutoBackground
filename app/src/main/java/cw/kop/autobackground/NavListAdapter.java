@@ -18,6 +18,8 @@ package cw.kop.autobackground;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,17 +36,7 @@ public class NavListAdapter extends BaseAdapter {
 
     private static LayoutInflater inflater = null;
     private ArrayList<String> fragmentList;
-    private int[] lightImages = new int[]{
-            R.drawable.ic_action_picture,
-            R.drawable.ic_action_web_site,
-            R.drawable.ic_action_download,
-            R.drawable.ic_action_accounts,
-            R.drawable.ic_action_crop,
-            R.drawable.ic_action_chat,
-            R.drawable.ic_action_settings,
-            R.drawable.ic_action_view_as_list,
-            R.drawable.ic_action_about};
-    private int[] darkImages = new int[]{
+    private int[] iconImages = new int[] {
             R.drawable.ic_action_picture_white,
             R.drawable.ic_action_web_site_white,
             R.drawable.ic_action_download_white,
@@ -54,11 +46,23 @@ public class NavListAdapter extends BaseAdapter {
             R.drawable.ic_action_settings_white,
             R.drawable.ic_action_view_as_list_white,
             R.drawable.ic_action_about_white};
+    private int colorFilterInt;
 
     public NavListAdapter(Activity activity, String[] nameArray) {
         fragmentList = new ArrayList<>();
         Collections.addAll(fragmentList, nameArray);
         inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+        switch (AppSettings.getTheme()) {
+            default:
+            case AppSettings.APP_LIGHT_THEME:
+                colorFilterInt = activity.getResources().getColor(R.color.DARK_GRAY_OPAQUE);
+                break;
+            case AppSettings.APP_DARK_THEME:
+            case AppSettings.APP_TRANSPARENT_THEME:
+                colorFilterInt = activity.getResources().getColor(R.color.LIGHT_GRAY_OPAQUE);
+                break;
+        }
     }
 
     @Override
@@ -87,12 +91,10 @@ public class NavListAdapter extends BaseAdapter {
         ImageView fragmentImage = (ImageView) view.findViewById(R.id.fragment_image);
         TextView fragmentTitle = (TextView) view.findViewById(R.id.fragment_title);
 
-        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            fragmentImage.setImageResource(lightImages[position]);
-        }
-        else {
-            fragmentImage.setImageResource(darkImages[position]);
-        }
+        Drawable iconDrawable = parent.getContext().getResources().getDrawable(iconImages[position]);
+        iconDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+        fragmentImage.setImageDrawable(iconDrawable);
+
         fragmentTitle.setText(fragmentList.get(position));
 
         return view;

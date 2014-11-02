@@ -23,8 +23,8 @@
     >
 
     <LinearLayout
-        style="?android:attr/buttonBarStyle"
         android:id="@+id/color_buttons"
+        style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -32,27 +32,27 @@
         >
 
         <Button
-            style="?android:attr/buttonBarButtonStyle"
             android:id="@+id/color_one_button"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0px"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textAppearance="?android:textAppearanceMedium"
-            android:text="@string/duotone_color_one"
-            android:textColor="@color/WHITE_OPAQUE"
             android:background="@color/DARK_GRAY_OPAQUE"
+            android:text="@string/duotone_color_one"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textColor="@color/WHITE_OPAQUE"
             />
 
         <Button
-            style="?android:attr/buttonBarButtonStyle"
             android:id="@+id/color_two_button"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0px"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textAppearance="?android:textAppearanceMedium"
-            android:text="@string/duotone_color_two"
-            android:textColor="@color/WHITE_OPAQUE"
             android:background="@color/DARK_GRAY_OPAQUE"
+            android:text="@string/duotone_color_two"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textColor="@color/WHITE_OPAQUE"
             />
 
     </LinearLayout>
@@ -104,16 +104,16 @@
         android:id="@+id/dialog_negative_button"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:background="@drawable/button"
         android:layout_below="@id/duotone_color_picker_one"
-        android:layout_toStartOf="@+id/dialog_positive_button"
         android:layout_toLeftOf="@+id/dialog_positive_button"
-        android:paddingStart="8dp"
-        android:paddingLeft="8dp"
-        android:paddingEnd="8dp"
-        android:paddingRight="8dp"
-        android:paddingTop="8dp"
+        android:layout_toStartOf="@+id/dialog_positive_button"
+        android:background="@drawable/button"
         android:paddingBottom="8dp"
+        android:paddingEnd="8dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingStart="8dp"
+        android:paddingTop="8dp"
         android:text="@string/cancel_button"
         android:textAllCaps="true"
         />
@@ -122,16 +122,16 @@
         android:id="@+id/dialog_positive_button"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:background="@drawable/button"
-        android:layout_below="@id/duotone_color_picker_one"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:paddingStart="8dp"
-        android:paddingLeft="8dp"
-        android:paddingEnd="8dp"
-        android:paddingRight="8dp"
-        android:paddingTop="8dp"
+        android:layout_below="@id/duotone_color_picker_one"
+        android:background="@drawable/button"
         android:paddingBottom="8dp"
+        android:paddingEnd="8dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingStart="8dp"
+        android:paddingTop="8dp"
         android:text="@string/ok_button"
         android:textAllCaps="true"
         />

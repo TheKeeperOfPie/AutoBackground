@@ -18,11 +18,9 @@ package cw.kop.autobackground;
 
 import android.app.Activity;
 import android.app.AlarmManager;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -38,10 +36,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import cw.kop.autobackground.settings.AppSettings;
@@ -99,21 +95,24 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         frameRatePref.setSummary(AppSettings.getAnimationFrameRate() + " FPS");
 
         if (!AppSettings.useAdvanced()) {
-            PreferenceCategory wallpaperPreferences = (PreferenceCategory) findPreference("title_wallpaper_settings");
+            PreferenceCategory wallpaperPreferences = (PreferenceCategory) findPreference(
+                    "title_wallpaper_settings");
 
             wallpaperPreferences.removePreference(findPreference("fill_images"));
             wallpaperPreferences.removePreference(findPreference("preserve_context"));
             wallpaperPreferences.removePreference(findPreference("scale_images"));
             wallpaperPreferences.removePreference(findPreference("show_album_art"));
 
-            PreferenceCategory intervalPreferences = (PreferenceCategory) findPreference("title_interval_settings");
+            PreferenceCategory intervalPreferences = (PreferenceCategory) findPreference(
+                    "title_interval_settings");
 
 
             intervalPreferences.removePreference(findPreference("reset_on_manual_cycle"));
             intervalPreferences.removePreference(findPreference("force_interval"));
             intervalPreferences.removePreference(findPreference("when_locked"));
 
-            PreferenceCategory transitionPreferences = (PreferenceCategory) findPreference("title_transition_settings");
+            PreferenceCategory transitionPreferences = (PreferenceCategory) findPreference(
+                    "title_transition_settings");
 
             transitionPreferences.removePreference(findPreference("transition_speed"));
             transitionPreferences.removePreference(findPreference("reverse_overshoot"));
@@ -125,7 +124,8 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
             transitionPreferences.removePreference(findPreference("reverse_spin_out"));
             transitionPreferences.removePreference(findPreference("spin_out_angle"));
 
-            PreferenceCategory animationPreferences = (PreferenceCategory) findPreference("title_animation_settings");
+            PreferenceCategory animationPreferences = (PreferenceCategory) findPreference(
+                    "title_animation_settings");
 
             animationPreferences.removePreference(findPreference("animation_speed"));
             animationPreferences.removePreference(findPreference("animation_speed_vertical"));
@@ -153,17 +153,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         AppSettings.setIntervalDuration(0);
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        dialogTitle.setText("Update Interval:");
-
-        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
-        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.theme_entry_menu)));
-        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
@@ -202,18 +192,25 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 }
 
                 setIntervalAlarm();
-                dialog.dismiss();
+                dismissDialog();
             }
-        });
+        };
 
-        dialog.show();
+        DialogFactory.showListDialog(appContext,
+                                     "Update Interval",
+                                     clickListener,
+                                     R.array.interval_entry_menu);
     }
 
     private void showDialogIntervalForInput() {
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
+        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
+                new Dialog(
+                        appContext,
+                        R.style.LightDialogTheme) :
+                new Dialog(appContext, R.style.DarkDialogTheme);
 
-        View dialogView = View.inflate(appContext, R.layout.text_dialog, null);
+        View dialogView = View.inflate(appContext, R.layout.input_dialog, null);
         dialog.setContentView(dialogView);
 
         TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
@@ -273,7 +270,10 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
     private void setIntervalAlarm() {
 
         if (AppSettings.useInterval() && AppSettings.getIntervalDuration() > 0) {
-            alarmManager.setInexactRepeating(AlarmManager.RTC, System.currentTimeMillis() + AppSettings.getIntervalDuration(), AppSettings.getIntervalDuration(), pendingIntent);
+            alarmManager.setInexactRepeating(AlarmManager.RTC,
+                                             System.currentTimeMillis() + AppSettings.getIntervalDuration(),
+                                             AppSettings.getIntervalDuration(),
+                                             pendingIntent);
             Log.i("WSD", "Interval Set: " + AppSettings.getIntervalDuration());
         }
         else {

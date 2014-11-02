@@ -58,7 +58,9 @@ public class Downloader {
             }
             else {
                 if (AppSettings.useToast()) {
-                    Toast.makeText(appContext, "No connection available,\ncheck Download Settings", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(appContext,
+                                   "No connection available,\ncheck Download Settings",
+                                   Toast.LENGTH_SHORT).show();
                 }
 
                 Intent resetDownloadIntent = new Intent(Downloader.DOWNLOAD_TERMINATED);
@@ -200,7 +202,8 @@ public class Downloader {
 
     public static void deleteBitmaps(Context appContext, int position) {
 
-        File folder = new File(AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(position) + " " + AppSettings.getImagePrefix());
+        File folder = new File(AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(
+                position) + " " + AppSettings.getImagePrefix());
 
         Log.i(TAG, folder.getAbsolutePath());
 
@@ -252,7 +255,8 @@ public class Downloader {
 
             @Override
             public boolean accept(File dir, String filename) {
-                return filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(".jpeg");
+                return filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(
+                        ".jpeg");
             }
         };
     }

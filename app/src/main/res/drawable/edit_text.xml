@@ -22,6 +22,6 @@
     <!--<item android:state_enabled="true" android:drawable="@drawable/apptheme_textfield_default_holo_light" />-->
     <!--<item android:state_focused="true" android:drawable="@drawable/apptheme_textfield_disabled_focused_holo_light" />-->
     <!--<item android:state_focused="true" android:drawable="@drawable/apptheme_textfield_activated_holo_light" />-->
-    <item android:state_focused="true" android:drawable="@drawable/apptheme_textfield_activated_holo_light"/>
+    <item android:drawable="@drawable/apptheme_textfield_activated_holo_light" android:state_focused="true"/>
     <item android:drawable="@drawable/apptheme_textfield_default_holo_light"/>
 </selector>

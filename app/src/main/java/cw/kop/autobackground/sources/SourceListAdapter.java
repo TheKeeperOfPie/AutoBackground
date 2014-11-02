@@ -75,7 +75,14 @@ public class SourceListAdapter extends BaseAdapter {
         View view = convertView;
 
         if (convertView == null) {
-            view = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? inflater.inflate(R.layout.source_list_row, parent, false) : inflater.inflate(R.layout.source_list_row_dark, parent, false);
+            view = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
+                    inflater.inflate(R.layout.source_list_row,
+                                     parent,
+                                     false) :
+                    inflater.inflate(
+                            R.layout.source_list_row_dark,
+                            parent,
+                            false);
         }
 
         TextView title = (TextView) view.findViewById(R.id.title_text);
@@ -171,7 +178,8 @@ public class SourceListAdapter extends BaseAdapter {
                 if (hashMap.get("type").equals(AppSettings.FOLDER)) {
                     File file = new File(hashMap.get("data"));
                     if (file.exists() && file.isDirectory()) {
-                        hashMap.put("num", "" + file.listFiles(Downloader.getImageFileNameFilter()).length);
+                        hashMap.put("num",
+                                    "" + file.listFiles(Downloader.getImageFileNameFilter()).length);
                     }
                     else {
                         hashMap.put("num", "0");

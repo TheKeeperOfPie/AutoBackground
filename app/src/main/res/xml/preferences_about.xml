@@ -15,15 +15,15 @@
   ~ limitations under the License.
   -->
 
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-    
-	<PreferenceCategory
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
         android:title="@string/title_about">
 
         <Preference
             android:key="about_self_copyright"
-            android:title="@string/app_name"
             android:summary="@string/about_self_copyright_description"
+            android:title="@string/app_name"
             />
 
     </PreferenceCategory>
@@ -33,35 +33,35 @@
 
         <Preference
             android:key="about_library_jsoup"
-            android:title="@string/about_library_jsoup"
             android:summary="@string/about_library_jsoup_description"
+            android:title="@string/about_library_jsoup"
             />
 
         <Preference
             android:key="about_library_showcaseview"
-            android:title="@string/about_library_showcaseview"
             android:summary="@string/about_library_showcaseview_description"
+            android:title="@string/about_library_showcaseview"
             />
 
         <Preference
             android:key="about_library_picasso"
-            android:title="@string/about_library_picasso"
             android:summary="@string/about_library_picasso_description"
+            android:title="@string/about_library_picasso"
             />
 
         <Preference
             android:key="about_library_colorpickerview"
-            android:title="@string/about_library_colorpickerview"
             android:summary="@string/about_library_colorpickerview_description"
+            android:title="@string/about_library_colorpickerview"
             />
 
         <Preference
             android:key="about_copyright"
-            android:title="@string/about_copyright"
             android:summary="@string/about_copyright_description"
+            android:title="@string/about_copyright"
             />
 
     </PreferenceCategory>
 
-    
+
 </PreferenceScreen>

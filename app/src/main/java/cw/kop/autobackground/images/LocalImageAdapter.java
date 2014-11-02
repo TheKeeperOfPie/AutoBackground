@@ -18,6 +18,8 @@ package cw.kop.autobackground.images;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -56,7 +58,9 @@ public class LocalImageAdapter extends BaseAdapter {
         mainDir = directory;
         setDirectory(mainDir);
         screenWidth = activity.getResources().getDisplayMetrics().widthPixels;
-        imageHeight = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 150, activity.getResources().getDisplayMetrics()));
+        imageHeight = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                                           150,
+                                                           activity.getResources().getDisplayMetrics()));
     }
 
     @Override
@@ -91,7 +95,8 @@ public class LocalImageAdapter extends BaseAdapter {
             TextView fileSummary = (TextView) view.findViewById(R.id.file_summary);
             ImageView fileImage = (ImageView) view.findViewById(R.id.file_image);
 
-            if (file.getName().contains(".png") || file.getName().contains(".jpg") || file.getName().contains(".jpeg")) {
+            if (file.getName().contains(".png") || file.getName().contains(".jpg") || file.getName().contains(
+                    ".jpeg")) {
                 Picasso.with(parent.getContext())
                         .load(file)
                         .resize(screenWidth, imageHeight)
@@ -99,28 +104,18 @@ public class LocalImageAdapter extends BaseAdapter {
                         .into(fileImage);
             }
             else if (file.isDirectory()) {
-                if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                    Picasso.with(parent.getContext())
-                            .load(R.drawable.ic_action_collection)
-                            .into(fileImage);
-                }
-                else {
-                    Picasso.with(parent.getContext())
-                            .load(R.drawable.ic_action_collection_white)
-                            .into(fileImage);
-                }
+                Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_action_collection_white);
+                drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
+                                        PorterDuff.Mode.MULTIPLY);
+
+                fileImage.setImageDrawable(drawable);
             }
             else {
-                if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                    Picasso.with(parent.getContext())
-                            .load(R.drawable.ic_action_view_as_list)
-                            .into(fileImage);
-                }
-                else {
-                    Picasso.with(parent.getContext())
-                            .load(R.drawable.ic_action_view_as_list_white)
-                            .into(fileImage);
-                }
+                Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_action_view_as_list_white);
+                drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
+                                        PorterDuff.Mode.MULTIPLY);
+
+                fileImage.setImageDrawable(drawable);
             }
 
             fileTitle.setText(file.getName());

@@ -18,15 +18,14 @@ package cw.kop.autobackground.notification;
 
 public class NotificationOptionData {
 
-    private String title, summary, setting;
+    private String title, summary;
     private int drawable;
 
 
-    public NotificationOptionData(String title, String summary, int drawable, String setting) {
+    public NotificationOptionData(String title, String summary, int drawable) {
         this.title = title;
         this.summary = summary;
         this.drawable = drawable;
-        this.setting = setting;
     }
 
     public String getTitle() {
@@ -39,10 +38,6 @@ public class NotificationOptionData {
 
     public int getDrawable() {
         return drawable;
-    }
-
-    public String getSetting() {
-        return setting;
     }
 
 }

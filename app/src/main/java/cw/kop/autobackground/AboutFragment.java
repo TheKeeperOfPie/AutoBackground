@@ -17,7 +17,7 @@
 package cw.kop.autobackground;
 
 import android.app.Activity;
-import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -52,7 +52,7 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
         copyrightPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                AlertDialog.Builder dialog = new AlertDialog.Builder(appContext);
+                Dialog dialog = DialogFactory.getDialog(appContext);
 
                 TextView textView = new TextView(appContext);
                 textView.setText(appContext.getResources().getString(R.string.about_copyright_text));
@@ -60,7 +60,7 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
                 ScrollView scrollView = new ScrollView(appContext);
                 scrollView.addView(textView);
 
-                dialog.setView(scrollView);
+                dialog.setContentView(scrollView);
 
                 dialog.show();
 

@@ -22,6 +22,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -55,16 +57,6 @@ import cw.kop.autobackground.sources.SourceListFragment;
 public class MainActivity extends ActionBarActivity {
 
     public static final String LOAD_NAV_PICTURE = "cw.kop.autobackground.LOAD_NAV_PICTURE";
-
-
-    private SourceListFragment sourceListFragment;
-    private ActionBarDrawerToggle drawerToggle;
-    private String[] fragmentList;
-    private DrawerLayout drawerLayout;
-    private LinearLayout navLayout;
-    private ImageView navPicture;
-    private ListView drawerList;
-    private IntentFilter entryFilter;
     private BroadcastReceiver entryReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -91,6 +83,14 @@ public class MainActivity extends ActionBarActivity {
 
         }
     };
+    private SourceListFragment sourceListFragment;
+    private ActionBarDrawerToggle drawerToggle;
+    private String[] fragmentList;
+    private DrawerLayout drawerLayout;
+    private LinearLayout navLayout;
+    private ImageView navPicture;
+    private ListView drawerList;
+    private IntentFilter entryFilter;
 
     public MainActivity() {
     }
@@ -105,32 +105,31 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.i("MP", "onCreate");
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(
+                getApplicationContext());
 
         AppSettings.initPrefs(prefs, getApplicationContext());
 
 
         int[] colors = {0, 0xFFFFFFFF, 0};
 
-        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            setTheme(R.style.AppLightTheme);
-            colors = new int[]{0, 0xFF000000, 0};
-        }
-        else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)) {
-            setTheme(R.style.AppDarkTheme);
-        }
-        else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
-            setTheme(R.style.AppTransparentTheme);
+        switch (AppSettings.getTheme()) {
+
+            case AppSettings.APP_LIGHT_THEME:
+                setTheme(R.style.AppLightTheme);
+                colors = new int[] {0, 0xFF000000, 0};
+                break;
+            case AppSettings.APP_DARK_THEME:
+                setTheme(R.style.AppDarkTheme);
+                break;
+            case AppSettings.APP_TRANSPARENT_THEME:
+                setTheme(R.style.AppTransparentTheme);
+                break;
         }
 
         super.onCreate(savedInstanceState);
 
-        if (AppSettings.useRightDrawer()) {
-            setContentView(R.layout.activity_right_layout);
-        }
-        else {
-            setContentView(R.layout.activity_layout);
-        }
+        setContentView(R.layout.activity_layout);
 
         fragmentList = getResources().getStringArray(R.array.fragment_titles);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -143,24 +142,37 @@ public class MainActivity extends ActionBarActivity {
         drawerList.setAdapter(new NavListAdapter(this, fragmentList));
         drawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-        drawerList.setDivider(new GradientDrawable(GradientDrawable.Orientation.RIGHT_LEFT, colors));
+        drawerList.setDivider(new GradientDrawable(GradientDrawable.Orientation.RIGHT_LEFT,
+                                                   colors));
         drawerList.setDividerHeight(1);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        int colorFilterInt = 0;
+
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             navLayout.setBackgroundColor(getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
             toolbar.setTitleTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+            colorFilterInt = getResources().getColor(R.color.DARK_GRAY_OPAQUE);
+            toolbar.setBackgroundColor(getResources().getColor(R.color.BLUE_OPAQUE));
         }
         else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)) {
             navLayout.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
-            toolbar.setTitleTextColor(getResources().getColor(R.color.WHITE_OPAQUE));
+            toolbar.setTitleTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+            colorFilterInt = getResources().getColor(R.color.LIGHT_GRAY_OPAQUE);
+            toolbar.setBackgroundColor(getResources().getColor(R.color.DARK_BLUE_OPAQUE));
         }
         else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
             navLayout.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
-            toolbar.setTitleTextColor(getResources().getColor(R.color.WHITE_OPAQUE));
+            toolbar.setTitleTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+            colorFilterInt = getResources().getColor(R.color.LIGHT_GRAY_OPAQUE);
+            toolbar.setBackgroundColor(getResources().getColor(R.color.DARK_BLUE_OPAQUE));
         }
+
+        Drawable drawerDrawable = getResources().getDrawable(R.drawable.drawer_menu_white);
+        drawerDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+        toolbar.setNavigationIcon(drawerDrawable);
 
         drawerToggle = new ActionBarDrawerToggle(
                 this,
@@ -224,18 +236,25 @@ public class MainActivity extends ActionBarActivity {
 
     private void loadNavPicture() {
 
-
         if (Build.VERSION.SDK_INT >= 16 && navPicture != null && Downloader.getCurrentBitmapFile() != null && Downloader.getCurrentBitmapFile().exists()) {
-            int width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 320, getResources().getDisplayMetrics()));
-            int height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 180, getResources().getDisplayMetrics()));
+            int width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                                             320,
+                                                             getResources().getDisplayMetrics()));
+            int height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                                                              180,
+                                                              getResources().getDisplayMetrics()));
 
-            Picasso.with(getApplicationContext()).load(Downloader.getCurrentBitmapFile()).resize(width ,height).centerCrop().into(navPicture);
+            Picasso.with(getApplicationContext()).load(Downloader.getCurrentBitmapFile()).resize(
+                    width,
+                    height).centerCrop().into(navPicture);
         }
     }
 
     public void toggleDrawer() {
-        LocalImageFragment localImageFragment = (LocalImageFragment) getFragmentManager().findFragmentByTag("image_fragment");
-        AlbumFragment albumFragment = (AlbumFragment) getFragmentManager().findFragmentByTag("album_fragment");
+        LocalImageFragment localImageFragment = (LocalImageFragment) getFragmentManager().findFragmentByTag(
+                "image_fragment");
+        AlbumFragment albumFragment = (AlbumFragment) getFragmentManager().findFragmentByTag(
+                "album_fragment");
         if (localImageFragment != null || albumFragment != null) {
             onBackPressed();
         }
@@ -312,7 +331,8 @@ public class MainActivity extends ActionBarActivity {
 
         Log.i("MP", "Item pressed: " + item.getItemId());
 
-        if (getFragmentManager().findFragmentByTag("image_fragment") == null && drawerToggle.onOptionsItemSelected(item)) {
+        if (getFragmentManager().findFragmentByTag("image_fragment") == null && drawerToggle.onOptionsItemSelected(
+                item)) {
             return item.getItemId() != android.R.id.home || super.onOptionsItemSelected(item);
         }
         else if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
@@ -340,7 +360,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
+        loadNavPicture();
         LocalBroadcastManager.getInstance(this).registerReceiver(entryReceiver, entryFilter);
     }
 

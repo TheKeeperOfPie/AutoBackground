@@ -17,7 +17,6 @@
 package cw.kop.autobackground.images;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -30,7 +29,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -39,6 +37,7 @@ import android.widget.TextView;
 import java.text.DateFormat;
 import java.util.Date;
 
+import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -80,11 +79,13 @@ public class ImageHistoryFragment extends Fragment {
         TextView emptyText = new TextView(appContext);
         emptyText.setText("History is empty");
         emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                             ViewGroup.LayoutParams.MATCH_PARENT));
         emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
 
         LinearLayout emptyLayout = new LinearLayout(appContext);
-        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                                  ViewGroup.LayoutParams.MATCH_PARENT));
         emptyLayout.setGravity(Gravity.TOP);
         emptyLayout.addView(emptyText);
 
@@ -108,6 +109,7 @@ public class ImageHistoryFragment extends Fragment {
         ((ViewGroup) historyListView.getParent()).addView(emptyLayout, 0);
 
         historyListView.setEmptyView(emptyLayout);
+        historyListView.setDividerHeight(0);
 
         return view;
     }
@@ -142,65 +144,28 @@ public class ImageHistoryFragment extends Fragment {
 
     private void showClearHistoryDialog() {
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.action_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
-
-        dialogTitle.setText("Clear History?");
-        dialogSummary.setText("You will not be notified of errors or info about the app.");
-
-        Button positiveButton = (Button) dialogView.findViewById(R.id.action_button_3);
-        positiveButton.setText(getResources().getString(R.string.ok_button));
-        positiveButton.setVisibility(View.VISIBLE);
-        positiveButton.setOnClickListener(new View.OnClickListener() {
+        DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
             @Override
-            public void onClick(View v) {
+            public void onClickRight(View v) {
                 AppSettings.clearUsedLinks();
                 historyAdapter.clearHistory();
-                dialog.dismiss();
+                this.dismissDialog();
             }
-        });
+        };
 
-        Button negativeButton = (Button) dialogView.findViewById(R.id.action_button_2);
-        negativeButton.setText(getResources().getString(R.string.cancel_button));
-        negativeButton.setVisibility(View.VISIBLE);
-        negativeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-        }
-        else {
-            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-        }
-
-        dialog.show();
+        DialogFactory.showActionDialog(appContext,
+                                       "Clear History?",
+                                       "This cannot be undone.",
+                                       clickListener,
+                                       -1,
+                                       R.string.cancel_button,
+                                       R.string.ok_button);
 
     }
 
     private void showHistoryItemDialog(final HistoryItem item) {
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        dialogTitle.setText(DateFormat.getDateTimeInstance().format(new Date(item.getTime())));
-
-        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
-        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.history_menu)));
-        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
@@ -214,12 +179,14 @@ public class ImageHistoryFragment extends Fragment {
                         break;
                     default:
                 }
-                dialog.dismiss();
+                dismissDialog();
             }
-        });
+        };
 
-        dialog.show();
-
+        DialogFactory.showListDialog(appContext,
+                                     DateFormat.getDateTimeInstance().format(new Date(item.getTime())),
+                                     clickListener,
+                                     R.array.history_menu);
     }
 
 }

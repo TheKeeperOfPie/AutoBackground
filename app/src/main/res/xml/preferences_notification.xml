@@ -24,53 +24,53 @@
         >
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_notification"
             android:defaultValue="false"
-            android:title="@string/use_notification"
+            android:key="use_notification"
             android:summary="@string/use_notification_description"
+            android:title="@string/use_notification"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_notification_game"
             android:defaultValue="false"
-            android:title="@string/use_notification_game"
+            android:key="use_notification_game"
             android:summary="@string/use_notification_game_description"
+            android:title="@string/use_notification_game"
             />
 
         <Preference
             android:key="notification_icon_action"
-            android:title="@string/notification_icon_action"
             android:summary="@string/notification_icon_action_description"
+            android:title="@string/notification_icon_action"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_pin_indicator"
             android:defaultValue="true"
-            android:title="@string/use_pin_indicator"
+            android:key="use_pin_indicator"
             android:summary="@string/use_pin_indicator_description"
+            android:title="@string/use_pin_indicator"
             />
 
         <EditTextPreference
-            android:key="history_size"
             android:defaultValue="5"
-            android:title="@string/history_size"
-            android:summary="@string/history_size_description"
             android:inputType="number"
-            android:numeric="integer"
+            android:key="history_size"
             android:maxLength="2"
+            android:numeric="integer"
+            android:summary="@string/history_size_description"
+            android:title="@string/history_size"
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="high_resolution_notification_icon"
             android:defaultValue="false"
-            android:title="@string/high_resolution_notification_icon"
+            android:key="high_resolution_notification_icon"
             android:summary="@string/high_resolution_notification_icon_description"
+            android:title="@string/high_resolution_notification_icon"
             />
 
         <Preference
             android:key="show_tutorial_notification"
-            android:title="@string/show_tutorial_notification"
             android:summary="@string/show_tutorial_notification_description"
+            android:title="@string/show_tutorial_notification"
             />
 
     </PreferenceCategory>

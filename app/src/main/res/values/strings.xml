@@ -142,7 +142,7 @@
     <string name="sort_sources">Sort Sources</string>
     <string name="download_wallpaper">Download Images</string>
     <string name="cycle_wallpaper">Cycle Wallpaper</string>
-    
+
     <string name="ok_button">OK</string>
     <string name="cancel_button">Cancel</string>
     <string name="yes_button">Yes</string>
@@ -471,30 +471,30 @@
 
     <string-array name="source_edit_menu">
         <item>View Images</item>
-    	<item>Edit</item>
-    	<item>Delete Source</item>
-	</string-array>
-	
-	<string-array name="interval_entry_menu">
+        <item>Edit</item>
+        <item>Delete Source</item>
+    </string-array>
+
+    <string-array name="interval_entry_menu">
         <item>On Return</item>
-    	<item>5 Minutes</item>
-    	<item>15 Minutes</item>
-    	<item>30 Minutes</item>
-    	<item>1 Hour</item>
-    	<item>2 Hour</item>
-    	<item>6 Hours</item>
-    	<item>12 Hours</item>
-	</string-array>
-	
+        <item>5 Minutes</item>
+        <item>15 Minutes</item>
+        <item>30 Minutes</item>
+        <item>1 Hour</item>
+        <item>2 Hour</item>
+        <item>6 Hours</item>
+        <item>12 Hours</item>
+    </string-array>
+
     <string-array name="timer_entry_menu">
-    	<item>1 Hour</item>
-    	<item>2 Hours</item>
-    	<item>6 Hours</item>
-    	<item>12 Hours</item>
-    	<item>1 Day</item>
-    	<item>2 Days</item>
-    	<item>4 Days</item>
-	</string-array>
+        <item>1 Hour</item>
+        <item>2 Hours</item>
+        <item>6 Hours</item>
+        <item>12 Hours</item>
+        <item>1 Day</item>
+        <item>2 Days</item>
+        <item>4 Days</item>
+    </string-array>
 
     <string-array name="pin_entry_menu">
         <item>Until Unpin</item>

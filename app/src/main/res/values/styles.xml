@@ -49,6 +49,7 @@
         <item name="android:editTextStyle">@style/LightEditText</item>
         <item name="android:popupMenuStyle">@style/LightPopup</item>
         <item name="android:seekBarStyle">@style/LightSeekBar</item>
+        <item name="android:listViewStyle">@style/LightListView</item>
     </style>
 
     <style name="AppDarkTheme" parent="AppBaseTheme">
@@ -59,6 +60,7 @@
         <item name="android:editTextStyle">@style/DarkEditText</item>
         <item name="android:popupMenuStyle">@style/DarkPopup</item>
         <item name="android:seekBarStyle">@style/DarkSeekBar</item>
+        <item name="android:listViewStyle">@style/DarkListView</item>
     </style>
 
     <style name="AppTransparentTheme" parent="AppBaseTheme">
@@ -74,6 +76,7 @@
         <item name="android:popupMenuStyle">@style/DarkPopup</item>
         <item name="android:editTextStyle">@style/DarkEditText</item>
         <item name="android:seekBarStyle">@style/DarkSeekBar</item>"
+        <item name="android:listViewStyle">@style/TransparentListView</item>
     </style>
 
     <style name="LightSwitch" parent="@android:style/TextAppearance.Holo.Small">
@@ -113,12 +116,14 @@
         <item name="android:textColor">@color/DARK_GRAY_OPAQUE</item>
         <item name="android:divider">@color/DARK_GRAY_OPAQUE</item>
         <item name="android:dividerHeight">1px</item>
-	</style>
+        <item name="android:listSelector">@android:color/transparent</item>
+    </style>
 
     <style name="DarkListView" parent="android:style/Widget.Holo.ListView">
         <item name="android:textColor">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:divider">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:dividerHeight">1px</item>
+        <item name="android:listSelector">@android:color/transparent</item>
     </style>
 
     <style name="TransparentListView" parent="android:style/Widget.Holo.ListView">
@@ -127,6 +132,7 @@
         <item name="android:textColor">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:divider">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:dividerHeight">1px</item>
+        <item name="android:listSelector">@android:color/transparent</item>
     </style>
 
     <style name="LightActionBar" parent="android:Widget.Holo.Light.ActionBar">

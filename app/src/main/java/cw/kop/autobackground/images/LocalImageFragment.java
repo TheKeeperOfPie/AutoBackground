@@ -17,7 +17,6 @@
 package cw.kop.autobackground.images;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -31,7 +30,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -41,6 +39,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.FilenameFilter;
 
+import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.downloader.Downloader;
@@ -86,18 +85,22 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.local_image_layout, container, false);
+        final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.local_image_layout,
+                                                            container,
+                                                            false);
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
 
         TextView emptyText = new TextView(appContext);
         emptyText.setText("Directory is empty");
         emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                             ViewGroup.LayoutParams.MATCH_PARENT));
         emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
 
         LinearLayout emptyLayout = new LinearLayout(appContext);
-        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                                  ViewGroup.LayoutParams.MATCH_PARENT));
         emptyLayout.setGravity(Gravity.TOP);
         emptyLayout.addView(emptyText);
 
@@ -123,7 +126,9 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                 FilenameFilter filenameFilter = Downloader.getImageFileNameFilter();
                 if (setPath) {
                     AppSettings.setDownloadPath(dir.getAbsolutePath());
-                    Toast.makeText(appContext, "Download path set to: \n" + AppSettings.getDownloadPath(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(appContext,
+                                   "Download path set to: \n" + AppSettings.getDownloadPath(),
+                                   Toast.LENGTH_SHORT).show();
                 }
                 else {
                     int numImages = 0;
@@ -201,21 +206,16 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
 
-        if (imageAdapter.getItem(positionInList).getName().contains(".png") || imageAdapter.getItem(positionInList).getName().contains(".jpg") || imageAdapter.getItem(positionInList).getName().contains(".jpeg")) {
+        if (imageAdapter.getItem(positionInList).getName().contains(".png") || imageAdapter.getItem(
+                positionInList).getName().contains(".jpg") || imageAdapter.getItem(positionInList).getName().contains(
+                ".jpeg")) {
             showImageDialog(positionInList);
         }
     }
 
     private void showImageDialog(final int index) {
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? new Dialog(appContext, R.style.LightDialogTheme) : new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.list_dialog, null);
-        dialog.setContentView(dialogView);
-
-        ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
-        dialogList.setAdapter(new ArrayAdapter<>(appContext, android.R.layout.simple_list_item_1, android.R.id.text1, getResources().getStringArray(R.array.history_menu)));
-        dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
@@ -236,11 +236,14 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                             imageAdapter.remove(index);
                         }
                 }
-                dialog.dismiss();
+                dismissDialog();
             }
-        });
+        };
 
-        dialog.show();
+        DialogFactory.showListDialog(appContext,
+                                     "",
+                                     clickListener,
+                                     R.array.history_menu);
     }
 
     private void openImage(int index) {
