@@ -37,6 +37,7 @@
         android:layout_height="fill_parent"
         android:layout_above="@id/use_directory_button"
         android:drawSelectorOnTop="false"
+        android:dividerHeight="0px"
         >
     </ListView>
 

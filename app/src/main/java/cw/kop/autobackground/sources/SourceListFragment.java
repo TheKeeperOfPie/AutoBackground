@@ -131,9 +131,9 @@ public class SourceListFragment extends ListFragment {
         toolbarMenu = menu;
 
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
-        Drawable refreshIcon = getResources().getDrawable(R.drawable.ic_action_refresh_white);
-        Drawable downloadIcon = getResources().getDrawable(R.drawable.ic_action_download_white);
-        Drawable storageIcon = getResources().getDrawable(R.drawable.ic_action_storage_white);
+        Drawable refreshIcon = getResources().getDrawable(R.drawable.ic_refresh_white_24dp);
+        Drawable downloadIcon = getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
+        Drawable storageIcon = getResources().getDrawable(R.drawable.ic_sort_white_24dp);
         refreshIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
         downloadIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
         storageIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
@@ -240,7 +240,7 @@ public class SourceListFragment extends ListFragment {
 //            showTutorial(3);
 //        }
         if (Downloader.download(appContext)) {
-            Drawable drawable = getResources().getDrawable(R.drawable.ic_action_cancel_white);
+            Drawable drawable = getResources().getDrawable(R.drawable.ic_cancel_white_24dp);
             drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
                                     PorterDuff.Mode.MULTIPLY);
             toolbarMenu.getItem(1).setIcon(drawable);
@@ -458,6 +458,7 @@ public class SourceListFragment extends ListFragment {
                         break;
                     default:
                 }
+                this.dismissDialog();
             }
         };
 
@@ -1046,7 +1047,7 @@ public class SourceListFragment extends ListFragment {
                                                                        new IntentFilter(Downloader.DOWNLOAD_TERMINATED));
 
         if (Downloader.isDownloading) {
-            Drawable drawable = getResources().getDrawable(R.drawable.ic_action_cancel_white);
+            Drawable drawable = getResources().getDrawable(R.drawable.ic_cancel_white_24dp);
             drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
                                     PorterDuff.Mode.MULTIPLY);
             toolbarMenu.getItem(1).setIcon(drawable);
@@ -1114,12 +1115,10 @@ public class SourceListFragment extends ListFragment {
             handler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                        toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_download);
-                    }
-                    else {
-                        toolbarMenu.getItem(1).setIcon(R.drawable.ic_action_download_white);
-                    }
+                    Drawable drawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
+                    drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                                            PorterDuff.Mode.MULTIPLY);
+                    toolbarMenu.getItem(1).setIcon(drawable);
                 }
             });
         }

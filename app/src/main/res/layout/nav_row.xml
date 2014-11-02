@@ -19,29 +19,33 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="10dp"
+    android:layout_height="48dp"
     >
 
     <ImageView
         android:id="@+id/fragment_image"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_width="24dp"
+        android:layout_height="48dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_centerInParent="true"
         tools:ignore="ContentDescription"
         />
 
     <TextView
         android:id="@+id/fragment_title"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/fragment_image"
-        android:layout_toRightOf="@id/fragment_image"
+        android:layout_height="48dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
         android:focusable="false"
-        android:paddingEnd="8dp"
-        android:paddingLeft="8dp"
-        android:paddingStart="8dp"
+        android:layout_marginStart="72dp"
+        android:layout_marginLeft="72dp"
         android:singleLine="true"
-        android:textSize="18sp"
+        android:textSize="16sp"
+        android:gravity="center_vertical"
         />
 
 </RelativeLayout>

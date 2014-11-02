@@ -18,28 +18,28 @@
 <resources>
 
     <array name="notification_icon_icons">
-        <item>@drawable/ic_action_about_white</item>
-        <item>@drawable/ic_action_picture_white</item>
-        <item>@drawable/ic_action_settings_white</item>
-        <item>@drawable/ic_action_backspace_white</item>
+        <item>@drawable/ic_info_white_24dp</item>
+        <item>@drawable/ic_photo_white_24dp</item>
+        <item>@drawable/ic_settings_white_24dp</item>
+        <item>@drawable/ic_check_box_outline_blank_white_24dp</item>
     </array>
 
     <array name="notification_titles_icons">
-        <item>@drawable/ic_action_about_white</item>
-        <item>@drawable/ic_action_collection_white</item>
-        <item>@drawable/ic_action_settings_white</item>
-        <item>@drawable/ic_action_backspace_white</item>
+        <item>@drawable/ic_info_white_24dp</item>
+        <item>@drawable/ic_folder_white_24dp</item>
+        <item>@drawable/ic_settings_white_24dp</item>
+        <item>@drawable/ic_check_box_outline_blank_white_24dp</item>
     </array>
 
     <array name="notification_options_icons">
-        <item>@drawable/ic_action_copy_white</item>
-        <item>@drawable/ic_action_refresh_white</item>
-        <item>@drawable/ic_action_discard_white</item>
-        <item>@drawable/ic_action_picture_white</item>
-        <item>@drawable/ic_action_make_available_offline_white</item>
-        <item>@drawable/ic_action_back_white</item>
-        <item>@drawable/ic_action_share_white</item>
-        <item>@drawable/ic_action_backspace_white</item>
+        <item>@drawable/ic_content_copy_white_24dp</item>
+        <item>@drawable/ic_refresh_white_24dp</item>
+        <item>@drawable/ic_delete_white_24dp</item>
+        <item>@drawable/ic_photo_white_24dp</item>
+        <item>@drawable/ic_pin_drop_white_24dp</item>
+        <item>@drawable/ic_arrow_back_white_24dp</item>
+        <item>@drawable/ic_share_white_24dp</item>
+        <item>@drawable/ic_check_box_outline_blank_white_24dp</item>
     </array>
 
 </resources>

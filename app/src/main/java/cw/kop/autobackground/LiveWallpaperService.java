@@ -506,7 +506,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
 
             }
-            else if (drawable == R.drawable.ic_action_picture_white) {
+            else if (drawable == R.drawable.ic_photo_white_24dp) {
                 if (Downloader.getCurrentBitmapFile() == null) {
                     return;
                 }
@@ -834,8 +834,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                     tileWins++;
                 }
                 else {
-                    setTileImage(tile, R.drawable.ic_action_picture_white);
-                    setTileImage(lastTile, R.drawable.ic_action_picture_white);
+                    setTileImage(tile, R.drawable.ic_photo_white_24dp);
+                    setTileImage(lastTile, R.drawable.ic_photo_white_24dp);
                 }
 
                 handler.postDelayed(new Runnable() {
@@ -1004,7 +1004,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             gameSet = true;
 
             for (int i = 0; i < NUM_TO_WIN * 2; i++) {
-                setTileImage(i, R.drawable.ic_action_picture_white);
+                setTileImage(i, R.drawable.ic_photo_white_24dp);
             }
 
             pushNotification();

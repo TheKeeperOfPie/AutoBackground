@@ -109,7 +109,6 @@ public class ImageHistoryFragment extends Fragment {
         ((ViewGroup) historyListView.getParent()).addView(emptyLayout, 0);
 
         historyListView.setEmptyView(emptyLayout);
-        historyListView.setDividerHeight(0);
 
         return view;
     }

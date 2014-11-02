@@ -37,15 +37,15 @@ public class NavListAdapter extends BaseAdapter {
     private static LayoutInflater inflater = null;
     private ArrayList<String> fragmentList;
     private int[] iconImages = new int[] {
-            R.drawable.ic_action_picture_white,
-            R.drawable.ic_action_web_site_white,
-            R.drawable.ic_action_download_white,
-            R.drawable.ic_action_accounts_white,
-            R.drawable.ic_action_crop_white,
-            R.drawable.ic_action_chat_white,
-            R.drawable.ic_action_settings_white,
-            R.drawable.ic_action_view_as_list_white,
-            R.drawable.ic_action_about_white};
+            R.drawable.ic_view_list_white_24dp,
+            R.drawable.ic_now_wallpaper_white_24dp,
+            R.drawable.ic_file_download_white_24dp,
+            R.drawable.ic_account_circle_white_24dp,
+            R.drawable.ic_filter_white_24dp,
+            R.drawable.ic_notifications_white_24dp,
+            R.drawable.ic_settings_white_24dp,
+            R.drawable.ic_history_white_24dp,
+            R.drawable.ic_info_white_24dp};
     private int colorFilterInt;
 
     public NavListAdapter(Activity activity, String[] nameArray) {

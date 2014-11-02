@@ -78,17 +78,18 @@ public class DialogFactory {
         View dialogView = View.inflate(context, R.layout.action_dialog, null);
         dialog.setContentView(dialogView);
 
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
-        View titleUnderline = dialogView.findViewById(R.id.dialog_underline);
 
         if (title.length() > 0) {
-            titleUnderline.setVisibility(View.VISIBLE);
+            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
             dialogTitle.setVisibility(View.VISIBLE);
             dialogTitle.setText(title);
+
+            View titleUnderline = dialogView.findViewById(R.id.dialog_underline);
+            titleUnderline.setVisibility(View.VISIBLE);
         }
 
         if (summary.length() > 0) {
+            TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
             dialogSummary.setText(summary);
             dialogSummary.setVisibility(View.VISIBLE);
         }
@@ -157,8 +158,14 @@ public class DialogFactory {
         View dialogView = View.inflate(context, R.layout.list_dialog, null);
         dialog.setContentView(dialogView);
 
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        dialogTitle.setText(title);
+        if (title.length() > 0) {
+            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+            dialogTitle.setVisibility(View.VISIBLE);
+            dialogTitle.setText(title);
+
+            View dialogUnderline = dialogView.findViewById(R.id.dialog_underline);
+            dialogUnderline.setVisibility(View.VISIBLE);
+        }
 
         ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
         dialogList.setAdapter(new ArrayAdapter<>(context,
@@ -176,7 +183,7 @@ public class DialogFactory {
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                clickListener.dismissDialog();
+                clickListener.onDismiss();
             }
         });
 
@@ -212,6 +219,7 @@ public class DialogFactory {
         }
 
         public void onDismiss() {
+            this.dismissDialog();
         }
 
     }
@@ -223,6 +231,7 @@ public class DialogFactory {
         }
 
         public void onDismiss() {
+            this.dismissDialog();
         }
 
     }

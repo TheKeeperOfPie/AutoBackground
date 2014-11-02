@@ -94,7 +94,7 @@ public class DownloadThread extends Thread {
                 notifyProgress = new Notification.Builder(appContext)
                         .setContentTitle("AutoBackground")
                         .setContentText("Downloading images...")
-                        .setSmallIcon(R.drawable.ic_action_picture_white);
+                        .setSmallIcon(R.drawable.ic_photo_white_24dp);
 
                 if (Build.VERSION.SDK_INT >= 16) {
                     notifyProgress.setPriority(Notification.PRIORITY_MIN);
@@ -837,7 +837,7 @@ public class DownloadThread extends Thread {
             Notification.Builder notifyComplete = new Notification.Builder(appContext)
                     .setContentTitle("Download Completed")
                     .setContentText("AutoBackground downloaded " + totalDownloaded + " images")
-                    .setSmallIcon(R.drawable.ic_action_picture_white);
+                    .setSmallIcon(R.drawable.ic_photo_white_24dp);
 
             Notification notification;
 

@@ -134,7 +134,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             }
 
         }
-        else if (Downloader.getCurrentBitmapFile() != null && (AppSettings.getNotificationIcon() == R.drawable.ic_action_picture_white)) {
+        else if (Downloader.getCurrentBitmapFile() != null && (AppSettings.getNotificationIcon() == R.drawable.ic_photo_white_24dp)) {
             Picasso.with(appContext).load(Downloader.getCurrentBitmapFile()).fit().centerCrop().into(
                     notificationIcon);
         }

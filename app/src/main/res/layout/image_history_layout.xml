@@ -38,6 +38,7 @@
         android:layout_height="fill_parent"
         android:layout_above="@id/clear_history_button"
         android:drawSelectorOnTop="false"
+        android:dividerHeight="0px"
         >
     </ListView>
 

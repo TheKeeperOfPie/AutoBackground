@@ -124,7 +124,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
             }
             else {
 
-                Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_action_view_as_list_white);
+                Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_insert_drive_file_white_24dp);
                 drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
                                         PorterDuff.Mode.MULTIPLY);
 

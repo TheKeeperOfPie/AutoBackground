@@ -110,14 +110,10 @@ public class MainActivity extends ActionBarActivity {
 
         AppSettings.initPrefs(prefs, getApplicationContext());
 
-
-        int[] colors = {0, 0xFFFFFFFF, 0};
-
         switch (AppSettings.getTheme()) {
 
             case AppSettings.APP_LIGHT_THEME:
                 setTheme(R.style.AppLightTheme);
-                colors = new int[] {0, 0xFF000000, 0};
                 break;
             case AppSettings.APP_DARK_THEME:
                 setTheme(R.style.AppDarkTheme);
@@ -138,13 +134,16 @@ public class MainActivity extends ActionBarActivity {
         navLayout = (LinearLayout) findViewById(R.id.navigation_drawer);
         navPicture = (ImageView) findViewById(R.id.nav_drawer_picture);
 
+        Configuration configuration = getResources().getConfiguration();
+        navLayout.getLayoutParams().width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, configuration.screenWidthDp - 56, getResources().getDisplayMetrics()));
+
+        findViewById(R.id.nav_drawer_header).getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (configuration.screenWidthDp - 56) / 16 * 9, getResources().getDisplayMetrics()));
+
         drawerList = (ListView) findViewById(R.id.nav_list);
         drawerList.setAdapter(new NavListAdapter(this, fragmentList));
         drawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-        drawerList.setDivider(new GradientDrawable(GradientDrawable.Orientation.RIGHT_LEFT,
-                                                   colors));
-        drawerList.setDividerHeight(1);
+        drawerList.setDividerHeight(0);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

@@ -88,7 +88,14 @@ public class LocalImageAdapter extends BaseAdapter {
             View view = convertView;
 
             if (convertView == null) {
-                view = inflater.inflate(R.layout.image_list_cell, parent, false);
+                view = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
+                        inflater.inflate(R.layout.image_list_cell,
+                                         parent,
+                                         false) :
+                        inflater.inflate(
+                                R.layout.image_list_cell_dark,
+                                parent,
+                                false);
             }
 
             TextView fileTitle = (TextView) view.findViewById(R.id.file_title);
@@ -104,14 +111,14 @@ public class LocalImageAdapter extends BaseAdapter {
                         .into(fileImage);
             }
             else if (file.isDirectory()) {
-                Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_action_collection_white);
+                Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_folder_white_24dp);
                 drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
                                         PorterDuff.Mode.MULTIPLY);
 
                 fileImage.setImageDrawable(drawable);
             }
             else {
-                Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_action_view_as_list_white);
+                Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_insert_drive_file_white_24dp);
                 drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
                                         PorterDuff.Mode.MULTIPLY);
 
