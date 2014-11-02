@@ -64,8 +64,9 @@
     </style>
 
     <style name="AppTransparentTheme" parent="AppBaseTheme">
-        <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
-        <item name="android:windowBackground">@color/TRANSPARENT_BACKGROUND</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:textColor">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:textColorSecondary">@color/LIGHT_GRAY_OPAQUE</item>
@@ -127,6 +128,7 @@
     <style name="TransparentListView" parent="android:style/Widget.Holo.ListView">
         <item name="android:background">@color/TRANSPARENT_BACKGROUND</item>
         <item name="android:windowBackground">@color/TRANSPARENT_BACKGROUND</item>
+        <item name="android:windowIsTranslucent">true</item>
         <item name="android:textColor">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:divider">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:dividerHeight">0px</item>

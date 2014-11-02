@@ -21,8 +21,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     >
 
-    <uses-sdk
-        tools:node="replace"/>
+    <!--<uses-sdk-->
+        <!--tools:node="replace"/>-->
 
     <uses-feature
         android:glEsVersion="0x00020000"
