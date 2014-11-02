@@ -99,12 +99,12 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
             PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference(
                     "title_effects_settings");
 
-            findPreference("effects_frequency").setOnPreferenceClickListener(this);
-            findPreference("random_effects_frequency").setOnPreferenceClickListener(this);
-
             preferenceCategory.removePreference(findPreference("use_effects_override"));
             preferenceCategory.removePreference(findPreference("use_toast_effects"));
         }
+
+        findPreference("effects_frequency").setOnPreferenceClickListener(this);
+        findPreference("random_effects_frequency").setOnPreferenceClickListener(this);
 
         PreferenceCategory parametersCategory = (PreferenceCategory) findPreference(
                 "title_effects_parameters");

@@ -79,7 +79,6 @@
         android:paddingEnd="2dp"
         android:paddingLeft="2dp"
         android:paddingRight="2dp"
-        android:paddingStart="2dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
 
@@ -147,7 +146,6 @@
         android:paddingEnd="8dp"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:paddingStart="8dp"
         android:paddingTop="8dp"
         android:text="@string/cancel_button"
         android:textAllCaps="true"
@@ -165,7 +163,6 @@
         android:paddingEnd="8dp"
         android:paddingLeft="8dp"
         android:paddingRight="8dp"
-        android:paddingStart="8dp"
         android:paddingTop="8dp"
         android:text="@string/ok_button"
         android:textAllCaps="true"
