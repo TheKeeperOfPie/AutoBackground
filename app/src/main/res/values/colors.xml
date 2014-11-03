@@ -38,4 +38,6 @@
     <color name="DARK_THEME_BACKGROUND">#FF303030</color>
     <color name="DARK_THEME_DIALOG">#FF424242</color>
 
+    <color name="ALERT_TEXT">#ffbb0808</color>
+
 </resources>

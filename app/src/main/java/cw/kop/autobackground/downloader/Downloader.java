@@ -93,6 +93,10 @@ public class Downloader {
         isDownloading = false;
     }
 
+    public static boolean hasImages() {
+        return false;
+    }
+
     public static List<File> getBitmapList() {
 
         FilenameFilter filenameFilter = getImageFileNameFilter();

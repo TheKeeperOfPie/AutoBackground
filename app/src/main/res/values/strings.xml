@@ -21,6 +21,7 @@
     <string name="wallpaper_description">AutoBackground</string>
     <string name="music_receiver_description">AutoBackground Music Receiver</string>
     <string name="menu_help">Help</string>
+    <string name="no_image_indicator">No images found. Try downloading some.</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="letters_and_numbers">ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890</string>

@@ -96,6 +96,7 @@ public class SourceListFragment extends ListFragment {
     private Button setButton;
     private ImageButton addButton;
     private Menu toolbarMenu;
+    private TextView noImageText;
 
     private ShowcaseView sourceListTutorial;
     private ShowcaseView addSourceTutorial;
@@ -197,8 +198,20 @@ public class SourceListFragment extends ListFragment {
 
         });
 
-        if (!AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            addButton.setBackgroundResource(R.drawable.floating_button_white);
+        noImageText = (TextView) view.findViewById(R.id.no_image_indicator);
+
+        switch (AppSettings.getTheme()) {
+            default:
+            case AppSettings.APP_LIGHT_THEME:
+                addButton.setBackgroundResource(R.drawable.floating_button);
+                noImageText.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+                break;
+            case AppSettings.APP_DARK_THEME:
+            case AppSettings.APP_TRANSPARENT_THEME:
+                addButton.setBackgroundResource(R.drawable.floating_button_white);
+                noImageText.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+                break;
+
         }
 
         return view;
@@ -1043,6 +1056,8 @@ public class SourceListFragment extends ListFragment {
     public void onResume() {
         super.onResume();
 
+        new ImageCountTask().execute();
+
         LocalBroadcastManager.getInstance(appContext).registerReceiver(downloadButtonReceiver,
                                                                        new IntentFilter(Downloader.DOWNLOAD_TERMINATED));
 
@@ -1134,6 +1149,31 @@ public class SourceListFragment extends ListFragment {
         return false;
     }
 
+    class ImageCountTask extends AsyncTask<Void, String, String> {
+        @Override
+        protected String doInBackground(Void... params) {
+            return listAdapter.checkSources();
+        }
+
+        @Override
+        protected void onPostExecute(String sourceState) {
+
+            switch (sourceState) {
+
+                case SourceListAdapter.NO_SOURCES:
+                    break;
+                case SourceListAdapter.NO_ACTIVE_SOURCES:
+                    break;
+                case SourceListAdapter.NEED_DOWNLOAD:
+                    break;
+                case SourceListAdapter.NO_IMAGES:
+                    break;
+
+            }
+
+            super.onPostExecute(sourceState);
+        }
+    }
     class PicasaAlbumTask extends AsyncTask<Void, String, Void> {
 
         int changePosition;

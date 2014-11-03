@@ -41,6 +41,11 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListAdapter extends BaseAdapter {
 
+    public static final String NO_SOURCES = "NO_SOURCE";
+    public static final String NO_ACTIVE_SOURCES = "NO_ACTIVE_SOURCES";
+    public static final String NEED_DOWNLOAD = "NEED_DOWNLOAD";
+    public static final String NO_IMAGES = "NO_IMAGES";
+
     private Activity mainActivity;
     private ArrayList<HashMap<String, String>> listData;
     private HashSet<String> titles;
@@ -189,6 +194,32 @@ public class SourceListAdapter extends BaseAdapter {
             notifyDataSetChanged();
             saveData();
         }
+    }
+
+    public String checkSources() {
+
+        if (listData.size() == 0) {
+            return NO_SOURCES;
+        }
+
+        boolean noActive = true;
+        boolean needDownload = true;
+
+        for (HashMap source : listData) {
+
+            if (noActive && source.get("use").equals("true")) {
+                noActive = false;
+            }
+
+            if (needDownload && source.get("type").equals(AppSettings.FOLDER)) {
+                needDownload = false;
+            }
+
+        }
+
+
+
+        return null;
     }
 
     public void sortData(final String key) {
