@@ -204,35 +204,23 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
     private void showDialogIntervalForInput() {
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
-                new Dialog(
-                        appContext,
-                        R.style.LightDialogTheme) :
-                new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.input_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        final EditText inputField = (EditText) dialogView.findViewById(R.id.input_field);
-        inputField.setInputType(InputType.TYPE_CLASS_NUMBER);
-
-        dialogTitle.setText("Update Interval");
-        inputField.setHint("Enter number of minutes");
-
-        Button positiveButton = (Button) dialogView.findViewById(R.id.dialog_positive_button);
-        positiveButton.setText(getResources().getString(R.string.ok_button));
-        positiveButton.setVisibility(View.VISIBLE);
-        positiveButton.setOnClickListener(new View.OnClickListener() {
+        DialogFactory.InputDialogListener listener = new DialogFactory.InputDialogListener() {
             @Override
-            public void onClick(View v) {
-                int inputValue = Integer.parseInt(inputField.getText().toString());
+            public void onClickMiddle(View v) {
+                intervalPref.setChecked(false);
+                dismissDialog();
+            }
 
-                if (inputField.getText().toString().equals("") || inputValue < 0) {
+            @Override
+            public void onClickRight(View v) {
+                String value = getEditTextString();
+                int inputValue = Integer.parseInt(value);
+
+                if (value.equals("") || inputValue < 0) {
                     intervalPref.setChecked(false);
                     return;
                 }
-                AppSettings.setIntervalDuration(Integer.parseInt(inputField.getText().toString()) * CONVERT_MILLES_TO_MIN);
+                AppSettings.setIntervalDuration(inputValue * CONVERT_MILLES_TO_MIN);
                 setIntervalAlarm();
                 if (inputValue > 0) {
                     intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
@@ -240,31 +228,23 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 else {
                     intervalPref.setSummary("Change on return");
                 }
-                dialog.dismiss();
+                dismissDialog();
             }
-        });
 
-        Button negativeButton = (Button) dialogView.findViewById(R.id.dialog_negative_button);
-        negativeButton.setText(getResources().getString(R.string.cancel_button));
-        negativeButton.setVisibility(View.VISIBLE);
-        negativeButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                intervalPref.setChecked(false);
-                dialog.dismiss();
+            public void onDismiss() {
+                super.onDismiss();
             }
-        });
+        };
 
-        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-        }
-        else {
-            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-        }
-
-        dialog.show();
+        DialogFactory.showInputDialog(appContext,
+                                      "Update Interval",
+                                      "Number of minutes",
+                                      listener,
+                                      -1,
+                                      R.string.cancel_button,
+                                      R.string.ok_button,
+                                      InputType.TYPE_CLASS_NUMBER);
     }
 
     private void setIntervalAlarm() {

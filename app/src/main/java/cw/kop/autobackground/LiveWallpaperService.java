@@ -734,7 +734,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             notificationBuilder = new Notification.Builder(this)
                     .setContent(normalView)
-                    .setSmallIcon(R.drawable.notification_icon)
+                    .setSmallIcon(R.drawable.app_icon)
                     .setOngoing(true);
 
             if (Build.VERSION.SDK_INT >= 16) {

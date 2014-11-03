@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -94,10 +95,7 @@ public class DialogFactory {
             dialogSummary.setVisibility(View.VISIBLE);
         }
 
-        int textColorInt = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
-                context.getResources().getColor(
-                        R.color.DARK_GRAY_OPAQUE) :
-                context.getResources().getColor(R.color.LIGHT_GRAY_OPAQUE);
+        int textColorInt = AppSettings.getColorFilterInt(context);
 
         if (textOneResource > 0) {
             Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);
@@ -190,6 +188,92 @@ public class DialogFactory {
         dialog.show();
     }
 
+    public static void showInputDialog(Context context,
+                                       String title,
+                                       String hint,
+                                       final InputDialogListener listener,
+                                       int textOneResource,
+                                       int textTwoResource,
+                                       int textThreeResource,
+                                       int inputType) {
+
+
+
+        Dialog dialog = getDialog(context);
+        listener.setDialog(dialog);
+
+        View dialogView = View.inflate(context, R.layout.input_dialog, null);
+        dialog.setContentView(dialogView);
+
+
+        if (title.length() > 0) {
+            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+            dialogTitle.setVisibility(View.VISIBLE);
+            dialogTitle.setText(title);
+
+            View titleUnderline = dialogView.findViewById(R.id.dialog_underline);
+            titleUnderline.setVisibility(View.VISIBLE);
+        }
+
+        EditText inputField = (EditText) dialogView.findViewById(R.id.input_field);
+        inputField.setInputType(inputType);
+        if (hint.length() > 0) {
+            inputField.setHint(hint);
+        }
+        listener.setEditText(inputField);
+
+        int textColorInt = AppSettings.getColorFilterInt(context);
+
+        if (textOneResource > 0) {
+            Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);
+            buttonOne.setText(context.getResources().getString(textOneResource));
+            buttonOne.setTextColor(textColorInt);
+            buttonOne.setVisibility(View.VISIBLE);
+            buttonOne.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickLeft(v);
+                }
+            });
+        }
+
+        if (textTwoResource > 0) {
+            Button buttonTwo = (Button) dialogView.findViewById(R.id.action_button_2);
+            buttonTwo.setText(context.getResources().getString(textTwoResource));
+            buttonTwo.setTextColor(textColorInt);
+            buttonTwo.setVisibility(View.VISIBLE);
+            buttonTwo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickMiddle(v);
+                }
+            });
+        }
+
+        if (textThreeResource > 0) {
+            Button buttonThree = (Button) dialogView.findViewById(R.id.action_button_3);
+            buttonThree.setText(context.getResources().getString(textThreeResource));
+            buttonThree.setTextColor(textColorInt);
+            buttonThree.setVisibility(View.VISIBLE);
+            buttonThree.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickRight(v);
+                }
+            });
+        }
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                listener.onDismiss();
+            }
+        });
+
+        dialog.show();
+
+    }
+
     public static class DialogClickListener {
 
         private Dialog dialog;
@@ -200,6 +284,10 @@ public class DialogFactory {
 
         public void dismissDialog() {
             dialog.dismiss();
+        }
+
+        public void onDismiss() {
+            this.dismissDialog();
         }
 
     }
@@ -218,10 +306,6 @@ public class DialogFactory {
             this.dismissDialog();
         }
 
-        public void onDismiss() {
-            this.dismissDialog();
-        }
-
     }
 
     public abstract static class ListDialogListener extends DialogClickListener {
@@ -232,6 +316,20 @@ public class DialogFactory {
 
         public void onDismiss() {
             this.dismissDialog();
+        }
+
+    }
+
+    public abstract static class InputDialogListener extends ActionDialogListener {
+
+        private EditText editText;
+
+        public void setEditText(EditText editText) {
+            this.editText = editText;
+        }
+
+        public String getEditTextString() {
+            return editText.getText().toString();
         }
 
     }

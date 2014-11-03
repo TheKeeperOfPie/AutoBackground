@@ -91,6 +91,8 @@ public class MainActivity extends ActionBarActivity {
     private ImageView navPicture;
     private ListView drawerList;
     private IntentFilter entryFilter;
+    private int currentPosition = -1;
+    private int newPosition = -1;
 
     public MainActivity() {
     }
@@ -199,10 +201,11 @@ public class MainActivity extends ActionBarActivity {
         Bundle bundle = getIntent().getExtras();
 
         if (bundle != null && bundle.getInt("fragment", 0) > 0) {
-            selectItem(bundle.getInt("fragment", 0));
+            int position = bundle.getInt("fragment", 0);
+            selectItem(position, false);
         }
         else {
-            selectItem(0);
+            selectItem(0, false);
         }
 
         loadNavPicture();
@@ -267,10 +270,27 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
-    private void selectItem(int position) {
+    private void selectItem(int position, boolean slideAnimate) {
+
+        if (position == currentPosition) {
+            drawerLayout.closeDrawer(navLayout);
+            return;
+        }
+
+        currentPosition = position;
 
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.setCustomAnimations(R.animator.slide_from_right, R.animator.slide_to_left);
+
+        if (slideAnimate) {
+            fragmentTransaction.setCustomAnimations(R.animator.slide_from_right, R.animator.slide_to_left);
+        }
+        else {
+            fragmentTransaction.setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out);
+        }
+
+        drawerList.setItemChecked(position, true);
+        setTitle(fragmentList[position]);
+        drawerLayout.closeDrawer(navLayout);
 
         switch (position) {
 
@@ -304,10 +324,6 @@ public class MainActivity extends ActionBarActivity {
             default:
 
         }
-
-        drawerList.setItemChecked(position, true);
-        setTitle(fragmentList[position]);
-        drawerLayout.closeDrawer(navLayout);
     }
 
     @Override
@@ -359,7 +375,7 @@ public class MainActivity extends ActionBarActivity {
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position);
+            selectItem(position, true);
         }
     }
 }

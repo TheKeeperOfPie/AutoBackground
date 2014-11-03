@@ -38,6 +38,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -801,6 +802,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                         notificationSummary.setTextColor(AppSettings.getNotificationSummaryColor());
                         break;
                 }
+                dialog.dismiss();
             }
         });
 
@@ -902,51 +904,22 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private void showDialogForText(final int index, final int drawable) {
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
-                new Dialog(
-                        appContext,
-                        R.style.LightDialogTheme) :
-                new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.input_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        final EditText inputField = (EditText) dialogView.findViewById(R.id.input_field);
-
-        dialogTitle.setText("Enter text:");
-
-        Button positiveButton = (Button) dialogView.findViewById(R.id.dialog_positive_button);
-        positiveButton.setText(getResources().getString(R.string.ok_button));
-        positiveButton.setVisibility(View.VISIBLE);
-        positiveButton.setOnClickListener(new View.OnClickListener() {
+        DialogFactory.InputDialogListener listener = new DialogFactory.InputDialogListener() {
             @Override
-            public void onClick(View v) {
-                showTitleColorDialog(index, inputField.getText().toString(), drawable);
-                dialog.dismiss();
+            public void onClickRight(View v) {
+                showTitleColorDialog(index, getEditTextString(), drawable);
+                dismissDialog();
             }
-        });
+        };
 
-        Button negativeButton = (Button) dialogView.findViewById(R.id.dialog_negative_button);
-        negativeButton.setText(getResources().getString(R.string.cancel_button));
-        negativeButton.setVisibility(View.VISIBLE);
-        negativeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-        }
-        else {
-            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-        }
-
-        dialog.show();
+        DialogFactory.showInputDialog(appContext,
+                                      "Enter text:",
+                                      "",
+                                      listener,
+                                      -1,
+                                      R.string.cancel_button,
+                                      R.string.ok_button,
+                                      InputType.TYPE_CLASS_TEXT);
     }
 
     private void showDialogForPin(final int index, final String title, final int drawable) {

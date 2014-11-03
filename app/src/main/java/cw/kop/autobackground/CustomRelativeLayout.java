@@ -18,6 +18,7 @@ package cw.kop.autobackground;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
@@ -25,6 +26,9 @@ import android.widget.RelativeLayout;
  * Created by TheKeeperOfPie on 11/3/2014.
  */
 public class CustomRelativeLayout extends RelativeLayout {
+
+    private float xFraction = 0;
+    private ViewTreeObserver.OnPreDrawListener preDrawListener = null;
 
     public CustomRelativeLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -40,10 +44,25 @@ public class CustomRelativeLayout extends RelativeLayout {
 
 
     public void setXFraction(float fraction) {
-        if (getWidth() > 0) {
-            float translationX = getWidth() * fraction;
-            setTranslationX(translationX);
+        this.xFraction = fraction;
+
+        if (getWidth() == 0) {
+            if (preDrawListener == null) {
+                preDrawListener = new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        getViewTreeObserver().removeOnPreDrawListener(preDrawListener);
+                        setXFraction(xFraction);
+                        return true;
+                    }
+                };
+                getViewTreeObserver().addOnPreDrawListener(preDrawListener);
+            }
+            return;
         }
+
+        float translationX = getWidth() * fraction;
+        setTranslationX(translationX);
     }
 
     public float getXFraction() {
