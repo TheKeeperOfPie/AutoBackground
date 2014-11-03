@@ -69,7 +69,7 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
 
         googlePref = (SwitchPreference) findPreference("use_google_account");
 
-        return super.onCreateView(inflater, container, savedInstanceState);
+        return inflater.inflate(R.layout.fragment_list, container, false);
     }
 
     @Override

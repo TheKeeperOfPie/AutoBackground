@@ -38,7 +38,6 @@ import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,7 +48,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -79,7 +77,7 @@ import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
-import cw.kop.autobackground.downloader.Downloader;
+import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.AlbumFragment;
 import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.settings.ApiKeys;
@@ -89,6 +87,7 @@ public class SourceListFragment extends ListFragment {
 
     public static final String ADD_ENTRY = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
     public static final String SET_ENTRY = "cw.kop.autobackground.SourceListFragment.SET_ENTRY";
+    public static final String RESET_INDICATOR = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
 
     private SourceListAdapter listAdapter;
     private Context appContext;
@@ -107,10 +106,18 @@ public class SourceListFragment extends ListFragment {
     private boolean setShown = false;
     private boolean tutorialShowing = false;
 
-    private BroadcastReceiver downloadButtonReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver sourceListReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            resetActionBarDownload();
+
+            String action = intent.getAction();
+
+            switch (action) {
+                case FileHandler.DOWNLOAD_TERMINATED:
+                    new ImageCountTask().execute();
+
+            }
+
         }
     };
 
@@ -119,9 +126,9 @@ public class SourceListFragment extends ListFragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
         handler = new Handler();
-        setHasOptionsMenu(true);
     }
 
     @Override
@@ -133,15 +140,14 @@ public class SourceListFragment extends ListFragment {
 
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
         Drawable refreshIcon = getResources().getDrawable(R.drawable.ic_refresh_white_24dp);
-        Drawable downloadIcon = getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
         Drawable storageIcon = getResources().getDrawable(R.drawable.ic_sort_white_24dp);
         refreshIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-        downloadIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
         storageIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
 
         menu.getItem(0).setIcon(refreshIcon);
-        menu.getItem(1).setIcon(downloadIcon);
         menu.getItem(2).setIcon(storageIcon);
+
+        new ImageCountTask().execute();
     }
 
     @Override
@@ -200,19 +206,7 @@ public class SourceListFragment extends ListFragment {
 
         noImageText = (TextView) view.findViewById(R.id.no_image_indicator);
 
-        switch (AppSettings.getTheme()) {
-            default:
-            case AppSettings.APP_LIGHT_THEME:
-                addButton.setBackgroundResource(R.drawable.floating_button);
-                noImageText.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-                break;
-            case AppSettings.APP_DARK_THEME:
-            case AppSettings.APP_TRANSPARENT_THEME:
-                addButton.setBackgroundResource(R.drawable.floating_button_white);
-                noImageText.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-                break;
-
-        }
+        resetAddButton();
 
         return view;
     }
@@ -236,7 +230,7 @@ public class SourceListFragment extends ListFragment {
                 break;
         }
 
-        return super.onOptionsItemSelected(item);
+        return true;
     }
 
     private void cycleWallpaper() {
@@ -252,7 +246,7 @@ public class SourceListFragment extends ListFragment {
 //            hide(downloadTutorial);
 //            showTutorial(3);
 //        }
-        if (Downloader.download(appContext)) {
+        if (FileHandler.download(appContext)) {
             Drawable drawable = getResources().getDrawable(R.drawable.ic_cancel_white_24dp);
             drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
                                     PorterDuff.Mode.MULTIPLY);
@@ -278,7 +272,7 @@ public class SourceListFragment extends ListFragment {
 
                 @Override
                 public void onClickRight(View v) {
-                    Downloader.cancel(appContext);
+                    FileHandler.cancel(appContext);
                     resetActionBarDownload();
                     dismissDialog();
                 }
@@ -550,9 +544,9 @@ public class SourceListFragment extends ListFragment {
 
         TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
         final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
-        final TextView sourcePrefix = (TextView) dialogView.findViewById(R.id.source_data_prefix);
+        final EditText sourcePrefix = (EditText) dialogView.findViewById(R.id.source_data_prefix);
         final EditText sourceData = (EditText) dialogView.findViewById(R.id.source_data);
-        final TextView sourceSuffix = (TextView) dialogView.findViewById(R.id.source_data_suffix);
+        final EditText sourceSuffix = (EditText) dialogView.findViewById(R.id.source_data_suffix);
         final EditText sourceNum = (EditText) dialogView.findViewById(R.id.source_num);
 
         dialogTitle.setText(mainTitle);
@@ -607,9 +601,10 @@ public class SourceListFragment extends ListFragment {
                             if (!previousTitle.equals(newTitle)) {
                                 AppSettings.setSourceSet(newTitle,
                                                          AppSettings.getSourceSet(previousTitle));
-                                Downloader.renameFiles(appContext, previousTitle, newTitle);
+                                FileHandler.renameFiles(appContext, previousTitle, newTitle);
                             }
                             listAdapter.saveData();
+                            new ImageCountTask().execute();
                             dialog.dismiss();
                         }
                         else {
@@ -627,6 +622,7 @@ public class SourceListFragment extends ListFragment {
                             listAdapter.saveData();
                             AppSettings.setSourceSet(newTitle, new HashSet<String>());
                             hide(addSourceTutorial);
+                            new ImageCountTask().execute();
                             dialog.dismiss();
                         }
                         else {
@@ -772,11 +768,12 @@ public class SourceListFragment extends ListFragment {
                                                              new HashSet<String>());
                                     listAdapter.removeItem(index);
                                     listAdapter.saveData();
+                                    new ImageCountTask().execute();
                                 }
 
                                 @Override
                                 public void onClickRight(View v) {
-                                    Downloader.deleteBitmaps(appContext, index);
+                                    FileHandler.deleteBitmaps(appContext, index);
                                     Toast.makeText(appContext,
                                                    "Deleting " + AppSettings.getSourceTitle(index) + " images",
                                                    Toast.LENGTH_SHORT).show();
@@ -784,6 +781,7 @@ public class SourceListFragment extends ListFragment {
                                                              new HashSet<String>());
                                     listAdapter.removeItem(index);
                                     listAdapter.saveData();
+                                    new ImageCountTask().execute();
                                     this.dismissDialog();
                                 }
 
@@ -805,6 +803,7 @@ public class SourceListFragment extends ListFragment {
                         }
                         else {
                             listAdapter.removeItem(index);
+                            new ImageCountTask().execute();
                             listAdapter.saveData();
                         }
                         break;
@@ -836,23 +835,6 @@ public class SourceListFragment extends ListFragment {
             }
         }
         setListAdapter(listAdapter);
-
-        TextView emptyText = new TextView(getActivity());
-        emptyText.setText("List is empty. Please add a new source entry.");
-        emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                             ViewGroup.LayoutParams.MATCH_PARENT));
-        emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
-
-        LinearLayout emptyLayout = new LinearLayout(getActivity());
-        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                                  ViewGroup.LayoutParams.MATCH_PARENT));
-        emptyLayout.setGravity(Gravity.TOP);
-        emptyLayout.addView(emptyText);
-
-        ((ViewGroup) getListView().getParent()).addView(emptyLayout, 0);
-
-        getListView().setEmptyView(emptyLayout);
         getListView().setDividerHeight(0);
 
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -867,8 +849,6 @@ public class SourceListFragment extends ListFragment {
         if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
             getListView().setBackgroundColor(getResources().getColor(android.R.color.transparent));
         }
-
-        listAdapter.updateNum();
 
     }
 
@@ -955,7 +935,7 @@ public class SourceListFragment extends ListFragment {
 //                                "The app will only use WiFi to \n" +
 //                                "download as a default. If you \n" +
 //                                "wish to change this setting, \n" +
-//                                "go into the Downloader settings \n" +
+//                                "go into the FileHandler settings \n" +
 //                                "and enable mobile data.")
 //                        .setStyle(R.style.ShowcaseStyle)
 //                        .setTarget(new ActionItemTarget(getActivity(), toolbarMenu.getItem(1).getItemId()))
@@ -1058,18 +1038,8 @@ public class SourceListFragment extends ListFragment {
 
         new ImageCountTask().execute();
 
-        LocalBroadcastManager.getInstance(appContext).registerReceiver(downloadButtonReceiver,
-                                                                       new IntentFilter(Downloader.DOWNLOAD_TERMINATED));
-
-        if (Downloader.isDownloading) {
-            Drawable drawable = getResources().getDrawable(R.drawable.ic_cancel_white_24dp);
-            drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                                    PorterDuff.Mode.MULTIPLY);
-            toolbarMenu.getItem(1).setIcon(drawable);
-        }
-        else {
-            resetActionBarDownload();
-        }
+        LocalBroadcastManager.getInstance(appContext).registerReceiver(sourceListReceiver,
+                                                                       new IntentFilter(FileHandler.DOWNLOAD_TERMINATED));
 
         if (isServiceRunning(LiveWallpaperService.class.getName())) {
             setButton.setVisibility(View.GONE);
@@ -1122,10 +1092,22 @@ public class SourceListFragment extends ListFragment {
         super.onPause();
         listAdapter.saveData();
 
-        LocalBroadcastManager.getInstance(appContext).unregisterReceiver(downloadButtonReceiver);
+        LocalBroadcastManager.getInstance(appContext).unregisterReceiver(sourceListReceiver);
+    }
+
+    public void resetAddButton() {
+
+        Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
+        addDrawable.setColorFilter(getResources().getColor(R.color.BLUE_OPAQUE),
+                                   PorterDuff.Mode.MULTIPLY);
+        addButton.setImageDrawable(addDrawable);
+
     }
 
     public void resetActionBarDownload() {
+
+        Log.i("SLF", "resetActionBarDownload");
+
         if (toolbarMenu != null) {
             handler.post(new Runnable() {
                 @Override
@@ -1158,20 +1140,48 @@ public class SourceListFragment extends ListFragment {
         @Override
         protected void onPostExecute(String sourceState) {
 
+            Log.i("SLA", "ImageCountTask onPostExecute");
+
+            listAdapter.updateNum();
+
+            resetAddButton();
+
+            if (toolbarMenu != null) {
+                Drawable drawable = FileHandler.isDownloading ? getResources().getDrawable(R.drawable.ic_cancel_white_24dp) : getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
+                drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                                        PorterDuff.Mode.MULTIPLY);
+                toolbarMenu.getItem(1).setIcon(drawable);
+            }
+
+
+            noImageText.setVisibility(sourceState.equals(SourceListAdapter.OKAY) ? View.GONE : View.VISIBLE);
+
             switch (sourceState) {
 
                 case SourceListAdapter.NO_SOURCES:
+                    noImageText.setText("Please add a source");
+                    Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
+                    addDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
+                                                     PorterDuff.Mode.MULTIPLY);
+                    addButton.setImageDrawable(addDrawable);
                     break;
                 case SourceListAdapter.NO_ACTIVE_SOURCES:
+                    noImageText.setText("No active sources");
                     break;
                 case SourceListAdapter.NEED_DOWNLOAD:
+                    noImageText.setText("No downloaded images");
+                    if (!FileHandler.isDownloading && toolbarMenu != null) {
+                        Drawable downloadDrawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp).mutate();
+                        downloadDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
+                                                        PorterDuff.Mode.MULTIPLY);
+                        toolbarMenu.getItem(1).setIcon(downloadDrawable);
+                    }
                     break;
-                case SourceListAdapter.NO_IMAGES:
+                case SourceListAdapter.OKAY:
                     break;
 
             }
 
-            super.onPostExecute(sourceState);
         }
     }
     class PicasaAlbumTask extends AsyncTask<Void, String, Void> {
@@ -1262,7 +1272,6 @@ public class SourceListFragment extends ListFragment {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
             showAlbumFragment(AppSettings.PICASA,
                               changePosition,
                               albumNames,

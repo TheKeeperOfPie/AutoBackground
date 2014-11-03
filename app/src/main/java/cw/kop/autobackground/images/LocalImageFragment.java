@@ -42,7 +42,7 @@ import java.io.FilenameFilter;
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
-import cw.kop.autobackground.downloader.Downloader;
+import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.SourceListFragment;
 
@@ -123,7 +123,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
             @Override
             public void onClick(View v) {
                 File dir = imageAdapter.getDirectory();
-                FilenameFilter filenameFilter = Downloader.getImageFileNameFilter();
+                FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
                 if (setPath) {
                     AppSettings.setDownloadPath(dir.getAbsolutePath());
                     Toast.makeText(appContext,
@@ -226,7 +226,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                         File file = imageAdapter.getItem(index);
 
                         if (file.exists() && file.isFile()) {
-                            if (file.getAbsolutePath().equals(Downloader.getCurrentBitmapFile().getAbsolutePath())) {
+                            if (file.getAbsolutePath().equals(FileHandler.getCurrentBitmapFile().getAbsolutePath())) {
                                 Intent intent = new Intent();
                                 intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
                                 intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);

@@ -41,19 +41,17 @@ import cw.kop.autobackground.settings.AppSettings;
 public class LocalImageAdapter extends BaseAdapter {
 
     private static final int BYTE_TO_MEBIBYTE = 1048576;
-    private Activity mainActivity;
     private File mainDir;
     private File startDir;
     private ArrayList<File> listFiles;
-    private LayoutInflater inflater = null;
+    private LayoutInflater inflater;
     private boolean finish;
     private int screenWidth;
     private int imageHeight;
 
     public LocalImageAdapter(Activity activity, File directory) {
-        mainActivity = activity;
         listFiles = new ArrayList<>();
-        inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         startDir = directory;
         mainDir = directory;
         setDirectory(mainDir);
@@ -88,14 +86,7 @@ public class LocalImageAdapter extends BaseAdapter {
             View view = convertView;
 
             if (convertView == null) {
-                view = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
-                        inflater.inflate(R.layout.image_list_cell,
-                                         parent,
-                                         false) :
-                        inflater.inflate(
-                                R.layout.image_list_cell_dark,
-                                parent,
-                                false);
+                view = inflater.inflate(R.layout.image_list_cell, parent, false);
             }
 
             TextView fileTitle = (TextView) view.findViewById(R.id.file_title);

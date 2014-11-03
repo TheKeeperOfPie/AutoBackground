@@ -16,7 +16,7 @@
   ~ limitations under the License.
   -->
 
-<RelativeLayout
+<cw.kop.autobackground.CustomRelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -348,4 +348,4 @@
         android:layout_below="@id/notification_preview"
         />
 
-</RelativeLayout>
+</cw.kop.autobackground.CustomRelativeLayout>

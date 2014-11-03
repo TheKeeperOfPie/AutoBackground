@@ -31,7 +31,7 @@ import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.widget.Toast;
 
-import cw.kop.autobackground.downloader.Downloader;
+import cw.kop.autobackground.files.FileHandler;
 
 /**
  * Created by TheKeeperOfPie on 10/8/2014.
@@ -161,7 +161,7 @@ public class MusicReceiverService extends NotificationListenerService implements
                                "Bitmap ID: " + bitmap.getGenerationId(),
                                Toast.LENGTH_SHORT).show();
 
-                Downloader.setMusicBitmap(bitmap);
+                FileHandler.setMusicBitmap(bitmap);
 
                 Intent intent = new Intent();
                 intent.setAction(LiveWallpaperService.LOAD_ALBUM_ART);

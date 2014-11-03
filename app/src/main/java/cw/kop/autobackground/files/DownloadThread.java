@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground.downloader;
+package cw.kop.autobackground.files;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -143,7 +143,7 @@ public class DownloadThread extends Thread {
                     }
 
                     if (AppSettings.deleteOldImages()) {
-                        Downloader.deleteBitmaps(appContext, index);
+                        FileHandler.deleteBitmaps(appContext, index);
                         AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
                                                  new HashSet<String>());
                     }
@@ -822,14 +822,14 @@ public class DownloadThread extends Thread {
             notificationManager.cancel(NOTIFICATION_ID);
         }
 
-        Intent resetDownloadIntent = new Intent(Downloader.DOWNLOAD_TERMINATED);
+        Intent resetDownloadIntent = new Intent(FileHandler.DOWNLOAD_TERMINATED);
         LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
 
         sendToast("Download cancelled");
 
         AppSettings.checkUsedLinksSize();
         appContext = null;
-        Downloader.setIsDownloading(false);
+        FileHandler.setIsDownloading(false);
     }
 
     private void finish() {
@@ -846,7 +846,7 @@ public class DownloadThread extends Thread {
                 Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
                 inboxStyle.setBigContentTitle("Downloaded Image Details:");
 
-                inboxStyle.addLine("Total images enabled: " + Downloader.getBitmapList().size());
+                inboxStyle.addLine("Total images enabled: " + FileHandler.getBitmapList().size());
 
                 for (String detail : imageDetails.split(";break;")) {
                     inboxStyle.addLine(detail);
@@ -868,7 +868,7 @@ public class DownloadThread extends Thread {
         cycleIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
         appContext.sendBroadcast(cycleIntent);
 
-        Intent resetDownloadIntent = new Intent(Downloader.DOWNLOAD_TERMINATED);
+        Intent resetDownloadIntent = new Intent(FileHandler.DOWNLOAD_TERMINATED);
         LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
 
         Intent intent = new Intent();
@@ -880,6 +880,6 @@ public class DownloadThread extends Thread {
         appContext = null;
 
         Log.i(TAG, "Download Finished");
-        Downloader.setIsDownloading(false);
+        FileHandler.setIsDownloading(false);
     }
 }

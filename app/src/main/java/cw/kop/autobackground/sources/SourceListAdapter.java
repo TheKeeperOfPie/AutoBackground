@@ -29,14 +29,16 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 
 import cw.kop.autobackground.R;
-import cw.kop.autobackground.downloader.Downloader;
+import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListAdapter extends BaseAdapter {
@@ -45,6 +47,7 @@ public class SourceListAdapter extends BaseAdapter {
     public static final String NO_ACTIVE_SOURCES = "NO_ACTIVE_SOURCES";
     public static final String NEED_DOWNLOAD = "NEED_DOWNLOAD";
     public static final String NO_IMAGES = "NO_IMAGES";
+    public static final String OKAY = "OKAY";
 
     private Activity mainActivity;
     private ArrayList<HashMap<String, String>> listData;
@@ -80,14 +83,7 @@ public class SourceListAdapter extends BaseAdapter {
         View view = convertView;
 
         if (convertView == null) {
-            view = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
-                    inflater.inflate(R.layout.source_list_row,
-                                     parent,
-                                     false) :
-                    inflater.inflate(
-                            R.layout.source_list_row_dark,
-                            parent,
-                            false);
+            view = inflater.inflate(R.layout.source_list_row, parent, false);
         }
 
         TextView title = (TextView) view.findViewById(R.id.title_text);
@@ -113,7 +109,7 @@ public class SourceListAdapter extends BaseAdapter {
         summary.setSelected(true);
         title.setText(listItem.get("title"));
         summary.setText(listItem.get("data"));
-        num.setText("# Images: " + listItem.get("num"));
+        num.setText("# Images: " + listItem.get("numStored") + " / " + listItem.get("num"));
         useBox.setChecked(Boolean.valueOf(listItem.get("use")));
 
         return view;
@@ -144,6 +140,14 @@ public class SourceListAdapter extends BaseAdapter {
         changedItem.put("data", data);
         changedItem.put("num", "" + num);
         changedItem.put("use", "" + use);
+        File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
+        if (folder.exists() && folder.isDirectory()) {
+            changedItem.put("numStored",
+                        "" + folder.listFiles(FileHandler.getImageFileNameFilter()).length);
+        }
+        else {
+            changedItem.put("numStored", "0");
+        }
         listData.set(position, changedItem);
         titles.add(title.replaceAll(" ", ""));
         notifyDataSetChanged();
@@ -162,6 +166,16 @@ public class SourceListAdapter extends BaseAdapter {
         newItem.put("data", data);
         newItem.put("num", "" + num);
         newItem.put("use", "" + use);
+        newItem.put("numStored", "0");
+        File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
+        if (folder.exists() && folder.isDirectory()) {
+            newItem.put("numStored",
+                        "" + folder.listFiles(FileHandler.getImageFileNameFilter()).length);
+        }
+        else {
+            newItem.put("numStored", "0");
+        }
+
         listData.add(newItem);
         titles.add(title.replaceAll(" ", ""));
         notifyDataSetChanged();
@@ -178,16 +192,27 @@ public class SourceListAdapter extends BaseAdapter {
 
     public void updateNum() {
 
+        FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
+
+        String cacheDir = AppSettings.getDownloadPath();
+
         if (listData != null) {
             for (HashMap<String, String> hashMap : listData) {
                 if (hashMap.get("type").equals(AppSettings.FOLDER)) {
-                    File file = new File(hashMap.get("data"));
-                    if (file.exists() && file.isDirectory()) {
+                    File folder = new File(hashMap.get("data"));
+                    if (folder.exists() && folder.isDirectory()) {
                         hashMap.put("num",
-                                    "" + file.listFiles(Downloader.getImageFileNameFilter()).length);
+                                    "" + folder.listFiles(filenameFilter).length);
                     }
                     else {
                         hashMap.put("num", "0");
+                    }
+                }
+                else {
+                    File folder = new File(cacheDir + "/" + hashMap.get("title") + " " + AppSettings.getImagePrefix());
+                    if (folder.exists() && folder.isDirectory()) {
+                        hashMap.put("numStored",
+                                    "" + folder.listFiles(filenameFilter).length);
                     }
                 }
             }
@@ -205,21 +230,35 @@ public class SourceListAdapter extends BaseAdapter {
         boolean noActive = true;
         boolean needDownload = true;
 
-        for (HashMap source : listData) {
+        for (int index = 0; (noActive || needDownload) && index < listData.size(); index++) {
 
-            if (noActive && source.get("use").equals("true")) {
+            boolean use = listData.get(index).get("use").equals("true");
+
+            if (noActive && use) {
                 noActive = false;
             }
 
-            if (needDownload && source.get("type").equals(AppSettings.FOLDER)) {
+            if (needDownload && use && listData.get(index).get("type").equals(AppSettings.FOLDER)) {
                 needDownload = false;
+                Log.i("SLA", "Type: " + listData.get(index).get("type"));
             }
 
         }
 
+        if (noActive) {
+            return NO_ACTIVE_SOURCES;
+        }
 
+        boolean noImages = FileHandler.hasImages();
 
-        return null;
+        if (noImages) {
+            if (needDownload) {
+                return NEED_DOWNLOAD;
+            }
+            return NO_IMAGES;
+        }
+
+        return OKAY;
     }
 
     public void sortData(final String key) {

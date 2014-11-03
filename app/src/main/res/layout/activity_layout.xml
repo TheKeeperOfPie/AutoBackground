@@ -64,7 +64,7 @@
         android:orientation="vertical"
         >
 
-        <RelativeLayout
+        <cw.kop.autobackground.CustomRelativeLayout
             android:id="@+id/nav_drawer_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -92,7 +92,7 @@
                 android:gravity="center_vertical"
                 />
 
-        </RelativeLayout>
+        </cw.kop.autobackground.CustomRelativeLayout>
 
         <ListView
             android:id="@+id/nav_list"

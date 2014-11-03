@@ -30,22 +30,21 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.settings.AppSettings;
 
 public class AlbumAdapter extends BaseAdapter {
-
-    private Context context;
 
     private ArrayList<String> albumNames;
     private ArrayList<String> albumImages;
     private ArrayList<String> albumLinks;
-
+    private LayoutInflater inflater;
 
     public AlbumAdapter(Context context, ArrayList<String> names, ArrayList<String> images,
                         ArrayList<String> links) {
-        this.context = context;
         albumNames = names;
         albumImages = images;
         albumLinks = links;
+        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
@@ -71,7 +70,6 @@ public class AlbumAdapter extends BaseAdapter {
             View view = convertView;
 
             if (convertView == null) {
-                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 view = inflater.inflate(R.layout.album_list_cell, parent, false);
             }
 

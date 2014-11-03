@@ -100,14 +100,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
             View view = convertView;
 
             if (convertView == null) {
-                view = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
-                        inflater.inflate(R.layout.image_list_cell,
-                                         parent,
-                                         false) :
-                        inflater.inflate(
-                                R.layout.image_list_cell_dark,
-                                parent,
-                                false);
+                view = inflater.inflate(R.layout.image_list_cell, parent, false);
             }
 
             TextView fileTitle = (TextView) view.findViewById(R.id.file_title);

@@ -116,13 +116,13 @@
     <style name="LightListView" parent="android:style/Widget.Holo.Light.ListView">
         <item name="android:textColor">@color/DARK_GRAY_OPAQUE</item>
         <item name="android:divider">@color/DARK_GRAY_OPAQUE</item>
-        <item name="android:dividerHeight">0px</item>
+        <item name="android:dividerHeight">1px</item>
     </style>
 
     <style name="DarkListView" parent="android:style/Widget.Holo.ListView">
         <item name="android:textColor">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:divider">@color/LIGHT_GRAY_OPAQUE</item>
-        <item name="android:dividerHeight">0px</item>
+        <item name="android:dividerHeight">1px</item>
     </style>
 
     <style name="TransparentListView" parent="android:style/Widget.Holo.ListView">
@@ -131,7 +131,7 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:textColor">@color/LIGHT_GRAY_OPAQUE</item>
         <item name="android:divider">@color/LIGHT_GRAY_OPAQUE</item>
-        <item name="android:dividerHeight">0px</item>
+        <item name="android:dividerHeight">1px</item>
     </style>
 
     <style name="LightActionBar" parent="android:Widget.Holo.Light.ActionBar">

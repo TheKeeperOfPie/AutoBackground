@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground.downloader;
+package cw.kop.autobackground.files;
 
 import android.content.Context;
 import android.content.Intent;
@@ -34,10 +34,10 @@ import java.util.List;
 
 import cw.kop.autobackground.settings.AppSettings;
 
-public class Downloader {
+public class FileHandler {
 
-    public static final String DOWNLOAD_TERMINATED = "cw.kop.autobackground.downloader.Downloader.DOWNLOAD_TERMINATED";
-    private static final String TAG = "Downloader";
+    public static final String DOWNLOAD_TERMINATED = "cw.kop.autobackground.files.FileHandler.DOWNLOAD_TERMINATED";
+    private static final String TAG = "FileHandler";
     public static boolean isDownloading = false;
     private static Bitmap musicBitmap = null;
     private static File currentBitmapFile = null;
@@ -63,7 +63,7 @@ public class Downloader {
                                    Toast.LENGTH_SHORT).show();
                 }
 
-                Intent resetDownloadIntent = new Intent(Downloader.DOWNLOAD_TERMINATED);
+                Intent resetDownloadIntent = new Intent(FileHandler.DOWNLOAD_TERMINATED);
                 LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
                 return false;
             }
@@ -87,14 +87,40 @@ public class Downloader {
     public static void cancel(Context appContext) {
         if (downloadThread != null) {
             downloadThread.interrupt();
-            Intent resetDownloadIntent = new Intent(Downloader.DOWNLOAD_TERMINATED);
+            Intent resetDownloadIntent = new Intent(FileHandler.DOWNLOAD_TERMINATED);
             LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
         }
         isDownloading = false;
     }
 
     public static boolean hasImages() {
-        return false;
+
+        boolean noImages = true;
+
+        FilenameFilter filenameFilter = getImageFileNameFilter();
+
+        String cacheDir = AppSettings.getDownloadPath();
+
+        for (int index = 0; noImages && index < AppSettings.getNumSources(); index++) {
+
+            if (AppSettings.useSource(index)) {
+                String type = AppSettings.getSourceType(index);
+                if (type.equals(AppSettings.FOLDER)) {
+                    File folder = new File(AppSettings.getSourceData(index));
+                    if (folder.exists() && folder.isDirectory() && folder.listFiles(filenameFilter).length > 0) {
+                        noImages = false;
+                    }
+                }
+                else {
+                    File folder = new File(cacheDir + "/" + AppSettings.getSourceTitle(index) + " " + AppSettings.getImagePrefix());
+                    if (folder.exists() && folder.isDirectory() && folder.listFiles(filenameFilter).length > 0) {
+                        noImages = false;
+                    }
+                }
+            }
+        }
+
+        return noImages;
     }
 
     public static List<File> getBitmapList() {
@@ -227,7 +253,7 @@ public class Downloader {
 
         List<File> images = getBitmapList();
 
-        Log.i("Downloader", "Getting next image");
+        Log.i("FileHandler", "Getting next image");
 
         if (!AppSettings.shuffleImages()) {
             randIndex++;

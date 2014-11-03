@@ -61,25 +61,30 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
 
-    <TextView
+    <EditText
         android:id="@+id/source_data_prefix"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/source_data"
         android:layout_alignBottom="@+id/source_data"
         android:layout_alignLeft="@+id/source_title"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignStart="@+id/source_title"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="0dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="0dp"
         android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginRight="0dp"
         android:layout_marginTop="4dp"
-        android:paddingEnd="2dp"
-        android:paddingLeft="2dp"
-        android:paddingRight="2dp"
+        android:layout_marginBottom="0dp"
+        android:paddingLeft="8dp"
+        android:paddingEnd="0dp"
+        android:paddingRight="0dp"
+        android:paddingBottom="2dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:background="@color/TRANSPARENT_BACKGROUND"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
         />
 
     <EditText
@@ -93,29 +98,33 @@
         android:layout_marginRight="0dp"
         android:layout_marginStart="0dp"
         android:layout_marginTop="4dp"
-        android:layout_toEndOf="@+id/source_data_prefix"
-        android:layout_toLeftOf="@+id/source_data_suffix"
-        android:layout_toRightOf="@+id/source_data_prefix"
         android:layout_toStartOf="@+id/source_data_suffix"
+        android:layout_toLeftOf="@+id/source_data_suffix"
+        android:layout_toEndOf="@+id/source_data_prefix"
+        android:layout_toRightOf="@+id/source_data_prefix"
         android:hint="@string/source_data"
         android:inputType="textUri"
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
 
-    <TextView
+    <EditText
         android:id="@+id/source_data_suffix"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/source_data"
         android:layout_alignBottom="@id/source_data"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="0dp"
         android:layout_marginRight="16dp"
         android:layout_marginStart="0dp"
         android:layout_marginTop="4dp"
+        android:paddingBottom="2dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:background="@color/TRANSPARENT_BACKGROUND"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
         />
 
     <EditText

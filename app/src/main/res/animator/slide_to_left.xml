@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <!--
   ~ Copyright (C) Winson Chiu
   ~
@@ -16,19 +15,15 @@
   ~ limitations under the License.
   -->
 
-<cw.kop.autobackground.CustomRelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+<set xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <ListView
-        android:id="@android:id/list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:drawSelectorOnTop="false">
-    </ListView>
+    <objectAnimator
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:interpolator="@android:anim/accelerate_decelerate_interpolator"
+        android:propertyName="xFraction"
+        android:valueType="floatType"
+        android:valueFrom="0"
+        android:valueTo="-1.0"
+        android:duration="@android:integer/config_mediumAnimTime"/>
 
-</cw.kop.autobackground.CustomRelativeLayout>
+</set>

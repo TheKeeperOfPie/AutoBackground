@@ -84,7 +84,7 @@ import java.util.Random;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import cw.kop.autobackground.downloader.Downloader;
+import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 
 public class LiveWallpaperService extends GLWallpaperService {
@@ -130,7 +130,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 case COPY_IMAGE:
                     ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
                     ClipData clip = ClipData.newPlainText("Image Location",
-                                                          Downloader.getBitmapLocation());
+                                                          FileHandler.getBitmapLocation());
                     clipboard.setPrimaryClip(clip);
                     if (AppSettings.useToast()) {
                         Toast.makeText(context,
@@ -142,7 +142,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
                     context.sendBroadcast(closeDrawer);
                     Toast.makeText(context,
-                                   "Image Location:\n" + Downloader.getBitmapLocation(),
+                                   "Image Location:\n" + FileHandler.getBitmapLocation(),
                                    Toast.LENGTH_LONG).show();
                     break;
                 case GAME_TILE0:
@@ -458,17 +458,17 @@ public class LiveWallpaperService extends GLWallpaperService {
         if (normalView != null && bigView != null && notificationManager != null) {
             int drawable = AppSettings.getNotificationIcon();
 
-            if (AppSettings.getNotificationTitle().equals("Location") && Downloader.getBitmapLocation() != null) {
-                normalView.setTextViewText(R.id.notification_title, Downloader.getBitmapLocation());
+            if (AppSettings.getNotificationTitle().equals("Location") && FileHandler.getBitmapLocation() != null) {
+                normalView.setTextViewText(R.id.notification_title, FileHandler.getBitmapLocation());
                 normalView.setOnClickPendingIntent(R.id.notification_title, pendingToastIntent);
                 if (Build.VERSION.SDK_INT >= 16) {
                     bigView.setTextViewText(R.id.notification_big_title,
-                                            Downloader.getBitmapLocation());
+                                            FileHandler.getBitmapLocation());
                     bigView.setOnClickPendingIntent(R.id.notification_big_title,
                                                     pendingToastIntent);
                 }
                 else {
-                    notificationBuilder.setContentTitle(Downloader.getBitmapLocation());
+                    notificationBuilder.setContentTitle(FileHandler.getBitmapLocation());
                 }
             }
             else {
@@ -476,18 +476,18 @@ public class LiveWallpaperService extends GLWallpaperService {
                 bigView.setOnClickPendingIntent(R.id.notification_big_title, null);
             }
 
-            if (AppSettings.getNotificationSummary().equals("Location") && Downloader.getBitmapLocation() != null) {
+            if (AppSettings.getNotificationSummary().equals("Location") && FileHandler.getBitmapLocation() != null) {
                 normalView.setTextViewText(R.id.notification_summary,
-                                           Downloader.getBitmapLocation());
+                                           FileHandler.getBitmapLocation());
                 normalView.setOnClickPendingIntent(R.id.notification_summary, pendingToastIntent);
                 if (Build.VERSION.SDK_INT >= 16) {
                     bigView.setTextViewText(R.id.notification_big_summary,
-                                            Downloader.getBitmapLocation());
+                                            FileHandler.getBitmapLocation());
                     bigView.setOnClickPendingIntent(R.id.notification_big_summary,
                                                     pendingToastIntent);
                 }
                 else {
-                    notificationBuilder.setContentText(Downloader.getBitmapLocation());
+                    notificationBuilder.setContentText(FileHandler.getBitmapLocation());
                 }
             }
             else {
@@ -507,7 +507,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             }
             else if (drawable == R.drawable.ic_photo_white_24dp) {
-                if (Downloader.getCurrentBitmapFile() == null) {
+                if (FileHandler.getCurrentBitmapFile() == null) {
                     return;
                 }
 
@@ -523,7 +523,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                             if (AppSettings.useHighResolutionNotificationIcon()) {
 
                                 options.inJustDecodeBounds = true;
-                                BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(),
+                                BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(),
                                                          options);
 
                                 int bitWidth = options.outWidth;
@@ -548,7 +548,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                                 options.inSampleSize = NOTIFICATION_ICON_SAMPLE_SIZE;
                             }
                             Log.i(TAG, "sampleSize: " + options.inSampleSize);
-                            Bitmap bitmap = BitmapFactory.decodeFile(Downloader.getCurrentBitmapFile().getAbsolutePath(),
+                            Bitmap bitmap = BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(),
                                                                      options);
                             targetIcon.onBitmapLoaded(bitmap, null);
                         }
@@ -734,7 +734,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             notificationBuilder = new Notification.Builder(this)
                     .setContent(normalView)
-                    .setSmallIcon(R.drawable.app_icon_grayscale)
+                    .setSmallIcon(R.drawable.notification_icon)
                     .setOngoing(true);
 
             if (Build.VERSION.SDK_INT >= 16) {
@@ -779,7 +779,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             pushNotification();
 
-            if (Downloader.getCurrentBitmapFile() != null) {
+            if (FileHandler.getCurrentBitmapFile() != null) {
                 notifyChangeImage();
             }
         }
@@ -896,7 +896,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     private boolean setupGameTiles() {
 
         final ArrayList<File> bitmapFiles = new ArrayList<>();
-        bitmapFiles.addAll(Downloader.getBitmapList());
+        bitmapFiles.addAll(FileHandler.getBitmapList());
 
         if (bitmapFiles.size() >= NUM_TO_WIN) {
             Collections.shuffle(bitmapFiles);
@@ -1072,11 +1072,11 @@ public class LiveWallpaperService extends GLWallpaperService {
                 if (networkInfo != null && networkInfo.isConnected()) {
 
                     if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && AppSettings.useWifi()) {
-                        Downloader.download(LiveWallpaperService.this);
+                        FileHandler.download(LiveWallpaperService.this);
                         unregisterReceiver(networkReceiver);
                     }
                     else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE && AppSettings.useMobile()) {
-                        Downloader.download(LiveWallpaperService.this);
+                        FileHandler.download(LiveWallpaperService.this);
                         unregisterReceiver(networkReceiver);
                     }
 
@@ -1355,13 +1355,13 @@ public class LiveWallpaperService extends GLWallpaperService {
             NetworkInfo mobile = connect.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
             if (wifi != null && wifi.isConnected() && AppSettings.useWifi()) {
-                Downloader.download(getApplicationContext());
+                FileHandler.download(getApplicationContext());
                 if (downloadOnConnection) {
                     unregisterReceiver(networkReceiver);
                 }
             }
             else if (mobile != null && mobile.isConnected() && AppSettings.useMobile()) {
-                Downloader.download(getApplicationContext());
+                FileHandler.download(getApplicationContext());
                 if (downloadOnConnection) {
                     unregisterReceiver(networkReceiver);
                 }
@@ -1442,7 +1442,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         private void loadMusicBitmap() {
             resetRenderMode();
 
-            if (Downloader.getMusicBitmap() == null) {
+            if (FileHandler.getMusicBitmap() == null) {
                 return;
             }
 
@@ -1450,7 +1450,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 @Override
                 public void run() {
                     try {
-                        final Bitmap bitmap = Downloader.getMusicBitmap();
+                        final Bitmap bitmap = FileHandler.getMusicBitmap();
 
                         if (bitmap != null) {
 
@@ -1486,7 +1486,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         public void loadCurrentImage() {
             resetRenderMode();
 
-            if (Downloader.getCurrentBitmapFile() == null) {
+            if (FileHandler.getCurrentBitmapFile() == null) {
                 loadNextImage();
                 return;
             }
@@ -1504,7 +1504,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         try {
 
                             Bitmap checkBitmap;
-                            File imageFile = Downloader.getCurrentBitmapFile();
+                            File imageFile = FileHandler.getCurrentBitmapFile();
                             checkBitmap = imageFile.exists() ?
                                     BitmapFactory.decodeFile(imageFile.getAbsolutePath(),
                                                              options) :
@@ -1588,7 +1588,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                             final Bitmap bitmap = checkBitmap;
 
-                            Downloader.setCurrentBitmapFile(previousBitmaps.get(0));
+                            FileHandler.setCurrentBitmapFile(previousBitmaps.get(0));
 
                             if (bitmap != null) {
 
@@ -1607,7 +1607,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                                     }
                                 });
                                 if (!AppSettings.shuffleImages()) {
-                                    Downloader.decreaseIndex();
+                                    FileHandler.decreaseIndex();
                                 }
 
                                 previousBitmaps.remove(0);
@@ -1643,7 +1643,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             resetRenderMode();
 
-            previousBitmaps.add(0, Downloader.getCurrentBitmapFile());
+            previousBitmaps.add(0, FileHandler.getCurrentBitmapFile());
 
             new Thread(new Runnable() {
                 @Override
@@ -1658,7 +1658,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         try {
 
                             Bitmap checkBitmap;
-                            File imageFile = Downloader.getNextImage();
+                            File imageFile = FileHandler.getNextImage();
                             checkBitmap = imageFile.exists() ?
                                     BitmapFactory.decodeFile(imageFile.getAbsolutePath(),
                                                              options) :
@@ -1743,7 +1743,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Downloader.getNextImage();
+                                    FileHandler.getNextImage();
                                     Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
                                     LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
                                             loadNavPictureIntent);
@@ -1763,7 +1763,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
                         break;
                     case LiveWallpaperService.DELETE_IMAGE:
-                        Downloader.deleteCurrentBitmap();
+                        FileHandler.deleteCurrentBitmap();
                         closeNotificationDrawer(context);
                         if (AppSettings.useToast()) {
                             Toast.makeText(LiveWallpaperService.this,
@@ -1773,7 +1773,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         loadNextImage();
                         break;
                     case LiveWallpaperService.OPEN_IMAGE:
-                        String location = Downloader.getBitmapLocation();
+                        String location = FileHandler.getBitmapLocation();
                         if (location.substring(0, 4).equals("http")) {
                             Intent linkIntent = new Intent(Intent.ACTION_VIEW);
                             linkIntent.setData(Uri.parse(location));
@@ -1784,7 +1784,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         else {
                             Intent galleryIntent = new Intent();
                             galleryIntent.setAction(Intent.ACTION_VIEW);
-                            galleryIntent.setDataAndType(Uri.fromFile(Downloader.getCurrentBitmapFile()),
+                            galleryIntent.setDataAndType(Uri.fromFile(FileHandler.getCurrentBitmapFile()),
                                                          "image/*");
                             galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
                             galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -1817,7 +1817,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         shareIntent.setAction(Intent.ACTION_SEND);
                         shareIntent.setType("image/*");
                         shareIntent.putExtra(Intent.EXTRA_STREAM,
-                                             Uri.fromFile(Downloader.getCurrentBitmapFile()));
+                                             Uri.fromFile(FileHandler.getCurrentBitmapFile()));
                         shareIntent = Intent.createChooser(shareIntent, "Share Image");
                         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         context.startActivity(shareIntent);
@@ -2542,7 +2542,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 try {
                     Log.i(TAG,
-                          "currentBitmapFile loaded: " + Downloader.getCurrentBitmapFile().getName());
+                          "currentBitmapFile loaded: " + FileHandler.getCurrentBitmapFile().getName());
 
                     int storeId = textureNames[0];
                     textureNames[0] = textureNames[1];

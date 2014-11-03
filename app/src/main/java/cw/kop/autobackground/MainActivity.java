@@ -16,6 +16,7 @@
 
 package cw.kop.autobackground;
 
+import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -24,7 +25,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -46,7 +46,7 @@ import android.widget.ListView;
 
 import com.squareup.picasso.Picasso;
 
-import cw.kop.autobackground.downloader.Downloader;
+import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.AlbumFragment;
 import cw.kop.autobackground.images.ImageHistoryFragment;
 import cw.kop.autobackground.images.LocalImageFragment;
@@ -66,7 +66,7 @@ public class MainActivity extends ActionBarActivity {
                             intent.getStringExtra("type"),
                             intent.getStringExtra("title"),
                             intent.getStringExtra("data"),
-                            intent.getStringExtra("num"));
+                            "" + intent.getIntExtra("num", 0));
                     break;
                 case SourceListFragment.SET_ENTRY:
                     sourceListFragment.setEntry(
@@ -74,7 +74,7 @@ public class MainActivity extends ActionBarActivity {
                             intent.getStringExtra("type"),
                             intent.getStringExtra("title"),
                             intent.getStringExtra("data"),
-                            intent.getStringExtra("num"));
+                            "" + intent.getIntExtra("num", 0));
                     break;
                 case LOAD_NAV_PICTURE:
                     loadNavPicture();
@@ -235,7 +235,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void loadNavPicture() {
 
-        if (Build.VERSION.SDK_INT >= 16 && navPicture != null && Downloader.getCurrentBitmapFile() != null && Downloader.getCurrentBitmapFile().exists()) {
+        if (Build.VERSION.SDK_INT >= 16 && navPicture != null && FileHandler.getCurrentBitmapFile() != null && FileHandler.getCurrentBitmapFile().exists()) {
             int width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                                                              320,
                                                              getResources().getDisplayMetrics()));
@@ -243,7 +243,7 @@ public class MainActivity extends ActionBarActivity {
                                                               180,
                                                               getResources().getDisplayMetrics()));
 
-            Picasso.with(getApplicationContext()).load(Downloader.getCurrentBitmapFile()).resize(
+            Picasso.with(getApplicationContext()).load(FileHandler.getCurrentBitmapFile()).resize(
                     width,
                     height).centerCrop().into(navPicture);
         }
@@ -269,52 +269,37 @@ public class MainActivity extends ActionBarActivity {
 
     private void selectItem(int position) {
 
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        fragmentTransaction.setCustomAnimations(R.animator.slide_from_right, R.animator.slide_to_left);
+
         switch (position) {
 
             case 0:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, sourceListFragment, "source_fragment")
-                        .commit();
+                fragmentTransaction.replace(R.id.content_frame, sourceListFragment, "source_fragment").commit();
                 break;
             case 1:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new WallpaperSettingsFragment())
-                        .commit();
+                fragmentTransaction.replace(R.id.content_frame, new WallpaperSettingsFragment()).commit();
                 break;
             case 2:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new DownloadSettingsFragment())
-                        .commit();
+                fragmentTransaction.replace(R.id.content_frame, new DownloadSettingsFragment()).commit();
                 break;
             case 3:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new AccountSettingsFragment())
-                        .commit();
+                fragmentTransaction.replace(R.id.content_frame, new AccountSettingsFragment()).commit();
                 break;
             case 4:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new EffectsSettingsFragment())
-                        .commit();
+                fragmentTransaction.replace(R.id.content_frame, new EffectsSettingsFragment()).commit();
                 break;
             case 5:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new NotificationSettingsFragment())
-                        .commit();
+                fragmentTransaction.replace(R.id.content_frame, new NotificationSettingsFragment()).commit();
                 break;
             case 6:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new AppSettingsFragment())
-                        .commit();
+                fragmentTransaction.replace(R.id.content_frame, new AppSettingsFragment()).commit();
                 break;
             case 7:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new ImageHistoryFragment())
-                        .commit();
+                fragmentTransaction.replace(R.id.content_frame, new ImageHistoryFragment()).commit();
                 break;
             case 8:
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.content_frame, new AboutFragment())
-                        .commit();
+                fragmentTransaction.replace(R.id.content_frame, new AboutFragment()).commit();
                 break;
             default:
 

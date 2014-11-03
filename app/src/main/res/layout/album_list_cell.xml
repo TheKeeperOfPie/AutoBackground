@@ -16,45 +16,38 @@
   ~ limitations under the License.
   -->
 
-<android.support.v7.widget.CardView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     >
 
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        >
+    <ImageView
+        android:id="@+id/album_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:adjustViewBounds="true"
+        android:focusable="false"
+        android:src="@drawable/app_icon"
+        tools:ignore="ContentDescription"
+        />
 
-        <ImageView
-            android:id="@+id/album_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:adjustViewBounds="true"
-            android:focusable="false"
-            android:src="@drawable/app_icon"
-            tools:ignore="ContentDescription"
-            />
+    <TextView
+        android:id="@+id/album_name"
+        android:layout_width="0px"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"
+        android:ellipsize="marquee"
+        android:focusable="false"
+        android:gravity="center_vertical"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:scrollbars="horizontal"
+        android:singleLine="true"
+        android:textSize="22sp"
+        />
 
-        <TextView
-            android:id="@+id/album_name"
-            android:layout_width="0px"
-            android:layout_height="fill_parent"
-            android:layout_weight="1"
-            android:ellipsize="marquee"
-            android:focusable="false"
-            android:gravity="center_vertical"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:scrollHorizontally="true"
-            android:scrollbars="horizontal"
-            android:singleLine="true"
-            android:textSize="22sp"
-            />
-
-    </LinearLayout>
-</android.support.v7.widget.CardView>
+</LinearLayout>

@@ -48,7 +48,7 @@ import android.widget.Toast;
 import java.util.Calendar;
 import java.util.HashSet;
 
-import cw.kop.autobackground.downloader.Downloader;
+import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -105,7 +105,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
                     @Override
                     public void onClickRight(View v) {
-                        Downloader.deleteAllBitmaps(appContext);
+                        FileHandler.deleteAllBitmaps(appContext);
                         for (int i = 0; i < AppSettings.getNumSources(); i++) {
                             if (AppSettings.getSourceType(i).equals("website")) {
                                 AppSettings.setSourceSet(AppSettings.getSourceTitle(i),

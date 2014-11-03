@@ -16,7 +16,7 @@
   ~ limitations under the License.
   -->
 
-<RelativeLayout
+<cw.kop.autobackground.CustomRelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -29,9 +29,12 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:text="@string/no_image_indicator"
-        android:textSize="12sp"
+        android:textSize="16sp"
         android:textColor="@color/ALERT_TEXT"
-        android:gravity="center_vertical"
+        android:textAllCaps="true"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:visibility="gone"
         />
 
     <ListView
@@ -63,8 +66,8 @@
         android:layout_marginBottom="24dp"
         android:layout_marginEnd="24dp"
         android:layout_marginRight="24dp"
-        android:background="@drawable/floating_button"
+        android:background="@drawable/floating_button_white"
         android:contentDescription="@string/floating_add_button_content_description"
         />
 
-</RelativeLayout>
+</cw.kop.autobackground.CustomRelativeLayout>

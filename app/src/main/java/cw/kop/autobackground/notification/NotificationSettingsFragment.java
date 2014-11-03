@@ -63,7 +63,7 @@ import afzkl.development.colorpickerview.view.ColorPickerView;
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
-import cw.kop.autobackground.downloader.Downloader;
+import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 
 public class NotificationSettingsFragment extends PreferenceFragment implements View.OnClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
@@ -134,8 +134,8 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             }
 
         }
-        else if (Downloader.getCurrentBitmapFile() != null && (AppSettings.getNotificationIcon() == R.drawable.ic_photo_white_24dp)) {
-            Picasso.with(appContext).load(Downloader.getCurrentBitmapFile()).fit().centerCrop().into(
+        else if (FileHandler.getCurrentBitmapFile() != null && (AppSettings.getNotificationIcon() == R.drawable.ic_photo_white_24dp)) {
+            Picasso.with(appContext).load(FileHandler.getCurrentBitmapFile()).fit().centerCrop().into(
                     notificationIcon);
         }
         else {
@@ -149,16 +149,16 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
 
         if (AppSettings.getNotificationTitle().equals("Location")) {
-            if (Downloader.getCurrentBitmapFile() != null) {
-                notificationTitle.setText(Downloader.getCurrentBitmapFile().getAbsolutePath());
+            if (FileHandler.getCurrentBitmapFile() != null) {
+                notificationTitle.setText(FileHandler.getCurrentBitmapFile().getAbsolutePath());
             }
             else {
                 notificationTitle.setText(AppSettings.getNotificationTitle());
             }
         }
         if (AppSettings.getNotificationSummary().equals("Location")) {
-            if (Downloader.getCurrentBitmapFile() != null) {
-                notificationSummary.setText(Downloader.getCurrentBitmapFile().getAbsolutePath());
+            if (FileHandler.getCurrentBitmapFile() != null) {
+                notificationSummary.setText(FileHandler.getCurrentBitmapFile().getAbsolutePath());
             }
             else {
                 notificationSummary.setText(AppSettings.getNotificationSummary());
@@ -446,7 +446,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                         R.style.LightDialogTheme) :
                 new Dialog(appContext, R.style.DarkDialogTheme);
 
-        View dialogView = View.inflate(appContext, R.layout.duotone_dialog, null);
+        View dialogView = View.inflate(appContext, R.layout.color_picker_dialog, null);
         dialog.setContentView(dialogView);
 
         TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
@@ -542,7 +542,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                     int imageSize = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                                                                          64,
                                                                          appContext.getResources().getDisplayMetrics()));
-                    Picasso.with(appContext).load(Downloader.getCurrentBitmapFile()).resize(
+                    Picasso.with(appContext).load(FileHandler.getCurrentBitmapFile()).resize(
                             imageSize,
                             imageSize).into(notificationIcon);
                     clearHighlights();
@@ -767,8 +767,8 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                         }
                         else if (title.equals("Location")) {
                             AppSettings.setNotificationTitle(title);
-                            if (Downloader.getCurrentBitmapFile() != null) {
-                                notificationTitle.setText(Downloader.getCurrentBitmapFile().getAbsolutePath());
+                            if (FileHandler.getCurrentBitmapFile() != null) {
+                                notificationTitle.setText(FileHandler.getCurrentBitmapFile().getAbsolutePath());
                             }
                             else {
                                 notificationTitle.setText(title);
@@ -1000,7 +1000,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
         if (key.equals("use_notification_game")) {
             if (AppSettings.useNotificationGame()) {
-                if (Downloader.getBitmapList().size() < 5) {
+                if (FileHandler.getBitmapList().size() < 5) {
                     Toast.makeText(appContext,
                                    "Not enough images for game",
                                    Toast.LENGTH_SHORT).show();

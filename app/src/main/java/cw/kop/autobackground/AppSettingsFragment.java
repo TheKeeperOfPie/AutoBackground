@@ -88,6 +88,10 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                                        "Resetting settings to default",
                                        Toast.LENGTH_SHORT).show();
                     }
+                    Intent intent = new Intent(appContext, MainActivity.class);
+                    intent.putExtra("fragment", 6);
+                    appContext.startActivity(intent);
+                    getActivity().finish();
                 }
                 return false;
             }
@@ -201,13 +205,6 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
         if (!((Activity) appContext).isFinishing()) {
             Preference pref = findPreference(key);
-
-            if (key.equals("use_right_drawer")) {
-                Intent intent = new Intent(appContext, MainActivity.class);
-                intent.putExtra("fragment", 6);
-                appContext.startActivity(intent);
-                ((Activity) appContext).finish();
-            }
 
             if (key.equals("use_notification")) {
 

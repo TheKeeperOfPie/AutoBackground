@@ -91,7 +91,7 @@ public class NavListAdapter extends BaseAdapter {
         ImageView fragmentImage = (ImageView) view.findViewById(R.id.fragment_image);
         TextView fragmentTitle = (TextView) view.findViewById(R.id.fragment_title);
 
-        Drawable iconDrawable = parent.getContext().getResources().getDrawable(iconImages[position]);
+        Drawable iconDrawable = parent.getContext().getResources().getDrawable(iconImages[position]).mutate();
         iconDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
         fragmentImage.setImageDrawable(iconDrawable);
 
