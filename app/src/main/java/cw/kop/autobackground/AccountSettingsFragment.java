@@ -65,7 +65,7 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         googlePref = (SwitchPreference) findPreference("use_google_account");
 
@@ -91,14 +91,14 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
             if (key.equals("use_google_account")) {
                 if (AppSettings.useGoogleAccount()) {
                     startActivityForResult(GoogleAccount.getPickerIntent(),
-                                           GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
+                            GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
                 }
                 else {
                     GoogleAccount.deleteAccount();
                     if (AppSettings.useToast()) {
                         Toast.makeText(appContext,
-                                       "Google access token has been deleted",
-                                       Toast.LENGTH_SHORT).show();
+                                "Google access token has been deleted",
+                                Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -117,8 +117,8 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
                     protected Void doInBackground(Void... params) {
                         try {
                             String authToken = GoogleAuthUtil.getToken(appContext,
-                                                                       accountName,
-                                                                       "oauth2:https://picasaweb.google.com/data/");
+                                    accountName,
+                                    "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             Log.i("MA", "GOOGLE_ACCOUNT_SIGN_IN Token: " + authToken);
                         }
@@ -152,8 +152,8 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
                     protected Void doInBackground(Void... params) {
                         try {
                             String authToken = GoogleAuthUtil.getToken(appContext,
-                                                                       AppSettings.getGoogleAccountName(),
-                                                                       "oauth2:https://picasaweb.google.com/data/");
+                                    AppSettings.getGoogleAccountName(),
+                                    "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             Log.i("MA", "GOOGLE_AUTH_CODE Token: " + authToken);
                         }

@@ -28,12 +28,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:text="@string/no_image_indicator"
-        android:textSize="16sp"
-        android:textColor="@color/ALERT_TEXT"
-        android:textAllCaps="true"
-        android:textAlignment="center"
         android:gravity="center"
+        android:text="@string/no_image_indicator"
+        android:textAlignment="center"
+        android:textAllCaps="true"
+        android:textColor="@color/ALERT_TEXT"
+        android:textSize="16sp"
         android:visibility="gone"
         />
 

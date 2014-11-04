@@ -39,8 +39,8 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
     private int optionPosition, colorFilterInt;
 
     public NotificationListAdapter(Context context, List<NotificationOptionData> options,
-                                   int position,
-                                   RecyclerViewListClickListener listener) {
+            int position,
+            RecyclerViewListClickListener listener) {
         appContext = context;
         optionsList = options;
         optionPosition = position;
@@ -68,8 +68,8 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
     public NotificationListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         View rowLayout = LayoutInflater.from(parent.getContext()).inflate(R.layout.notification_settings_row,
-                                                                          parent,
-                                                                          false);
+                parent,
+                false);
 
         return new ViewHolder(rowLayout);
     }
@@ -91,8 +91,8 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
             @Override
             public void onClick(View v) {
                 listClickListener.onClick(optionPosition,
-                                          optionData.getTitle(),
-                                          optionData.getDrawable());
+                        optionData.getTitle(),
+                        optionData.getDrawable());
             }
         });
 

@@ -164,20 +164,20 @@ public class SourceListFragment extends ListFragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_sources, container, false);
 
         buttonParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                       ViewGroup.LayoutParams.WRAP_CONTENT);
+                ViewGroup.LayoutParams.WRAP_CONTENT);
         buttonParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
         buttonParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         buttonParams.setMargins(0,
-                                0,
-                                0,
-                                Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                                                     100,
-                                                                     appContext.getResources().getDisplayMetrics())));
+                0,
+                0,
+                Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                        100,
+                        appContext.getResources().getDisplayMetrics())));
 
         addButton = (ImageButton) view.findViewById(R.id.floating_button);
         addButton.setOnClickListener(new View.OnClickListener() {
@@ -249,7 +249,7 @@ public class SourceListFragment extends ListFragment {
         if (FileHandler.download(appContext)) {
             Drawable drawable = getResources().getDrawable(R.drawable.ic_cancel_white_24dp);
             drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                                    PorterDuff.Mode.MULTIPLY);
+                    PorterDuff.Mode.MULTIPLY);
             toolbarMenu.getItem(1).setIcon(drawable);
 
             if (AppSettings.resetOnManualDownload() && AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
@@ -260,9 +260,9 @@ public class SourceListFragment extends ListFragment {
                 AlarmManager alarmManager = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
                 alarmManager.cancel(pendingIntent);
                 alarmManager.setInexactRepeating(AlarmManager.RTC,
-                                                 System.currentTimeMillis() + AppSettings.getTimerDuration(),
-                                                 AppSettings.getTimerDuration(),
-                                                 pendingIntent);
+                        System.currentTimeMillis() + AppSettings.getTimerDuration(),
+                        AppSettings.getTimerDuration(),
+                        pendingIntent);
             }
 
         }
@@ -279,12 +279,12 @@ public class SourceListFragment extends ListFragment {
             };
 
             DialogFactory.showActionDialog(appContext,
-                                           "Cancel download?",
-                                           "",
-                                           listener,
-                                           -1,
-                                           R.string.cancel_button,
-                                           R.string.ok_button);
+                    "",
+                    "Cancel download?",
+                    listener,
+                    -1,
+                    R.string.cancel_button,
+                    R.string.ok_button);
         }
     }
 
@@ -303,8 +303,8 @@ public class SourceListFragment extends ListFragment {
     }
 
     private void showAlbumFragment(String type, int position, ArrayList<String> names,
-                                   ArrayList<String> images, ArrayList<String> links,
-                                   ArrayList<String> nums) {
+            ArrayList<String> images, ArrayList<String> links,
+            ArrayList<String> nums) {
         AlbumFragment albumFragment = new AlbumFragment();
         Bundle arguments = new Bundle();
         arguments.putString("type", type);
@@ -332,8 +332,8 @@ public class SourceListFragment extends ListFragment {
                     protected Void doInBackground(Void... params) {
                         try {
                             String authToken = GoogleAuthUtil.getToken(appContext,
-                                                                       accountName,
-                                                                       "oauth2:https://picasaweb.google.com/data/");
+                                    accountName,
+                                    "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             AppSettings.setGoogleAccount(true);
                             new PicasaAlbumTask(-1).execute();
@@ -364,8 +364,8 @@ public class SourceListFragment extends ListFragment {
                     protected Void doInBackground(Void... params) {
                         try {
                             String authToken = GoogleAuthUtil.getToken(appContext,
-                                                                       AppSettings.getGoogleAccountName(),
-                                                                       "oauth2:https://picasaweb.google.com/data/");
+                                    AppSettings.getGoogleAccountName(),
+                                    "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             AppSettings.setGoogleAccount(true);
                             new PicasaAlbumTask(-1).execute();
@@ -398,44 +398,44 @@ public class SourceListFragment extends ListFragment {
                 switch (position) {
                     case 0:
                         showInputDialog(AppSettings.WEBSITE,
-                                        "",
-                                        "URL",
-                                        "",
-                                        "",
-                                        "",
-                                        "",
-                                        "Enter website:",
-                                        -1);
+                                "",
+                                "URL",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "Enter website:",
+                                -1);
                         break;
                     case 1:
                         showImageFragment(false, "", -1);
                         break;
                     case 2:
                         showInputDialog(AppSettings.IMGUR,
-                                        "",
-                                        "Subreddit",
-                                        "imgur.com/r/",
-                                        "",
-                                        "",
-                                        "",
-                                        "Enter Imgur subreddit:",
-                                        -1);
+                                "",
+                                "Subreddit",
+                                "imgur.com/r/",
+                                "",
+                                "",
+                                "",
+                                "Enter Imgur subreddit:",
+                                -1);
                         break;
                     case 3:
                         showInputDialog(AppSettings.IMGUR,
-                                        "",
-                                        "Album ID",
-                                        "imgur.com/a/",
-                                        "",
-                                        "",
-                                        "",
-                                        "Enter Imgur album:",
-                                        -1);
+                                "",
+                                "Album ID",
+                                "imgur.com/a/",
+                                "",
+                                "",
+                                "",
+                                "Enter Imgur album:",
+                                -1);
                         break;
                     case 4:
                         if (AppSettings.getGoogleAccountName().equals("")) {
                             startActivityForResult(GoogleAccount.getPickerIntent(),
-                                                   GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
+                                    GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
                         }
                         else {
                             new PicasaAlbumTask(-1).execute();
@@ -443,25 +443,25 @@ public class SourceListFragment extends ListFragment {
                         break;
                     case 5:
                         showInputDialog(AppSettings.TUMBLR_BLOG,
-                                        "",
-                                        "Blog name",
-                                        "",
-                                        "",
-                                        ".tumblr.com",
-                                        "",
-                                        "Enter Tumblr blog:",
-                                        -1);
+                                "",
+                                "Blog name",
+                                "",
+                                "",
+                                ".tumblr.com",
+                                "",
+                                "Enter Tumblr blog:",
+                                -1);
                         break;
                     case 6:
                         showInputDialog(AppSettings.TUMBLR_TAG,
-                                        "",
-                                        "Tag",
-                                        "",
-                                        "",
-                                        "",
-                                        "",
-                                        "Enter Tumblr tag:",
-                                        -1);
+                                "",
+                                "Tag",
+                                "",
+                                "",
+                                "",
+                                "",
+                                "Enter Tumblr tag:",
+                                -1);
                         break;
                     default:
                 }
@@ -470,9 +470,9 @@ public class SourceListFragment extends ListFragment {
         };
 
         DialogFactory.showListDialog(appContext,
-                                     "Source:",
-                                     clickListener,
-                                     R.array.source_menu);
+                "Source:",
+                clickListener,
+                R.array.source_menu);
     }
 
     private void showSourceSortMenu() {
@@ -500,9 +500,9 @@ public class SourceListFragment extends ListFragment {
         };
 
         DialogFactory.showListDialog(appContext,
-                                     "Sort by:",
-                                     clickListener,
-                                     R.array.source_sort_menu);
+                "Sort by:",
+                clickListener,
+                R.array.source_sort_menu);
     }
 
     public void addEntry(String type, String title, String data, String num) {
@@ -511,8 +511,8 @@ public class SourceListFragment extends ListFragment {
         }
         else {
             Toast.makeText(appContext,
-                           "Error: Title in use.\nPlease use a different title.",
-                           Toast.LENGTH_SHORT).show();
+                    "Error: Title in use.\nPlease use a different title.",
+                    Toast.LENGTH_SHORT).show();
         }
 
     }
@@ -523,14 +523,14 @@ public class SourceListFragment extends ListFragment {
         }
         else {
             Toast.makeText(appContext,
-                           "Error: Title in use.\nPlease use a different title.",
-                           Toast.LENGTH_SHORT).show();
+                    "Error: Title in use.\nPlease use a different title.",
+                    Toast.LENGTH_SHORT).show();
         }
     }
 
     private void showInputDialog(final String type, String title, String hint, final String prefix,
-                                 String data, final String suffix, String num, String mainTitle,
-                                 final int index) {
+            String data, final String suffix, String num, String mainTitle,
+            final int index) {
 
         final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
                 new Dialog(
@@ -593,14 +593,14 @@ public class SourceListFragment extends ListFragment {
                     if (index >= 0) {
                         String previousTitle = AppSettings.getSourceTitle(index);
                         if (listAdapter.setItem(index,
-                                                type,
-                                                newTitle,
-                                                data.trim(),
-                                                AppSettings.useSource(index),
-                                                sourceNum.getText().toString())) {
+                                type,
+                                newTitle,
+                                data.trim(),
+                                AppSettings.useSource(index),
+                                sourceNum.getText().toString())) {
                             if (!previousTitle.equals(newTitle)) {
                                 AppSettings.setSourceSet(newTitle,
-                                                         AppSettings.getSourceSet(previousTitle));
+                                        AppSettings.getSourceSet(previousTitle));
                                 FileHandler.renameFiles(appContext, previousTitle, newTitle);
                             }
                             listAdapter.saveData();
@@ -609,16 +609,16 @@ public class SourceListFragment extends ListFragment {
                         }
                         else {
                             Toast.makeText(appContext,
-                                           "Error: Title in use.\nPlease use a different title.",
-                                           Toast.LENGTH_SHORT).show();
+                                    "Error: Title in use.\nPlease use a different title.",
+                                    Toast.LENGTH_SHORT).show();
                         }
                     }
                     else {
                         if (listAdapter.addItem(type,
-                                                newTitle,
-                                                data.trim(),
-                                                true,
-                                                sourceNum.getText().toString())) {
+                                newTitle,
+                                data.trim(),
+                                true,
+                                sourceNum.getText().toString())) {
                             listAdapter.saveData();
                             AppSettings.setSourceSet(newTitle, new HashSet<String>());
                             hide(addSourceTutorial);
@@ -627,8 +627,8 @@ public class SourceListFragment extends ListFragment {
                         }
                         else {
                             Toast.makeText(appContext,
-                                           "Error: Title in use.\nPlease use a different title.",
-                                           Toast.LENGTH_SHORT).show();
+                                    "Error: Title in use.\nPlease use a different title.",
+                                    Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -636,14 +636,8 @@ public class SourceListFragment extends ListFragment {
         });
 
 
-        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-        }
-        else {
-            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-        }
+        negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_BLUE_OPAQUE));
+        positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_BLUE_OPAQUE));
 
         dialog.show();
 
@@ -678,14 +672,14 @@ public class SourceListFragment extends ListFragment {
                         switch (type) {
                             case AppSettings.WEBSITE:
                                 showInputDialog(AppSettings.WEBSITE,
-                                                AppSettings.getSourceTitle(index),
-                                                "",
-                                                "",
-                                                AppSettings.getSourceData(index),
-                                                "",
-                                                "" + AppSettings.getSourceNum(index),
-                                                "Edit website:",
-                                                index);
+                                        AppSettings.getSourceTitle(index),
+                                        "",
+                                        "",
+                                        AppSettings.getSourceData(index),
+                                        "",
+                                        "" + AppSettings.getSourceNum(index),
+                                        "Edit website:",
+                                        index);
                                 break;
                             case AppSettings.IMGUR: {
                                 String prefix = "", hint = "";
@@ -700,14 +694,14 @@ public class SourceListFragment extends ListFragment {
                                 }
 
                                 showInputDialog(AppSettings.IMGUR,
-                                                AppSettings.getSourceTitle(index),
-                                                hint,
-                                                prefix,
-                                                data.substring(data.indexOf(prefix) + prefix.length()),
-                                                "",
-                                                "" + AppSettings.getSourceNum(index),
-                                                "Edit Imgur source:",
-                                                index);
+                                        AppSettings.getSourceTitle(index),
+                                        hint,
+                                        prefix,
+                                        data.substring(data.indexOf(prefix) + prefix.length()),
+                                        "",
+                                        "" + AppSettings.getSourceNum(index),
+                                        "Edit Imgur source:",
+                                        index);
                                 break;
                             }
                             case AppSettings.PICASA:
@@ -715,14 +709,14 @@ public class SourceListFragment extends ListFragment {
                                 break;
                             case AppSettings.TUMBLR_BLOG:
                                 showInputDialog(AppSettings.TUMBLR_BLOG,
-                                                AppSettings.getSourceTitle(index),
-                                                "Blog name",
-                                                "",
-                                                AppSettings.getSourceData(index),
-                                                "",
-                                                "" + AppSettings.getSourceNum(index),
-                                                "Edit Tumblr Blog:",
-                                                index);
+                                        AppSettings.getSourceTitle(index),
+                                        "Blog name",
+                                        "",
+                                        AppSettings.getSourceData(index),
+                                        "",
+                                        "" + AppSettings.getSourceNum(index),
+                                        "Edit Tumblr Blog:",
+                                        index);
                                 break;
                             case AppSettings.TUMBLR_TAG: {
                                 String data = AppSettings.getSourceData(index);
@@ -732,14 +726,14 @@ public class SourceListFragment extends ListFragment {
                                 }
 
                                 showInputDialog(AppSettings.TUMBLR_TAG,
-                                                AppSettings.getSourceTitle(index),
-                                                "Tag",
-                                                "",
-                                                data,
-                                                "",
-                                                "" + AppSettings.getSourceNum(index),
-                                                "Edit Tumblr Tag:",
-                                                index);
+                                        AppSettings.getSourceTitle(index),
+                                        "Tag",
+                                        "",
+                                        data,
+                                        "",
+                                        "" + AppSettings.getSourceNum(index),
+                                        "Edit Tumblr Tag:",
+                                        index);
                                 break;
                             }
                             case AppSettings.FOLDER:
@@ -765,7 +759,7 @@ public class SourceListFragment extends ListFragment {
                                 public void onClickMiddle(View v) {
                                     this.dismissDialog();
                                     AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
-                                                             new HashSet<String>());
+                                            new HashSet<String>());
                                     listAdapter.removeItem(index);
                                     listAdapter.saveData();
                                     new ImageCountTask().execute();
@@ -775,10 +769,10 @@ public class SourceListFragment extends ListFragment {
                                 public void onClickRight(View v) {
                                     FileHandler.deleteBitmaps(appContext, index);
                                     Toast.makeText(appContext,
-                                                   "Deleting " + AppSettings.getSourceTitle(index) + " images",
-                                                   Toast.LENGTH_SHORT).show();
+                                            "Deleting " + AppSettings.getSourceTitle(index) + " images",
+                                            Toast.LENGTH_SHORT).show();
                                     AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
-                                                             new HashSet<String>());
+                                            new HashSet<String>());
                                     listAdapter.removeItem(index);
                                     listAdapter.saveData();
                                     new ImageCountTask().execute();
@@ -793,12 +787,12 @@ public class SourceListFragment extends ListFragment {
                             };
 
                             DialogFactory.showActionDialog(appContext,
-                                                           "Delete images associated with this source?",
-                                                           "This cannot be undone.",
-                                                           clickListener,
-                                                           R.string.cancel_button,
-                                                           R.string.no_button,
-                                                           R.string.yes_button);
+                                    "Delete images associated with this source?",
+                                    "This cannot be undone.",
+                                    clickListener,
+                                    R.string.cancel_button,
+                                    R.string.no_button,
+                                    R.string.yes_button);
 
                         }
                         else {
@@ -814,9 +808,9 @@ public class SourceListFragment extends ListFragment {
         };
 
         DialogFactory.showListDialog(appContext,
-                                     AppSettings.getSourceTitle(index),
-                                     clickListener,
-                                     R.array.source_edit_menu);
+                AppSettings.getSourceTitle(index),
+                clickListener,
+                R.array.source_edit_menu);
     }
 
     @Override
@@ -827,10 +821,10 @@ public class SourceListFragment extends ListFragment {
             listAdapter = new SourceListAdapter(getActivity());
             for (int i = 0; i < AppSettings.getNumSources(); i++) {
                 listAdapter.addItem(AppSettings.getSourceType(i),
-                                    AppSettings.getSourceTitle(i),
-                                    AppSettings.getSourceData(i),
-                                    AppSettings.useSource(i),
-                                    "" + AppSettings.getSourceNum(i));
+                        AppSettings.getSourceTitle(i),
+                        AppSettings.getSourceData(i),
+                        AppSettings.useSource(i),
+                        "" + AppSettings.getSourceNum(i));
                 Log.i("WLF", "Added: " + AppSettings.getSourceTitle(i));
             }
         }
@@ -840,7 +834,7 @@ public class SourceListFragment extends ListFragment {
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position,
-                                           long id) {
+                    long id) {
                 showDialogMenu(position);
                 return true;
             }
@@ -1039,7 +1033,7 @@ public class SourceListFragment extends ListFragment {
         new ImageCountTask().execute();
 
         LocalBroadcastManager.getInstance(appContext).registerReceiver(sourceListReceiver,
-                                                                       new IntentFilter(FileHandler.DOWNLOAD_TERMINATED));
+                new IntentFilter(FileHandler.DOWNLOAD_TERMINATED));
 
         if (isServiceRunning(LiveWallpaperService.class.getName())) {
             setButton.setVisibility(View.GONE);
@@ -1077,12 +1071,12 @@ public class SourceListFragment extends ListFragment {
             };
 
             DialogFactory.showActionDialog(appContext,
-                                           "Show Sources Tutorial?",
-                                           "",
-                                           clickListener,
-                                           -1,
-                                           R.string.cancel_button,
-                                           R.string.ok_button);
+                    "",
+                    "Show Sources Tutorial?",
+                    clickListener,
+                    -1,
+                    R.string.cancel_button,
+                    R.string.ok_button);
 
         }
     }
@@ -1099,7 +1093,7 @@ public class SourceListFragment extends ListFragment {
 
         Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
         addDrawable.setColorFilter(getResources().getColor(R.color.BLUE_OPAQUE),
-                                   PorterDuff.Mode.MULTIPLY);
+                PorterDuff.Mode.MULTIPLY);
         addButton.setImageDrawable(addDrawable);
 
     }
@@ -1114,7 +1108,7 @@ public class SourceListFragment extends ListFragment {
                 public void run() {
                     Drawable drawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
                     drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                                            PorterDuff.Mode.MULTIPLY);
+                            PorterDuff.Mode.MULTIPLY);
                     toolbarMenu.getItem(1).setIcon(drawable);
                 }
             });
@@ -1147,14 +1141,18 @@ public class SourceListFragment extends ListFragment {
             resetAddButton();
 
             if (toolbarMenu != null) {
-                Drawable drawable = FileHandler.isDownloading ? getResources().getDrawable(R.drawable.ic_cancel_white_24dp) : getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
+                Drawable drawable = FileHandler.isDownloading ?
+                        getResources().getDrawable(R.drawable.ic_cancel_white_24dp) :
+                        getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
                 drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                                        PorterDuff.Mode.MULTIPLY);
+                        PorterDuff.Mode.MULTIPLY);
                 toolbarMenu.getItem(1).setIcon(drawable);
             }
 
 
-            noImageText.setVisibility(sourceState.equals(SourceListAdapter.OKAY) ? View.GONE : View.VISIBLE);
+            noImageText.setVisibility(sourceState.equals(SourceListAdapter.OKAY) ?
+                    View.GONE :
+                    View.VISIBLE);
 
             switch (sourceState) {
 
@@ -1162,7 +1160,7 @@ public class SourceListFragment extends ListFragment {
                     noImageText.setText("Please add a source");
                     Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
                     addDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
-                                                     PorterDuff.Mode.MULTIPLY);
+                            PorterDuff.Mode.MULTIPLY);
                     addButton.setImageDrawable(addDrawable);
                     break;
                 case SourceListAdapter.NO_ACTIVE_SOURCES:
@@ -1173,7 +1171,7 @@ public class SourceListFragment extends ListFragment {
                     if (!FileHandler.isDownloading && toolbarMenu != null) {
                         Drawable downloadDrawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp).mutate();
                         downloadDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
-                                                        PorterDuff.Mode.MULTIPLY);
+                                PorterDuff.Mode.MULTIPLY);
                         toolbarMenu.getItem(1).setIcon(downloadDrawable);
                     }
                     break;
@@ -1184,6 +1182,7 @@ public class SourceListFragment extends ListFragment {
 
         }
     }
+
     class PicasaAlbumTask extends AsyncTask<Void, String, Void> {
 
         int changePosition;
@@ -1208,8 +1207,8 @@ public class SourceListFragment extends ListFragment {
             String authToken = null;
             try {
                 authToken = GoogleAuthUtil.getToken(appContext,
-                                                    AppSettings.getGoogleAccountName(),
-                                                    "oauth2:https://picasaweb.google.com/data/");
+                        AppSettings.getGoogleAccountName(),
+                        "oauth2:https://picasaweb.google.com/data/");
             }
             catch (IOException e) {
                 publishProgress("Error loading albums");
@@ -1273,11 +1272,11 @@ public class SourceListFragment extends ListFragment {
         @Override
         protected void onPostExecute(Void aVoid) {
             showAlbumFragment(AppSettings.PICASA,
-                              changePosition,
-                              albumNames,
-                              albumImageLinks,
-                              albumLinks,
-                              albumNums);
+                    changePosition,
+                    albumNames,
+                    albumImageLinks,
+                    albumLinks,
+                    albumNums);
         }
     }
 

@@ -30,7 +30,6 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 import cw.kop.autobackground.R;
-import cw.kop.autobackground.settings.AppSettings;
 
 public class AlbumAdapter extends BaseAdapter {
 
@@ -40,7 +39,7 @@ public class AlbumAdapter extends BaseAdapter {
     private LayoutInflater inflater;
 
     public AlbumAdapter(Context context, ArrayList<String> names, ArrayList<String> images,
-                        ArrayList<String> links) {
+            ArrayList<String> links) {
         albumNames = names;
         albumImages = images;
         albumLinks = links;

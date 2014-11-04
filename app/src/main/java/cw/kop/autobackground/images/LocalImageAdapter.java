@@ -57,8 +57,8 @@ public class LocalImageAdapter extends BaseAdapter {
         setDirectory(mainDir);
         screenWidth = activity.getResources().getDisplayMetrics().widthPixels;
         imageHeight = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                                           150,
-                                                           activity.getResources().getDisplayMetrics()));
+                150,
+                activity.getResources().getDisplayMetrics()));
     }
 
     @Override
@@ -104,14 +104,14 @@ public class LocalImageAdapter extends BaseAdapter {
             else if (file.isDirectory()) {
                 Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_folder_white_24dp);
                 drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
-                                        PorterDuff.Mode.MULTIPLY);
+                        PorterDuff.Mode.MULTIPLY);
 
                 fileImage.setImageDrawable(drawable);
             }
             else {
                 Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_insert_drive_file_white_24dp);
                 drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
-                                        PorterDuff.Mode.MULTIPLY);
+                        PorterDuff.Mode.MULTIPLY);
 
                 fileImage.setImageDrawable(drawable);
             }

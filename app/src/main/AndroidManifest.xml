@@ -18,11 +18,10 @@
 <manifest
     package="cw.kop.autobackground"
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     >
 
     <!--<uses-sdk-->
-        <!--tools:node="replace"/>-->
+    <!--tools:node="replace"/>-->
 
     <uses-feature
         android:glEsVersion="0x00020000"

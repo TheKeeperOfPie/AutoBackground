@@ -19,6 +19,7 @@ package cw.kop.autobackground;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.text.method.DigitsKeyListener;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -26,6 +27,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -42,15 +44,7 @@ public class DialogFactory {
      */
     public static Dialog getDialog(Context context) {
 
-        switch (AppSettings.getTheme()) {
-            default:
-            case AppSettings.APP_LIGHT_THEME:
-                return new Dialog(context, R.style.LightDialogTheme);
-            case AppSettings.APP_DARK_THEME:
-            case AppSettings.APP_TRANSPARENT_THEME:
-                return new Dialog(context, R.style.DarkDialogTheme);
-
-        }
+        return new Dialog(context, AppSettings.getDialogThemeInt());
     }
 
     /**
@@ -66,19 +60,18 @@ public class DialogFactory {
      * @param textThreeResource
      */
     public static void showActionDialog(Context context,
-                                        String title,
-                                        String summary,
-                                        final ActionDialogListener clickListener,
-                                        int textOneResource,
-                                        int textTwoResource,
-                                        int textThreeResource) {
+            String title,
+            String summary,
+            final ActionDialogListener clickListener,
+            int textOneResource,
+            int textTwoResource,
+            int textThreeResource) {
 
         Dialog dialog = getDialog(context);
         clickListener.setDialog(dialog);
 
         View dialogView = View.inflate(context, R.layout.action_dialog, null);
         dialog.setContentView(dialogView);
-
 
         if (title.length() > 0) {
             TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
@@ -95,7 +88,7 @@ public class DialogFactory {
             dialogSummary.setVisibility(View.VISIBLE);
         }
 
-        int textColorInt = AppSettings.getColorFilterInt(context);
+        int textColorInt = context.getResources().getColor(R.color.LIGHT_BLUE_OPAQUE);
 
         if (textOneResource > 0) {
             Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);
@@ -147,8 +140,8 @@ public class DialogFactory {
     }
 
     public static void showListDialog(Context context, String title,
-                                      final ListDialogListener clickListener,
-                                      int listArrayResource) {
+            final ListDialogListener clickListener,
+            int listArrayResource) {
 
         Dialog dialog = getDialog(context);
         clickListener.setDialog(dialog);
@@ -167,10 +160,10 @@ public class DialogFactory {
 
         ListView dialogList = (ListView) dialogView.findViewById(R.id.dialog_list);
         dialogList.setAdapter(new ArrayAdapter<>(context,
-                                                 android.R.layout.simple_list_item_1,
-                                                 android.R.id.text1,
-                                                 context.getResources().getStringArray(
-                                                         listArrayResource)));
+                android.R.layout.simple_list_item_1,
+                android.R.id.text1,
+                context.getResources().getStringArray(
+                        listArrayResource)));
         dialogList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -189,14 +182,14 @@ public class DialogFactory {
     }
 
     public static void showInputDialog(Context context,
-                                       String title,
-                                       String hint,
-                                       final InputDialogListener listener,
-                                       int textOneResource,
-                                       int textTwoResource,
-                                       int textThreeResource,
-                                       int inputType) {
-
+            String title,
+            String hint,
+            String defaultText,
+            final InputDialogListener listener,
+            int textOneResource,
+            int textTwoResource,
+            int textThreeResource,
+            int inputType) {
 
 
         Dialog dialog = getDialog(context);
@@ -220,9 +213,12 @@ public class DialogFactory {
         if (hint.length() > 0) {
             inputField.setHint(hint);
         }
+        if (defaultText.length() > 0) {
+            inputField.setText(defaultText);
+        }
         listener.setEditText(inputField);
 
-        int textColorInt = AppSettings.getColorFilterInt(context);
+        int textColorInt = context.getResources().getColor(R.color.LIGHT_BLUE_OPAQUE);
 
         if (textOneResource > 0) {
             Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);
@@ -274,7 +270,92 @@ public class DialogFactory {
 
     }
 
-    public static class DialogClickListener {
+    public static void showTimeDialog(Context context,
+            String title,
+            String summary,
+            final TimeDialogListener listener,
+            int textOneResource,
+            int textTwoResource,
+            int textThreeResource) {
+
+        Dialog dialog = getDialog(context);
+        listener.setDialog(dialog);
+
+        View dialogView = View.inflate(context, R.layout.time_dialog, null);
+        dialog.setContentView(dialogView);
+
+        TimePicker timePicker = (TimePicker) dialogView.findViewById(R.id.dialog_time_picker);
+        listener.setTimePicker(timePicker);
+
+        if (title.length() > 0) {
+            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+            dialogTitle.setVisibility(View.VISIBLE);
+            dialogTitle.setText(title);
+
+            View titleUnderline = dialogView.findViewById(R.id.dialog_underline);
+            titleUnderline.setVisibility(View.VISIBLE);
+        }
+
+        if (summary.length() > 0) {
+            TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
+            dialogSummary.setText(summary);
+            dialogSummary.setVisibility(View.VISIBLE);
+        }
+
+        int textColorInt = context.getResources().getColor(R.color.LIGHT_BLUE_OPAQUE);
+
+        if (textOneResource > 0) {
+            Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);
+            buttonOne.setText(context.getResources().getString(textOneResource));
+            buttonOne.setTextColor(textColorInt);
+            buttonOne.setVisibility(View.VISIBLE);
+            buttonOne.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickLeft(v);
+                }
+            });
+        }
+
+        if (textTwoResource > 0) {
+            Button buttonTwo = (Button) dialogView.findViewById(R.id.action_button_2);
+            buttonTwo.setText(context.getResources().getString(textTwoResource));
+            buttonTwo.setTextColor(textColorInt);
+            buttonTwo.setVisibility(View.VISIBLE);
+            buttonTwo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickMiddle(v);
+                }
+            });
+        }
+
+        if (textThreeResource > 0) {
+            Button buttonThree = (Button) dialogView.findViewById(R.id.action_button_3);
+            buttonThree.setText(context.getResources().getString(textThreeResource));
+            buttonThree.setTextColor(textColorInt);
+            buttonThree.setVisibility(View.VISIBLE);
+            buttonThree.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickRight(v);
+                }
+            });
+        }
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                listener.onDismiss();
+            }
+        });
+
+        dialog.show();
+
+
+    }
+
+    public abstract static class DialogClickListener {
 
         private Dialog dialog;
 
@@ -310,12 +391,22 @@ public class DialogFactory {
 
     public abstract static class ListDialogListener extends DialogClickListener {
 
+        private boolean itemSelected = false;
+
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             this.dismissDialog();
         }
 
         public void onDismiss() {
             this.dismissDialog();
+        }
+
+        public boolean getItemSelected() {
+            return itemSelected;
+        }
+
+        public void setItemSelected(boolean selected) {
+            itemSelected = selected;
         }
 
     }
@@ -330,6 +421,20 @@ public class DialogFactory {
 
         public String getEditTextString() {
             return editText.getText().toString();
+        }
+
+    }
+
+    public abstract static class TimeDialogListener extends ActionDialogListener {
+
+        private TimePicker timePicker;
+
+        public void setTimePicker(TimePicker timePicker) {
+            this.timePicker = timePicker;
+        }
+
+        public TimePicker getTimePicker() {
+            return timePicker;
         }
 
     }

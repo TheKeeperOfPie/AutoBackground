@@ -75,8 +75,8 @@ public class MusicReceiverService extends NotificationListenerService implements
                 audioRemoteController);
         Log.i(TAG, "Audio registered: " + registered);
         Toast.makeText(MusicReceiverService.this,
-                       "Audio registered: " + registered,
-                       Toast.LENGTH_SHORT).show();
+                "Audio registered: " + registered,
+                Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -87,8 +87,8 @@ public class MusicReceiverService extends NotificationListenerService implements
 
         Log.i(TAG, "MusicReceiverService destroyed");
         Toast.makeText(MusicReceiverService.this,
-                       "MusicReceiverService destroyed",
-                       Toast.LENGTH_SHORT).show();
+                "MusicReceiverService destroyed",
+                Toast.LENGTH_SHORT).show();
 
         super.onDestroy();
     }
@@ -125,7 +125,7 @@ public class MusicReceiverService extends NotificationListenerService implements
 
     @Override
     public void onClientPlaybackStateUpdate(int state, long stateChangeTimeMs, long currentPosMs,
-                                            float speed) {
+            float speed) {
 
     }
 
@@ -139,7 +139,7 @@ public class MusicReceiverService extends NotificationListenerService implements
 
         String artist = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_ARTIST, null);
         String albumArtist = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST,
-                                                      "Error");
+                "Error");
         String album = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_ALBUM, "Error");
         String track = metadataEditor.getString(MediaMetadataRetriever.METADATA_KEY_TITLE, "Error");
 
@@ -149,17 +149,17 @@ public class MusicReceiverService extends NotificationListenerService implements
 
         Log.i(TAG, "Artist: " + artist + " Album: " + album);
         Toast.makeText(MusicReceiverService.this,
-                       "Metadata changed, \nArtist: " + artist + " Album: " + album,
-                       Toast.LENGTH_SHORT).show();
+                "Metadata changed, \nArtist: " + artist + " Album: " + album,
+                Toast.LENGTH_SHORT).show();
 
         if (!album.equals(previousAlbum) || !artist.equals(previousArtist)) {
 
             Bitmap bitmap = metadataEditor.getBitmap(RemoteController.MetadataEditor.BITMAP_KEY_ARTWORK,
-                                                     null);
+                    null);
             if (bitmap != null) {
                 Toast.makeText(MusicReceiverService.this,
-                               "Bitmap ID: " + bitmap.getGenerationId(),
-                               Toast.LENGTH_SHORT).show();
+                        "Bitmap ID: " + bitmap.getGenerationId(),
+                        Toast.LENGTH_SHORT).show();
 
                 FileHandler.setMusicBitmap(bitmap);
 

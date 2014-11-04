@@ -83,11 +83,11 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.local_image_layout,
-                                                            container,
-                                                            false);
+                container,
+                false);
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
 
@@ -95,12 +95,12 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         emptyText.setText("Directory is empty");
         emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
         emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                             ViewGroup.LayoutParams.MATCH_PARENT));
+                ViewGroup.LayoutParams.MATCH_PARENT));
         emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
 
         LinearLayout emptyLayout = new LinearLayout(appContext);
         emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                                  ViewGroup.LayoutParams.MATCH_PARENT));
+                ViewGroup.LayoutParams.MATCH_PARENT));
         emptyLayout.setGravity(Gravity.TOP);
         emptyLayout.addView(emptyText);
 
@@ -127,8 +127,8 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                 if (setPath) {
                     AppSettings.setDownloadPath(dir.getAbsolutePath());
                     Toast.makeText(appContext,
-                                   "Download path set to: \n" + AppSettings.getDownloadPath(),
-                                   Toast.LENGTH_SHORT).show();
+                            "Download path set to: \n" + AppSettings.getDownloadPath(),
+                            Toast.LENGTH_SHORT).show();
                 }
                 else {
                     int numImages = 0;
@@ -241,9 +241,9 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         };
 
         DialogFactory.showListDialog(appContext,
-                                     "",
-                                     clickListener,
-                                     R.array.history_menu);
+                "",
+                clickListener,
+                R.array.history_menu);
     }
 
     private void openImage(int index) {

@@ -65,7 +65,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         Preference resetPref = findPreference("reset_effects");
         resetPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -204,9 +204,9 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
         };
 
         DialogFactory.showListDialog(appContext,
-                                     "Random Effect:",
-                                     clickListener,
-                                     R.array.random_effects_entry_menu);
+                "Random Effect:",
+                clickListener,
+                R.array.random_effects_entry_menu);
     }
 
     @Override

@@ -15,16 +15,16 @@
   ~ limitations under the License.
   -->
 
-<set xmlns:android="http://schemas.android.com/apk/res/android">
+<set>
 
-    <objectAnimator
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:interpolator="@android:anim/accelerate_decelerate_interpolator"
-        android:propertyName="xFraction"
-        android:valueType="floatType"
-        android:valueFrom="1.0"
-        android:valueTo="0"
-        android:duration="@android:integer/config_shortAnimTime"
-        />
+    <!--<objectAnimator-->
+    <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--android:interpolator="@android:anim/accelerate_decelerate_interpolator"-->
+    <!--android:propertyName="xFraction"-->
+    <!--android:valueType="floatType"-->
+    <!--android:valueFrom="-1.0"-->
+    <!--android:valueTo="0"-->
+    <!--android:duration="@android:integer/config_shortAnimTime"-->
+    <!--/>-->
 
 </set>

@@ -46,7 +46,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -177,11 +176,11 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 2));
 
         coloredImageOne.mutate().setColorFilter(AppSettings.getNotificationOptionColor(0),
-                                                PorterDuff.Mode.MULTIPLY);
+                PorterDuff.Mode.MULTIPLY);
         coloredImageTwo.mutate().setColorFilter(AppSettings.getNotificationOptionColor(1),
-                                                PorterDuff.Mode.MULTIPLY);
+                PorterDuff.Mode.MULTIPLY);
         coloredImageThree.mutate().setColorFilter(AppSettings.getNotificationOptionColor(2),
-                                                  PorterDuff.Mode.MULTIPLY);
+                PorterDuff.Mode.MULTIPLY);
 
         optionOneImage.setImageDrawable(coloredImageOne);
         optionTwoImage.setImageDrawable(coloredImageTwo);
@@ -198,7 +197,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.notification_settings_layout, container, false);
 
@@ -262,7 +261,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int position,
-                                            long id) {
+                            long id) {
                         String[] actionsArray = getResources().getStringArray(R.array.notification_options);
 
                         AppSettings.setNotificationIconAction(actionsArray[position]);
@@ -287,9 +286,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 };
 
                 DialogFactory.showListDialog(appContext,
-                                             "Choose icon action:",
-                                             clickListener,
-                                             R.array.notification_options);
+                        "Choose icon action:",
+                        clickListener,
+                        R.array.notification_options);
 
                 return true;
             }
@@ -302,9 +301,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 previewTutorial = new ShowcaseView.Builder(getActivity())
                         .setContentTitle("Notification Customization")
                         .setContentText("This is where you can change \n" +
-                                                "how the persistent notification looks. \n" +
-                                                "To customize a part, simply click on it \n" +
-                                                "inside this preview.")
+                                "how the persistent notification looks. \n" +
+                                "To customize a part, simply click on it \n" +
+                                "inside this preview.")
                         .setStyle(R.style.ShowcaseStyle)
                         .setTarget(new ViewTarget(notificationPreview))
                         .setOnClickListener(new View.OnClickListener() {
@@ -348,9 +347,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                     previewTutorial = new ShowcaseView.Builder(getActivity())
                             .setContentTitle("Notification Customization")
                             .setContentText("This is where you can change \n" +
-                                                    "how the persistent notification looks. \n" +
-                                                    "To customize a part, simply click on it \n" +
-                                                    "inside this preview.")
+                                    "how the persistent notification looks. \n" +
+                                    "To customize a part, simply click on it \n" +
+                                    "inside this preview.")
                             .setStyle(R.style.ShowcaseStyle)
                             .setTarget(new ViewTarget(notificationPreview))
                             .setOnClickListener(new View.OnClickListener() {
@@ -370,12 +369,12 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             };
 
             DialogFactory.showActionDialog(appContext,
-                                           "Show Notification Tutorial?",
-                                           "",
-                                           clickListener,
-                                           -1,
-                                           R.string.cancel_button,
-                                           R.string.ok_button);
+                    "",
+                    "Show Notification Tutorial?",
+                    clickListener,
+                    -1,
+                    R.string.cancel_button,
+                    R.string.ok_button);
 
         }
 
@@ -522,9 +521,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
         for (int index = 0; index < iconTitles.length; index++) {
             optionsList.add(new NotificationOptionData(iconTitles[index],
-                                                       iconSummaries[index],
-                                                       iconIcons.getResourceId(index,
-                                                                               R.color.TRANSPARENT_BACKGROUND)));
+                    iconSummaries[index],
+                    iconIcons.getResourceId(index,
+                            R.color.TRANSPARENT_BACKGROUND)));
         }
 
         RecyclerViewListClickListener listener = new RecyclerViewListClickListener() {
@@ -541,8 +540,8 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 else if (title.equals("Image")) {
                     AppSettings.setNotificationIcon(drawable);
                     int imageSize = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                                                         64,
-                                                                         appContext.getResources().getDisplayMetrics()));
+                            64,
+                            appContext.getResources().getDisplayMetrics()));
                     Picasso.with(appContext).load(FileHandler.getCurrentBitmapFile()).resize(
                             imageSize,
                             imageSize).into(notificationIcon);
@@ -567,9 +566,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         };
 
         NotificationListAdapter titlesAdapter = new NotificationListAdapter(appContext,
-                                                                            optionsList,
-                                                                            -1,
-                                                                            listener);
+                optionsList,
+                -1,
+                listener);
 
         recyclerView.setAdapter(titlesAdapter);
 
@@ -586,10 +585,10 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
             Cursor cursor = appContext.getContentResolver().query(selectedImage,
-                                                                  filePathColumn,
-                                                                  null,
-                                                                  null,
-                                                                  null);
+                    filePathColumn,
+                    null,
+                    null,
+                    null);
             cursor.moveToFirst();
 
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
@@ -602,8 +601,8 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 AppSettings.setNotificationIconFile(filePath);
                 AppSettings.setUseNotificationIconFile(true);
                 int imageSize = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                                                     64,
-                                                                     appContext.getResources().getDisplayMetrics()));
+                        64,
+                        appContext.getResources().getDisplayMetrics()));
                 Picasso.with(appContext).load(image).resize(imageSize, imageSize).into(
                         notificationIcon);
             }
@@ -623,9 +622,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
         for (int index = 0; index < titleTitles.length; index++) {
             optionsList.add(new NotificationOptionData(titleTitles[index],
-                                                       titleSummaries[index],
-                                                       titlesIcons.getResourceId(index,
-                                                                                 R.color.TRANSPARENT_BACKGROUND)));
+                    titleSummaries[index],
+                    titlesIcons.getResourceId(index,
+                            R.color.TRANSPARENT_BACKGROUND)));
         }
 
         RecyclerViewListClickListener listener = new RecyclerViewListClickListener() {
@@ -656,9 +655,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         };
 
         NotificationListAdapter titlesAdapter = new NotificationListAdapter(appContext,
-                                                                            optionsList,
-                                                                            position,
-                                                                            listener);
+                optionsList,
+                position,
+                listener);
 
         recyclerView.setAdapter(titlesAdapter);
 
@@ -676,9 +675,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
         for (int index = 0; index < optionsTitles.length; index++) {
             optionsList.add(new NotificationOptionData(optionsTitles[index],
-                                                       optionsSummaries[index],
-                                                       optionsIcons.getResourceId(index,
-                                                                                  R.color.TRANSPARENT_BACKGROUND)));
+                    optionsSummaries[index],
+                    optionsIcons.getResourceId(index,
+                            R.color.TRANSPARENT_BACKGROUND)));
         }
 
         RecyclerViewListClickListener listener = new RecyclerViewListClickListener() {
@@ -719,9 +718,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         };
 
         NotificationListAdapter optionsAdapter = new NotificationListAdapter(appContext,
-                                                                             optionsList,
-                                                                             position,
-                                                                             listener);
+                optionsList,
+                position,
+                listener);
 
         recyclerView.setAdapter(optionsAdapter);
 
@@ -913,13 +912,14 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         };
 
         DialogFactory.showInputDialog(appContext,
-                                      "Enter text:",
-                                      "",
-                                      listener,
-                                      -1,
-                                      R.string.cancel_button,
-                                      R.string.ok_button,
-                                      InputType.TYPE_CLASS_TEXT);
+                "",
+                "Enter text:",
+                "",
+                listener,
+                -1,
+                R.string.cancel_button,
+                R.string.ok_button,
+                InputType.TYPE_CLASS_TEXT);
     }
 
     private void showDialogForPin(final int index, final String title, final int drawable) {
@@ -927,7 +927,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position,
-                                    long id) {
+                    long id) {
                 switch (position) {
                     case 0:
                         AppSettings.setPinDuration(0);
@@ -962,9 +962,9 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         };
 
         DialogFactory.showListDialog(appContext,
-                                     "Pin duration:",
-                                     clickListener,
-                                     R.array.pin_entry_menu);
+                "Pin duration:",
+                clickListener,
+                R.array.pin_entry_menu);
 
     }
 
@@ -975,8 +975,8 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             if (AppSettings.useNotificationGame()) {
                 if (FileHandler.getBitmapList().size() < 5) {
                     Toast.makeText(appContext,
-                                   "Not enough images for game",
-                                   Toast.LENGTH_SHORT).show();
+                            "Not enough images for game",
+                            Toast.LENGTH_SHORT).show();
                     ((SwitchPreference) findPreference("use_notification_game")).setChecked(false);
                 }
             }

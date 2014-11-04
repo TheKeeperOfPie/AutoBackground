@@ -31,7 +31,6 @@ import android.widget.TextView;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -124,7 +123,7 @@ public class SourceListAdapter extends BaseAdapter {
     }
 
     public boolean setItem(int position, String type, String title, String data, boolean use,
-                           String num) {
+            String num) {
 
         HashMap<String, String> changedItem = listData.get(position);
 
@@ -143,7 +142,7 @@ public class SourceListAdapter extends BaseAdapter {
         File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
         if (folder.exists() && folder.isDirectory()) {
             changedItem.put("numStored",
-                        "" + folder.listFiles(FileHandler.getImageFileNameFilter()).length);
+                    "" + folder.listFiles(FileHandler.getImageFileNameFilter()).length);
         }
         else {
             changedItem.put("numStored", "0");
@@ -170,7 +169,7 @@ public class SourceListAdapter extends BaseAdapter {
         File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
         if (folder.exists() && folder.isDirectory()) {
             newItem.put("numStored",
-                        "" + folder.listFiles(FileHandler.getImageFileNameFilter()).length);
+                    "" + folder.listFiles(FileHandler.getImageFileNameFilter()).length);
         }
         else {
             newItem.put("numStored", "0");
@@ -202,7 +201,7 @@ public class SourceListAdapter extends BaseAdapter {
                     File folder = new File(hashMap.get("data"));
                     if (folder.exists() && folder.isDirectory()) {
                         hashMap.put("num",
-                                    "" + folder.listFiles(filenameFilter).length);
+                                "" + folder.listFiles(filenameFilter).length);
                     }
                     else {
                         hashMap.put("num", "0");
@@ -212,7 +211,7 @@ public class SourceListAdapter extends BaseAdapter {
                     File folder = new File(cacheDir + "/" + hashMap.get("title") + " " + AppSettings.getImagePrefix());
                     if (folder.exists() && folder.isDirectory()) {
                         hashMap.put("numStored",
-                                    "" + folder.listFiles(filenameFilter).length);
+                                "" + folder.listFiles(filenameFilter).length);
                     }
                 }
             }

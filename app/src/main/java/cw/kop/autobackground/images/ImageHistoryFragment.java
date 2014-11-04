@@ -70,7 +70,7 @@ public class ImageHistoryFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.image_history_layout, container, false);
 
@@ -80,12 +80,12 @@ public class ImageHistoryFragment extends Fragment {
         emptyText.setText("History is empty");
         emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
         emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                             ViewGroup.LayoutParams.MATCH_PARENT));
+                ViewGroup.LayoutParams.MATCH_PARENT));
         emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
 
         LinearLayout emptyLayout = new LinearLayout(appContext);
         emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                                  ViewGroup.LayoutParams.MATCH_PARENT));
+                ViewGroup.LayoutParams.MATCH_PARENT));
         emptyLayout.setGravity(Gravity.TOP);
         emptyLayout.addView(emptyText);
 
@@ -153,12 +153,12 @@ public class ImageHistoryFragment extends Fragment {
         };
 
         DialogFactory.showActionDialog(appContext,
-                                       "Clear History?",
-                                       "This cannot be undone.",
-                                       clickListener,
-                                       -1,
-                                       R.string.cancel_button,
-                                       R.string.ok_button);
+                "Clear History?",
+                "This cannot be undone.",
+                clickListener,
+                -1,
+                R.string.cancel_button,
+                R.string.ok_button);
 
     }
 
@@ -183,9 +183,9 @@ public class ImageHistoryFragment extends Fragment {
         };
 
         DialogFactory.showListDialog(appContext,
-                                     DateFormat.getDateTimeInstance().format(new Date(item.getTime())),
-                                     clickListener,
-                                     R.array.history_menu);
+                DateFormat.getDateTimeInstance().format(new Date(item.getTime())),
+                clickListener,
+                R.array.history_menu);
     }
 
 }

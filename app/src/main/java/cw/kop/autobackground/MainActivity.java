@@ -137,9 +137,14 @@ public class MainActivity extends ActionBarActivity {
         navPicture = (ImageView) findViewById(R.id.nav_drawer_picture);
 
         Configuration configuration = getResources().getConfiguration();
-        navLayout.getLayoutParams().width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, configuration.screenWidthDp - 56, getResources().getDisplayMetrics()));
+        navLayout.getLayoutParams().width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                configuration.screenWidthDp - 56,
+                getResources().getDisplayMetrics()));
 
-        findViewById(R.id.nav_drawer_header).getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, (configuration.screenWidthDp - 56) / 16 * 9, getResources().getDisplayMetrics()));
+        findViewById(R.id.nav_drawer_header).getLayoutParams().height = Math.round(TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                (configuration.screenWidthDp - 56) / 16 * 9,
+                getResources().getDisplayMetrics()));
 
         drawerList = (ListView) findViewById(R.id.nav_list);
         drawerList.setAdapter(new NavListAdapter(this, fragmentList));
@@ -148,6 +153,7 @@ public class MainActivity extends ActionBarActivity {
         drawerList.setDividerHeight(0);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitleTextAppearance(getApplicationContext(), R.style.ToolbarTitle);
         setSupportActionBar(toolbar);
 
         int colorFilterInt = 0;
@@ -184,6 +190,7 @@ public class MainActivity extends ActionBarActivity {
 
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
+                selectItem(newPosition, true);
             }
 
             public void onDrawerOpened(View drawerView) {
@@ -240,11 +247,11 @@ public class MainActivity extends ActionBarActivity {
 
         if (Build.VERSION.SDK_INT >= 16 && navPicture != null && FileHandler.getCurrentBitmapFile() != null && FileHandler.getCurrentBitmapFile().exists()) {
             int width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                                             320,
-                                                             getResources().getDisplayMetrics()));
+                    320,
+                    getResources().getDisplayMetrics()));
             int height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                                                              180,
-                                                              getResources().getDisplayMetrics()));
+                    180,
+                    getResources().getDisplayMetrics()));
 
             Picasso.with(getApplicationContext()).load(FileHandler.getCurrentBitmapFile()).resize(
                     width,
@@ -272,51 +279,57 @@ public class MainActivity extends ActionBarActivity {
 
     private void selectItem(int position, boolean slideAnimate) {
 
-        if (position == currentPosition) {
-            drawerLayout.closeDrawer(navLayout);
+        if (position == currentPosition || position < 0) {
             return;
         }
 
         currentPosition = position;
 
+        setTitle(fragmentList[position]);
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
 
         if (slideAnimate) {
-            fragmentTransaction.setCustomAnimations(R.animator.slide_from_right, R.animator.slide_to_left);
+            fragmentTransaction.setCustomAnimations(R.animator.slide_from_left,
+                    R.animator.slide_to_right);
         }
         else {
-            fragmentTransaction.setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out);
+            fragmentTransaction.setCustomAnimations(android.R.animator.fade_in,
+                    android.R.animator.fade_out);
         }
-
-        drawerList.setItemChecked(position, true);
-        setTitle(fragmentList[position]);
-        drawerLayout.closeDrawer(navLayout);
 
         switch (position) {
 
             case 0:
-                fragmentTransaction.replace(R.id.content_frame, sourceListFragment, "source_fragment").commit();
+                fragmentTransaction.replace(R.id.content_frame,
+                        sourceListFragment,
+                        "source_fragment").commit();
                 break;
             case 1:
-                fragmentTransaction.replace(R.id.content_frame, new WallpaperSettingsFragment()).commit();
+                fragmentTransaction.replace(R.id.content_frame,
+                        new WallpaperSettingsFragment()).commit();
                 break;
             case 2:
-                fragmentTransaction.replace(R.id.content_frame, new DownloadSettingsFragment()).commit();
+                fragmentTransaction.replace(R.id.content_frame,
+                        new DownloadSettingsFragment()).commit();
                 break;
             case 3:
-                fragmentTransaction.replace(R.id.content_frame, new AccountSettingsFragment()).commit();
+                fragmentTransaction.replace(R.id.content_frame,
+                        new AccountSettingsFragment()).commit();
                 break;
             case 4:
-                fragmentTransaction.replace(R.id.content_frame, new EffectsSettingsFragment()).commit();
+                fragmentTransaction.replace(R.id.content_frame,
+                        new EffectsSettingsFragment()).commit();
                 break;
             case 5:
-                fragmentTransaction.replace(R.id.content_frame, new NotificationSettingsFragment()).commit();
+                fragmentTransaction.replace(R.id.content_frame,
+                        new NotificationSettingsFragment()).commit();
                 break;
             case 6:
                 fragmentTransaction.replace(R.id.content_frame, new AppSettingsFragment()).commit();
                 break;
             case 7:
-                fragmentTransaction.replace(R.id.content_frame, new ImageHistoryFragment()).commit();
+                fragmentTransaction.replace(R.id.content_frame,
+                        new ImageHistoryFragment()).commit();
                 break;
             case 8:
                 fragmentTransaction.replace(R.id.content_frame, new AboutFragment()).commit();
@@ -375,7 +388,9 @@ public class MainActivity extends ActionBarActivity {
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position, true);
+            newPosition = position;
+            drawerList.setItemChecked(position, true);
+            drawerLayout.closeDrawer(navLayout);
         }
     }
 }

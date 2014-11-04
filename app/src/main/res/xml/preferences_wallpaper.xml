@@ -267,9 +267,7 @@
             android:title="@string/scale_animation_speed"
             />
 
-        <EditTextPreference
-            android:defaultValue="30"
-            android:hint="@string/animation_frame_rate_hint"
+        <Preference
             android:key="animation_frame_rate"
             android:summary="@string/animation_frame_rate_description"
             android:title="@string/animation_frame_rate"

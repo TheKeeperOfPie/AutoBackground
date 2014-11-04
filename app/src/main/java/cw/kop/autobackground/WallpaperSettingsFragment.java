@@ -18,7 +18,6 @@ package cw.kop.autobackground;
 
 import android.app.Activity;
 import android.app.AlarmManager;
-import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -36,9 +35,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -47,7 +43,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
     private static final String TAG = WallpaperSettingsFragment.class.getName();
     private static final long CONVERT_MILLES_TO_MIN = 60000;
     private SwitchPreference intervalPref;
-    private EditTextPreference frameRatePref;
+    private Preference frameRatePref;
     private Context appContext;
     private PendingIntent pendingIntent;
     private AlarmManager alarmManager;
@@ -80,10 +76,67 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
-        frameRatePref = (EditTextPreference) findPreference("animation_frame_rate");
         intervalPref = (SwitchPreference) findPreference("use_interval");
+        frameRatePref = findPreference("animation_frame_rate");
+        frameRatePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.InputDialogListener listener = new DialogFactory.InputDialogListener() {
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setAnimationFrameRate(getEditTextString());
+                        frameRatePref.setSummary(AppSettings.getAnimationFrameRate() + " FPS");
+                        dismissDialog();
+                    }
+                };
+
+                DialogFactory.showInputDialog(appContext,
+                        "Frame rate",
+                        "FPS",
+                        "" + AppSettings.getAnimationFrameRate(),
+                        listener,
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button,
+                        InputType.TYPE_CLASS_NUMBER);
+
+                return true;
+            }
+        });
+
+        final Preference animationBufferPref = findPreference("animation_safety_adv");
+        animationBufferPref.setSummary("Side buffer: " + AppSettings.getAnimationSafety() + " pixels");
+        animationBufferPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.InputDialogListener listener = new DialogFactory.InputDialogListener() {
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setAnimationSafety(getEditTextString());
+                        animationBufferPref.setSummary("Side buffer: " + AppSettings.getAnimationSafety() + " pixels");
+                        dismissDialog();
+                    }
+                };
+
+                DialogFactory.showInputDialog(appContext,
+                        "Animation Buffer",
+                        "Buffer in pixels",
+                        "" + AppSettings.getAnimationSafety(),
+                        listener,
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button,
+                        InputType.TYPE_CLASS_NUMBER);
+
+
+                return true;
+            }
+        });
+
 
         return inflater.inflate(R.layout.fragment_list, container, false);
     }
@@ -156,6 +209,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
                 switch (position) {
                     case 0:
                         AppSettings.setIntervalDuration(0);
@@ -192,14 +246,24 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 }
 
                 setIntervalAlarm();
+
+                setItemSelected(true);
                 dismissDialog();
+            }
+
+            @Override
+            public void onDismiss() {
+                if (!getItemSelected()) {
+                    intervalPref.setChecked(false);
+                }
+                super.onDismiss();
             }
         };
 
         DialogFactory.showListDialog(appContext,
-                                     "Update Interval",
-                                     clickListener,
-                                     R.array.interval_entry_menu);
+                "Update Interval",
+                clickListener,
+                R.array.interval_entry_menu);
     }
 
     private void showDialogIntervalForInput() {
@@ -230,30 +294,26 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 }
                 dismissDialog();
             }
-
-            @Override
-            public void onDismiss() {
-                super.onDismiss();
-            }
         };
 
         DialogFactory.showInputDialog(appContext,
-                                      "Update Interval",
-                                      "Number of minutes",
-                                      listener,
-                                      -1,
-                                      R.string.cancel_button,
-                                      R.string.ok_button,
-                                      InputType.TYPE_CLASS_NUMBER);
+                "Update Interval",
+                "Number of minutes",
+                "",
+                listener,
+                -1,
+                R.string.cancel_button,
+                R.string.ok_button,
+                InputType.TYPE_CLASS_NUMBER);
     }
 
     private void setIntervalAlarm() {
 
         if (AppSettings.useInterval() && AppSettings.getIntervalDuration() > 0) {
             alarmManager.setInexactRepeating(AlarmManager.RTC,
-                                             System.currentTimeMillis() + AppSettings.getIntervalDuration(),
-                                             AppSettings.getIntervalDuration(),
-                                             pendingIntent);
+                    System.currentTimeMillis() + AppSettings.getIntervalDuration(),
+                    AppSettings.getIntervalDuration(),
+                    pendingIntent);
             Log.i("WSD", "Interval Set: " + AppSettings.getIntervalDuration());
         }
         else {
@@ -271,16 +331,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
         if (!((Activity) appContext).isFinishing()) {
-            Preference pref = findPreference(key);
-
-            if (pref instanceof EditTextPreference) {
-                EditTextPreference editPref = (EditTextPreference) pref;
-                if (editPref.getText().equals("0") || editPref.getText().equals("")) {
-                    editPref.setText("1");
-                }
-                editPref.setSummary(editPref.getText());
-            }
-
             if (key.equals("use_interval")) {
                 if (AppSettings.useInterval()) {
                     if (AppSettings.useAdvanced()) {
@@ -295,10 +345,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                     setIntervalAlarm();
                 }
                 Log.i("WSF", "Interval Set: " + AppSettings.useInterval());
-            }
-
-            if (key.equals("animation_frame_rate")) {
-                frameRatePref.setSummary(AppSettings.getAnimationFrameRate() + " FPS");
             }
 
             if (key.equals("show_album_art")) {

@@ -145,7 +145,7 @@ public class DownloadThread extends Thread {
                     if (AppSettings.deleteOldImages()) {
                         FileHandler.deleteBitmaps(appContext, index);
                         AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
-                                                 new HashSet<String>());
+                                new HashSet<String>());
                     }
 
                     String title = AppSettings.getSourceTitle(index);
@@ -185,8 +185,8 @@ public class DownloadThread extends Thread {
                     }
                     if (imagesDownloaded < AppSettings.getSourceNum(index)) {
                         sendToast("Not enough photos from " + AppSettings.getSourceData(index) + " " +
-                                          "Try lowering the resolution or changing sources. " +
-                                          "There may also have been too many duplicates.");
+                                "Try lowering the resolution or changing sources. " +
+                                "There may also have been too many duplicates.");
                     }
 
                     totalDownloaded += imagesDownloaded;
@@ -223,8 +223,8 @@ public class DownloadThread extends Thread {
             }
             if (link.attr("width") != null && !link.attr("width").equals("")) {
                 try {
-                    if (Integer.parseInt(link.attr("width")) < AppSettings.getWidth() || Integer.parseInt(
-                            link.attr("height")) < AppSettings.getHeight()) {
+                    if (Integer.parseInt(link.attr("width")) < AppSettings.getImageWidth() || Integer.parseInt(
+                            link.attr("height")) < AppSettings.getImageHeight()) {
                         continue;
                     }
                 }
@@ -272,11 +272,11 @@ public class DownloadThread extends Thread {
                             AppSettings.addUsedLink(randLink, time);
                             if (AppSettings.cacheThumbnails()) {
                                 writeToFileWithThumbnail(bitmap,
-                                                         data.get(count),
-                                                         dir,
-                                                         title,
-                                                         num,
-                                                         time);
+                                        data.get(count),
+                                        dir,
+                                        title,
+                                        num,
+                                        time);
                             }
                             else {
                                 writeToFile(bitmap, data.get(count), dir, title, num);
@@ -342,7 +342,7 @@ public class DownloadThread extends Thread {
 
             Log.i(TAG, "renamedFile: " + oldImageFile.getAbsolutePath());
             Log.i(TAG,
-                  "renamed to: " + mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + oldIndex + ".png");
+                    "renamed to: " + mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + oldIndex + ".png");
         }
 
     }
@@ -613,8 +613,8 @@ public class DownloadThread extends Thread {
 
         if (Patterns.WEB_URL.matcher(url).matches()) {
             try {
-                int minWidth = AppSettings.getWidth();
-                int minHeight = AppSettings.getHeight();
+                int minWidth = AppSettings.getImageWidth();
+                int minHeight = AppSettings.getImageHeight();
                 System.gc();
                 URL imageUrl = new URL(url);
                 HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
@@ -687,7 +687,7 @@ public class DownloadThread extends Thread {
     }
 
     private void writeToFile(Bitmap image, String saveData, String dir, String title,
-                             int imageIndex) {
+            int imageIndex) {
 
         File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + imageIndex + ".png");
 
@@ -720,7 +720,7 @@ public class DownloadThread extends Thread {
     }
 
     private void writeToFileWithThumbnail(Bitmap image, String saveData, String dir, String title,
-                                          int imageIndex, long time) {
+            int imageIndex, long time) {
 
         File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + imageIndex + ".png");
 

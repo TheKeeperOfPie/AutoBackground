@@ -19,7 +19,6 @@ package cw.kop.autobackground.images;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -69,8 +68,8 @@ public class ImageHistoryAdapter extends BaseAdapter {
             }
 
             historyItems.add(new HistoryItem(time,
-                                             url,
-                                             new File(AppSettings.getDownloadPath() + "/HistoryCache/" + time + ".png")));
+                    url,
+                    new File(AppSettings.getDownloadPath() + "/HistoryCache/" + time + ".png")));
 
         }
 
@@ -108,7 +107,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
             ImageView fileImage = (ImageView) view.findViewById(R.id.file_image);
 
             File thumbnailFile = new File(AppSettings.getDownloadPath() + "/HistoryCache/"
-                                                  + historyItems.get(position).getTime() + ".png");
+                    + historyItems.get(position).getTime() + ".png");
 
             if (thumbnailFile.exists() && thumbnailFile.isFile()) {
                 Picasso.with(parent.getContext())
@@ -119,7 +118,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
 
                 Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_insert_drive_file_white_24dp);
                 drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
-                                        PorterDuff.Mode.MULTIPLY);
+                        PorterDuff.Mode.MULTIPLY);
 
                 fileImage.setImageDrawable(drawable);
             }
@@ -142,7 +141,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
             public boolean accept(File dir, String filename) {
 
                 return filename.length() > 4 && filename.substring(filename.length() - 4,
-                                                                   filename.length()).equals(".png");
+                        filename.length()).equals(".png");
 
             }
         };

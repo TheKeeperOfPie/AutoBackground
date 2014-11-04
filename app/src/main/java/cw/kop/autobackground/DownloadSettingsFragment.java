@@ -18,12 +18,8 @@ package cw.kop.autobackground;
 
 import android.app.Activity;
 import android.app.AlarmManager;
-import android.app.Dialog;
 import android.app.PendingIntent;
-import android.app.TimePickerDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -39,10 +35,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import java.util.Calendar;
@@ -91,7 +83,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         timerPref = (SwitchPreference) findPreference("use_timer");
         startTimePref = findPreference("timer_time");
@@ -132,31 +124,61 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             }
         });
 
-        EditTextPreference prefixPref = (EditTextPreference) findPreference("image_prefix_adv");
+        final Preference prefixPref = findPreference("image_prefix_adv");
         prefixPref.setSummary("Prefix: " + AppSettings.getImagePrefix());
+        prefixPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
 
-        Preference timePref = findPreference("timer_time");
+                DialogFactory.InputDialogListener listener = new DialogFactory.InputDialogListener() {
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setImagePrefix(getEditTextString());
+                        prefixPref.setSummary("Prefix: " + AppSettings.getImagePrefix());
+                        dismissDialog();
+                    }
+                };
+
+                DialogFactory.showInputDialog(appContext,
+                        "Image Prefix",
+                        "",
+                        "" + AppSettings.getImagePrefix(),
+                        listener,
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button,
+                        InputType.TYPE_CLASS_TEXT);
+
+
+                return true;
+            }
+        });
+
+        final Preference timePref = findPreference("timer_time");
         timePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
 
-                TimePickerDialog timeDialog;
-                timeDialog = new TimePickerDialog(appContext,
-                        new TimePickerDialog.OnTimeSetListener() {
-                            @Override
-                            public void onTimeSet(TimePicker timePicker,
-                                                  int selectedHour,
-                                                  int selectedMinute) {
-                                AppSettings.setTimerHour(selectedHour);
-                                AppSettings.setTimerMinute(selectedMinute);
-                                setDownloadAlarm();
-                            }
-                        },
-                        AppSettings.getTimerHour(),
-                        AppSettings.getTimerMinute(),
-                        true);
-                timeDialog.setTitle("Select Time");
-                timeDialog.show();
+                DialogFactory.TimeDialogListener listener = new DialogFactory.TimeDialogListener() {
+
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setTimerHour(getTimePicker().getCurrentHour());
+                        AppSettings.setTimerMinute(getTimePicker().getCurrentMinute());
+                        startTimePref.setSummary("Time to begin download timer: " + AppSettings.getTimerHour() + ":" + String.format("%02d",
+                                AppSettings.getTimerMinute()));
+                        dismissDialog();
+                        setDownloadAlarm();
+                    }
+                };
+
+                DialogFactory.showTimeDialog(appContext,
+                        "Time to start first download:",
+                        "",
+                        listener,
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button);
 
                 return true;
             }
@@ -217,7 +239,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         DialogFactory.showListDialog(appContext,
                 "Download Interval:",
                 clickListener,
-                R.array.theme_entry_menu);
+                R.array.timer_entry_menu);
     }
 
     private void showDialogTimerForInput() {
@@ -255,13 +277,14 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         };
 
         DialogFactory.showInputDialog(appContext,
-                                      "Download Interval",
-                                      "Number of minutes",
-                                      listener,
-                                      -1,
-                                      R.string.cancel_button,
-                                      R.string.ok_button,
-                                      InputType.TYPE_CLASS_NUMBER);
+                "Download Interval",
+                "Number of minutes",
+                "",
+                listener,
+                -1,
+                R.string.cancel_button,
+                R.string.ok_button,
+                InputType.TYPE_CLASS_NUMBER);
     }
 
     private void setDownloadAlarm() {
@@ -321,10 +344,63 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             preferenceCategory.removePreference(findPreference("delete_images"));
         }
 
-        EditTextPreference widthPref = (EditTextPreference) findPreference("user_width");
-        widthPref.setSummary("Minimum Width of Image: " + AppSettings.getWidth());
-        EditTextPreference heightPref = (EditTextPreference) findPreference("user_height");
-        heightPref.setSummary("Minimum Height of Image: " + AppSettings.getHeight());
+        final Preference widthPref = findPreference("user_width");
+        widthPref.setSummary("Minimum Width of Image: " + AppSettings.getImageWidth());
+        widthPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.InputDialogListener listener = new DialogFactory.InputDialogListener() {
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setImageWidth(getEditTextString());
+                        widthPref.setSummary("Minimum Width of Image: " + AppSettings.getImageWidth());
+                        dismissDialog();
+                    }
+                };
+
+                DialogFactory.showInputDialog(appContext,
+                        "Minimum Width of Image:",
+                        "Width in pixels",
+                        "" + AppSettings.getImageWidth(),
+                        listener,
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button,
+                        InputType.TYPE_CLASS_NUMBER);
+
+                return true;
+            }
+        });
+        final Preference heightPref = findPreference("user_height");
+        heightPref.setSummary("Minimum Height of Image: " + AppSettings.getImageHeight());
+        heightPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.InputDialogListener listener = new DialogFactory.InputDialogListener() {
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setImageHeight(getEditTextString());
+                        heightPref.setSummary("Minimum Height of Image: " + AppSettings.getImageHeight());
+                        dismissDialog();
+                    }
+                };
+
+                DialogFactory.showInputDialog(appContext,
+                        "Minimum Height of Image:",
+                        "Height in pixels",
+                        "" + AppSettings.getImageHeight(),
+                        listener,
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button,
+                        InputType.TYPE_CLASS_NUMBER);
+
+                return true;
+            }
+        });
+
 
         if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
             timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
@@ -351,14 +427,6 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
 
         if (!((Activity) appContext).isFinishing()) {
-            Preference pref = findPreference(key);
-            if (pref instanceof EditTextPreference) {
-                EditTextPreference editPref = (EditTextPreference) pref;
-                if (editPref.getText().equals("0") || editPref.getText().equals("")) {
-                    editPref.setText("1");
-                }
-                editPref.setSummary(editPref.getText());
-            }
 
             if (key.equals("use_timer")) {
                 if (AppSettings.useTimer()) {
@@ -370,7 +438,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     }
                 }
                 else {
-                    SwitchPreference timerPref = (SwitchPreference) pref;
+                    SwitchPreference timerPref = (SwitchPreference) findPreference(key);
                     timerPref.setSummary(getString(R.string.use_timer_description));
                     setDownloadAlarm();
                 }

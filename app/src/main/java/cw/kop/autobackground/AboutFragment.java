@@ -46,7 +46,7 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         Preference copyrightPref = findPreference("about_copyright");
         copyrightPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

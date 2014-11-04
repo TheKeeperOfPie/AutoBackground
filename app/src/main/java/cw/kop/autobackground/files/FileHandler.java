@@ -59,8 +59,8 @@ public class FileHandler {
             else {
                 if (AppSettings.useToast()) {
                     Toast.makeText(appContext,
-                                   "No connection available,\ncheck Download Settings",
-                                   Toast.LENGTH_SHORT).show();
+                            "No connection available,\ncheck Download Settings",
+                            Toast.LENGTH_SHORT).show();
                 }
 
                 Intent resetDownloadIntent = new Intent(FileHandler.DOWNLOAD_TERMINATED);

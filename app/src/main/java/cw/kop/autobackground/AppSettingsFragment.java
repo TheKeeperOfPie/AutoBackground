@@ -62,7 +62,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         return inflater.inflate(R.layout.fragment_list, container, false);
 
@@ -85,8 +85,8 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                     AppSettings.clearPrefs(appContext);
                     if (AppSettings.useToast()) {
                         Toast.makeText(appContext,
-                                       "Resetting settings to default",
-                                       Toast.LENGTH_SHORT).show();
+                                "Resetting settings to default",
+                                Toast.LENGTH_SHORT).show();
                     }
                     Intent intent = new Intent(appContext, MainActivity.class);
                     intent.putExtra("fragment", 6);
@@ -114,8 +114,8 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
             public boolean onPreferenceClick(Preference preference) {
                 AppSettings.setTutorial(true, "source");
                 Toast.makeText(appContext,
-                               "Will reshow source tutorial",
-                               Toast.LENGTH_SHORT).show();
+                        "Will reshow source tutorial",
+                        Toast.LENGTH_SHORT).show();
                 return false;
             }
         });
@@ -152,9 +152,9 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
         };
 
         DialogFactory.showListDialog(appContext,
-                                     "Theme:",
-                                     clickListener,
-                                     R.array.theme_entry_menu);
+                "Theme:",
+                clickListener,
+                R.array.theme_entry_menu);
     }
 
     private void setThemePrefSummary() {
@@ -179,12 +179,12 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
         };
 
         DialogFactory.showActionDialog(appContext,
-                                       "Are you sure you want to disable toast messages?",
-                                       "",
-                                       clickListener,
-                                       -1,
-                                       R.string.cancel_button,
-                                       R.string.ok_button);
+                "Are you sure you want to disable toast messages?",
+                "You will not be notified of errors or info about the app.",
+                clickListener,
+                -1,
+                R.string.cancel_button,
+                R.string.ok_button);
 
     }
 

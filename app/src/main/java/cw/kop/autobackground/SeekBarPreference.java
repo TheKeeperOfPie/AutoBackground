@@ -50,7 +50,7 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
     protected View onCreateDialogView() {
         LinearLayout.LayoutParams params;
         params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                                               LinearLayout.LayoutParams.WRAP_CONTENT);
+                LinearLayout.LayoutParams.WRAP_CONTENT);
         LinearLayout layout = new LinearLayout(context);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(6, 6, 6, 6);
@@ -58,23 +58,23 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
         valueTextView = new TextView(context);
         valueTextView.setGravity(Gravity.CENTER_HORIZONTAL);
         valueTextView.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
-                                                            14,
-                                                            context.getResources().getDisplayMetrics()));
+                14,
+                context.getResources().getDisplayMetrics()));
         layout.addView(valueTextView, params);
 
         TextView suffixTextView = new TextView(context);
         suffixTextView.setGravity(Gravity.CENTER_HORIZONTAL);
         suffixTextView.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
-                                                             8,
-                                                             context.getResources().getDisplayMetrics()));
+                8,
+                context.getResources().getDisplayMetrics()));
         suffixTextView.setText(suffix);
         layout.addView(suffixTextView, params);
 
         seekBar = new SeekBar(context);
         seekBar.setOnSeekBarChangeListener(this);
         layout.addView(seekBar,
-                       new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
-                                                     LinearLayout.LayoutParams.WRAP_CONTENT));
+                new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT));
 
         if (shouldPersist()) {
             value = getPersistedInt(defaultValue);

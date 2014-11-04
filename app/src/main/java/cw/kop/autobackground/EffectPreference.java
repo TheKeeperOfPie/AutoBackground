@@ -29,14 +29,14 @@ public class EffectPreference extends Preference {
 
     public EffectPreference(Context context, AttributeSet attrs) {
         super(context,
-              attrs);//, AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? R.style.LightDialogTheme : R.style.DarkDialogTheme);
+                attrs);//, AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? R.style.LightDialogTheme : R.style.DarkDialogTheme);
 
         title = context.getResources().getString(attrs.getAttributeResourceValue(androidNamespace,
-                                                                                 "title",
-                                                                                 R.string.title_effects_settings));
+                "title",
+                R.string.title_effects_settings));
         summary = context.getResources().getString(attrs.getAttributeResourceValue(androidNamespace,
-                                                                                   "summary",
-                                                                                   R.string.title_effects_settings));
+                "summary",
+                R.string.title_effects_settings));
         maxValue = attrs.getAttributeIntValue(androidNamespace, "max", 1);
         defaultValue = attrs.getAttributeIntValue(androidNamespace, "defaultValue", 0);
 

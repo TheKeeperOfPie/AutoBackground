@@ -24,20 +24,14 @@
         android:title="@string/title_download_settings"
         >
 
-        <EditTextPreference
-            android:defaultValue="1000"
-            android:inputType="number"
+        <Preference
             android:key="user_width"
-            android:numeric="integer"
             android:summary="@string/user_width_description"
             android:title="@string/user_width"
             />
 
-        <EditTextPreference
-            android:defaultValue="1000"
-            android:inputType="number"
+        <Preference
             android:key="user_height"
-            android:numeric="integer"
             android:summary="@string/user_height_description"
             android:title="@string/user_height"
             />
@@ -178,10 +172,7 @@
             android:title="@string/delete_images"
             />
 
-        <EditTextPreference
-            android:defaultValue="AutoBackground"
-            android:digits="@string/letters_and_numbers"
-            android:inputType="textWebEditText"
+        <Preference
             android:key="image_prefix_adv"
             android:summary="@string/image_prefix_description"
             android:title="@string/image_prefix"

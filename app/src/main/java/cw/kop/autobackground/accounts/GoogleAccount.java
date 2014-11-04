@@ -29,13 +29,13 @@ public class GoogleAccount {
 
     public static Intent getPickerIntent() {
         return AccountPicker.newChooseAccountIntent(null,
-                                                    null,
-                                                    new String[] {"com.google"},
-                                                    false,
-                                                    null,
-                                                    null,
-                                                    null,
-                                                    null);
+                null,
+                new String[] {"com.google"},
+                false,
+                null,
+                null,
+                null,
+                null);
     }
 
     public static void deleteAccount() {

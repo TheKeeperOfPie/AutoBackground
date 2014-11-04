@@ -15,16 +15,13 @@
   ~ limitations under the License.
   -->
 
-<set xmlns:android="http://schemas.android.com/apk/res/android">
+<resources>
 
-    <objectAnimator
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:interpolator="@android:anim/accelerate_decelerate_interpolator"
-        android:propertyName="xFraction"
-        android:valueType="floatType"
-        android:valueFrom="0"
-        android:valueTo="-1.0"
-        android:duration="@android:integer/config_shortAnimTime"
-        />
+    <style name="ToolbarTitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
 
-</set>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">20sp</item>
+
+    </style>
+
+</resources>
