@@ -31,6 +31,7 @@ import android.widget.TextView;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -198,14 +199,17 @@ public class SourceListAdapter extends BaseAdapter {
         if (listData != null) {
             for (HashMap<String, String> hashMap : listData) {
                 if (hashMap.get("type").equals(AppSettings.FOLDER)) {
-                    File folder = new File(hashMap.get("data"));
-                    if (folder.exists() && folder.isDirectory()) {
-                        hashMap.put("num",
-                                "" + folder.listFiles(filenameFilter).length);
+
+                    int numImages = 0;
+
+                    for (String folderName : hashMap.get("data").split(";break;")) {
+                        File folder = new File(folderName);
+                        if (folder.exists() && folder.isDirectory()) {
+                            numImages += folder.listFiles(filenameFilter).length;
+                        }
                     }
-                    else {
-                        hashMap.put("num", "0");
-                    }
+
+                    hashMap.put("num", "" + numImages);
                 }
                 else {
                     File folder = new File(cacheDir + "/" + hashMap.get("title") + " " + AppSettings.getImagePrefix());

@@ -129,21 +129,21 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
     }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
 
         Intent returnEntryIntent = new Intent();
-        if (position > -1) {
+        if (changePosition > -1) {
             returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
-            returnEntryIntent.putExtra("position", position);
+            returnEntryIntent.putExtra("position", changePosition);
         }
         else {
             returnEntryIntent.setAction(SourceListFragment.ADD_ENTRY);
         }
 
-        returnEntryIntent.putExtra("type", AppSettings.FOLDER);
-        returnEntryIntent.putExtra("title", albumNames.get(position));
-        returnEntryIntent.putExtra("data", albumLinks.get(position));
-        returnEntryIntent.putExtra("num", albumNums.get(position));
+        returnEntryIntent.putExtra("type", type);
+        returnEntryIntent.putExtra("title", albumNames.get(positionInList));
+        returnEntryIntent.putExtra("data", albumLinks.get(positionInList));
+        returnEntryIntent.putExtra("num", albumNums.get(positionInList));
 
         LocalBroadcastManager.getInstance(appContext).sendBroadcast(returnEntryIntent);
 

@@ -106,9 +106,14 @@ public class FileHandler {
             if (AppSettings.useSource(index)) {
                 String type = AppSettings.getSourceType(index);
                 if (type.equals(AppSettings.FOLDER)) {
-                    File folder = new File(AppSettings.getSourceData(index));
-                    if (folder.exists() && folder.isDirectory() && folder.listFiles(filenameFilter).length > 0) {
-                        noImages = false;
+
+                    String[] folders = AppSettings.getSourceData(index).split(";break;");
+
+                    for (int folderIndex = 0; noImages && folderIndex < folders.length; folderIndex++) {
+                        File folder = new File(folders[folderIndex]);
+                        if (folder.exists() && folder.isDirectory() && folder.listFiles(filenameFilter).length > 0) {
+                            noImages = false;
+                        }
                     }
                 }
                 else {
@@ -136,9 +141,12 @@ public class FileHandler {
             if (AppSettings.useSource(i)) {
                 String type = AppSettings.getSourceType(i);
                 if (type.equals(AppSettings.FOLDER)) {
-                    File folder = new File(AppSettings.getSourceData(i));
-                    if (folder.exists() && folder.isDirectory()) {
-                        bitmaps.addAll(Arrays.asList(folder.listFiles(filenameFilter)));
+
+                    for (String folderName : AppSettings.getSourceData(i).split(";break;")) {
+                        File folder = new File(folderName);
+                        if (folder.exists() && folder.isDirectory()) {
+                            bitmaps.addAll(Arrays.asList(folder.listFiles(filenameFilter)));
+                        }
                     }
                 }
                 else {

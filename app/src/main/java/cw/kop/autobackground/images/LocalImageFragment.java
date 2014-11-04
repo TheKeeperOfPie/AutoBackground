@@ -136,6 +136,14 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                         numImages = dir.listFiles(filenameFilter).length;
                     }
 
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                        }
+                    });
+
+                    StringBuilder stringBuilder = new StringBuilder(); // TODO:Recursion
+
                     Intent returnEntryIntent = new Intent();
                     if (position > -1) {
                         returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
