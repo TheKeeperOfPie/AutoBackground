@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -38,6 +39,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
@@ -136,13 +138,14 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                         numImages = dir.listFiles(filenameFilter).length;
                     }
 
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                        }
-                    });
+                    StringBuilder stringBuilder = new StringBuilder();
+                    ArrayList<String> folderNames = getAllDirectories(dir);
 
-                    StringBuilder stringBuilder = new StringBuilder(); // TODO:Recursion
+                    for (String folderName : folderNames) {
+                        stringBuilder.append(folderName);
+                        stringBuilder.append(AppSettings.DATA_SPLITTER);
+                        Log.i("LIF", folderName);
+                    }
 
                     Intent returnEntryIntent = new Intent();
                     if (position > -1) {
@@ -155,7 +158,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 
                     returnEntryIntent.putExtra("type", AppSettings.FOLDER);
                     returnEntryIntent.putExtra("title", dir.getName());
-                    returnEntryIntent.putExtra("data", dir.getAbsolutePath());
+                    returnEntryIntent.putExtra("data", stringBuilder.toString());
                     returnEntryIntent.putExtra("num", numImages);
 
                     LocalBroadcastManager.getInstance(appContext).sendBroadcast(returnEntryIntent);
@@ -169,9 +172,32 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 
         if (!viewPath.equals("")) {
             useDirectoryButton.setVisibility(View.GONE);
+            view.findViewById(R.id.button_container).setVisibility(View.GONE);
         }
 
         return view;
+    }
+
+    private ArrayList<String> getAllDirectories(File dir) {
+
+        ArrayList<String> directoryList = new ArrayList<>();
+
+        File[] fileList = dir.listFiles();
+
+        if (fileList != null) {
+            for (File folder : fileList) {
+                if (folder.isDirectory()) {
+                    directoryList.addAll(getAllDirectories(folder));
+                }
+            }
+
+            if (dir.listFiles(FileHandler.getImageFileNameFilter()).length > 0) {
+                directoryList.add(dir.getAbsolutePath());
+            }
+        }
+
+        return directoryList;
+
     }
 
     public boolean onBackPressed() {

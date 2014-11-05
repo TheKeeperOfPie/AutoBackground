@@ -295,7 +295,7 @@ public class DownloadThread extends Thread {
 
         imagesDownloaded = num - stored;
 
-        imageDetails += title + ": " + imagesDownloaded + " images;break;";
+        imageDetails += title + ": " + imagesDownloaded + " images" + AppSettings.DATA_SPLITTER;
 
         AppSettings.setSourceNumStored(index, num);
     }
@@ -848,7 +848,7 @@ public class DownloadThread extends Thread {
 
                 inboxStyle.addLine("Total images enabled: " + FileHandler.getBitmapList().size());
 
-                for (String detail : imageDetails.split(";break;")) {
+                for (String detail : imageDetails.split(AppSettings.DATA_SPLITTER)) {
                     inboxStyle.addLine(detail);
                 }
 

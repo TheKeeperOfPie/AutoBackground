@@ -39,6 +39,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -141,10 +142,18 @@ public class MainActivity extends ActionBarActivity {
                 configuration.screenWidthDp - 56,
                 getResources().getDisplayMetrics()));
 
-        findViewById(R.id.nav_drawer_header).getLayoutParams().height = Math.round(TypedValue.applyDimension(
+        CustomRelativeLayout navHeader = (CustomRelativeLayout) findViewById(R.id.nav_drawer_header);
+        navHeader.getLayoutParams().height = Math.round(TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
-                (configuration.screenWidthDp - 56) / 16 * 9,
+                Math.min(320, (configuration.screenWidthDp - 56) / 16 * 9),
                 getResources().getDisplayMetrics()));
+        navHeader.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LiveWallpaperService.OPEN_IMAGE);
+                sendBroadcast(intent);
+            }
+        });
 
         drawerList = (ListView) findViewById(R.id.nav_list);
         drawerList.setAdapter(new NavListAdapter(this, fragmentList));
@@ -177,9 +186,9 @@ public class MainActivity extends ActionBarActivity {
             toolbar.setBackgroundColor(getResources().getColor(R.color.DARK_BLUE_OPAQUE));
         }
 
-        Drawable drawerDrawable = getResources().getDrawable(R.drawable.drawer_menu_white);
-        drawerDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-        toolbar.setNavigationIcon(drawerDrawable);
+//        Drawable drawerDrawable = getResources().getDrawable(R.drawable.drawer_menu_white);
+//        drawerDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+//        toolbar.setNavigationIcon(drawerDrawable);
 
         drawerToggle = new ActionBarDrawerToggle(
                 this,
@@ -246,16 +255,7 @@ public class MainActivity extends ActionBarActivity {
     private void loadNavPicture() {
 
         if (Build.VERSION.SDK_INT >= 16 && navPicture != null && FileHandler.getCurrentBitmapFile() != null && FileHandler.getCurrentBitmapFile().exists()) {
-            int width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    320,
-                    getResources().getDisplayMetrics()));
-            int height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    180,
-                    getResources().getDisplayMetrics()));
-
-            Picasso.with(getApplicationContext()).load(FileHandler.getCurrentBitmapFile()).resize(
-                    width,
-                    height).centerCrop().into(navPicture);
+            Picasso.with(getApplicationContext()).load(FileHandler.getCurrentBitmapFile()).fit().centerCrop().into(navPicture);
         }
     }
 

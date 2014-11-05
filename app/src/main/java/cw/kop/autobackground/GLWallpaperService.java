@@ -41,6 +41,7 @@ public abstract class GLWallpaperService extends WallpaperService {
         }
 
         protected void setRenderer(GLSurfaceView.Renderer renderer) {
+            glSurfaceView.setEGLConfigChooser(8 , 8, 8, 8, 16, 0);
             glSurfaceView.setRenderer(renderer);
             rendererHasBeenSet = true;
         }

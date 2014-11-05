@@ -107,7 +107,7 @@ public class FileHandler {
                 String type = AppSettings.getSourceType(index);
                 if (type.equals(AppSettings.FOLDER)) {
 
-                    String[] folders = AppSettings.getSourceData(index).split(";break;");
+                    String[] folders = AppSettings.getSourceData(index).split(AppSettings.DATA_SPLITTER);
 
                     for (int folderIndex = 0; noImages && folderIndex < folders.length; folderIndex++) {
                         File folder = new File(folders[folderIndex]);
@@ -142,7 +142,7 @@ public class FileHandler {
                 String type = AppSettings.getSourceType(i);
                 if (type.equals(AppSettings.FOLDER)) {
 
-                    for (String folderName : AppSettings.getSourceData(i).split(";break;")) {
+                    for (String folderName : AppSettings.getSourceData(i).split(AppSettings.DATA_SPLITTER)) {
                         File folder = new File(folderName);
                         if (folder.exists() && folder.isDirectory()) {
                             bitmaps.addAll(Arrays.asList(folder.listFiles(filenameFilter)));

@@ -35,6 +35,7 @@
         <!--<item name="navigationBarColor">@color/DARK_BLUE_OPAQUE</item>-->
         <item name="android:listSeparatorTextViewStyle">@style/ListSeparator</item>
         <item name="android:titleTextStyle">@style/ToolbarTitle</item>
+        <item name="toolbarStyle">@style/ToolbarTitle</item>
 
     </style>
 
@@ -43,7 +44,8 @@
 
     <style name="ToolbarTitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
 
-        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">40sp</item>
 
     </style>
 
@@ -122,13 +124,13 @@
 
     <style name="LightListView" parent="android:style/Widget.Holo.Light.ListView">
         <item name="android:textColor">@color/DARK_GRAY_OPAQUE</item>
-        <item name="android:divider">@color/DARK_GRAY_OPAQUE</item>
+        <item name="android:divider">@color/DARK_GRAY_TRANSPARENT</item>
         <item name="android:dividerHeight">1px</item>
     </style>
 
     <style name="DarkListView" parent="android:style/Widget.Holo.ListView">
         <item name="android:textColor">@color/LIGHT_GRAY_OPAQUE</item>
-        <item name="android:divider">@color/LIGHT_GRAY_OPAQUE</item>
+        <item name="android:divider">@color/LIGHT_GRAY_TRANSPARENT</item>
         <item name="android:dividerHeight">1px</item>
     </style>
 

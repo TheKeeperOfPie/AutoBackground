@@ -18,15 +18,24 @@ package cw.kop.autobackground.sources;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -53,12 +62,14 @@ public class SourceListAdapter extends BaseAdapter {
     private ArrayList<HashMap<String, String>> listData;
     private HashSet<String> titles;
     private LayoutInflater inflater = null;
+    private CardClickListener cardClickListener;
 
-    public SourceListAdapter(Activity activity) {
+    public SourceListAdapter(Activity activity, CardClickListener listener) {
         mainActivity = activity;
         listData = new ArrayList<>();
         titles = new HashSet<>();
         inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        cardClickListener = listener;
     }
 
     @Override
@@ -76,41 +87,138 @@ public class SourceListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
 
         final HashMap<String, String> listItem = listData.get(position);
 
         View view = convertView;
 
         if (convertView == null) {
-            view = inflater.inflate(R.layout.source_list_row, parent, false);
+            view = inflater.inflate(R.layout.source_list_card, parent, false);
         }
 
-        TextView title = (TextView) view.findViewById(R.id.title_text);
-        TextView summary = (TextView) view.findViewById(R.id.summary_text);
-        TextView num = (TextView) view.findViewById(R.id.num_text);
-        final Switch useBox = (Switch) view.findViewById(R.id.use_source_checkbox);
-        useBox.setTag(position);
+        TextView title = (TextView) view.findViewById(R.id.source_title);
+        title.setText(listItem.get("title"));
 
-        useBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-
+        Switch useSwitch = (Switch) view.findViewById(R.id.source_use_switch);
+        useSwitch.setChecked(Boolean.valueOf(listItem.get("use")));
+        useSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-
-                int index = Integer.parseInt(useBox.getTag().toString());
-
-                setActivated(index, isChecked);
-
+                setActivated(position, isChecked);
             }
-
         });
 
-        title.setSelected(true);
-        summary.setSelected(true);
-        title.setText(listItem.get("title"));
-        summary.setText(listItem.get("data"));
-        num.setText("# Images: " + listItem.get("numStored") + " / " + listItem.get("num"));
-        useBox.setChecked(Boolean.valueOf(listItem.get("use")));
+        int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
+
+        Resources resources = parent.getContext().getResources();
+
+        ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
+        ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
+        ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
+
+        Drawable deleteDrawable = resources.getDrawable(R.drawable.ic_delete_white_24dp);
+        Drawable viewDrawable = resources.getDrawable(R.drawable.ic_photo_white_24dp);
+        Drawable editDrawable = resources.getDrawable(R.drawable.ic_edit_white_24dp);
+
+        deleteDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+        viewDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+        editDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+
+        deleteButton.setImageDrawable(deleteDrawable);
+        viewButton.setImageDrawable(viewDrawable);
+        editButton.setImageDrawable(editDrawable);
+
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cardClickListener.onDeleteClick(position);
+            }
+        });
+        viewButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cardClickListener.onViewClick(position);
+            }
+        });
+        editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cardClickListener.onEditClick(position);
+            }
+        });
+
+        ImageView image = (ImageView) view.findViewById(R.id.source_image);
+        image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, resources.getDisplayMetrics()));
+
+        boolean needsImage = true;
+
+        if (listItem.get("type").equals(AppSettings.FOLDER)) {
+            String[] folders = listItem.get("data").split(AppSettings.DATA_SPLITTER);
+            for (int index = 0; needsImage && index < folders.length; index++) {
+
+                File[] files = new File(folders[index]).listFiles(FileHandler.getImageFileNameFilter());
+
+                if (files != null && files.length > 0) {
+                    needsImage = false;
+                    image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, resources.getDisplayMetrics()));
+                    Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(image);
+                }
+            }
+        }
+        else {
+            File folder = new File(AppSettings.getDownloadPath() + "/" + listItem.get("title") + " " + AppSettings.getImagePrefix());
+            if (folder.exists() && folder.isDirectory()) {
+                File[] files = folder.listFiles(FileHandler.getImageFileNameFilter());
+
+                if (files != null && files.length > 0) {
+                    image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, resources.getDisplayMetrics()));
+                    Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(image);
+                }
+            }
+            else {
+                image.setImageDrawable(new ColorDrawable(resources.getColor(android.R.color.transparent)));
+            }
+        }
+
+
+//        if (convertView == null) {
+//            view = inflater.inflate(R.layout.source_list_row, parent, false);
+//        }
+//
+//        TextView title = (TextView) view.findViewById(R.id.title_text);
+//        TextView summary = (TextView) view.findViewById(R.id.summary_text);
+//        TextView num = (TextView) view.findViewById(R.id.num_text);
+//        final Switch useBox = (Switch) view.findViewById(R.id.use_source_checkbox);
+//        useBox.setTag(position);
+//
+//        useBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+//
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//
+//                int index = Integer.parseInt(useBox.getTag().toString());
+//
+//                setActivated(index, isChecked);
+//
+//            }
+//
+//        });
+//
+//        title.setSelected(true);
+//        summary.setSelected(true);
+//        title.setText(listItem.get("title"));
+//        useBox.setChecked(Boolean.valueOf(listItem.get("use")));
+//
+//        if (listItem.get("type").equals(AppSettings.FOLDER)) {
+//            String[] folders = listItem.get("data").split(AppSettings.DATA_SPLITTER);
+//            num.setText("# Images: " + listItem.get("num"));
+//            summary.setText(folders[folders.length - 1]);
+//        }
+//        else {
+//            num.setText("# Images: " + listItem.get("numStored") + " / " + listItem.get("num"));
+//            summary.setText(listItem.get("data"));
+//        }
 
         return view;
     }
@@ -128,13 +236,13 @@ public class SourceListAdapter extends BaseAdapter {
 
         HashMap<String, String> changedItem = listData.get(position);
 
-        if (!changedItem.get("title").replaceAll(" ", "").equals(title.replaceAll(" ", ""))) {
-            if (titles.contains(title.replaceAll(" ", ""))) {
+        if (!changedItem.get("title").equals(title)) {
+            if (titles.contains(title)) {
                 return false;
             }
         }
 
-        titles.remove(changedItem.get("title").replaceAll(" ", ""));
+        titles.remove(changedItem.get("title"));
         changedItem.put("type", type);
         changedItem.put("title", title);
         changedItem.put("data", data);
@@ -149,14 +257,14 @@ public class SourceListAdapter extends BaseAdapter {
             changedItem.put("numStored", "0");
         }
         listData.set(position, changedItem);
-        titles.add(title.replaceAll(" ", ""));
+        titles.add(title);
         notifyDataSetChanged();
         return true;
     }
 
     public boolean addItem(String type, String title, String data, boolean use, String num) {
 
-        if (titles.contains(title.replaceAll(" ", ""))) {
+        if (titles.contains(title)) {
             return false;
         }
 
@@ -177,7 +285,7 @@ public class SourceListAdapter extends BaseAdapter {
         }
 
         listData.add(newItem);
-        titles.add(title.replaceAll(" ", ""));
+        titles.add(title);
         notifyDataSetChanged();
 
         Log.i("WLA", "listData" + listData.size());
@@ -185,7 +293,7 @@ public class SourceListAdapter extends BaseAdapter {
     }
 
     public void removeItem(int position) {
-        titles.remove(listData.get(position).get("title").replaceAll(" ", ""));
+        titles.remove(listData.get(position).get("title"));
         listData.remove(position);
         notifyDataSetChanged();
     }
@@ -202,7 +310,7 @@ public class SourceListAdapter extends BaseAdapter {
 
                     int numImages = 0;
 
-                    for (String folderName : hashMap.get("data").split(";break;")) {
+                    for (String folderName : hashMap.get("data").split(AppSettings.DATA_SPLITTER)) {
                         File folder = new File(folderName);
                         if (folder.exists() && folder.isDirectory()) {
                             numImages += folder.listFiles(filenameFilter).length;
@@ -308,6 +416,15 @@ public class SourceListAdapter extends BaseAdapter {
 
         Log.i("WLA", "SavedListData" + listData.size());
         Log.i("WLA", "Saved Data: " + AppSettings.getNumSources());
+    }
+
+
+    public interface CardClickListener {
+
+        void onDeleteClick(int index);
+        void onViewClick(int index);
+        void onEditClick(int index);
+
     }
 
 }

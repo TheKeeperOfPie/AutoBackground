@@ -36,6 +36,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -44,6 +45,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -75,6 +78,7 @@ import java.util.HashSet;
 
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
+import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.files.FileHandler;
@@ -413,7 +417,7 @@ public class SourceListFragment extends ListFragment {
                     case 2:
                         showInputDialog(AppSettings.IMGUR,
                                 "",
-                                "Subreddit",
+                                "subreddit",
                                 "imgur.com/r/",
                                 "",
                                 "",
@@ -643,6 +647,8 @@ public class SourceListFragment extends ListFragment {
 
     }
 
+
+
     private void showDialogMenu(final int index) {
 
         listAdapter.saveData();
@@ -690,7 +696,7 @@ public class SourceListFragment extends ListFragment {
                                 }
                                 else if (data.contains("imgur.com/r/")) {
                                     prefix = "imgur.com/r/";
-                                    hint = "Subreddit";
+                                    hint = "subreddit";
                                 }
 
                                 showInputDialog(AppSettings.IMGUR,
@@ -817,8 +823,180 @@ public class SourceListFragment extends ListFragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        final SourceListAdapter.CardClickListener listener = new SourceListAdapter.CardClickListener() {
+            @Override
+            public void onDeleteClick(final int index) {
+                HashMap<String, String> item = listAdapter.getItem(index);
+                String type = item.get("type");
+                if (type.equals(AppSettings.WEBSITE) ||
+                        type.equals(AppSettings.IMGUR) ||
+                        type.equals(AppSettings.PICASA) ||
+                        type.equals(AppSettings.TUMBLR_BLOG) ||
+                        type.equals(AppSettings.TUMBLR_TAG)) {
+                    listAdapter.saveData();
+
+                    DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
+
+                        @Override
+                        public void onClickMiddle(View v) {
+                            this.dismissDialog();
+                            AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
+                                    new HashSet<String>());
+                            listAdapter.removeItem(index);
+                            listAdapter.saveData();
+                            new ImageCountTask().execute();
+                        }
+
+                        @Override
+                        public void onClickRight(View v) {
+                            FileHandler.deleteBitmaps(appContext, index);
+                            Toast.makeText(appContext,
+                                    "Deleting " + AppSettings.getSourceTitle(index) + " images",
+                                    Toast.LENGTH_SHORT).show();
+                            AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
+                                    new HashSet<String>());
+                            listAdapter.removeItem(index);
+                            listAdapter.saveData();
+                            new ImageCountTask().execute();
+                            this.dismissDialog();
+                        }
+
+                    };
+
+                    DialogFactory.showActionDialog(appContext,
+                            "Delete images along with this source?",
+                            "This cannot be undone.",
+                            clickListener,
+                            R.string.cancel_button,
+                            R.string.no_button,
+                            R.string.yes_button);
+
+                }
+                else {
+
+                    DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
+
+                        @Override
+                        public void onClickRight(View v) {
+                            listAdapter.removeItem(index);
+                            new ImageCountTask().execute();
+                            listAdapter.saveData();
+                            this.dismissDialog();
+                        }
+                    };
+
+                    DialogFactory.showActionDialog(appContext,
+                            "",
+                            "Delete " + item.get("title") + "?",
+                            clickListener,
+                            -1,
+                            R.string.cancel_button,
+                            R.string.ok_button);
+
+
+                }
+
+            }
+
+            @Override
+            public void onViewClick(int index) {
+                HashMap<String, String> item = listAdapter.getItem(index);
+                String type = item.get("type");
+                String directory;
+                if (type.equals(AppSettings.WEBSITE) ||
+                        type.equals(AppSettings.IMGUR) ||
+                        type.equals(AppSettings.PICASA) ||
+                        type.equals(AppSettings.TUMBLR_BLOG) ||
+                        type.equals(AppSettings.TUMBLR_TAG)) {
+                    directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(
+                            index) + " " + AppSettings.getImagePrefix();
+                }
+                else {
+                    directory = AppSettings.getSourceData(index);
+                }
+                showImageFragment(false, directory, index);
+            }
+
+            @Override
+            public void onEditClick(int index) {
+                HashMap<String, String> item = listAdapter.getItem(index);
+                String type = item.get("type");
+                switch (type) {
+                    case AppSettings.WEBSITE:
+                        showInputDialog(AppSettings.WEBSITE,
+                                AppSettings.getSourceTitle(index),
+                                "",
+                                "",
+                                AppSettings.getSourceData(index),
+                                "",
+                                "" + AppSettings.getSourceNum(index),
+                                "Edit website:",
+                                index);
+                        break;
+                    case AppSettings.IMGUR: {
+                        String prefix = "", hint = "";
+                        String data = AppSettings.getSourceData(index);
+                        if (data.contains("imgur.com/a/")) {
+                            prefix = "imgur.com/a/";
+                            hint = "Album ID";
+                        }
+                        else if (data.contains("imgur.com/r/")) {
+                            prefix = "imgur.com/r/";
+                            hint = "subreddit";
+                        }
+
+                        showInputDialog(AppSettings.IMGUR,
+                                AppSettings.getSourceTitle(index),
+                                hint,
+                                prefix,
+                                data.substring(data.indexOf(prefix) + prefix.length()),
+                                "",
+                                "" + AppSettings.getSourceNum(index),
+                                "Edit Imgur source:",
+                                index);
+                        break;
+                    }
+                    case AppSettings.PICASA:
+                        new PicasaAlbumTask(index).execute();
+                        break;
+                    case AppSettings.TUMBLR_BLOG:
+                        showInputDialog(AppSettings.TUMBLR_BLOG,
+                                AppSettings.getSourceTitle(index),
+                                "Blog name",
+                                "",
+                                AppSettings.getSourceData(index),
+                                "",
+                                "" + AppSettings.getSourceNum(index),
+                                "Edit Tumblr Blog:",
+                                index);
+                        break;
+                    case AppSettings.TUMBLR_TAG: {
+                        String data = AppSettings.getSourceData(index);
+
+                        if (data.length() > 12) {
+                            data = data.substring(12);
+                        }
+
+                        showInputDialog(AppSettings.TUMBLR_TAG,
+                                AppSettings.getSourceTitle(index),
+                                "Tag",
+                                "",
+                                data,
+                                "",
+                                "" + AppSettings.getSourceNum(index),
+                                "Edit Tumblr Tag:",
+                                index);
+                        break;
+                    }
+                    case AppSettings.FOLDER:
+                        showImageFragment(false, "", index);
+                        break;
+                }
+            }
+        };
+
         if (listAdapter == null) {
-            listAdapter = new SourceListAdapter(getActivity());
+            listAdapter = new SourceListAdapter(getActivity(), listener);
             for (int i = 0; i < AppSettings.getNumSources(); i++) {
                 listAdapter.addItem(AppSettings.getSourceType(i),
                         AppSettings.getSourceTitle(i),
@@ -829,7 +1007,6 @@ public class SourceListFragment extends ListFragment {
             }
         }
         setListAdapter(listAdapter);
-        getListView().setDividerHeight(0);
 
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -843,6 +1020,39 @@ public class SourceListFragment extends ListFragment {
         if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
             getListView().setBackgroundColor(getResources().getColor(android.R.color.transparent));
         }
+
+        getListView().setOnScrollListener(new AbsListView.OnScrollListener() {
+
+            final static int ITEMS_THRESHOLD = 3;
+            int lastFirstVisibleItem = 0;
+
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view,
+                    int firstVisibleItem,
+                    int visibleItemCount,
+                    int totalItemCount) {
+
+                if (lastFirstVisibleItem < firstVisibleItem) {
+                    ActionBar actionBar = ((MainActivity) getActivity()).getSupportActionBar();
+
+                    if (actionBar.isShowing()) {
+                        actionBar.hide();
+                    }
+                }
+                else if (lastFirstVisibleItem > firstVisibleItem) {
+                    ActionBar actionBar = ((MainActivity) getActivity()).getSupportActionBar();
+                    if (!actionBar.isShowing()) {
+                        actionBar.show();
+                    }
+                }
+                lastFirstVisibleItem = firstVisibleItem;
+            }
+        });
 
     }
 
@@ -1083,10 +1293,10 @@ public class SourceListFragment extends ListFragment {
 
     @Override
     public void onPause() {
-        super.onPause();
+        ((MainActivity) getActivity()).getSupportActionBar().show();
         listAdapter.saveData();
-
         LocalBroadcastManager.getInstance(appContext).unregisterReceiver(sourceListReceiver);
+        super.onPause();
     }
 
     public void resetAddButton() {

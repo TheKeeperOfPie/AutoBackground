@@ -1784,22 +1784,24 @@ public class LiveWallpaperService extends GLWallpaperService {
                         break;
                     case LiveWallpaperService.OPEN_IMAGE:
                         String location = FileHandler.getBitmapLocation();
-                        if (location.substring(0, 4).equals("http")) {
-                            Intent linkIntent = new Intent(Intent.ACTION_VIEW);
-                            linkIntent.setData(Uri.parse(location));
-                            linkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            context.startActivity(linkIntent);
-                            closeNotificationDrawer(context);
-                        }
-                        else {
-                            Intent galleryIntent = new Intent();
-                            galleryIntent.setAction(Intent.ACTION_VIEW);
-                            galleryIntent.setDataAndType(Uri.fromFile(FileHandler.getCurrentBitmapFile()),
-                                    "image/*");
-                            galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
-                            galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            context.startActivity(galleryIntent);
-                            closeNotificationDrawer(context);
+                        if (location != null) {
+                            if (location.substring(0, 4).equals("http")) {
+                                Intent linkIntent = new Intent(Intent.ACTION_VIEW);
+                                linkIntent.setData(Uri.parse(location));
+                                linkIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                context.startActivity(linkIntent);
+                                closeNotificationDrawer(context);
+                            }
+                            else {
+                                Intent galleryIntent = new Intent();
+                                galleryIntent.setAction(Intent.ACTION_VIEW);
+                                galleryIntent.setDataAndType(Uri.fromFile(FileHandler.getCurrentBitmapFile()),
+                                        "image/*");
+                                galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
+                                galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                context.startActivity(galleryIntent);
+                                closeNotificationDrawer(context);
+                            }
                         }
                         break;
                     case LiveWallpaperService.PREVIOUS_IMAGE:

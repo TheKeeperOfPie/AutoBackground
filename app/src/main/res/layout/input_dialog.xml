@@ -48,7 +48,7 @@
 
     <EditText
         android:id="@+id/input_field"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/dialog_underline"
         android:layout_marginBottom="4dp"
