@@ -1,18 +1,18 @@
 /*
- * Copyright (C) Winson Chiu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright (C) Winson Chiu
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 package cw.kop.autobackground.sources;
 
@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.Dialog;
+import android.app.Fragment;
 import android.app.ListFragment;
 import android.app.PendingIntent;
 import android.app.WallpaperManager;
@@ -87,12 +88,13 @@ import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
 
-public class SourceListFragment extends ListFragment {
+public class SourceListFragment extends Fragment {
 
     public static final String ADD_ENTRY = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
     public static final String SET_ENTRY = "cw.kop.autobackground.SourceListFragment.SET_ENTRY";
     public static final String RESET_INDICATOR = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
 
+    private ListView sourceList;
     private SourceListAdapter listAdapter;
     private Context appContext;
     private Handler handler;
@@ -157,7 +159,7 @@ public class SourceListFragment extends ListFragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        appContext = getActivity();
+        appContext = activity;
     }
 
     @Override
@@ -171,6 +173,8 @@ public class SourceListFragment extends ListFragment {
             Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_sources, container, false);
+
+        sourceList = (ListView) view.findViewById(R.id.source_list);
 
         buttonParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -993,6 +997,31 @@ public class SourceListFragment extends ListFragment {
                         break;
                 }
             }
+
+            @Override
+            public void onItemClick(int index) {
+                HashMap<String, String> dataItem = listAdapter.getItem(index);
+                SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
+                Bundle arguments = new Bundle();
+                arguments.putString("title", dataItem.get("title"));
+                arguments.putString("prefix", "Prefix");
+                arguments.putString("data", dataItem.get("data"));
+                arguments.putString("suffix", "Suffix");
+                arguments.putString("num", dataItem.get("num"));
+                String imageFileName = dataItem.get("image");
+                if (imageFileName != null && imageFileName.length() > 0) {
+                    arguments.putString("image", imageFileName);
+                }
+                else {
+                    arguments.putString("image", "");
+                }
+                sourceInfoFragment.setArguments(arguments);
+
+                getFragmentManager().beginTransaction()
+                        .add(R.id.content_frame, sourceInfoFragment, "source_info_fragment")
+                        .addToBackStack(null)
+                        .commit();
+            }
         };
 
         if (listAdapter == null) {
@@ -1006,9 +1035,9 @@ public class SourceListFragment extends ListFragment {
                 Log.i("WLF", "Added: " + AppSettings.getSourceTitle(i));
             }
         }
-        setListAdapter(listAdapter);
+        sourceList.setAdapter(listAdapter);
 
-        getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+        sourceList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position,
                     long id) {
@@ -1018,39 +1047,70 @@ public class SourceListFragment extends ListFragment {
         });
 
         if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
-            getListView().setBackgroundColor(getResources().getColor(android.R.color.transparent));
+            sourceList.setBackgroundColor(getResources().getColor(android.R.color.transparent));
         }
 
-        getListView().setOnScrollListener(new AbsListView.OnScrollListener() {
+        // TODO: Find better implementation for action bar hide
+//        sourceList.setOnScrollListener(new AbsListView.OnScrollListener() {
+//
+//            final static int ITEMS_THRESHOLD = 3;
+//            int lastFirstVisibleItem = 0;
+//
+//            @Override
+//            public void onScrollStateChanged(AbsListView view, int scrollState) {
+//
+//            }
+//
+//            @Override
+//            public void onScroll(AbsListView view,
+//                    int firstVisibleItem,
+//                    int visibleItemCount,
+//                    int totalItemCount) {
+//
+//                if (lastFirstVisibleItem < firstVisibleItem) {
+//                    ActionBar actionBar = ((MainActivity) getActivity()).getSupportActionBar();
+//
+//                    if (actionBar.isShowing()) {
+//                        actionBar.hide();
+//                    }
+//                }
+//                else if (lastFirstVisibleItem > firstVisibleItem) {
+//                    ActionBar actionBar = ((MainActivity) getActivity()).getSupportActionBar();
+//                    if (!actionBar.isShowing()) {
+//                        actionBar.show();
+//                    }
+//                }
+//                lastFirstVisibleItem = firstVisibleItem;
+//            }
+//        });
 
-            final static int ITEMS_THRESHOLD = 3;
-            int lastFirstVisibleItem = 0;
-
+        sourceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-            }
+                Log.i("SLF", "Item click");
 
-            @Override
-            public void onScroll(AbsListView view,
-                    int firstVisibleItem,
-                    int visibleItemCount,
-                    int totalItemCount) {
-
-                if (lastFirstVisibleItem < firstVisibleItem) {
-                    ActionBar actionBar = ((MainActivity) getActivity()).getSupportActionBar();
-
-                    if (actionBar.isShowing()) {
-                        actionBar.hide();
-                    }
+                HashMap<String, String> dataItem = listAdapter.getItem(position);
+                SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
+                Bundle arguments = new Bundle();
+                arguments.putString("title", dataItem.get("title"));
+                arguments.putString("prefix", "Prefix");
+                arguments.putString("data", dataItem.get("data"));
+                arguments.putString("suffix", "Suffix");
+                arguments.putString("num", dataItem.get("num"));
+                String imageFileName = arguments.getString("image");
+                if (imageFileName != null && imageFileName.length() > 0) {
+                    arguments.putString("image", imageFileName);
                 }
-                else if (lastFirstVisibleItem > firstVisibleItem) {
-                    ActionBar actionBar = ((MainActivity) getActivity()).getSupportActionBar();
-                    if (!actionBar.isShowing()) {
-                        actionBar.show();
-                    }
+                else {
+                    arguments.putString("image", "");
                 }
-                lastFirstVisibleItem = firstVisibleItem;
+                sourceInfoFragment.setArguments(arguments);
+
+                getFragmentManager().beginTransaction()
+                        .add(R.id.content_frame, sourceInfoFragment)
+                        .addToBackStack(null)
+                        .commit();
             }
         });
 
@@ -1208,12 +1268,6 @@ public class SourceListFragment extends ListFragment {
 //    }
 
 
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
-        showDialogMenu(position);
-    }
-
     protected void setWallpaper() {
 
         final Intent i = new Intent();
@@ -1232,7 +1286,7 @@ public class SourceListFragment extends ListFragment {
 
     @Override
     public void onDestroyView() {
-        setListAdapter(null);
+        sourceList.setAdapter(null);
         super.onDestroyView();
     }
 

@@ -150,6 +150,12 @@ public class SourceListAdapter extends BaseAdapter {
 
         ImageView image = (ImageView) view.findViewById(R.id.source_image);
         image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, resources.getDisplayMetrics()));
+        image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cardClickListener.onItemClick(position);
+            }
+        });
 
         boolean needsImage = true;
 
@@ -161,6 +167,7 @@ public class SourceListAdapter extends BaseAdapter {
 
                 if (files != null && files.length > 0) {
                     needsImage = false;
+                    listItem.put("image", files[0].getAbsolutePath());
                     image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, resources.getDisplayMetrics()));
                     Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(image);
                 }
@@ -172,6 +179,7 @@ public class SourceListAdapter extends BaseAdapter {
                 File[] files = folder.listFiles(FileHandler.getImageFileNameFilter());
 
                 if (files != null && files.length > 0) {
+                    listItem.put("image", files[0].getAbsolutePath());
                     image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, resources.getDisplayMetrics()));
                     Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(image);
                 }
@@ -425,6 +433,7 @@ public class SourceListAdapter extends BaseAdapter {
         void onViewClick(int index);
         void onEditClick(int index);
 
+        void onItemClick(int index);
     }
 
 }

@@ -107,12 +107,12 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         emptyLayout.addView(emptyText);
 
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            imageListView.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
-            emptyLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
+            imageListView.setBackgroundColor(getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
+            emptyLayout.setBackgroundColor(getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
         }
         else {
-            imageListView.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
-            emptyLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+            imageListView.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
+            emptyLayout.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
         }
 
         ((ViewGroup) imageListView.getParent()).addView(emptyLayout, 0);
