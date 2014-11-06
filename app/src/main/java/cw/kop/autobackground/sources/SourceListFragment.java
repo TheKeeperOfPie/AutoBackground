@@ -30,8 +30,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -52,6 +55,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -999,9 +1003,11 @@ public class SourceListFragment extends Fragment {
             }
 
             @Override
-            public void onItemClick(int index) {
+            public void onItemClick(View view, int index) {
                 HashMap<String, String> dataItem = listAdapter.getItem(index);
                 SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
+//                sourceInfoFragment.setImageBitmap(Bitmap.createBitmap(((ImageView) view).getDrawingCache()));
+                sourceInfoFragment.setImageDrawable(((ImageView) view).getDrawable());
                 Bundle arguments = new Bundle();
                 arguments.putString("title", dataItem.get("title"));
                 arguments.putString("prefix", "Prefix");

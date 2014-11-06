@@ -153,7 +153,7 @@ public class SourceListAdapter extends BaseAdapter {
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cardClickListener.onItemClick(position);
+                cardClickListener.onItemClick(v, position);
             }
         });
 
@@ -433,7 +433,7 @@ public class SourceListAdapter extends BaseAdapter {
         void onViewClick(int index);
         void onEditClick(int index);
 
-        void onItemClick(int index);
+        void onItemClick(View view, int index);
     }
 
 }

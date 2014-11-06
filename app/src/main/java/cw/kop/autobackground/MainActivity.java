@@ -364,7 +364,7 @@ public class MainActivity extends ActionBarActivity {
                 getFragmentManager().popBackStack();
             }
         }
-        else if (getFragmentManager().findFragmentByTag("source_info_fragment") != null) {
+        else if (getFragmentManager().getBackStackEntryCount() > 0) {
             getFragmentManager().popBackStack();
         }
         else {

@@ -19,6 +19,8 @@ package cw.kop.autobackground.sources;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -41,6 +43,7 @@ import cw.kop.autobackground.settings.AppSettings;
 public class SourceInfoFragment extends Fragment{
 
     private Context appContext;
+    private Drawable imageDrawable;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -82,10 +85,12 @@ public class SourceInfoFragment extends Fragment{
         sourceNum.setText(arguments.getString("num"));
 
         ImageView sourceImage = (ImageView) view.findViewById(R.id.source_image);
-        File imageFile = new File(arguments.getString("image"));
-        if (imageFile.exists() && imageFile.isFile()) {
-            Picasso.with(appContext).load(imageFile).fit().centerCrop().into(sourceImage);
-        }
+        sourceImage.setImageDrawable(imageDrawable);
+
+//        File imageFile = new File(arguments.getString("image"));
+//        if (imageFile.exists() && imageFile.isFile()) {
+//            Picasso.with(appContext).load(imageFile).fit().centerCrop().into(sourceImage);
+//        }
 
 
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
@@ -98,5 +103,12 @@ public class SourceInfoFragment extends Fragment{
         return view;
     }
 
+    public void setImageDrawable(Drawable drawable) {
+        imageDrawable = drawable;
+    }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
 }
