@@ -39,8 +39,10 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -49,7 +51,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Transformation;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -81,6 +85,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import javax.xml.transform.Source;
+
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.MainActivity;
@@ -98,6 +104,9 @@ public class SourceListFragment extends Fragment {
     public static final String SET_ENTRY = "cw.kop.autobackground.SourceListFragment.SET_ENTRY";
     public static final String RESET_INDICATOR = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
 
+    private static final String TAG = SourceListFragment.class.getCanonicalName();
+    private static final int INFO_ANIMATION_TIME = 500;
+
     private ListView sourceList;
     private SourceListAdapter listAdapter;
     private Context appContext;
@@ -106,6 +115,9 @@ public class SourceListFragment extends Fragment {
     private ImageButton addButton;
     private Menu toolbarMenu;
     private TextView noImageText;
+
+    private int screenHeight;
+    private int screenWidth;
 
     private ShowcaseView sourceListTutorial;
     private ShowcaseView addSourceTutorial;
@@ -139,6 +151,9 @@ public class SourceListFragment extends Fragment {
         setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
         handler = new Handler();
+
+        screenHeight = getResources().getDisplayMetrics().heightPixels;
+        screenWidth = getResources().getDisplayMetrics().widthPixels;
     }
 
     @Override
@@ -216,7 +231,7 @@ public class SourceListFragment extends Fragment {
 
         });
 
-        noImageText = (TextView) view.findViewById(R.id.no_image_indicator);
+//        noImageText = (TextView) view.findViewById(R.id.no_image_indicator);
 
         resetAddButton();
 
@@ -1003,11 +1018,11 @@ public class SourceListFragment extends Fragment {
             }
 
             @Override
-            public void onItemClick(View view, int index) {
+            public void onItemClick(final View view, int index) {
                 HashMap<String, String> dataItem = listAdapter.getItem(index);
-                SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
+                final SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
 //                sourceInfoFragment.setImageBitmap(Bitmap.createBitmap(((ImageView) view).getDrawingCache()));
-                sourceInfoFragment.setImageDrawable(((ImageView) view).getDrawable());
+                sourceInfoFragment.setImageDrawable(((ImageView) view.findViewById(R.id.source_image)).getDrawable());
                 Bundle arguments = new Bundle();
                 arguments.putString("title", dataItem.get("title"));
                 arguments.putString("prefix", "Prefix");
@@ -1023,10 +1038,72 @@ public class SourceListFragment extends Fragment {
                 }
                 sourceInfoFragment.setArguments(arguments);
 
-                getFragmentManager().beginTransaction()
-                        .add(R.id.content_frame, sourceInfoFragment, "source_info_fragment")
-                        .addToBackStack(null)
-                        .commit();
+                final TextView sourceTitle = (TextView) view.findViewById(R.id.source_title_text);
+                final CardView sourceCard = (CardView) view.findViewById(R.id.source_card);
+
+                final float viewStartY = view.getY();
+                final int viewStartPadding = view.getPaddingLeft();
+                Log.i(TAG, "viewStartY: " + viewStartY);
+
+                Animation animation = new Animation() {
+
+                    private boolean needsFragment = true;
+
+                    @Override
+                    protected void applyTransformation(float interpolatedTime, Transformation t) {
+
+                        if (interpolatedTime >= 1) {
+                            sourceList.setAlpha(1.0f);
+                        }
+                        else {
+                            if (needsFragment && interpolatedTime > 0.95) {
+                                needsFragment = false;
+                                getFragmentManager().beginTransaction()
+                                        .add(R.id.content_frame,
+                                                sourceInfoFragment,
+                                                "source_info_fragment")
+                                        .addToBackStack(null)
+                                        .commit();
+                            }
+                            view.setY(viewStartY - interpolatedTime * viewStartY);
+                            int newPadding = Math.round(viewStartPadding * (1 - interpolatedTime));
+                            view.setPadding(newPadding, 0, newPadding, 0);
+                            Log.i(TAG, "newPadding: " + newPadding);
+                            sourceTitle.setAlpha(1.0f * interpolatedTime);
+                            sourceList.setAlpha(1.0f - 0.7f * interpolatedTime);
+                        }
+                    }
+
+                    @Override
+                    public boolean willChangeBounds() {
+                        return true;
+                    }
+                };
+
+                animation.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        Parcelable state = sourceList.onSaveInstanceState();
+                        sourceList.setAdapter(null);
+                        sourceList.setAdapter(listAdapter);
+                        sourceList.onRestoreInstanceState(state);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+
+                animation.setDuration(Math.round(Math.abs(INFO_ANIMATION_TIME * (viewStartY / screenHeight))) + INFO_ANIMATION_TIME / 8);
+                animation.setInterpolator(new DecelerateInterpolator());
+                view.startAnimation(animation);
+
             }
         };
 
@@ -1420,35 +1497,35 @@ public class SourceListFragment extends Fragment {
             }
 
 
-            noImageText.setVisibility(sourceState.equals(SourceListAdapter.OKAY) ?
-                    View.GONE :
-                    View.VISIBLE);
-
-            switch (sourceState) {
-
-                case SourceListAdapter.NO_SOURCES:
-                    noImageText.setText("Please add a source");
-                    Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
-                    addDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
-                            PorterDuff.Mode.MULTIPLY);
-                    addButton.setImageDrawable(addDrawable);
-                    break;
-                case SourceListAdapter.NO_ACTIVE_SOURCES:
-                    noImageText.setText("No active sources");
-                    break;
-                case SourceListAdapter.NEED_DOWNLOAD:
-                    noImageText.setText("No downloaded images");
-                    if (!FileHandler.isDownloading && toolbarMenu != null) {
-                        Drawable downloadDrawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp).mutate();
-                        downloadDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
-                                PorterDuff.Mode.MULTIPLY);
-                        toolbarMenu.getItem(1).setIcon(downloadDrawable);
-                    }
-                    break;
-                case SourceListAdapter.OKAY:
-                    break;
-
-            }
+//            noImageText.setVisibility(sourceState.equals(SourceListAdapter.OKAY) ?
+//                    View.GONE :
+//                    View.VISIBLE);
+//
+//            switch (sourceState) {
+//
+//                case SourceListAdapter.NO_SOURCES:
+//                    noImageText.setText("Please add a source");
+//                    Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
+//                    addDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
+//                            PorterDuff.Mode.MULTIPLY);
+//                    addButton.setImageDrawable(addDrawable);
+//                    break;
+//                case SourceListAdapter.NO_ACTIVE_SOURCES:
+//                    noImageText.setText("No active sources");
+//                    break;
+//                case SourceListAdapter.NEED_DOWNLOAD:
+//                    noImageText.setText("No downloaded images");
+//                    if (!FileHandler.isDownloading && toolbarMenu != null) {
+//                        Drawable downloadDrawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp).mutate();
+//                        downloadDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
+//                                PorterDuff.Mode.MULTIPLY);
+//                        toolbarMenu.getItem(1).setIcon(downloadDrawable);
+//                    }
+//                    break;
+//                case SourceListAdapter.OKAY:
+//                    break;
+//
+//            }
 
         }
     }

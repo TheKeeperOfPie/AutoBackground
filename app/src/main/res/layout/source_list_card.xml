@@ -15,9 +15,19 @@
   ~ limitations under the License.
   -->
 
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="8dp"
+    android:paddingEnd="8dp"
+    android:paddingRight="8dp"
+    >
+
 <android.support.v7.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/source_card"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     card_view:cardBackgroundColor="@color/DARK_BLUE_OPAQUE"
@@ -37,11 +47,10 @@
             />
 
         <TextView
-            android:id="@+id/source_title"
+            android:id="@+id/source_title_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/source_image"
-            android:layout_centerVertical="true"
             android:padding="16dp"
             android:textSize="24sp"
             android:textColor="@color/WHITE_OPAQUE"
@@ -108,3 +117,5 @@
 
 
 </android.support.v7.widget.CardView>
+
+</RelativeLayout>

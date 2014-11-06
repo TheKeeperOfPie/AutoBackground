@@ -91,13 +91,13 @@ public class SourceListAdapter extends BaseAdapter {
 
         final HashMap<String, String> listItem = listData.get(position);
 
-        View view = convertView;
-
         if (convertView == null) {
-            view = inflater.inflate(R.layout.source_list_card, parent, false);
+            convertView = inflater.inflate(R.layout.source_list_card, parent, false);
         }
 
-        TextView title = (TextView) view.findViewById(R.id.source_title);
+        final View view = convertView;
+
+        TextView title = (TextView) view.findViewById(R.id.source_title_text);
         title.setText(listItem.get("title"));
 
         Switch useSwitch = (Switch) view.findViewById(R.id.source_use_switch);
@@ -153,7 +153,7 @@ public class SourceListAdapter extends BaseAdapter {
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cardClickListener.onItemClick(v, position);
+                cardClickListener.onItemClick(view, position);
             }
         });
 
