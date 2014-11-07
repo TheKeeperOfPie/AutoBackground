@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -87,6 +88,7 @@ public class FileHandler {
     public static void cancel(Context appContext) {
         if (downloadThread != null) {
             downloadThread.interrupt();
+            Log.i(TAG, "Download interrupted");
             Intent resetDownloadIntent = new Intent(FileHandler.DOWNLOAD_TERMINATED);
             LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
         }
@@ -267,7 +269,7 @@ public class FileHandler {
             randIndex++;
         }
         else if (images.size() > 0) {
-            randIndex += (Math.random() * (images.size() - 2)) + 1;
+            randIndex += new Random().nextInt(images.size() - 2) + 1;
         }
 
         if (randIndex >= images.size()) {

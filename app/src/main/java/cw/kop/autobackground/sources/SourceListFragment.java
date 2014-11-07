@@ -17,11 +17,13 @@
 package cw.kop.autobackground.sources;
 
 import android.accounts.AccountManager;
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.Dialog;
-import android.app.ListFragment;
+import android.app.Fragment;
 import android.app.PendingIntent;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
@@ -29,21 +31,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -55,7 +52,6 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Transformation;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -85,8 +81,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-
-import javax.xml.transform.Source;
 
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
@@ -274,27 +268,7 @@ public class SourceListFragment extends Fragment {
 //            hide(downloadTutorial);
 //            showTutorial(3);
 //        }
-        if (FileHandler.download(appContext)) {
-            Drawable drawable = getResources().getDrawable(R.drawable.ic_cancel_white_24dp);
-            drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                    PorterDuff.Mode.MULTIPLY);
-            toolbarMenu.getItem(1).setIcon(drawable);
-
-            if (AppSettings.resetOnManualDownload() && AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
-                Intent intent = new Intent();
-                intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
-                intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(appContext, 0, intent, 0);
-                AlarmManager alarmManager = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
-                alarmManager.cancel(pendingIntent);
-                alarmManager.setInexactRepeating(AlarmManager.RTC,
-                        System.currentTimeMillis() + AppSettings.getTimerDuration(),
-                        AppSettings.getTimerDuration(),
-                        pendingIntent);
-            }
-
-        }
-        else {
+        if (FileHandler.isDownloading) {
 
             DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
 
@@ -313,6 +287,26 @@ public class SourceListFragment extends Fragment {
                     -1,
                     R.string.cancel_button,
                     R.string.ok_button);
+        }
+        else if (FileHandler.download(appContext)) {
+            Drawable drawable = getResources().getDrawable(R.drawable.ic_cancel_white_24dp);
+            drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                    PorterDuff.Mode.MULTIPLY);
+            toolbarMenu.getItem(1).setIcon(drawable);
+
+            if (AppSettings.resetOnManualDownload() && AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
+                Intent intent = new Intent();
+                intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
+                intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(appContext, 0, intent, 0);
+                AlarmManager alarmManager = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
+                alarmManager.cancel(pendingIntent);
+                alarmManager.setInexactRepeating(AlarmManager.RTC,
+                        System.currentTimeMillis() + AppSettings.getTimerDuration(),
+                        AppSettings.getTimerDuration(),
+                        pendingIntent);
+            }
+
         }
     }
 
@@ -351,10 +345,6 @@ public class SourceListFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int responseCode, Intent intent) {
-
-        if (requestCode == 5657) {
-            Toast.makeText(appContext, "Fragment close received", Toast.LENGTH_SHORT).show();
-        }
 
         if (requestCode == GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN) {
             if (intent != null && responseCode == Activity.RESULT_OK) {
@@ -1025,6 +1015,9 @@ public class SourceListFragment extends Fragment {
 
             @Override
             public void onItemClick(final View view, int index) {
+
+                sourceList.setClickable(false);
+
                 HashMap<String, String> dataItem = listAdapter.getItem(index);
                 final SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
 //                sourceInfoFragment.setImageBitmap(Bitmap.createBitmap(((ImageView) view).getDrawingCache()));
@@ -1043,17 +1036,24 @@ public class SourceListFragment extends Fragment {
                     arguments.putString("image", "");
                 }
                 sourceInfoFragment.setArguments(arguments);
-                sourceInfoFragment.setTargetFragment(SourceListFragment.this, 5657);
 
-                final TextView sourceTitle = (TextView) view.findViewById(R.id.source_title_text);
-                final CardView sourceCard = (CardView) view.findViewById(R.id.source_card);
+                final RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);
+                final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
+                final ImageView sourceImage = (ImageView) view.findViewById(R.id.source_image);
+                final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
+                final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
+                final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
+//                final CardView sourceCard = (CardView) view.findViewById(R.id.source_card);
 
+//                final float cardStartElevation = sourceCard.getCardElevation();
+                final float viewStartHeight = view.getHeight();
                 final float viewStartY = view.getY();
                 final int viewStartPadding = view.getPaddingLeft();
                 final float textStartX = sourceTitle.getX();
                 final float textStartY = sourceTitle.getY();
                 final float textTranslationY = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 48, getResources().getDisplayMetrics())
-                        + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+                        + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
+                Log.i(TAG, "viewStartHeight: " + viewStartHeight);
                 Log.i(TAG, "viewStartY: " + viewStartY);
 
                 Animation animation = new Animation() {
@@ -1067,20 +1067,24 @@ public class SourceListFragment extends Fragment {
                             needsFragment = false;
                             getFragmentManager().beginTransaction()
                                     .add(R.id.content_frame,
-                                         sourceInfoFragment,
-                                         "source_info_fragment")
+                                            sourceInfoFragment,
+                                            "source_info_fragment")
                                     .addToBackStack(null)
                                     .setTransition(FragmentTransaction.TRANSIT_NONE)
-                                    .addSharedElement(view, "ronbot")
                                     .commit();
                         }
-                        view.setY(viewStartY - interpolatedTime * viewStartY);
-                        sourceTitle.setX(textStartX - (interpolatedTime * textStartX));
-                        sourceTitle.setY(textStartY + (interpolatedTime * textTranslationY));
                         int newPadding = Math.round(viewStartPadding * (1 - interpolatedTime));
+//                        int widthDifference = (int) ((screenWidth - viewStartWidth) * interpolatedTime);
                         view.setPadding(newPadding, 0, newPadding, 0);
-                        Log.i(TAG, "newPadding: " + newPadding);
-//                        sourceTitle.setAlpha(1.0f - interpolatedTime);
+                        view.setY(viewStartY - interpolatedTime * viewStartY);
+                        sourceContainer.getLayoutParams().height = (int) (viewStartHeight + screenHeight * interpolatedTime);
+                        Log.i(TAG, "height: " + (viewStartHeight + (screenHeight - viewStartY + viewStartHeight) * interpolatedTime));
+                        sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
+//                        view.getLayoutParams().width = (int) (viewStartWidth + widthDifference);
+                        sourceTitle.setX(textStartX + (viewStartPadding - newPadding));
+                        deleteButton.setAlpha(1.0f - interpolatedTime);
+                        viewButton.setAlpha(1.0f - interpolatedTime);
+                        editButton.setAlpha(1.0f - interpolatedTime);
                     }
 
                     @Override
@@ -1109,9 +1113,58 @@ public class SourceListFragment extends Fragment {
                     }
                 });
 
-                animation.setDuration(Math.round(Math.abs(INFO_ANIMATION_TIME * (viewStartY / screenHeight))) + INFO_ANIMATION_TIME / 8);
-                animation.setInterpolator(new DecelerateInterpolator());
+                ValueAnimator cardColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), getResources().getColor(R.color.DARK_BLUE_OPAQUE), getResources().getColor(AppSettings.getBackgroundColorResource()));
+                cardColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        sourceContainer.setBackgroundColor((Integer)animation.getAnimatedValue());
+                    }
+
+                });
+
+                ValueAnimator titleColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                        sourceTitle.getCurrentTextColor(),
+                        AppSettings.getColorFilterInt(appContext));
+                titleColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        sourceTitle.setTextColor((Integer) animation.getAnimatedValue());
+                    }
+
+                });
+
+                ValueAnimator titleShadowAlphaAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                        getResources().getColor(R.color.BLACK_OPAQUE),
+                        getResources().getColor(android.R.color.transparent));
+                titleShadowAlphaAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        sourceTitle.setShadowLayer(4, 0, 0, (Integer) animation.getAnimatedValue());
+                    }
+                });
+
+                int transitionTime = (int) Math.abs(INFO_ANIMATION_TIME * (viewStartY / screenHeight) + INFO_ANIMATION_TIME / 8);
+
+                DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
+
+                animation.setDuration(transitionTime);
+                cardColorAnimation.setDuration(transitionTime);
+                titleColorAnimation.setDuration(transitionTime);
+                titleShadowAlphaAnimation.setDuration(transitionTime);
+
+                animation.setInterpolator(decelerateInterpolator);
+                cardColorAnimation.setInterpolator(decelerateInterpolator);
+                titleColorAnimation.setInterpolator(decelerateInterpolator);
+                titleShadowAlphaAnimation.setInterpolator(decelerateInterpolator);
+
                 view.startAnimation(animation);
+                cardColorAnimation.start();
+                titleColorAnimation.start();
+                titleShadowAlphaAnimation.start();
+
+                sourceList.setClickable(true);
 
             }
         };
@@ -1175,36 +1228,6 @@ public class SourceListFragment extends Fragment {
 //                lastFirstVisibleItem = firstVisibleItem;
 //            }
 //        });
-
-        sourceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                Log.i("SLF", "Item click");
-
-                HashMap<String, String> dataItem = listAdapter.getItem(position);
-                SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
-                Bundle arguments = new Bundle();
-                arguments.putString("title", dataItem.get("title"));
-                arguments.putString("prefix", "Prefix");
-                arguments.putString("data", dataItem.get("data"));
-                arguments.putString("suffix", "Suffix");
-                arguments.putString("num", dataItem.get("num"));
-                String imageFileName = arguments.getString("image");
-                if (imageFileName != null && imageFileName.length() > 0) {
-                    arguments.putString("image", imageFileName);
-                }
-                else {
-                    arguments.putString("image", "");
-                }
-                sourceInfoFragment.setArguments(arguments);
-
-                getFragmentManager().beginTransaction()
-                        .add(R.id.content_frame, sourceInfoFragment)
-                        .addToBackStack(null)
-                        .commit();
-            }
-        });
 
     }
 

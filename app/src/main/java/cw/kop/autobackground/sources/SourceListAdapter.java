@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
@@ -30,6 +31,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Switch;
@@ -45,6 +47,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Random;
 
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
@@ -97,7 +100,7 @@ public class SourceListAdapter extends BaseAdapter {
 
         final View view = convertView;
 
-        TextView title = (TextView) view.findViewById(R.id.source_title_text);
+        EditText title = (EditText) view.findViewById(R.id.source_title);
         title.setText(listItem.get("title"));
 
         int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
@@ -140,7 +143,6 @@ public class SourceListAdapter extends BaseAdapter {
         });
 
         ImageView image = (ImageView) view.findViewById(R.id.source_image);
-        image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, resources.getDisplayMetrics()));
         image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -148,10 +150,14 @@ public class SourceListAdapter extends BaseAdapter {
             }
         });
 
-        boolean needsImage = true;
+        Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_24dp);
+        downloadDrawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
+                PorterDuff.Mode.MULTIPLY);
+        image.setImageDrawable(downloadDrawable);
 
         if (listItem.get("type").equals(AppSettings.FOLDER)) {
             String[] folders = listItem.get("data").split(AppSettings.DATA_SPLITTER);
+            boolean needsImage = true;
             for (int index = 0; needsImage && index < folders.length; index++) {
 
                 File[] files = new File(folders[index]).listFiles(FileHandler.getImageFileNameFilter());
@@ -160,7 +166,7 @@ public class SourceListAdapter extends BaseAdapter {
                     needsImage = false;
                     listItem.put("image", files[0].getAbsolutePath());
                     image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, resources.getDisplayMetrics()));
-                    Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(image);
+                    Picasso.with(parent.getContext()).load(files[new Random().nextInt(files.length)]).fit().centerCrop().into(image);
                 }
             }
         }
@@ -172,11 +178,8 @@ public class SourceListAdapter extends BaseAdapter {
                 if (files != null && files.length > 0) {
                     listItem.put("image", files[0].getAbsolutePath());
                     image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, resources.getDisplayMetrics()));
-                    Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(image);
+                    Picasso.with(parent.getContext()).load(files[new Random().nextInt(files.length)]).fit().centerCrop().into(image);
                 }
-            }
-            else {
-                image.setImageDrawable(new ColorDrawable(resources.getColor(android.R.color.transparent)));
             }
         }
 

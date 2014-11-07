@@ -31,10 +31,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
+import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.support.v4.preference.PreferenceFragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -107,91 +107,6 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     public void onDetach() {
         appContext = null;
         super.onDetach();
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        if (!AppSettings.useAdvanced()) {
-
-            PreferenceCategory notificationPreferences = (PreferenceCategory) findPreference(
-                    "title_notification_settings");
-
-            notificationPreferences.removePreference(findPreference("use_notification_game"));
-            notificationPreferences.removePreference(findPreference(
-                    "high_resolution_notification_icon"));
-
-        }
-
-        if (AppSettings.useNotificationIconFile()) {
-            Log.i("NSF", "Loading file");
-            File image = new File(AppSettings.getNotificationIconFile());
-
-            if (image.exists() && image.isFile()) {
-                Picasso.with(appContext).load(image).fit().centerCrop().into(notificationIcon);
-                Log.i("NSF", "Loading custom image");
-            }
-
-        }
-        else if (FileHandler.getCurrentBitmapFile() != null && (AppSettings.getNotificationIcon() == R.drawable.ic_photo_white_24dp)) {
-            Picasso.with(appContext).load(FileHandler.getCurrentBitmapFile()).fit().centerCrop().into(
-                    notificationIcon);
-        }
-        else {
-            Log.i("NSF", "Loading default image");
-            notificationIcon.setImageResource(AppSettings.getNotificationIcon());
-        }
-
-        notificationIconActionIndicator.setImageResource(AppSettings.getNotificationIconActionDrawable());
-
-        notificationPreview.setBackgroundColor(AppSettings.getNotificationColor());
-
-
-        if (AppSettings.getNotificationTitle().equals("Location")) {
-            if (FileHandler.getCurrentBitmapFile() != null) {
-                notificationTitle.setText(FileHandler.getCurrentBitmapFile().getAbsolutePath());
-            }
-            else {
-                notificationTitle.setText(AppSettings.getNotificationTitle());
-            }
-        }
-        if (AppSettings.getNotificationSummary().equals("Location")) {
-            if (FileHandler.getCurrentBitmapFile() != null) {
-                notificationSummary.setText(FileHandler.getCurrentBitmapFile().getAbsolutePath());
-            }
-            else {
-                notificationSummary.setText(AppSettings.getNotificationSummary());
-            }
-        }
-
-        notificationTitle.setTextColor(AppSettings.getNotificationTitleColor());
-        notificationSummary.setTextColor(AppSettings.getNotificationSummaryColor());
-
-        Drawable coloredImageOne = appContext.getResources().getDrawable(AppSettings.getNotificationOptionDrawable(
-                0));
-        Drawable coloredImageTwo = appContext.getResources().getDrawable(AppSettings.getNotificationOptionDrawable(
-                1));
-        Drawable coloredImageThree = appContext.getResources().getDrawable(AppSettings.getNotificationOptionDrawable(
-                2));
-
-        coloredImageOne.mutate().setColorFilter(AppSettings.getNotificationOptionColor(0),
-                PorterDuff.Mode.MULTIPLY);
-        coloredImageTwo.mutate().setColorFilter(AppSettings.getNotificationOptionColor(1),
-                PorterDuff.Mode.MULTIPLY);
-        coloredImageThree.mutate().setColorFilter(AppSettings.getNotificationOptionColor(2),
-                PorterDuff.Mode.MULTIPLY);
-
-        optionOneImage.setImageDrawable(coloredImageOne);
-        optionTwoImage.setImageDrawable(coloredImageTwo);
-        optionThreeImage.setImageDrawable(coloredImageThree);
-
-        optionOneText.setText(AppSettings.getNotificationOptionTitle(0));
-        optionOneText.setTextColor(AppSettings.getNotificationOptionColor(0));
-        optionTwoText.setText(AppSettings.getNotificationOptionTitle(1));
-        optionTwoText.setTextColor(AppSettings.getNotificationOptionColor(1));
-        optionThreeText.setText(AppSettings.getNotificationOptionTitle(2));
-        optionThreeText.setTextColor(AppSettings.getNotificationOptionColor(2));
     }
 
     @Nullable
@@ -319,6 +234,88 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         });
 
         Log.i("NSF", "Options shown");
+
+
+
+        if (!AppSettings.useAdvanced()) {
+
+            PreferenceCategory notificationPreferences = (PreferenceCategory) findPreference(
+                    "title_notification_settings");
+
+            notificationPreferences.removePreference(findPreference("use_notification_game"));
+            notificationPreferences.removePreference(findPreference(
+                    "high_resolution_notification_icon"));
+
+        }
+
+        if (AppSettings.useNotificationIconFile()) {
+            Log.i("NSF", "Loading file");
+            File image = new File(AppSettings.getNotificationIconFile());
+
+            if (image.exists() && image.isFile()) {
+                Picasso.with(appContext).load(image).fit().centerCrop().into(notificationIcon);
+                Log.i("NSF", "Loading custom image");
+            }
+
+        }
+        else if (FileHandler.getCurrentBitmapFile() != null && (AppSettings.getNotificationIcon() == R.drawable.ic_photo_white_24dp)) {
+            Picasso.with(appContext).load(FileHandler.getCurrentBitmapFile()).fit().centerCrop().into(
+                    notificationIcon);
+        }
+        else {
+            Log.i("NSF", "Loading default image");
+            notificationIcon.setImageResource(AppSettings.getNotificationIcon());
+        }
+
+        notificationIconActionIndicator.setImageResource(AppSettings.getNotificationIconActionDrawable());
+
+        notificationPreview.setBackgroundColor(AppSettings.getNotificationColor());
+
+
+        if (AppSettings.getNotificationTitle().equals("Location")) {
+            if (FileHandler.getCurrentBitmapFile() != null) {
+                notificationTitle.setText(FileHandler.getCurrentBitmapFile().getAbsolutePath());
+            }
+            else {
+                notificationTitle.setText(AppSettings.getNotificationTitle());
+            }
+        }
+        if (AppSettings.getNotificationSummary().equals("Location")) {
+            if (FileHandler.getCurrentBitmapFile() != null) {
+                notificationSummary.setText(FileHandler.getCurrentBitmapFile().getAbsolutePath());
+            }
+            else {
+                notificationSummary.setText(AppSettings.getNotificationSummary());
+            }
+        }
+
+        notificationTitle.setTextColor(AppSettings.getNotificationTitleColor());
+        notificationSummary.setTextColor(AppSettings.getNotificationSummaryColor());
+
+        Drawable coloredImageOne = appContext.getResources().getDrawable(AppSettings.getNotificationOptionDrawable(
+                0));
+        Drawable coloredImageTwo = appContext.getResources().getDrawable(AppSettings.getNotificationOptionDrawable(
+                1));
+        Drawable coloredImageThree = appContext.getResources().getDrawable(AppSettings.getNotificationOptionDrawable(
+                2));
+
+        coloredImageOne.mutate().setColorFilter(AppSettings.getNotificationOptionColor(0),
+                PorterDuff.Mode.MULTIPLY);
+        coloredImageTwo.mutate().setColorFilter(AppSettings.getNotificationOptionColor(1),
+                PorterDuff.Mode.MULTIPLY);
+        coloredImageThree.mutate().setColorFilter(AppSettings.getNotificationOptionColor(2),
+                PorterDuff.Mode.MULTIPLY);
+
+        optionOneImage.setImageDrawable(coloredImageOne);
+        optionTwoImage.setImageDrawable(coloredImageTwo);
+        optionThreeImage.setImageDrawable(coloredImageThree);
+
+        optionOneText.setText(AppSettings.getNotificationOptionTitle(0));
+        optionOneText.setTextColor(AppSettings.getNotificationOptionColor(0));
+        optionTwoText.setText(AppSettings.getNotificationOptionTitle(1));
+        optionTwoText.setTextColor(AppSettings.getNotificationOptionColor(1));
+        optionThreeText.setText(AppSettings.getNotificationOptionTitle(2));
+        optionThreeText.setTextColor(AppSettings.getNotificationOptionColor(2));
 
         return view;
     }
@@ -825,7 +822,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                         R.style.LightDialogTheme) :
                 new Dialog(appContext, R.style.DarkDialogTheme);
 
-        View dialogView = View.inflate(appContext, R.layout.duotone_dialog, null);
+        View dialogView = View.inflate(appContext, R.layout.color_picker_dialog, null);
         dialog.setContentView(dialogView);
 
         TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);

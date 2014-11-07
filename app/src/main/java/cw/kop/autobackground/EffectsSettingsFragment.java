@@ -25,8 +25,8 @@ import android.media.effect.EffectFactory;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
+import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
-import android.support.v4.preference.PreferenceFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -86,13 +86,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
         duotonePref = (SwitchPreference) findPreference("effect_duotone_switch");
 
-        return inflater.inflate(R.layout.fragment_list, container, false);
 
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
 
         if (!AppSettings.useAdvanced()) {
 
@@ -173,6 +167,9 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
         if (!EffectFactory.isEffectSupported(EffectFactory.EFFECT_VIGNETTE)) {
             parametersCategory.removePreference(findPreference("effect_vignette"));
         }
+
+        return inflater.inflate(R.layout.fragment_list, container, false);
+
     }
 
     @Override

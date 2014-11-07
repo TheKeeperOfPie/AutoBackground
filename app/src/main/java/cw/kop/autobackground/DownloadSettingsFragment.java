@@ -27,8 +27,8 @@ import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
+import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
-import android.support.v4.preference.PreferenceFragment;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -184,6 +184,29 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             }
         });
 
+        ((PreferenceCategory) findPreference("title_download_settings")).removePreference(
+                findPreference("use_experimental_downloader_adv"));
+
+        if (!AppSettings.useAdvanced()) {
+            PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference(
+                    "title_download_settings");
+            preferenceCategory.removePreference(findPreference("full_resolution"));
+            preferenceCategory.removePreference(findPreference("reset_on_manual_download"));
+            preferenceCategory.removePreference(findPreference("download_on_connection"));
+            preferenceCategory.removePreference(findPreference("use_download_notification"));
+            preferenceCategory.removePreference(findPreference("use_high_quality"));
+            preferenceCategory.removePreference(findPreference("force_download"));
+            preferenceCategory.removePreference(findPreference("use_download_path"));
+            preferenceCategory.removePreference(findPreference("use_image_history"));
+            preferenceCategory.removePreference(findPreference("image_history_size"));
+            preferenceCategory.removePreference(findPreference("use_thumbnails"));
+            preferenceCategory.removePreference(findPreference("thumbnail_size"));
+            preferenceCategory.removePreference(findPreference("delete_old_images"));
+            preferenceCategory.removePreference(findPreference("check_duplicates"));
+            preferenceCategory.removePreference(findPreference("image_prefix_adv"));
+            preferenceCategory.removePreference(findPreference("delete_images"));
+        }
+
         return inflater.inflate(R.layout.fragment_list, container, false);
 
     }
@@ -320,29 +343,6 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        ((PreferenceCategory) findPreference("title_download_settings")).removePreference(
-                findPreference("use_experimental_downloader_adv"));
-
-        if (!AppSettings.useAdvanced()) {
-            PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference(
-                    "title_download_settings");
-            preferenceCategory.removePreference(findPreference("full_resolution"));
-            preferenceCategory.removePreference(findPreference("reset_on_manual_download"));
-            preferenceCategory.removePreference(findPreference("download_on_connection"));
-            preferenceCategory.removePreference(findPreference("use_download_notification"));
-            preferenceCategory.removePreference(findPreference("use_high_quality"));
-            preferenceCategory.removePreference(findPreference("force_download"));
-            preferenceCategory.removePreference(findPreference("use_download_path"));
-            preferenceCategory.removePreference(findPreference("use_image_history"));
-            preferenceCategory.removePreference(findPreference("image_history_size"));
-            preferenceCategory.removePreference(findPreference("use_thumbnails"));
-            preferenceCategory.removePreference(findPreference("thumbnail_size"));
-            preferenceCategory.removePreference(findPreference("delete_old_images"));
-            preferenceCategory.removePreference(findPreference("check_duplicates"));
-            preferenceCategory.removePreference(findPreference("image_prefix_adv"));
-            preferenceCategory.removePreference(findPreference("delete_images"));
-        }
 
         final Preference widthPref = findPreference("user_width");
         widthPref.setSummary("Minimum Width of Image: " + AppSettings.getImageWidth());

@@ -19,7 +19,6 @@ package cw.kop.autobackground;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.text.method.DigitsKeyListener;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -44,7 +43,7 @@ public class DialogFactory {
      */
     public static Dialog getDialog(Context context) {
 
-        return new Dialog(context, AppSettings.getDialogThemeInt());
+        return new Dialog(context, AppSettings.getDialogThemeResource());
     }
 
     /**

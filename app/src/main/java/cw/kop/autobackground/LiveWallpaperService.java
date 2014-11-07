@@ -1535,8 +1535,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                                     });
                                 }
                             }
+                            else {
+                                Log.i(TAG, "Bitmap null");
+                            }
                         }
                         catch (NullPointerException e) {
+                            e.printStackTrace();
                         }
                     }
                     catch (OutOfMemoryError e) {
@@ -1617,8 +1621,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                                 LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
                                         loadNavPictureIntent);
                             }
+                            else {
+                                Log.i(TAG, "Bitmap null");
+                            }
                         }
                         catch (NullPointerException e) {
+                            e.printStackTrace();
                         }
                     }
                     catch (OutOfMemoryError e) {
@@ -1697,8 +1705,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                                 LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
                                         loadNavPictureIntent);
                             }
+                            else {
+                                Log.i(TAG, "Bitmap null");
+                            }
                         }
                         catch (NullPointerException e) {
+                            e.printStackTrace();
                         }
                     }
                     catch (OutOfMemoryError e) {
@@ -2961,7 +2973,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                             }
                         }
 
-                        int index = (int) (Math.random() * usableEffectsList.size());
+                        int index = random.nextInt(usableEffectsList.size());
                         String effectName = usableEffectsList.get(index);
                         String parameter = usableEffectsParameters.get(index);
                         float value = 0.0f;

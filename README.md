@@ -25,7 +25,7 @@ Wallpaper
     - On: Attempts to fill screen width, cropping height as necessary
     - Off: Attempts to fit image height into screen, letterboxing sides as necesssary
 - Shuffle Images:
-    - On: Causes Java Math.random() to select a random image from a compiled list of all usable images in sources
+    - On: Causes Java Random.nextInt() to select a random image from a compiled list of all usable images in sources
     - Off: Rotates through images in order at time of cycle, does not check for adjustment of images by other processes
 
 - Update Interval:

@@ -17,6 +17,7 @@
 package cw.kop.autobackground;
 
 import android.app.ActivityOptions;
+import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -29,7 +30,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
@@ -207,7 +207,7 @@ public class MainActivity extends ActionBarActivity {
 
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                getSupportFragmentManager().popBackStack();
+                getFragmentManager().popBackStack();
             }
         };
 
@@ -219,9 +219,14 @@ public class MainActivity extends ActionBarActivity {
 
         Bundle bundle = getIntent().getExtras();
 
+        String action = getIntent().getAction();
+
         if (bundle != null && bundle.getInt("fragment", 0) > 0) {
             int position = bundle.getInt("fragment", 0);
             selectItem(position, false);
+        }
+        else if (action != null && action.equals(Intent.ACTION_MANAGE_NETWORK_USAGE)) {
+            selectItem(2, false);
         }
         else {
             selectItem(0, false);
@@ -263,9 +268,9 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void toggleDrawer() {
-        LocalImageFragment localImageFragment = (LocalImageFragment) getSupportFragmentManager().findFragmentByTag(
+        LocalImageFragment localImageFragment = (LocalImageFragment) getFragmentManager().findFragmentByTag(
                 "image_fragment");
-        AlbumFragment albumFragment = (AlbumFragment) getSupportFragmentManager().findFragmentByTag(
+        AlbumFragment albumFragment = (AlbumFragment) getFragmentManager().findFragmentByTag(
                 "album_fragment");
         if (localImageFragment != null || albumFragment != null) {
             onBackPressed();
@@ -289,16 +294,16 @@ public class MainActivity extends ActionBarActivity {
         currentPosition = position;
 
         setTitle(fragmentList[position]);
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
 
-//        if (slideAnimate) {
-//            fragmentTransaction.setCustomAnimations(R.animator.slide_from_left,
-//                    R.animator.slide_to_right);
-//        }
-//        else {
-//            fragmentTransaction.setCustomAnimations(android.R.animator.fade_in,
-//                    android.R.animator.fade_out);
-//        }
+        if (slideAnimate) {
+            fragmentTransaction.setCustomAnimations(R.animator.slide_from_left,
+                    R.animator.slide_to_right);
+        }
+        else {
+            fragmentTransaction.setCustomAnimations(android.R.animator.fade_in,
+                    android.R.animator.fade_out);
+        }
 
         switch (position) {
 
@@ -347,12 +352,12 @@ public class MainActivity extends ActionBarActivity {
 
         Log.i("MP", "Item pressed: " + item.getItemId());
 
-        if (getSupportFragmentManager().findFragmentByTag("image_fragment") == null && drawerToggle.onOptionsItemSelected(
+        if (getFragmentManager().findFragmentByTag("image_fragment") == null && drawerToggle.onOptionsItemSelected(
                 item)) {
             return item.getItemId() != android.R.id.home || super.onOptionsItemSelected(item);
         }
-        else if (getSupportFragmentManager().findFragmentByTag("image_fragment") != null) {
-            getSupportFragmentManager().popBackStack();
+        else if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
+            getFragmentManager().popBackStack();
         }
 
         return super.onOptionsItemSelected(item);
@@ -361,14 +366,14 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public void onBackPressed() {
 
-        if (getSupportFragmentManager().findFragmentByTag("image_fragment") != null) {
+        if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
             Log.i("MP", "Back directory");
-            if (((LocalImageFragment) getSupportFragmentManager().findFragmentByTag("image_fragment")).onBackPressed()) {
-                getSupportFragmentManager().popBackStack();
+            if (((LocalImageFragment) getFragmentManager().findFragmentByTag("image_fragment")).onBackPressed()) {
+                getFragmentManager().popBackStack();
             }
         }
-        else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-            getSupportFragmentManager().popBackStack();
+        else if (getFragmentManager().getBackStackEntryCount() > 0) {
+            getFragmentManager().popBackStack();
         }
         else {
             super.onBackPressed();

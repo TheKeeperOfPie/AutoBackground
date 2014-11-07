@@ -24,7 +24,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
-import android.support.v4.preference.PreferenceFragment;
+import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -63,14 +63,6 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
-
-        return inflater.inflate(R.layout.fragment_list, container, false);
-
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
 
         PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference(
                 "title_app_settings");
@@ -118,6 +110,14 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
         });
 
         toastPref = (SwitchPreference) findPreference("use_toast");
+
+        return inflater.inflate(R.layout.fragment_list, container, false);
+
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
     }
 
     private void showThemeDialogMenu() {

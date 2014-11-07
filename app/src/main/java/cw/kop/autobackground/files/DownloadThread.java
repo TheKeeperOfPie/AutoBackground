@@ -134,7 +134,8 @@ public class DownloadThread extends Thread {
             for (int index : indexes) {
 
                 if (isInterrupted()) {
-                    continue;
+                    cancel();
+                    return;
                 }
 
                 try {
@@ -197,13 +198,7 @@ public class DownloadThread extends Thread {
                     Log.i(TAG, "Invalid URL");
                 }
             }
-
-            if (isInterrupted()) {
-                cancel();
-            }
-            else {
-                finish();
-            }
+            finish();
 
         }
         catch (Exception e) {
@@ -253,6 +248,8 @@ public class DownloadThread extends Thread {
         if (links.size() > 0) {
             int count = 0;
             while (num < (AppSettings.getSourceNum(index) + stored) && count < links.size()) {
+
+                Log.i(TAG, "DownloadThread interrupted: " + isInterrupted());
 
                 if (isInterrupted()) {
                     return;

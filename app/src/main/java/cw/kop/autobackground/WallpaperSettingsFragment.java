@@ -27,8 +27,8 @@ import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
+import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
-import android.support.v4.preference.PreferenceFragment;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -137,14 +137,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
             }
         });
 
-
-        return inflater.inflate(R.layout.fragment_list, container, false);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
         frameRatePref.setSummary(AppSettings.getAnimationFrameRate() + " FPS");
 
         if (!AppSettings.useAdvanced()) {
@@ -193,6 +185,8 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         if (AppSettings.getIntervalDuration() > 0) {
             intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
         }
+
+        return inflater.inflate(R.layout.fragment_list, container, false);
     }
 
     @Override
