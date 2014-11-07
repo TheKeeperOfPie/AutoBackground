@@ -57,7 +57,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:hint="@string/source_title"
-        android:inputType="text"
+        android:inputType="textNoSuggestions"
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
 
@@ -85,6 +85,7 @@
         android:paddingLeft="8dp"
         android:paddingRight="0dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:inputType="textNoSuggestions"
         />
 
     <EditText
@@ -103,7 +104,7 @@
         android:layout_toRightOf="@+id/source_data_prefix"
         android:layout_toStartOf="@+id/source_data_suffix"
         android:hint="@string/source_data"
-        android:inputType="textUri"
+        android:inputType="textUri|textNoSuggestions"
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
 
@@ -125,6 +126,7 @@
         android:focusableInTouchMode="false"
         android:paddingBottom="2dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:inputType="textNoSuggestions"
         />
 
     <EditText

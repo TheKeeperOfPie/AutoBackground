@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-include ':app'
+include ':app', ':support-v4-preferencefragment-1.0.0'
 include ':libraries:colorpickerpreference'

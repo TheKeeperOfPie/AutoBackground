@@ -33,8 +33,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/source_image"
-        android:textAppearance="?android:textAppearanceLarge"
-        android:inputType="text"
+        android:textSize="24sp"
+        android:inputType="textNoSuggestions"
+        />
+
+    <Switch
+        android:id="@+id/source_use_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/source_image"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
         />
 
     <EditText
@@ -61,6 +70,7 @@
         android:paddingLeft="8dp"
         android:paddingRight="0dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:inputType="textNoSuggestions"
         />
 
     <EditText
@@ -79,7 +89,7 @@
         android:layout_toRightOf="@+id/source_data_prefix"
         android:layout_toStartOf="@+id/source_data_suffix"
         android:hint="@string/source_data"
-        android:inputType="textUri"
+        android:inputType="textUri|textNoSuggestions"
         android:textAppearance="?android:attr/textAppearanceMedium"
         />
 
@@ -101,6 +111,7 @@
         android:focusableInTouchMode="false"
         android:paddingBottom="2dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:inputType="textNoSuggestions"
         />
 
     <EditText

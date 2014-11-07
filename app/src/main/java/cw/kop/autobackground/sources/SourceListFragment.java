@@ -21,7 +21,6 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.Dialog;
-import android.app.Fragment;
 import android.app.ListFragment;
 import android.app.PendingIntent;
 import android.app.WallpaperManager;
@@ -40,6 +39,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.CardView;
@@ -350,6 +351,11 @@ public class SourceListFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int responseCode, Intent intent) {
+
+        if (requestCode == 5657) {
+            Toast.makeText(appContext, "Fragment close received", Toast.LENGTH_SHORT).show();
+        }
+
         if (requestCode == GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN) {
             if (intent != null && responseCode == Activity.RESULT_OK) {
                 final String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
@@ -1037,12 +1043,17 @@ public class SourceListFragment extends Fragment {
                     arguments.putString("image", "");
                 }
                 sourceInfoFragment.setArguments(arguments);
+                sourceInfoFragment.setTargetFragment(SourceListFragment.this, 5657);
 
                 final TextView sourceTitle = (TextView) view.findViewById(R.id.source_title_text);
                 final CardView sourceCard = (CardView) view.findViewById(R.id.source_card);
 
                 final float viewStartY = view.getY();
                 final int viewStartPadding = view.getPaddingLeft();
+                final float textStartX = sourceTitle.getX();
+                final float textStartY = sourceTitle.getY();
+                final float textTranslationY = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 48, getResources().getDisplayMetrics())
+                        + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
                 Log.i(TAG, "viewStartY: " + viewStartY);
 
                 Animation animation = new Animation() {
@@ -1052,26 +1063,24 @@ public class SourceListFragment extends Fragment {
                     @Override
                     protected void applyTransformation(float interpolatedTime, Transformation t) {
 
-                        if (interpolatedTime >= 1) {
-                            sourceList.setAlpha(1.0f);
+                        if (needsFragment && interpolatedTime >= 1) {
+                            needsFragment = false;
+                            getFragmentManager().beginTransaction()
+                                    .add(R.id.content_frame,
+                                         sourceInfoFragment,
+                                         "source_info_fragment")
+                                    .addToBackStack(null)
+                                    .setTransition(FragmentTransaction.TRANSIT_NONE)
+                                    .addSharedElement(view, "ronbot")
+                                    .commit();
                         }
-                        else {
-                            if (needsFragment && interpolatedTime > 0.95) {
-                                needsFragment = false;
-                                getFragmentManager().beginTransaction()
-                                        .add(R.id.content_frame,
-                                                sourceInfoFragment,
-                                                "source_info_fragment")
-                                        .addToBackStack(null)
-                                        .commit();
-                            }
-                            view.setY(viewStartY - interpolatedTime * viewStartY);
-                            int newPadding = Math.round(viewStartPadding * (1 - interpolatedTime));
-                            view.setPadding(newPadding, 0, newPadding, 0);
-                            Log.i(TAG, "newPadding: " + newPadding);
-                            sourceTitle.setAlpha(1.0f * interpolatedTime);
-                            sourceList.setAlpha(1.0f - 0.7f * interpolatedTime);
-                        }
+                        view.setY(viewStartY - interpolatedTime * viewStartY);
+                        sourceTitle.setX(textStartX - (interpolatedTime * textStartX));
+                        sourceTitle.setY(textStartY + (interpolatedTime * textTranslationY));
+                        int newPadding = Math.round(viewStartPadding * (1 - interpolatedTime));
+                        view.setPadding(newPadding, 0, newPadding, 0);
+                        Log.i(TAG, "newPadding: " + newPadding);
+//                        sourceTitle.setAlpha(1.0f - interpolatedTime);
                     }
 
                     @Override

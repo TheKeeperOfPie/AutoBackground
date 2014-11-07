@@ -100,15 +100,6 @@ public class SourceListAdapter extends BaseAdapter {
         TextView title = (TextView) view.findViewById(R.id.source_title_text);
         title.setText(listItem.get("title"));
 
-        Switch useSwitch = (Switch) view.findViewById(R.id.source_use_switch);
-        useSwitch.setChecked(Boolean.valueOf(listItem.get("use")));
-        useSwitch.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                setActivated(position, isChecked);
-            }
-        });
-
         int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
 
         Resources resources = parent.getContext().getResources();

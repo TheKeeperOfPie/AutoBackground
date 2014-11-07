@@ -16,7 +16,7 @@
 
 package cw.kop.autobackground;
 
-import android.app.FragmentTransaction;
+import android.app.ActivityOptions;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +28,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
@@ -164,6 +166,7 @@ public class MainActivity extends ActionBarActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitleTextAppearance(getApplicationContext(), R.style.ToolbarTitle);
         setSupportActionBar(toolbar);
+        toolbar.setNavigationIcon(R.drawable.app_icon);
 
         int colorFilterInt = 0;
 
@@ -204,7 +207,7 @@ public class MainActivity extends ActionBarActivity {
 
             public void onDrawerOpened(View drawerView) {
                 super.onDrawerOpened(drawerView);
-                getFragmentManager().popBackStack();
+                getSupportFragmentManager().popBackStack();
             }
         };
 
@@ -260,9 +263,9 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void toggleDrawer() {
-        LocalImageFragment localImageFragment = (LocalImageFragment) getFragmentManager().findFragmentByTag(
+        LocalImageFragment localImageFragment = (LocalImageFragment) getSupportFragmentManager().findFragmentByTag(
                 "image_fragment");
-        AlbumFragment albumFragment = (AlbumFragment) getFragmentManager().findFragmentByTag(
+        AlbumFragment albumFragment = (AlbumFragment) getSupportFragmentManager().findFragmentByTag(
                 "album_fragment");
         if (localImageFragment != null || albumFragment != null) {
             onBackPressed();
@@ -286,16 +289,16 @@ public class MainActivity extends ActionBarActivity {
         currentPosition = position;
 
         setTitle(fragmentList[position]);
-        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
 
-        if (slideAnimate) {
-            fragmentTransaction.setCustomAnimations(R.animator.slide_from_left,
-                    R.animator.slide_to_right);
-        }
-        else {
-            fragmentTransaction.setCustomAnimations(android.R.animator.fade_in,
-                    android.R.animator.fade_out);
-        }
+//        if (slideAnimate) {
+//            fragmentTransaction.setCustomAnimations(R.animator.slide_from_left,
+//                    R.animator.slide_to_right);
+//        }
+//        else {
+//            fragmentTransaction.setCustomAnimations(android.R.animator.fade_in,
+//                    android.R.animator.fade_out);
+//        }
 
         switch (position) {
 
@@ -344,12 +347,12 @@ public class MainActivity extends ActionBarActivity {
 
         Log.i("MP", "Item pressed: " + item.getItemId());
 
-        if (getFragmentManager().findFragmentByTag("image_fragment") == null && drawerToggle.onOptionsItemSelected(
+        if (getSupportFragmentManager().findFragmentByTag("image_fragment") == null && drawerToggle.onOptionsItemSelected(
                 item)) {
             return item.getItemId() != android.R.id.home || super.onOptionsItemSelected(item);
         }
-        else if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
-            getFragmentManager().popBackStack();
+        else if (getSupportFragmentManager().findFragmentByTag("image_fragment") != null) {
+            getSupportFragmentManager().popBackStack();
         }
 
         return super.onOptionsItemSelected(item);
@@ -358,14 +361,14 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public void onBackPressed() {
 
-        if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
+        if (getSupportFragmentManager().findFragmentByTag("image_fragment") != null) {
             Log.i("MP", "Back directory");
-            if (((LocalImageFragment) getFragmentManager().findFragmentByTag("image_fragment")).onBackPressed()) {
-                getFragmentManager().popBackStack();
+            if (((LocalImageFragment) getSupportFragmentManager().findFragmentByTag("image_fragment")).onBackPressed()) {
+                getSupportFragmentManager().popBackStack();
             }
         }
-        else if (getFragmentManager().getBackStackEntryCount() > 0) {
-            getFragmentManager().popBackStack();
+        else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack();
         }
         else {
             super.onBackPressed();

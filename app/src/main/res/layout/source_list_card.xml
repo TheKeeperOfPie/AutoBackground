@@ -51,21 +51,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@id/source_image"
-            android:padding="16dp"
+            android:layout_margin="16dp"
             android:textSize="24sp"
             android:textColor="@color/WHITE_OPAQUE"
             android:shadowColor="@color/BLACK_OPAQUE"
             android:shadowRadius="4"
-            />
-
-        <Switch
-            android:id="@+id/source_use_switch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/source_image"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
             />
 
         <ImageView

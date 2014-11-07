@@ -17,17 +17,19 @@
 package cw.kop.autobackground.sources;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -40,10 +42,15 @@ import cw.kop.autobackground.settings.AppSettings;
 /**
  * Created by TheKeeperOfPie on 11/5/2014.
  */
-public class SourceInfoFragment extends Fragment{
+public class SourceInfoFragment extends Fragment {
 
     private Context appContext;
     private Drawable imageDrawable;
+
+    private EditText sourceTitle;
+    private EditText sourceData;
+    private EditText sourceNum;
+    private Switch sourceUse;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,11 +77,11 @@ public class SourceInfoFragment extends Fragment{
 
         View view = inflater.inflate(R.layout.source_info_fragment, container, false);
 
-        EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
+        sourceTitle = (EditText) view.findViewById(R.id.source_title);
         EditText sourcePrefix = (EditText) view.findViewById(R.id.source_data_prefix);
-        EditText sourceData = (EditText) view.findViewById(R.id.source_data);
+        sourceData = (EditText) view.findViewById(R.id.source_data);
         EditText sourceSuffix = (EditText) view.findViewById(R.id.source_data_suffix);
-        EditText sourceNum = (EditText) view.findViewById(R.id.source_num);
+        sourceNum = (EditText) view.findViewById(R.id.source_num);
 
         Bundle arguments = getArguments();
 
@@ -92,6 +99,8 @@ public class SourceInfoFragment extends Fragment{
 //            Picasso.with(appContext).load(imageFile).fit().centerCrop().into(sourceImage);
 //        }
 
+        sourceUse = (Switch) view.findViewById(R.id.source_use_switch);
+        sourceUse.setChecked(Boolean.valueOf(arguments.getString("use")));
 
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             view.setBackgroundColor(getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
