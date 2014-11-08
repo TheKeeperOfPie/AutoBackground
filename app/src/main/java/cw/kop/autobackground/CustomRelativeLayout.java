@@ -27,6 +27,7 @@ import android.widget.RelativeLayout;
 public class CustomRelativeLayout extends RelativeLayout {
 
     private float xFraction = 0;
+    private float yFraction = 0;
     private ViewTreeObserver.OnPreDrawListener preDrawListener = null;
 
     public CustomRelativeLayout(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -39,6 +40,36 @@ public class CustomRelativeLayout extends RelativeLayout {
 
     public CustomRelativeLayout(Context context) {
         super(context);
+    }
+
+    public float getYFraction() {
+        if (getHeight() == 0) {
+            return 0;
+        }
+        return getTranslationY() / getHeight();
+    }
+
+    public void setYFraction(float fraction) {
+        this.yFraction = fraction;
+
+        if (getHeight() == 0) {
+            if (preDrawListener == null) {
+                preDrawListener = new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        getViewTreeObserver().removeOnPreDrawListener(preDrawListener);
+                        setYFraction(yFraction);
+                        setXFraction(xFraction);
+                        return true;
+                    }
+                };
+                getViewTreeObserver().addOnPreDrawListener(preDrawListener);
+            }
+            return;
+        }
+
+        float translationY = getHeight() * fraction;
+        setTranslationY(translationY);
     }
 
     public float getXFraction() {
@@ -57,6 +88,7 @@ public class CustomRelativeLayout extends RelativeLayout {
                     @Override
                     public boolean onPreDraw() {
                         getViewTreeObserver().removeOnPreDrawListener(preDrawListener);
+                        setYFraction(yFraction);
                         setXFraction(xFraction);
                         return true;
                     }

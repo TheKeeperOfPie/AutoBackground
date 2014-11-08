@@ -16,6 +16,9 @@
 
 package cw.kop.autobackground.sources;
 
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
+import android.animation.TimeInterpolator;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
@@ -26,6 +29,9 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Transformation;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -44,11 +50,16 @@ import cw.kop.autobackground.settings.AppSettings;
  */
 public class SourceInfoFragment extends Fragment {
 
+    private static final int FADE_IN_TIME = 500;
+
     private Context appContext;
     private Drawable imageDrawable;
 
+    private ImageView sourceImage;
     private EditText sourceTitle;
+    private EditText sourcePrefix;
     private EditText sourceData;
+    private EditText sourceSuffix;
     private EditText sourceNum;
     private Switch sourceUse;
 
@@ -69,6 +80,38 @@ public class SourceInfoFragment extends Fragment {
         super.onDetach();
     }
 
+//    @Override
+//    public Animator onCreateAnimator(int transit, boolean enter, int nextAnim) {
+//
+//        Animator animator = AnimatorInflater.loadAnimator(appContext, nextAnim);
+//
+//        animator.addListener(new Animator.AnimatorListener() {
+//            @Override
+//            public void onAnimationStart(Animator animation) {
+//
+//            }
+//
+//            @Override
+//            public void onAnimationEnd(Animator animation) {
+//                if (sourceImage != null) {
+//                    sourceImage.setVisibility(View.VISIBLE);
+//                }
+//            }
+//
+//            @Override
+//            public void onAnimationCancel(Animator animation) {
+//
+//            }
+//
+//            @Override
+//            public void onAnimationRepeat(Animator animation) {
+//
+//            }
+//        });
+//
+//        return animator;
+//    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -78,9 +121,9 @@ public class SourceInfoFragment extends Fragment {
         View view = inflater.inflate(R.layout.source_info_fragment, container, false);
 
         sourceTitle = (EditText) view.findViewById(R.id.source_title);
-        EditText sourcePrefix = (EditText) view.findViewById(R.id.source_data_prefix);
+        sourcePrefix = (EditText) view.findViewById(R.id.source_data_prefix);
         sourceData = (EditText) view.findViewById(R.id.source_data);
-        EditText sourceSuffix = (EditText) view.findViewById(R.id.source_data_suffix);
+        sourceSuffix = (EditText) view.findViewById(R.id.source_data_suffix);
         sourceNum = (EditText) view.findViewById(R.id.source_num);
 
         Bundle arguments = getArguments();
@@ -91,13 +134,10 @@ public class SourceInfoFragment extends Fragment {
         sourceSuffix.setText(arguments.getString("suffix"));
         sourceNum.setText(arguments.getString("num"));
 
-        ImageView sourceImage = (ImageView) view.findViewById(R.id.source_image);
-        sourceImage.setImageDrawable(imageDrawable);
-
-//        File imageFile = new File(arguments.getString("image"));
-//        if (imageFile.exists() && imageFile.isFile()) {
-//            Picasso.with(appContext).load(imageFile).fit().centerCrop().into(sourceImage);
-//        }
+        sourceImage = (ImageView) view.findViewById(R.id.source_image);
+        if (imageDrawable != null) {
+            sourceImage.setImageDrawable(imageDrawable);
+        }
 
         sourceUse = (Switch) view.findViewById(R.id.source_use_switch);
         sourceUse.setChecked(Boolean.valueOf(arguments.getString("use")));
@@ -112,8 +152,40 @@ public class SourceInfoFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        Animation animation = new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+
+                sourceUse.setAlpha(interpolatedTime);
+                sourcePrefix.setAlpha(interpolatedTime);
+                sourceData.setAlpha(interpolatedTime);
+                sourceSuffix.setAlpha(interpolatedTime);
+                sourceNum.setAlpha(interpolatedTime);
+
+            }
+        };
+
+        animation.setDuration(FADE_IN_TIME);
+        animation.setInterpolator(new DecelerateInterpolator());
+        sourceData.startAnimation(animation);
+
+    }
+
     public void setImageDrawable(Drawable drawable) {
         imageDrawable = drawable;
+        if (sourceImage != null) {
+            sourceImage.setImageDrawable(drawable);
+            sourceImage.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

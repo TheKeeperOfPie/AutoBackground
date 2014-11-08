@@ -97,7 +97,6 @@ public class SourceListFragment extends Fragment {
 
     public static final String ADD_ENTRY = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
     public static final String SET_ENTRY = "cw.kop.autobackground.SourceListFragment.SET_ENTRY";
-    public static final String RESET_INDICATOR = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
 
     private static final String TAG = SourceListFragment.class.getCanonicalName();
     private static final int INFO_ANIMATION_TIME = 500;
@@ -1039,13 +1038,10 @@ public class SourceListFragment extends Fragment {
 
                 final RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);
                 final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
-                final ImageView sourceImage = (ImageView) view.findViewById(R.id.source_image);
                 final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
                 final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
                 final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
-//                final CardView sourceCard = (CardView) view.findViewById(R.id.source_card);
 
-//                final float cardStartElevation = sourceCard.getCardElevation();
                 final float viewStartHeight = view.getHeight();
                 final float viewStartY = view.getY();
                 final int viewStartPadding = view.getPaddingLeft();
@@ -1053,8 +1049,6 @@ public class SourceListFragment extends Fragment {
                 final float textStartY = sourceTitle.getY();
                 final float textTranslationY = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 48, getResources().getDisplayMetrics())
                         + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
-                Log.i(TAG, "viewStartHeight: " + viewStartHeight);
-                Log.i(TAG, "viewStartY: " + viewStartY);
 
                 Animation animation = new Animation() {
 
@@ -1070,17 +1064,15 @@ public class SourceListFragment extends Fragment {
                                             sourceInfoFragment,
                                             "source_info_fragment")
                                     .addToBackStack(null)
+                                    .setCustomAnimations(R.animator.slide_from_bottom, android.R.animator.fade_out)
                                     .setTransition(FragmentTransaction.TRANSIT_NONE)
                                     .commit();
                         }
                         int newPadding = Math.round(viewStartPadding * (1 - interpolatedTime));
-//                        int widthDifference = (int) ((screenWidth - viewStartWidth) * interpolatedTime);
                         view.setPadding(newPadding, 0, newPadding, 0);
                         view.setY(viewStartY - interpolatedTime * viewStartY);
                         sourceContainer.getLayoutParams().height = (int) (viewStartHeight + screenHeight * interpolatedTime);
-                        Log.i(TAG, "height: " + (viewStartHeight + (screenHeight - viewStartY + viewStartHeight) * interpolatedTime));
                         sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
-//                        view.getLayoutParams().width = (int) (viewStartWidth + widthDifference);
                         sourceTitle.setX(textStartX + (viewStartPadding - newPadding));
                         deleteButton.setAlpha(1.0f - interpolatedTime);
                         viewButton.setAlpha(1.0f - interpolatedTime);
@@ -1105,6 +1097,7 @@ public class SourceListFragment extends Fragment {
                         sourceList.setAdapter(null);
                         sourceList.setAdapter(listAdapter);
                         sourceList.onRestoreInstanceState(state);
+                        sourceList.setClickable(true);
                     }
 
                     @Override
@@ -1145,7 +1138,7 @@ public class SourceListFragment extends Fragment {
                     }
                 });
 
-                int transitionTime = (int) Math.abs(INFO_ANIMATION_TIME * (viewStartY / screenHeight) + INFO_ANIMATION_TIME / 8);
+                int transitionTime = INFO_ANIMATION_TIME; //(int) Math.abs(INFO_ANIMATION_TIME * (viewStartY / screenHeight) + INFO_ANIMATION_TIME / 8);
 
                 DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
 
@@ -1163,8 +1156,6 @@ public class SourceListFragment extends Fragment {
                 cardColorAnimation.start();
                 titleColorAnimation.start();
                 titleShadowAlphaAnimation.start();
-
-                sourceList.setClickable(true);
 
             }
         };

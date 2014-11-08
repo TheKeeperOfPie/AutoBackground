@@ -61,6 +61,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
+        android:alpha="0"
         />
 
     <EditText
@@ -88,6 +89,7 @@
         android:paddingRight="0dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:inputType="textNoSuggestions"
+        android:alpha="0"
         />
 
     <EditText
@@ -108,6 +110,7 @@
         android:hint="@string/source_data"
         android:inputType="textUri|textNoSuggestions"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:alpha="0"
         />
 
     <EditText
@@ -129,6 +132,7 @@
         android:paddingBottom="2dp"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:inputType="textNoSuggestions"
+        android:alpha="0"
         />
 
     <EditText
@@ -145,6 +149,7 @@
         android:hint="@string/num_images"
         android:inputType="number"
         android:textAppearance="?android:attr/textAppearanceMedium"
+        android:alpha="0"
         />
 
 </cw.kop.autobackground.CustomRelativeLayout>

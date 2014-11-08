@@ -54,7 +54,7 @@ repositories {
 }
 
 dependencies {
-    fileTree(include: ['*.jar'], dir: 'libs')
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':libraries:colorpickerpreference')
     compile 'com.github.amlcurran.showcaseview:library:5.0.0@aar'
     compile 'com.android.support:support-v4:21.0.0'
