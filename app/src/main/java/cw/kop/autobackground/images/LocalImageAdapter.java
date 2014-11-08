@@ -46,8 +46,6 @@ public class LocalImageAdapter extends BaseAdapter {
     private ArrayList<File> listFiles;
     private LayoutInflater inflater;
     private boolean finish;
-    private int screenWidth;
-    private int imageHeight;
 
     public LocalImageAdapter(Activity activity, File directory) {
         listFiles = new ArrayList<>();
@@ -55,10 +53,6 @@ public class LocalImageAdapter extends BaseAdapter {
         startDir = directory;
         mainDir = directory;
         setDirectory(mainDir);
-        screenWidth = activity.getResources().getDisplayMetrics().widthPixels;
-        imageHeight = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                150,
-                activity.getResources().getDisplayMetrics()));
     }
 
     @Override
@@ -83,41 +77,56 @@ public class LocalImageAdapter extends BaseAdapter {
 
             File file = listFiles.get(position);
 
-            View view = convertView;
+            boolean isImage = file.getName().contains(".png") || file.getName().contains(".jpg") || file.getName().contains(
+                    ".jpeg");
 
+            View view = convertView;
             if (convertView == null) {
-                view = inflater.inflate(R.layout.image_list_cell, parent, false);
+                view = inflater.inflate(R.layout.image_list_row, parent, false);
             }
 
             TextView fileTitle = (TextView) view.findViewById(R.id.file_title);
             TextView fileSummary = (TextView) view.findViewById(R.id.file_summary);
             ImageView fileImage = (ImageView) view.findViewById(R.id.file_image);
+            ImageView fileImageFull = (ImageView) view.findViewById(R.id.file_image_full);
 
-            if (file.getName().contains(".png") || file.getName().contains(".jpg") || file.getName().contains(
-                    ".jpeg")) {
+            if (isImage) {
+                fileImageFull.setVisibility(View.VISIBLE);
+                fileTitle.setVisibility(View.GONE);
+                fileSummary.setVisibility(View.GONE);
+                fileImage.setVisibility(View.GONE);
+
+
                 Picasso.with(parent.getContext())
                         .load(file)
-                        .resize(screenWidth, imageHeight)
+                        .fit()
                         .centerCrop()
-                        .into(fileImage);
-            }
-            else if (file.isDirectory()) {
-                Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_folder_white_24dp);
-                drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
-                        PorterDuff.Mode.MULTIPLY);
-
-                fileImage.setImageDrawable(drawable);
+                        .into(fileImageFull);
             }
             else {
-                Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_insert_drive_file_white_24dp);
-                drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
-                        PorterDuff.Mode.MULTIPLY);
 
-                fileImage.setImageDrawable(drawable);
+                fileImageFull.setVisibility(View.GONE);
+                fileTitle.setVisibility(View.VISIBLE);
+                fileSummary.setVisibility(View.VISIBLE);
+                fileImage.setVisibility(View.VISIBLE);
+                if (file.isDirectory()) {
+                    Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_folder_white_24dp);
+                    drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
+                            PorterDuff.Mode.MULTIPLY);
+
+                    fileImage.setImageDrawable(drawable);
+                }
+                else {
+                    Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_insert_drive_file_white_24dp);
+                    drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
+                            PorterDuff.Mode.MULTIPLY);
+
+                    fileImage.setImageDrawable(drawable);
+                }
+
+                fileTitle.setText(file.getName());
+                fileSummary.setText("" + (file.length() / BYTE_TO_MEBIBYTE) + " MiB");
             }
-
-            fileTitle.setText(file.getName());
-            fileSummary.setText("" + (file.length() / BYTE_TO_MEBIBYTE) + " MiB");
             return view;
         }
         return null;

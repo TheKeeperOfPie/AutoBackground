@@ -99,7 +99,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
             View view = convertView;
 
             if (convertView == null) {
-                view = inflater.inflate(R.layout.image_list_cell, parent, false);
+                view = inflater.inflate(R.layout.image_list_row, parent, false);
             }
 
             TextView fileTitle = (TextView) view.findViewById(R.id.file_title);

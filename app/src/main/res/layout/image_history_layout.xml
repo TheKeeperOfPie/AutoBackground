@@ -30,14 +30,39 @@
         android:layout_above="@+id/clear_history_button"
         />
 
-    <Button
-        android:id="@+id/clear_history_button"
+    <RelativeLayout
+        android:id="@+id/button_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="54dp"
         android:layout_alignParentBottom="true"
         android:background="@color/DARK_GRAY_OPAQUE"
-        android:text="@string/clear_history_button"
-        android:textColor="@color/WHITE_OPAQUE"
-        />
+        >
+
+        <Button
+            android:id="@+id/clear_history_button"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:minWidth="64dp"
+            android:background="@drawable/button"
+            android:paddingBottom="6dp"
+            android:paddingEnd="48dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="6dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginRight="4dp"
+            android:text="@string/clear_history_button"
+            android:textColor="@color/LIGHT_BLUE_OPAQUE"
+            android:textAllCaps="true"
+            />
+
+    </RelativeLayout>
+
 
 </cw.kop.autobackground.CustomRelativeLayout>

@@ -78,6 +78,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -85,6 +86,7 @@ import java.util.HashSet;
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.MainActivity;
+import cw.kop.autobackground.MenuWrapper;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.files.FileHandler;
@@ -99,7 +101,7 @@ public class SourceListFragment extends Fragment {
     public static final String SET_ENTRY = "cw.kop.autobackground.SourceListFragment.SET_ENTRY";
 
     private static final String TAG = SourceListFragment.class.getCanonicalName();
-    private static final int INFO_ANIMATION_TIME = 500;
+    private static final int INFO_ANIMATION_TIME = 350;
 
     private ListView sourceList;
     private SourceListAdapter listAdapter;
@@ -152,6 +154,43 @@ public class SourceListFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+
+        // Code by Stefan Rusek to fix possible Menu issue
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+            menu = new MenuWrapper(menu) {
+
+                private MenuItem fix(MenuItem item) {
+                    try {
+                        Field f = item.getClass().getDeclaredField("mEmulateProviderVisibilityOverride");
+                        f.setAccessible(true);
+                        f.set(item, Boolean.FALSE);
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    }
+                    return item;
+                }
+
+                @Override
+                public MenuItem add(CharSequence title) {
+                    return fix(super.add(title));
+                }
+
+                @Override
+                public MenuItem add(int titleRes) {
+                    return fix(super.add(titleRes));
+                }
+
+                @Override
+                public MenuItem add(int groupId, int itemId, int order, CharSequence title) {
+                    return fix(super.add(groupId, itemId, order, title));
+                }
+
+                @Override
+                public MenuItem add(int groupId, int itemId, int order, int titleRes) {
+                    return fix(super.add(groupId, itemId, order, titleRes));
+                }
+            };
+        }
 
         inflater.inflate(R.menu.source_list_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);

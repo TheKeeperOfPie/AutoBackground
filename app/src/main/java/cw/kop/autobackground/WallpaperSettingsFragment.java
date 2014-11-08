@@ -183,7 +183,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         }
 
         if (AppSettings.getIntervalDuration() > 0) {
-            intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
+            intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MILLES_TO_MIN) + " minutes");
         }
 
         return inflater.inflate(R.layout.fragment_list, container, false);
@@ -233,7 +233,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 }
 
                 if (AppSettings.getIntervalDuration() > 0) {
-                    intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
+                    intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MILLES_TO_MIN) + " minutes");
                 }
                 else {
                     intervalPref.setSummary("Change on return");
@@ -260,6 +260,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 R.array.interval_entry_menu);
     }
 
+
     private void showDialogIntervalForInput() {
 
         DialogFactory.InputDialogListener listener = new DialogFactory.InputDialogListener() {
@@ -278,10 +279,10 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                     intervalPref.setChecked(false);
                     return;
                 }
-                AppSettings.setIntervalDuration(inputValue * CONVERT_MILLES_TO_MIN);
+                AppSettings.setIntervalDuration(inputValue);
                 setIntervalAlarm();
                 if (inputValue > 0) {
-                    intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
+                    intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MILLES_TO_MIN) + " minutes");
                 }
                 else {
                     intervalPref.setSummary("Change on return");
@@ -292,7 +293,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         DialogFactory.showInputDialog(appContext,
                 "Update Interval",
-                "Number of minutes",
+                "Number of milliseconds",
                 "",
                 listener,
                 -1,

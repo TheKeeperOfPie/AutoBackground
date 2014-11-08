@@ -175,7 +175,7 @@ public class SourceInfoFragment extends Fragment {
         };
 
         animation.setDuration(FADE_IN_TIME);
-        animation.setInterpolator(new DecelerateInterpolator());
+        animation.setInterpolator(new DecelerateInterpolator(3.0f));
         sourceData.startAnimation(animation);
 
     }

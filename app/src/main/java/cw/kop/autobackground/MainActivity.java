@@ -165,33 +165,29 @@ public class MainActivity extends ActionBarActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitleTextAppearance(getApplicationContext(), R.style.ToolbarTitle);
-        setSupportActionBar(toolbar);
-        toolbar.setNavigationIcon(R.drawable.app_icon);
 
-        int colorFilterInt = 0;
+        try {
+            setSupportActionBar(toolbar);
+        }
+        catch (Throwable t) {
+
+        }
 
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             navLayout.setBackgroundColor(getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
             toolbar.setTitleTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-            colorFilterInt = getResources().getColor(R.color.DARK_GRAY_OPAQUE);
             toolbar.setBackgroundColor(getResources().getColor(R.color.BLUE_OPAQUE));
         }
         else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)) {
             navLayout.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
             toolbar.setTitleTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            colorFilterInt = getResources().getColor(R.color.LIGHT_GRAY_OPAQUE);
             toolbar.setBackgroundColor(getResources().getColor(R.color.DARK_BLUE_OPAQUE));
         }
         else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
             navLayout.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
             toolbar.setTitleTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            colorFilterInt = getResources().getColor(R.color.LIGHT_GRAY_OPAQUE);
             toolbar.setBackgroundColor(getResources().getColor(R.color.DARK_BLUE_OPAQUE));
         }
-
-//        Drawable drawerDrawable = getResources().getDrawable(R.drawable.drawer_menu_white);
-//        drawerDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-//        toolbar.setNavigationIcon(drawerDrawable);
 
         drawerToggle = new ActionBarDrawerToggle(
                 this,

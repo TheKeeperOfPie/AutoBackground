@@ -53,6 +53,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
     private Context appContext;
     private LocalImageAdapter imageAdapter;
     private ListView imageListView;
+    private TextView directoryText;
 
     private boolean setPath;
     private int position;
@@ -106,14 +107,22 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         emptyLayout.setGravity(Gravity.TOP);
         emptyLayout.addView(emptyText);
 
+        directoryText = (TextView) view.findViewById(R.id.directory_text);
+        directoryText.setTextColor(AppSettings.getColorFilterInt(appContext));
+        directoryText.setSelected(true);
+
+        int backgroundColor;
+
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            imageListView.setBackgroundColor(getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
-            emptyLayout.setBackgroundColor(getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
+            backgroundColor = getResources().getColor(R.color.LIGHT_THEME_BACKGROUND);
         }
         else {
-            imageListView.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
-            emptyLayout.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
+            backgroundColor = getResources().getColor(R.color.DARK_THEME_BACKGROUND);
         }
+
+        directoryText.setBackgroundColor(backgroundColor);
+        imageListView.setBackgroundColor(backgroundColor);
+        emptyLayout.setBackgroundColor(backgroundColor);
 
         ((ViewGroup) imageListView.getParent()).addView(emptyLayout, 0);
 
@@ -124,58 +133,90 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 
             @Override
             public void onClick(View v) {
-                File dir = imageAdapter.getDirectory();
-                FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
-                if (setPath) {
-                    AppSettings.setDownloadPath(dir.getAbsolutePath());
-                    Toast.makeText(appContext,
-                            "Download path set to: \n" + AppSettings.getDownloadPath(),
-                            Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    int numImages = 0;
-                    if (dir.listFiles(filenameFilter) != null) {
-                        numImages = dir.listFiles(filenameFilter).length;
+                DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
+                    @Override
+                    public void onClickMiddle(View v) {
+                        setAppDirectory(false);
+                        this.dismissDialog();
                     }
 
-                    StringBuilder stringBuilder = new StringBuilder();
-                    ArrayList<String> folderNames = getAllDirectories(dir);
-
-                    for (String folderName : folderNames) {
-                        stringBuilder.append(folderName);
-                        stringBuilder.append(AppSettings.DATA_SPLITTER);
-                        Log.i("LIF", folderName);
+                    @Override
+                    public void onClickRight(View v) {
+                        setAppDirectory(false);
+                        this.dismissDialog();
                     }
+                };
 
-                    Intent returnEntryIntent = new Intent();
-                    if (position > -1) {
-                        returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
-                        returnEntryIntent.putExtra("position", position);
-                    }
-                    else {
-                        returnEntryIntent.setAction(SourceListFragment.ADD_ENTRY);
-                    }
+                DialogFactory.showActionDialog(appContext,
+                        "",
+                        "Include subdirectories?",
+                        listener,
+                        R.string.cancel_button,
+                        R.string.no_button,
+                        R.string.yes_button);
 
-                    returnEntryIntent.putExtra("type", AppSettings.FOLDER);
-                    returnEntryIntent.putExtra("title", dir.getName());
-                    returnEntryIntent.putExtra("data", stringBuilder.toString());
-                    returnEntryIntent.putExtra("num", numImages);
-
-                    LocalBroadcastManager.getInstance(appContext).sendBroadcast(returnEntryIntent);
-
-                }
-                imageAdapter.setFinished();
-                getActivity().onBackPressed();
             }
 
         });
 
         if (!viewPath.equals("")) {
+            directoryText.setVisibility(View.GONE);
             useDirectoryButton.setVisibility(View.GONE);
             view.findViewById(R.id.button_container).setVisibility(View.GONE);
         }
 
         return view;
+    }
+
+    private void setAppDirectory(boolean useSubdirectories) {
+        File dir = imageAdapter.getDirectory();
+        FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
+        if (setPath) {
+            AppSettings.setDownloadPath(dir.getAbsolutePath());
+            Toast.makeText(appContext,
+                    "Download path set to: \n" + AppSettings.getDownloadPath(),
+                    Toast.LENGTH_SHORT).show();
+        }
+        else {
+            int numImages = 0;
+            if (dir.listFiles(filenameFilter) != null) {
+                numImages = dir.listFiles(filenameFilter).length;
+            }
+
+            StringBuilder stringBuilder = new StringBuilder();
+
+            if (useSubdirectories) {
+                ArrayList<String> folderNames = getAllDirectories(dir);
+
+                for (String folderName : folderNames) {
+                    stringBuilder.append(folderName);
+                    stringBuilder.append(AppSettings.DATA_SPLITTER);
+                    Log.i("LIF", folderName);
+                }
+            }
+            else {
+                stringBuilder.append(dir.getAbsolutePath());
+            }
+
+            Intent returnEntryIntent = new Intent();
+            if (position > -1) {
+                returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
+                returnEntryIntent.putExtra("position", position);
+            }
+            else {
+                returnEntryIntent.setAction(SourceListFragment.ADD_ENTRY);
+            }
+
+            returnEntryIntent.putExtra("type", AppSettings.FOLDER);
+            returnEntryIntent.putExtra("title", dir.getName());
+            returnEntryIntent.putExtra("data", stringBuilder.toString());
+            returnEntryIntent.putExtra("num", numImages);
+
+            LocalBroadcastManager.getInstance(appContext).sendBroadcast(returnEntryIntent);
+
+        }
+        imageAdapter.setFinished();
+        getActivity().onBackPressed();
     }
 
     private ArrayList<String> getAllDirectories(File dir) {
@@ -201,7 +242,11 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
     }
 
     public boolean onBackPressed() {
-        return imageAdapter.backDirectory();
+
+        boolean endDirectory = imageAdapter.backDirectory();
+        directoryText.setText(imageAdapter.getDirectory().getAbsolutePath());
+
+        return endDirectory;
     }
 
     @Override
@@ -231,16 +276,25 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 
                     if (selectedFile.exists() && selectedFile.isDirectory()) {
                         imageAdapter.setDirectory(selectedFile);
+                        directoryText.setText(imageAdapter.getDirectory().getAbsolutePath());
                     }
                 }
             });
         }
+
+        directoryText.setText(imageAdapter.getDirectory().getAbsolutePath());
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
 
-        if (imageAdapter.getItem(positionInList).getName().contains(".png") || imageAdapter.getItem(
+        File selectedFile = imageAdapter.getItem(positionInList);
+
+        if (selectedFile.exists() && selectedFile.isDirectory()) {
+            imageAdapter.setDirectory(selectedFile);
+            directoryText.setText(imageAdapter.getDirectory().getAbsolutePath());
+        }
+        else if (imageAdapter.getItem(positionInList).getName().contains(".png") || imageAdapter.getItem(
                 positionInList).getName().contains(".jpg") || imageAdapter.getItem(positionInList).getName().contains(
                 ".jpeg")) {
             showImageDialog(positionInList);
