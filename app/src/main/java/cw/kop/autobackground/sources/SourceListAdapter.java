@@ -20,8 +20,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.TypedValue;
@@ -29,20 +27,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Switch;
-import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -143,12 +135,12 @@ public class SourceListAdapter extends BaseAdapter {
         });
 
         ImageView image = (ImageView) view.findViewById(R.id.source_image);
-        image.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cardClickListener.onItemClick(view, position);
-            }
-        });
+//        image.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                cardClickListener.onItemClick(view, position);
+//            }
+//        });
 
         Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_24dp);
         downloadDrawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
@@ -165,8 +157,11 @@ public class SourceListAdapter extends BaseAdapter {
                 if (files != null && files.length > 0) {
                     needsImage = false;
                     listItem.put("image", files[0].getAbsolutePath());
-                    image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, resources.getDisplayMetrics()));
-                    Picasso.with(parent.getContext()).load(files[new Random().nextInt(files.length)]).fit().centerCrop().into(image);
+                    image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                            160,
+                            resources.getDisplayMetrics()));
+                    Picasso.with(parent.getContext()).load(files[new Random().nextInt(files.length)]).fit().centerCrop().into(
+                            image);
                 }
             }
         }
@@ -177,8 +172,11 @@ public class SourceListAdapter extends BaseAdapter {
 
                 if (files != null && files.length > 0) {
                     listItem.put("image", files[0].getAbsolutePath());
-                    image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 160, resources.getDisplayMetrics()));
-                    Picasso.with(parent.getContext()).load(files[new Random().nextInt(files.length)]).fit().centerCrop().into(image);
+                    image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                            160,
+                            resources.getDisplayMetrics()));
+                    Picasso.with(parent.getContext()).load(files[new Random().nextInt(files.length)]).fit().centerCrop().into(
+                            image);
                 }
             }
         }
@@ -424,10 +422,10 @@ public class SourceListAdapter extends BaseAdapter {
     public interface CardClickListener {
 
         void onDeleteClick(int index);
-        void onViewClick(int index);
-        void onEditClick(int index);
 
-        void onItemClick(View view, int index);
+        void onViewClick(int index);
+
+        void onEditClick(int index);
     }
 
 }

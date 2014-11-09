@@ -236,7 +236,6 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         Log.i("NSF", "Options shown");
 
 
-
         if (!AppSettings.useAdvanced()) {
 
             PreferenceCategory notificationPreferences = (PreferenceCategory) findPreference(

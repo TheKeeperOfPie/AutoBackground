@@ -16,7 +16,6 @@
 
 package cw.kop.autobackground;
 
-import android.app.ActivityOptions;
 import android.app.FragmentTransaction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -24,12 +23,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
@@ -41,7 +37,6 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -55,6 +50,7 @@ import cw.kop.autobackground.images.ImageHistoryFragment;
 import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.notification.NotificationSettingsFragment;
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.SourceInfoFragment;
 import cw.kop.autobackground.sources.SourceListFragment;
 
 public class MainActivity extends ActionBarActivity {
@@ -77,7 +73,8 @@ public class MainActivity extends ActionBarActivity {
                             intent.getStringExtra("type"),
                             intent.getStringExtra("title"),
                             intent.getStringExtra("data"),
-                            "" + intent.getIntExtra("num", 0));
+                            "" + intent.getIntExtra("num", 0),
+                            intent.getBooleanExtra("use", true));
                     break;
                 case LOAD_NAV_PICTURE:
                     loadNavPicture();
@@ -259,7 +256,8 @@ public class MainActivity extends ActionBarActivity {
     private void loadNavPicture() {
 
         if (Build.VERSION.SDK_INT >= 16 && navPicture != null && FileHandler.getCurrentBitmapFile() != null && FileHandler.getCurrentBitmapFile().exists()) {
-            Picasso.with(getApplicationContext()).load(FileHandler.getCurrentBitmapFile()).fit().centerCrop().into(navPicture);
+            Picasso.with(getApplicationContext()).load(FileHandler.getCurrentBitmapFile()).fit().centerCrop().into(
+                    navPicture);
         }
     }
 
@@ -367,6 +365,9 @@ public class MainActivity extends ActionBarActivity {
             if (((LocalImageFragment) getFragmentManager().findFragmentByTag("image_fragment")).onBackPressed()) {
                 getFragmentManager().popBackStack();
             }
+        }
+        else if (getFragmentManager().findFragmentByTag("source_info_fragment") != null) {
+            ((SourceInfoFragment) getFragmentManager().findFragmentByTag("source_info_fragment")).onBackPressed();
         }
         else if (getFragmentManager().getBackStackEntryCount() > 0) {
             getFragmentManager().popBackStack();

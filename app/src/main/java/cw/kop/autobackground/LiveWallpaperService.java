@@ -1732,6 +1732,20 @@ public class LiveWallpaperService extends GLWallpaperService {
             else {
                 setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
             }
+        }
+
+        private void toastEffect(final String effectName, final String effectValue) {
+            if (AppSettings.useToast() && AppSettings.useToastEffects()) {
+                handler.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Toast.makeText(LiveWallpaperService.this,
+                                "Effect applied: " + effectName + " " + effectValue,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         }        private final BroadcastReceiver updateReceiver = new BroadcastReceiver() {
 
             @Override
@@ -1878,20 +1892,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             }
         };
-
-        private void toastEffect(final String effectName, final String effectValue) {
-            if (AppSettings.useToast() && AppSettings.useToastEffects()) {
-                handler.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Toast.makeText(LiveWallpaperService.this,
-                                "Effect applied: " + effectName + " " + effectValue,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        }
 
         class MyGLRenderer implements GLSurfaceView.Renderer {
 

@@ -46,6 +46,7 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
 
     private String type;
     private int changePosition;
+    private boolean use;
     private ArrayList<String> albumNames;
     private ArrayList<String> albumImages;
     private ArrayList<String> albumLinks;
@@ -70,6 +71,7 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
         Bundle bundle = getArguments();
         type = bundle.getString("type");
         changePosition = bundle.getInt("position");
+        use = bundle.getBoolean("use");
         albumNames = bundle.getStringArrayList("album_names");
         albumImages = bundle.getStringArrayList("album_images");
         albumLinks = bundle.getStringArrayList("album_links");
@@ -135,6 +137,7 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
         if (changePosition > -1) {
             returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
             returnEntryIntent.putExtra("position", changePosition);
+            returnEntryIntent.putExtra("use", use);
         }
         else {
             returnEntryIntent.setAction(SourceListFragment.ADD_ENTRY);

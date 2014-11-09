@@ -148,6 +148,7 @@
     <string name="cancel_button">Cancel</string>
     <string name="yes_button">Yes</string>
     <string name="no_button">No</string>
+    <string name="save_button">Save</string>
     <string name="default_button">Default</string>
     <string name="use_directory_button">Use Directory</string>
     <string name="reset_directory_button">Reset Directory</string>

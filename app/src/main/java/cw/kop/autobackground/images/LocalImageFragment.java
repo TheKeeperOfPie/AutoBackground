@@ -55,6 +55,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
     private ListView imageListView;
     private TextView directoryText;
 
+    private boolean use;
     private boolean setPath;
     private int position;
     private String viewPath = "";
@@ -70,6 +71,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         setPath = bundle.getBoolean("set_path", false);
         viewPath = bundle.getString("view_path", "");
         position = bundle.getInt("position", -1);
+        use = bundle.getBoolean("use");
     }
 
     @Override
@@ -202,6 +204,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
             if (position > -1) {
                 returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
                 returnEntryIntent.putExtra("position", position);
+                returnEntryIntent.putExtra("use", use);
             }
             else {
                 returnEntryIntent.setAction(SourceListFragment.ADD_ENTRY);

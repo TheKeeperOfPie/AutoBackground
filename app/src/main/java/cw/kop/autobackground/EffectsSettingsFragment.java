@@ -87,7 +87,6 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
         duotonePref = (SwitchPreference) findPreference("effect_duotone_switch");
 
 
-
         if (!AppSettings.useAdvanced()) {
 
             PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference(

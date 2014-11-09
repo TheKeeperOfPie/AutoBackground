@@ -5,6 +5,7 @@
  */
 
 package cw.kop.autobackground;
+
 import android.content.ComponentName;
 import android.content.Intent;
 import android.view.KeyEvent;
@@ -60,8 +61,22 @@ public abstract class MenuWrapper implements Menu {
     }
 
     @Override
-    public int addIntentOptions(int groupId, int itemId, int order, ComponentName caller, Intent[] specifics, Intent intent, int flags, MenuItem[] outSpecificItems) {
-        return menu.addIntentOptions(groupId, itemId, order, caller, specifics, intent, flags, outSpecificItems);
+    public int addIntentOptions(int groupId,
+            int itemId,
+            int order,
+            ComponentName caller,
+            Intent[] specifics,
+            Intent intent,
+            int flags,
+            MenuItem[] outSpecificItems) {
+        return menu.addIntentOptions(groupId,
+                itemId,
+                order,
+                caller,
+                specifics,
+                intent,
+                flags,
+                outSpecificItems);
     }
 
     @Override

@@ -32,7 +32,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -66,6 +65,8 @@ import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
+import com.squareup.picasso.Cache;
+import com.squareup.picasso.Picasso;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -95,13 +96,13 @@ import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
 
-public class SourceListFragment extends Fragment {
+public class SourceListFragment extends Fragment implements AdapterView.OnItemClickListener {
 
     public static final String ADD_ENTRY = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
     public static final String SET_ENTRY = "cw.kop.autobackground.SourceListFragment.SET_ENTRY";
 
     private static final String TAG = SourceListFragment.class.getCanonicalName();
-    private static final int INFO_ANIMATION_TIME = 350;
+    private static final int INFO_ANIMATION_TIME = 250;
 
     private ListView sourceList;
     private SourceListAdapter listAdapter;
@@ -111,6 +112,7 @@ public class SourceListFragment extends Fragment {
     private ImageButton addButton;
     private Menu toolbarMenu;
     private TextView noImageText;
+    private volatile boolean isAnimating = false;
 
     private int screenHeight;
     private int screenWidth;
@@ -161,10 +163,12 @@ public class SourceListFragment extends Fragment {
 
                 private MenuItem fix(MenuItem item) {
                     try {
-                        Field f = item.getClass().getDeclaredField("mEmulateProviderVisibilityOverride");
+                        Field f = item.getClass().getDeclaredField(
+                                "mEmulateProviderVisibilityOverride");
                         f.setAccessible(true);
                         f.set(item, Boolean.FALSE);
-                    } catch (Throwable e) {
+                    }
+                    catch (Throwable e) {
                         e.printStackTrace();
                     }
                     return item;
@@ -212,6 +216,22 @@ public class SourceListFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         appContext = activity;
+    }
+
+    @Override
+    public void onDestroy() {
+        try {
+            Field clearCache = Class.forName("com.squareup.picasso.Picasso").getDeclaredField(
+                    "cache");
+            clearCache.setAccessible(true);
+            Cache cache = (Cache) clearCache.get(Picasso.with(appContext));
+            cache.clear();
+
+        }
+        catch (Exception e) {
+            Log.d(TAG, "" + e);
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -348,12 +368,13 @@ public class SourceListFragment extends Fragment {
         }
     }
 
-    private void showImageFragment(boolean setPath, String viewPath, int position) {
+    private void showImageFragment(boolean setPath, String viewPath, int position, boolean use) {
         LocalImageFragment localImageFragment = new LocalImageFragment();
         Bundle arguments = new Bundle();
         arguments.putBoolean("set_path", setPath);
         arguments.putString("view_path", viewPath);
         arguments.putInt("position", position);
+        arguments.putBoolean("use", use);
         localImageFragment.setArguments(arguments);
 
         getFragmentManager().beginTransaction()
@@ -364,11 +385,12 @@ public class SourceListFragment extends Fragment {
 
     private void showAlbumFragment(String type, int position, ArrayList<String> names,
             ArrayList<String> images, ArrayList<String> links,
-            ArrayList<String> nums) {
+            ArrayList<String> nums, boolean use) {
         AlbumFragment albumFragment = new AlbumFragment();
         Bundle arguments = new Bundle();
         arguments.putString("type", type);
         arguments.putInt("position", position);
+        arguments.putBoolean("use", use);
         arguments.putStringArrayList("album_names", names);
         arguments.putStringArrayList("album_images", images);
         arguments.putStringArrayList("album_links", links);
@@ -397,7 +419,7 @@ public class SourceListFragment extends Fragment {
                                     "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             AppSettings.setGoogleAccount(true);
-                            new PicasaAlbumTask(-1).execute();
+                            new PicasaAlbumTask(-1, true).execute();
                         }
                         catch (IOException transientEx) {
                             return null;
@@ -429,7 +451,7 @@ public class SourceListFragment extends Fragment {
                                     "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             AppSettings.setGoogleAccount(true);
-                            new PicasaAlbumTask(-1).execute();
+                            new PicasaAlbumTask(-1, true).execute();
                         }
                         catch (IOException transientEx) {
                             return null;
@@ -469,12 +491,12 @@ public class SourceListFragment extends Fragment {
                                 -1);
                         break;
                     case 1:
-                        showImageFragment(false, "", -1);
+                        showImageFragment(false, "", -1, true);
                         break;
                     case 2:
                         showInputDialog(AppSettings.IMGUR,
                                 "",
-                                "subreddit",
+                                "Subreddit",
                                 "imgur.com/r/",
                                 "",
                                 "",
@@ -499,7 +521,7 @@ public class SourceListFragment extends Fragment {
                                     GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
                         }
                         else {
-                            new PicasaAlbumTask(-1).execute();
+                            new PicasaAlbumTask(-1, true).execute();
                         }
                         break;
                     case 5:
@@ -578,8 +600,13 @@ public class SourceListFragment extends Fragment {
 
     }
 
-    public void setEntry(int position, String type, String title, String path, String num) {
-        if (listAdapter.setItem(position, type, title, path, true, num)) {
+    public void setEntry(int position,
+            String type,
+            String title,
+            String path,
+            String num,
+            boolean use) {
+        if (listAdapter.setItem(position, type, title, path, use, num)) {
             listAdapter.saveData();
         }
         else {
@@ -705,7 +732,6 @@ public class SourceListFragment extends Fragment {
     }
 
 
-
     private void showDialogMenu(final int index) {
 
         listAdapter.saveData();
@@ -715,6 +741,7 @@ public class SourceListFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 HashMap<String, String> item = listAdapter.getItem(index);
                 String type = item.get("type");
+                boolean use = Boolean.parseBoolean(item.get("use"));
                 switch (position) {
                     case 0:
                         String directory;
@@ -729,7 +756,7 @@ public class SourceListFragment extends Fragment {
                         else {
                             directory = AppSettings.getSourceData(index);
                         }
-                        showImageFragment(false, directory, index);
+                        showImageFragment(false, directory, index, use);
                         break;
                     case 1:
                         switch (type) {
@@ -753,7 +780,7 @@ public class SourceListFragment extends Fragment {
                                 }
                                 else if (data.contains("imgur.com/r/")) {
                                     prefix = "imgur.com/r/";
-                                    hint = "subreddit";
+                                    hint = "Subreddit";
                                 }
 
                                 showInputDialog(AppSettings.IMGUR,
@@ -768,7 +795,7 @@ public class SourceListFragment extends Fragment {
                                 break;
                             }
                             case AppSettings.PICASA:
-                                new PicasaAlbumTask(index).execute();
+                                new PicasaAlbumTask(index, use).execute();
                                 break;
                             case AppSettings.TUMBLR_BLOG:
                                 showInputDialog(AppSettings.TUMBLR_BLOG,
@@ -800,7 +827,7 @@ public class SourceListFragment extends Fragment {
                                 break;
                             }
                             case AppSettings.FOLDER:
-                                showImageFragment(false, "", index);
+                                showImageFragment(false, "", index, use);
                                 break;
                         }
                         break;
@@ -971,13 +998,14 @@ public class SourceListFragment extends Fragment {
                 else {
                     directory = AppSettings.getSourceData(index);
                 }
-                showImageFragment(false, directory, index);
+                showImageFragment(false, directory, index, false);
             }
 
             @Override
             public void onEditClick(int index) {
                 HashMap<String, String> item = listAdapter.getItem(index);
                 String type = item.get("type");
+                boolean use = Boolean.parseBoolean(item.get("use"));
                 switch (type) {
                     case AppSettings.WEBSITE:
                         showInputDialog(AppSettings.WEBSITE,
@@ -991,15 +1019,16 @@ public class SourceListFragment extends Fragment {
                                 index);
                         break;
                     case AppSettings.IMGUR: {
-                        String prefix = "", hint = "";
+                        String hint = "";
+                        String prefix = "";
                         String data = AppSettings.getSourceData(index);
                         if (data.contains("imgur.com/a/")) {
-                            prefix = "imgur.com/a/";
                             hint = "Album ID";
+                            prefix = "imgur.com/a/";
                         }
                         else if (data.contains("imgur.com/r/")) {
+                            hint = "Subreddit";
                             prefix = "imgur.com/r/";
-                            hint = "subreddit";
                         }
 
                         showInputDialog(AppSettings.IMGUR,
@@ -1014,12 +1043,12 @@ public class SourceListFragment extends Fragment {
                         break;
                     }
                     case AppSettings.PICASA:
-                        new PicasaAlbumTask(index).execute();
+                        new PicasaAlbumTask(index, use).execute();
                         break;
                     case AppSettings.TUMBLR_BLOG:
                         showInputDialog(AppSettings.TUMBLR_BLOG,
                                 AppSettings.getSourceTitle(index),
-                                "Blog name",
+                                "blog name",
                                 "",
                                 AppSettings.getSourceData(index),
                                 "",
@@ -1036,7 +1065,7 @@ public class SourceListFragment extends Fragment {
 
                         showInputDialog(AppSettings.TUMBLR_TAG,
                                 AppSettings.getSourceTitle(index),
-                                "Tag",
+                                "tag",
                                 "",
                                 data,
                                 "",
@@ -1046,156 +1075,9 @@ public class SourceListFragment extends Fragment {
                         break;
                     }
                     case AppSettings.FOLDER:
-                        showImageFragment(false, "", index);
+                        showImageFragment(false, "", index, use);
                         break;
                 }
-            }
-
-            @Override
-            public void onItemClick(final View view, int index) {
-
-                sourceList.setClickable(false);
-
-                HashMap<String, String> dataItem = listAdapter.getItem(index);
-                final SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
-//                sourceInfoFragment.setImageBitmap(Bitmap.createBitmap(((ImageView) view).getDrawingCache()));
-                sourceInfoFragment.setImageDrawable(((ImageView) view.findViewById(R.id.source_image)).getDrawable());
-                Bundle arguments = new Bundle();
-                arguments.putString("title", dataItem.get("title"));
-                arguments.putString("prefix", "Prefix");
-                arguments.putString("data", dataItem.get("data"));
-                arguments.putString("suffix", "Suffix");
-                arguments.putString("num", dataItem.get("num"));
-                String imageFileName = dataItem.get("image");
-                if (imageFileName != null && imageFileName.length() > 0) {
-                    arguments.putString("image", imageFileName);
-                }
-                else {
-                    arguments.putString("image", "");
-                }
-                sourceInfoFragment.setArguments(arguments);
-
-                final RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);
-                final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
-                final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
-                final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
-                final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
-
-                final float viewStartHeight = view.getHeight();
-                final float viewStartY = view.getY();
-                final int viewStartPadding = view.getPaddingLeft();
-                final float textStartX = sourceTitle.getX();
-                final float textStartY = sourceTitle.getY();
-                final float textTranslationY = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 48, getResources().getDisplayMetrics())
-                        + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
-
-                Animation animation = new Animation() {
-
-                    private boolean needsFragment = true;
-
-                    @Override
-                    protected void applyTransformation(float interpolatedTime, Transformation t) {
-
-                        if (needsFragment && interpolatedTime >= 1) {
-                            needsFragment = false;
-                            getFragmentManager().beginTransaction()
-                                    .add(R.id.content_frame,
-                                            sourceInfoFragment,
-                                            "source_info_fragment")
-                                    .addToBackStack(null)
-                                    .setCustomAnimations(R.animator.slide_from_bottom, android.R.animator.fade_out)
-                                    .setTransition(FragmentTransaction.TRANSIT_NONE)
-                                    .commit();
-                        }
-                        int newPadding = Math.round(viewStartPadding * (1 - interpolatedTime));
-                        view.setPadding(newPadding, 0, newPadding, 0);
-                        view.setY(viewStartY - interpolatedTime * viewStartY);
-                        sourceContainer.getLayoutParams().height = (int) (viewStartHeight + screenHeight * interpolatedTime);
-                        sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
-                        sourceTitle.setX(textStartX + (viewStartPadding - newPadding));
-                        deleteButton.setAlpha(1.0f - interpolatedTime);
-                        viewButton.setAlpha(1.0f - interpolatedTime);
-                        editButton.setAlpha(1.0f - interpolatedTime);
-                    }
-
-                    @Override
-                    public boolean willChangeBounds() {
-                        return true;
-                    }
-                };
-
-                animation.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        Parcelable state = sourceList.onSaveInstanceState();
-                        sourceList.setAdapter(null);
-                        sourceList.setAdapter(listAdapter);
-                        sourceList.onRestoreInstanceState(state);
-                        sourceList.setClickable(true);
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
-                });
-
-                ValueAnimator cardColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), getResources().getColor(R.color.DARK_BLUE_OPAQUE), getResources().getColor(AppSettings.getBackgroundColorResource()));
-                cardColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        sourceContainer.setBackgroundColor((Integer)animation.getAnimatedValue());
-                    }
-
-                });
-
-                ValueAnimator titleColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
-                        sourceTitle.getCurrentTextColor(),
-                        AppSettings.getColorFilterInt(appContext));
-                titleColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        sourceTitle.setTextColor((Integer) animation.getAnimatedValue());
-                    }
-
-                });
-
-                ValueAnimator titleShadowAlphaAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
-                        getResources().getColor(R.color.BLACK_OPAQUE),
-                        getResources().getColor(android.R.color.transparent));
-                titleShadowAlphaAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        sourceTitle.setShadowLayer(4, 0, 0, (Integer) animation.getAnimatedValue());
-                    }
-                });
-
-                int transitionTime = INFO_ANIMATION_TIME; //(int) Math.abs(INFO_ANIMATION_TIME * (viewStartY / screenHeight) + INFO_ANIMATION_TIME / 8);
-
-                DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
-
-                animation.setDuration(transitionTime);
-                cardColorAnimation.setDuration(transitionTime);
-                titleColorAnimation.setDuration(transitionTime);
-                titleShadowAlphaAnimation.setDuration(transitionTime);
-
-                animation.setInterpolator(decelerateInterpolator);
-                cardColorAnimation.setInterpolator(decelerateInterpolator);
-                titleColorAnimation.setInterpolator(decelerateInterpolator);
-                titleShadowAlphaAnimation.setInterpolator(decelerateInterpolator);
-
-                view.startAnimation(animation);
-                cardColorAnimation.start();
-                titleColorAnimation.start();
-                titleShadowAlphaAnimation.start();
-
             }
         };
 
@@ -1224,6 +1106,8 @@ public class SourceListFragment extends Fragment {
         if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
             sourceList.setBackgroundColor(getResources().getColor(android.R.color.transparent));
         }
+
+        sourceList.setOnItemClickListener(this);
 
         // TODO: Find better implementation for action bar hide
 //        sourceList.setOnScrollListener(new AbsListView.OnScrollListener() {
@@ -1439,6 +1323,7 @@ public class SourceListFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
+        sourceList.setOnItemClickListener(this);
         new ImageCountTask().execute();
 
         LocalBroadcastManager.getInstance(appContext).registerReceiver(sourceListReceiver,
@@ -1534,6 +1419,158 @@ public class SourceListFragment extends Fragment {
         return false;
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+        sourceList.setOnItemClickListener(null);
+
+        HashMap<String, String> dataItem = listAdapter.getItem(position);
+        final SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
+        sourceInfoFragment.setImageDrawable(((ImageView) view.findViewById(R.id.source_image)).getDrawable());
+        Bundle arguments = new Bundle();
+        arguments.putInt("position", position);
+        arguments.putString("type", dataItem.get("type"));
+        arguments.putString("title", dataItem.get("title"));
+        arguments.putString("data", dataItem.get("data"));
+        arguments.putString("num", dataItem.get("num"));
+        arguments.putBoolean("use", Boolean.parseBoolean(dataItem.get("use")));
+        String imageFileName = dataItem.get("image");
+        if (imageFileName != null && imageFileName.length() > 0) {
+            arguments.putString("image", imageFileName);
+        }
+        else {
+            arguments.putString("image", "");
+        }
+        sourceInfoFragment.setArguments(arguments);
+
+        final RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);
+        final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
+        final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
+        final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
+        final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
+
+        final float viewStartHeight = view.getHeight();
+        final float viewStartY = view.getY();
+        final int viewStartPadding = view.getPaddingLeft();
+        final float textStartX = sourceTitle.getX();
+        final float textStartY = sourceTitle.getY();
+        final float textTranslationY = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
+                48,
+                getResources().getDisplayMetrics())
+                + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                8,
+                getResources().getDisplayMetrics());
+
+        Animation animation = new Animation() {
+
+            private boolean needsFragment = true;
+
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+
+                if (needsFragment && interpolatedTime >= 1) {
+                    needsFragment = false;
+                    getFragmentManager().beginTransaction()
+                            .add(R.id.content_frame,
+                                    sourceInfoFragment,
+                                    "source_info_fragment")
+                            .addToBackStack(null)
+                            .setCustomAnimations(R.animator.slide_from_bottom,
+                                    android.R.animator.fade_out)
+                            .setTransition(FragmentTransaction.TRANSIT_NONE)
+                            .commit();
+                }
+                int newPadding = Math.round(viewStartPadding * (1 - interpolatedTime));
+                view.setPadding(newPadding, 0, newPadding, 0);
+                view.setY(viewStartY - interpolatedTime * viewStartY);
+                sourceContainer.getLayoutParams().height = (int) (viewStartHeight + screenHeight * interpolatedTime);
+                sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
+                sourceTitle.setX(textStartX + (viewStartPadding - newPadding));
+                deleteButton.setAlpha(1.0f - interpolatedTime);
+                viewButton.setAlpha(1.0f - interpolatedTime);
+                editButton.setAlpha(1.0f - interpolatedTime);
+            }
+
+            @Override
+            public boolean willChangeBounds() {
+                return true;
+            }
+        };
+
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                Parcelable state = sourceList.onSaveInstanceState();
+                sourceList.setAdapter(null);
+                sourceList.setAdapter(listAdapter);
+                sourceList.onRestoreInstanceState(state);
+                sourceList.setOnItemClickListener(SourceListFragment.this);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+        ValueAnimator cardColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                getResources().getColor(R.color.DARK_BLUE_OPAQUE),
+                getResources().getColor(AppSettings.getBackgroundColorResource()));
+        cardColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                sourceContainer.setBackgroundColor((Integer) animation.getAnimatedValue());
+            }
+
+        });
+
+        ValueAnimator titleColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                sourceTitle.getCurrentTextColor(),
+                AppSettings.getColorFilterInt(appContext));
+        titleColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                sourceTitle.setTextColor((Integer) animation.getAnimatedValue());
+            }
+
+        });
+
+        ValueAnimator titleShadowAlphaAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                getResources().getColor(R.color.BLACK_OPAQUE),
+                getResources().getColor(android.R.color.transparent));
+        titleShadowAlphaAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                sourceTitle.setShadowLayer(4, 0, 0, (Integer) animation.getAnimatedValue());
+            }
+        });
+
+        int transitionTime = INFO_ANIMATION_TIME; //(int) Math.abs(INFO_ANIMATION_TIME * (viewStartY / screenHeight) + INFO_ANIMATION_TIME / 8);
+
+        DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
+
+        animation.setDuration(transitionTime);
+        cardColorAnimation.setDuration(transitionTime);
+        titleColorAnimation.setDuration(transitionTime);
+        titleShadowAlphaAnimation.setDuration(transitionTime);
+
+        animation.setInterpolator(decelerateInterpolator);
+        cardColorAnimation.setInterpolator(decelerateInterpolator);
+        titleColorAnimation.setInterpolator(decelerateInterpolator);
+        titleShadowAlphaAnimation.setInterpolator(decelerateInterpolator);
+
+        view.startAnimation(animation);
+        cardColorAnimation.start();
+        titleColorAnimation.start();
+        titleShadowAlphaAnimation.start();
+    }
+
     class ImageCountTask extends AsyncTask<Void, String, String> {
         @Override
         protected String doInBackground(Void... params) {
@@ -1594,14 +1631,16 @@ public class SourceListFragment extends Fragment {
 
     class PicasaAlbumTask extends AsyncTask<Void, String, Void> {
 
-        int changePosition;
         ArrayList<String> albumNames = new ArrayList<>();
         ArrayList<String> albumImageLinks = new ArrayList<>();
         ArrayList<String> albumLinks = new ArrayList<>();
         ArrayList<String> albumNums = new ArrayList<>();
+        private int changePosition;
+        private boolean use;
 
-        public PicasaAlbumTask(int position) {
+        public PicasaAlbumTask(int position, boolean use) {
             changePosition = position;
+            this.use = use;
         }
 
         @Override
@@ -1685,7 +1724,8 @@ public class SourceListFragment extends Fragment {
                     albumNames,
                     albumImageLinks,
                     albumLinks,
-                    albumNums);
+                    albumNums,
+                    use);
         }
     }
 

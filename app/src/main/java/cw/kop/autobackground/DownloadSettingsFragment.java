@@ -24,7 +24,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
@@ -165,7 +164,8 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     public void onClickRight(View v) {
                         AppSettings.setTimerHour(getTimePicker().getCurrentHour());
                         AppSettings.setTimerMinute(getTimePicker().getCurrentMinute());
-                        startTimePref.setSummary("Time to begin download timer: " + AppSettings.getTimerHour() + ":" + String.format("%02d",
+                        startTimePref.setSummary("Time to begin download timer: " + AppSettings.getTimerHour() + ":" + String.format(
+                                "%02d",
                                 AppSettings.getTimerMinute()));
                         dismissDialog();
                         setDownloadAlarm();
@@ -451,6 +451,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 Bundle arguments = new Bundle();
                 arguments.putBoolean("change", true);
                 arguments.putBoolean("set_path", true);
+                arguments.putBoolean("use", false);
                 arguments.putInt("position", 0);
                 localImageFragment.setArguments(arguments);
 

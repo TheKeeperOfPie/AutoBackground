@@ -428,12 +428,12 @@ public class DialogFactory {
 
         private TimePicker timePicker;
 
-        public void setTimePicker(TimePicker timePicker) {
-            this.timePicker = timePicker;
-        }
-
         public TimePicker getTimePicker() {
             return timePicker;
+        }
+
+        public void setTimePicker(TimePicker timePicker) {
+            this.timePicker = timePicker;
         }
 
     }

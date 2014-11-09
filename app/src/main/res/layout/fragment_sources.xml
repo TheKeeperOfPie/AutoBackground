@@ -23,18 +23,18 @@
     >
 
     <!--<TextView-->
-        <!--android:id="@+id/no_image_indicator"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentTop="true"-->
-        <!--android:gravity="center"-->
-        <!--android:text="@string/no_image_indicator"-->
-        <!--android:textAlignment="center"-->
-        <!--android:textAllCaps="true"-->
-        <!--android:textColor="@color/ALERT_TEXT"-->
-        <!--android:textSize="16sp"-->
-        <!--android:visibility="gone"-->
-        <!--/>-->
+    <!--android:id="@+id/no_image_indicator"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentTop="true"-->
+    <!--android:gravity="center"-->
+    <!--android:text="@string/no_image_indicator"-->
+    <!--android:textAlignment="center"-->
+    <!--android:textAllCaps="true"-->
+    <!--android:textColor="@color/ALERT_TEXT"-->
+    <!--android:textSize="16sp"-->
+    <!--android:visibility="gone"-->
+    <!--/>-->
 
     <ListView
         android:id="@+id/source_list"
@@ -42,10 +42,10 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/set_button"
         android:layout_alignParentTop="true"
-        android:paddingTop="0dp"
-        android:paddingBottom="85dp"
         android:clipToPadding="false"
         android:dividerHeight="0px"
+        android:paddingBottom="85dp"
+        android:paddingTop="0dp"
 
         >
     </ListView>

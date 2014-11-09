@@ -44,6 +44,7 @@ import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,126 +85,120 @@ public class DownloadThread extends Thread {
 
     @Override
     public void run() {
-        try {
-            super.run();
+        super.run();
 
-            Looper.prepare();
+        Looper.prepare();
 
-            if (AppSettings.useDownloadNotification()) {
-                notificationManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
-                notifyProgress = new Notification.Builder(appContext)
-                        .setContentTitle("AutoBackground")
-                        .setContentText("Downloading images...")
-                        .setSmallIcon(R.drawable.ic_photo_white_24dp);
+        if (AppSettings.useDownloadNotification()) {
+            notificationManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
+            notifyProgress = new Notification.Builder(appContext)
+                    .setContentTitle("AutoBackground")
+                    .setContentText("Downloading images...")
+                    .setSmallIcon(R.drawable.ic_photo_white_24dp);
 
-                if (Build.VERSION.SDK_INT >= 16) {
-                    notifyProgress.setPriority(Notification.PRIORITY_MIN);
-                }
-
+            if (Build.VERSION.SDK_INT >= 16) {
+                notifyProgress.setPriority(Notification.PRIORITY_MIN);
             }
-
-            String downloadCacheDir = AppSettings.getDownloadPath();
-
-            File cache = new File(downloadCacheDir);
-
-            if (!cache.exists() || !cache.isDirectory()) {
-                cache.mkdir();
-            }
-
-            List<Integer> indexes = new ArrayList<>();
-            for (int index = 0; index < AppSettings.getNumSources(); index++) {
-                if (!AppSettings.getSourceType(index).equals(AppSettings.FOLDER) && AppSettings.useSource(
-                        index)) {
-                    indexes.add(index);
-                    progressMax += AppSettings.getSourceNum(index);
-                }
-            }
-
-            usedLinks = new HashSet<>();
-
-            if (AppSettings.checkDuplicates()) {
-                Set<String> rawLinks = AppSettings.getUsedLinks();
-                for (String link : rawLinks) {
-                    if (link.lastIndexOf("Time:") > 0) {
-                        link = link.substring(0, link.lastIndexOf("Time:"));
-                    }
-                    usedLinks.add(link);
-                }
-            }
-
-            for (int index : indexes) {
-
-                if (isInterrupted()) {
-                    cancel();
-                    return;
-                }
-
-                try {
-                    if (!AppSettings.keepImages()) {
-                        AppSettings.setSourceNumStored(index, 0);
-                    }
-
-                    if (AppSettings.deleteOldImages()) {
-                        FileHandler.deleteBitmaps(appContext, index);
-                        AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
-                                new HashSet<String>());
-                    }
-
-                    String title = AppSettings.getSourceTitle(index);
-                    File file = new File(downloadCacheDir + "/" + title + " " + AppSettings.getImagePrefix());
-
-                    if (!file.exists() || !file.isDirectory()) {
-                        file.mkdir();
-                    }
-
-                    String sourceType = AppSettings.getSourceType(index);
-                    String sourceData = AppSettings.getSourceData(index);
-
-                    switch (sourceType) {
-                        case AppSettings.WEBSITE:
-                            downloadWebsite(sourceData, index);
-                            break;
-                        case AppSettings.IMGUR:
-                            downloadImgur(sourceData, index);
-                            break;
-                        case AppSettings.PICASA:
-                            downloadPicasa(sourceData, index);
-                            break;
-                        case AppSettings.TUMBLR_BLOG:
-                            downloadTumblrBlog(sourceData, index);
-                            break;
-                        case AppSettings.TUMBLR_TAG:
-                            downloadTumblrTag(sourceData, index);
-                            break;
-                    }
-
-                    totalTarget += AppSettings.getSourceNum(index);
-
-                    updateNotification(totalTarget);
-
-                    if (imagesDownloaded == 0) {
-                        sendToast("No images downloaded from " + title);
-                    }
-                    if (imagesDownloaded < AppSettings.getSourceNum(index)) {
-                        sendToast("Not enough photos from " + AppSettings.getSourceData(index) + " " +
-                                "Try lowering the resolution or changing sources. " +
-                                "There may also have been too many duplicates.");
-                    }
-
-                    totalDownloaded += imagesDownloaded;
-
-                }
-                catch (IOException | IllegalArgumentException e) {
-                    sendToast("Invalid URL: " + AppSettings.getSourceData(index));
-                    Log.i(TAG, "Invalid URL");
-                }
-            }
-            finish();
 
         }
-        catch (Exception e) {
 
+        String downloadCacheDir = AppSettings.getDownloadPath();
+
+        File cache = new File(downloadCacheDir);
+
+        if (!cache.exists() || !cache.isDirectory()) {
+            cache.mkdir();
         }
+
+        List<Integer> indexes = new ArrayList<>();
+        for (int index = 0; index < AppSettings.getNumSources(); index++) {
+            if (!AppSettings.getSourceType(index).equals(AppSettings.FOLDER) && AppSettings.useSource(
+                    index)) {
+                indexes.add(index);
+                progressMax += AppSettings.getSourceNum(index);
+            }
+        }
+
+        usedLinks = new HashSet<>();
+
+        if (AppSettings.checkDuplicates()) {
+            Set<String> rawLinks = AppSettings.getUsedLinks();
+            for (String link : rawLinks) {
+                if (link.lastIndexOf("Time:") > 0) {
+                    link = link.substring(0, link.lastIndexOf("Time:"));
+                }
+                usedLinks.add(link);
+            }
+        }
+
+        for (int index : indexes) {
+
+            if (isInterrupted()) {
+                cancel();
+                return;
+            }
+
+            try {
+                if (!AppSettings.keepImages()) {
+                    AppSettings.setSourceNumStored(index, 0);
+                }
+
+                if (AppSettings.deleteOldImages()) {
+                    FileHandler.deleteBitmaps(appContext, index);
+                    AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
+                            new HashSet<String>());
+                }
+
+                String title = AppSettings.getSourceTitle(index);
+                File file = new File(downloadCacheDir + "/" + title + " " + AppSettings.getImagePrefix());
+
+                if (!file.exists() || !file.isDirectory()) {
+                    file.mkdir();
+                }
+
+                String sourceType = AppSettings.getSourceType(index);
+                String sourceData = AppSettings.getSourceData(index);
+
+                switch (sourceType) {
+                    case AppSettings.WEBSITE:
+                        downloadWebsite(sourceData, index);
+                        break;
+                    case AppSettings.IMGUR:
+                        downloadImgur(sourceData, index);
+                        break;
+                    case AppSettings.PICASA:
+                        downloadPicasa(sourceData, index);
+                        break;
+                    case AppSettings.TUMBLR_BLOG:
+                        downloadTumblrBlog(sourceData, index);
+                        break;
+                    case AppSettings.TUMBLR_TAG:
+                        downloadTumblrTag(sourceData, index);
+                        break;
+                }
+
+                totalTarget += AppSettings.getSourceNum(index);
+
+                updateNotification(totalTarget);
+
+                if (imagesDownloaded == 0) {
+                    sendToast("No images downloaded from " + title);
+                }
+                if (imagesDownloaded < AppSettings.getSourceNum(index)) {
+                    sendToast("Not enough photos from " + AppSettings.getSourceData(index) + " " +
+                            "Try lowering the resolution or changing sources. " +
+                            "There may also have been too many duplicates.");
+                }
+
+                totalDownloaded += imagesDownloaded;
+
+            }
+            catch (IOException | IllegalArgumentException e) {
+                sendToast("Invalid URL: " + AppSettings.getSourceData(index));
+                Log.i(TAG, "Invalid URL");
+            }
+        }
+        finish();
     }
 
     private Set<String> compileImageLinks(Document doc, String tag, String attr) {
@@ -440,30 +435,25 @@ public class DownloadThread extends Thread {
 
         data = data.substring(data.indexOf("user/"));
 
-        try {
-            HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/" + data + "?imgmax=d");
-            httpGet.setHeader("Authorization", "OAuth " + AppSettings.getGoogleAccountToken());
-            httpGet.setHeader("X-GData-Client", ApiKeys.PICASA_CLIENT_ID);
-            httpGet.setHeader("GData-Version", "2");
+        HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/" + data + "?imgmax=d");
+        httpGet.setHeader("Authorization", "OAuth " + AppSettings.getGoogleAccountToken());
+        httpGet.setHeader("X-GData-Client", ApiKeys.PICASA_CLIENT_ID);
+        httpGet.setHeader("GData-Version", "2");
 
-            String response = getResponse(httpGet);
-            if (response == null) {
-                return;
-            }
-
-            Document linkDoc = Jsoup.parse(response);
-
-            List<String> imageList = new ArrayList<>();
-
-            for (Element link : linkDoc.select("media|group")) {
-                imageList.add(link.select("media|content").attr("url"));
-            }
-
-            startDownload(imageList, imageList, index);
+        String response = getResponse(httpGet);
+        if (response == null) {
+            return;
         }
-        catch (Exception e) {
-            e.printStackTrace();
+
+        Document linkDoc = Jsoup.parse(response);
+
+        List<String> imageList = new ArrayList<>();
+
+        for (Element link : linkDoc.select("media|group")) {
+            imageList.add(link.select("media|content").attr("url"));
         }
+
+        startDownload(imageList, imageList, index);
 
     }
 
@@ -508,10 +498,9 @@ public class DownloadThread extends Thread {
 
             startDownload(imageList, imagePages, index);
         }
-        catch (Exception e) {
+        catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
 
     private void downloadTumblrTag(String tag, int index) {
@@ -561,7 +550,7 @@ public class DownloadThread extends Thread {
 
             startDownload(imageList, imagePages, index);
         }
-        catch (Exception e) {
+        catch (JSONException e) {
             e.printStackTrace();
         }
 
@@ -586,7 +575,7 @@ public class DownloadThread extends Thread {
             }
             result = stringBuilder.toString();
         }
-        catch (Exception e) {
+        catch (IOException e) {
             return null;
         }
         finally {
@@ -699,7 +688,7 @@ public class DownloadThread extends Thread {
             AppSettings.setUrl(file.getName(), saveData);
             Log.i(TAG, file.getName() + " " + saveData);
         }
-        catch (Exception e) {
+        catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         finally {
@@ -769,7 +758,7 @@ public class DownloadThread extends Thread {
             AppSettings.setUrl(file.getName(), saveData);
             Log.i(TAG, file.getName() + " " + saveData);
         }
-        catch (Exception e) {
+        catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         finally {

@@ -474,7 +474,7 @@ public class AppSettings {
         int rate = 30;
 
         try {
-            rate =Integer.parseInt(prefs.getString("animation_frame_rate", "30"));
+            rate = Integer.parseInt(prefs.getString("animation_frame_rate", "30"));
         }
         catch (NumberFormatException e) {
             setImageHeight("" + rate);

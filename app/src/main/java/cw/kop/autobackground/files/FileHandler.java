@@ -113,7 +113,8 @@ public class FileHandler {
 
                     for (int folderIndex = 0; noImages && folderIndex < folders.length; folderIndex++) {
                         File folder = new File(folders[folderIndex]);
-                        if (folder.exists() && folder.isDirectory() && folder.listFiles(filenameFilter).length > 0) {
+                        if (folder.exists() && folder.isDirectory() && folder.listFiles(
+                                filenameFilter).length > 0) {
                             noImages = false;
                         }
                     }
