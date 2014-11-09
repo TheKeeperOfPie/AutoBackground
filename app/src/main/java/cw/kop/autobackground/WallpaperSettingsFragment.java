@@ -181,8 +181,13 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         }
 
-        if (AppSettings.getIntervalDuration() > 0) {
-            intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MILLES_TO_MIN) + " minutes");
+        if (AppSettings.useInterval()) {
+            if (AppSettings.getIntervalDuration() > 0) {
+                intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MILLES_TO_MIN) + " minutes");
+            }
+            else {
+                intervalPref.setSummary("Change on return");
+            }
         }
 
         return inflater.inflate(R.layout.fragment_list, container, false);
@@ -272,19 +277,23 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
             @Override
             public void onClickRight(View v) {
                 String value = getEditTextString();
-                int inputValue = Integer.parseInt(value);
+                long inputValue = Long.parseLong(value);
 
                 if (value.equals("") || inputValue < 0) {
                     intervalPref.setChecked(false);
                     return;
                 }
+                if (inputValue < 3000L && inputValue > 0) {
+                    inputValue = 3000L;
+                }
+
                 AppSettings.setIntervalDuration(inputValue);
                 setIntervalAlarm();
-                if (inputValue > 0) {
-                    intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MILLES_TO_MIN) + " minutes");
+                if (inputValue == 0) {
+                    intervalPref.setSummary("Change on return");
                 }
                 else {
-                    intervalPref.setSummary("Change on return");
+                    intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MILLES_TO_MIN) + " minutes");
                 }
                 dismissDialog();
             }

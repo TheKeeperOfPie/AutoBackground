@@ -226,6 +226,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         appContext.startActivity(intent);
         getActivity().finish();
+        getActivity().overridePendingTransition(0, 0);
     }
 
 }

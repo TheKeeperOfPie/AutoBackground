@@ -589,10 +589,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     }
 
     public void addEntry(String type, String title, String data, String num) {
-        if (listAdapter.addItem(type, title, data, true, num)) {
-            listAdapter.saveData();
-        }
-        else {
+        if (!listAdapter.addItem(type, title, data, true, num)) {
             Toast.makeText(appContext,
                     "Error: Title in use.\nPlease use a different title.",
                     Toast.LENGTH_SHORT).show();
@@ -606,10 +603,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             String path,
             String num,
             boolean use) {
-        if (listAdapter.setItem(position, type, title, path, use, num)) {
-            listAdapter.saveData();
-        }
-        else {
+        if (!listAdapter.setItem(position, type, title, path, use, num)) {
             Toast.makeText(appContext,
                     "Error: Title in use.\nPlease use a different title.",
                     Toast.LENGTH_SHORT).show();
@@ -691,7 +685,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                                         AppSettings.getSourceSet(previousTitle));
                                 FileHandler.renameFiles(appContext, previousTitle, newTitle);
                             }
-                            listAdapter.saveData();
                             new ImageCountTask().execute();
                             dialog.dismiss();
                         }
@@ -707,7 +700,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                                 data.trim(),
                                 true,
                                 sourceNum.getText().toString())) {
-                            listAdapter.saveData();
                             AppSettings.setSourceSet(newTitle, new HashSet<String>());
                             hide(addSourceTutorial);
                             new ImageCountTask().execute();
@@ -733,8 +725,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
 
     private void showDialogMenu(final int index) {
-
-        listAdapter.saveData();
 
         DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
             @Override
@@ -837,7 +827,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                                 type.equals(AppSettings.PICASA) ||
                                 type.equals(AppSettings.TUMBLR_BLOG) ||
                                 type.equals(AppSettings.TUMBLR_TAG)) {
-                            listAdapter.saveData();
 
                             DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
                                 @Override
@@ -851,7 +840,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                                     AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
                                             new HashSet<String>());
                                     listAdapter.removeItem(index);
-                                    listAdapter.saveData();
                                     new ImageCountTask().execute();
                                 }
 
@@ -864,7 +852,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                                     AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
                                             new HashSet<String>());
                                     listAdapter.removeItem(index);
-                                    listAdapter.saveData();
                                     new ImageCountTask().execute();
                                     this.dismissDialog();
                                 }
@@ -888,7 +875,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         else {
                             listAdapter.removeItem(index);
                             new ImageCountTask().execute();
-                            listAdapter.saveData();
                         }
                         break;
                     default:
@@ -917,7 +903,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         type.equals(AppSettings.PICASA) ||
                         type.equals(AppSettings.TUMBLR_BLOG) ||
                         type.equals(AppSettings.TUMBLR_TAG)) {
-                    listAdapter.saveData();
 
                     DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
 
@@ -927,7 +912,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                             AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
                                     new HashSet<String>());
                             listAdapter.removeItem(index);
-                            listAdapter.saveData();
                             new ImageCountTask().execute();
                         }
 
@@ -940,7 +924,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                             AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
                                     new HashSet<String>());
                             listAdapter.removeItem(index);
-                            listAdapter.saveData();
                             new ImageCountTask().execute();
                             this.dismissDialog();
                         }
@@ -964,7 +947,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         public void onClickRight(View v) {
                             listAdapter.removeItem(index);
                             new ImageCountTask().execute();
-                            listAdapter.saveData();
                             this.dismissDialog();
                         }
                     };
@@ -1098,7 +1080,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position,
                     long id) {
-                showDialogMenu(position);
+                listAdapter.toggleActivated(position);
+                int firstVisiblePosition = sourceList.getFirstVisiblePosition();
+                View childView = sourceList.getChildAt(position - firstVisiblePosition);
+                sourceList.getAdapter().getView(position, childView, sourceList);
                 return true;
             }
         });

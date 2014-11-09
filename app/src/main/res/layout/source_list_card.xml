@@ -61,6 +61,20 @@
             android:src="@drawable/ic_file_download_white_24dp"
             />
 
+        <View
+            android:id="@+id/source_image_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:layout_alignTop="@id/source_image"
+            android:layout_alignBottom="@id/source_image"
+            android:layout_alignStart="@id/source_image"
+            android:layout_alignLeft="@id/source_image"
+            android:layout_alignEnd="@id/source_image"
+            android:layout_alignRight="@id/source_image"
+            android:background="@color/DARK_GRAY_OPAQUE"
+            android:alpha="0"
+            />
+
         <EditText
             android:id="@+id/source_title"
             android:layout_width="wrap_content"

@@ -294,10 +294,6 @@ public class MainActivity extends ActionBarActivity {
             fragmentTransaction.setCustomAnimations(R.animator.slide_from_left,
                     R.animator.slide_to_right);
         }
-        else {
-            fragmentTransaction.setCustomAnimations(android.R.animator.fade_in,
-                    android.R.animator.fade_out);
-        }
 
         switch (position) {
 

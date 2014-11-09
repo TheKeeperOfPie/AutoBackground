@@ -29,6 +29,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.squareup.picasso.Picasso;
 
@@ -52,6 +54,8 @@ public class SourceListAdapter extends BaseAdapter {
     public static final String NEED_DOWNLOAD = "NEED_DOWNLOAD";
     public static final String NO_IMAGES = "NO_IMAGES";
     public static final String OKAY = "OKAY";
+
+    private static final float OVERLAY_ALPHA = 0.75f;
 
     private Activity mainActivity;
     private ArrayList<HashMap<String, String>> listData;
@@ -99,6 +103,18 @@ public class SourceListAdapter extends BaseAdapter {
 
         Resources resources = parent.getContext().getResources();
 
+        RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);
+        View imageOverlay = view.findViewById(R.id.source_image_overlay);
+
+        if (!Boolean.parseBoolean(listItem.get("use"))) {
+            sourceContainer.setBackgroundColor(resources.getColor(R.color.DARK_GRAY_OPAQUE));
+            imageOverlay.setAlpha(OVERLAY_ALPHA);
+        }
+        else {
+            sourceContainer.setBackgroundColor(resources.getColor(R.color.DARK_BLUE_OPAQUE));
+            imageOverlay.setAlpha(0);
+        }
+
         ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
         ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
         ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
@@ -135,12 +151,6 @@ public class SourceListAdapter extends BaseAdapter {
         });
 
         ImageView image = (ImageView) view.findViewById(R.id.source_image);
-//        image.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                cardClickListener.onItemClick(view, position);
-//            }
-//        });
 
         Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_24dp);
         downloadDrawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
@@ -228,7 +238,12 @@ public class SourceListAdapter extends BaseAdapter {
         changedItem.put("use", "" + use);
         listData.set(position, changedItem);
         notifyDataSetChanged();
-        saveData();
+    }
+
+    public void toggleActivated(int position) {
+        HashMap<String, String> changedItem = listData.get(position);
+        changedItem.put("use", "" + !Boolean.parseBoolean(changedItem.get("use")));
+        listData.set(position, changedItem);
     }
 
     public boolean setItem(int position, String type, String title, String data, boolean use,
@@ -328,7 +343,6 @@ public class SourceListAdapter extends BaseAdapter {
                 }
             }
             notifyDataSetChanged();
-            saveData();
         }
     }
 
