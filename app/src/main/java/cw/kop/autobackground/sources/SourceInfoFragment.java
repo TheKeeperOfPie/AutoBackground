@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -57,16 +58,18 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import cw.kop.autobackground.CustomSwitchPreference;
+import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.SourceSpinnerAdapter;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.AlbumFragment;
@@ -104,6 +107,11 @@ public class SourceInfoFragment extends PreferenceFragment {
     private String hint;
     private String prefix;
     private String suffix;
+    private int startHour;
+    private int startMinute;
+    private int endHour;
+    private int endMinute;
+    private CustomSwitchPreference timePref;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -129,6 +137,8 @@ public class SourceInfoFragment extends PreferenceFragment {
             ViewGroup container,
             Bundle savedInstanceState) {
 
+        Bundle arguments = getArguments();
+        sourcePosition = (Integer) arguments.get("position");
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
         View view = inflater.inflate(R.layout.source_info_fragment, container, false);
@@ -164,18 +174,99 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourceSpinnerText = (TextView) view.findViewById(R.id.source_spinner_text);
         sourceSpinner = (Spinner) view.findViewById(R.id.source_spinner);
 
-        Bundle arguments = getArguments();
-        sourcePosition = (Integer) arguments.get("position");
+        timePref = (CustomSwitchPreference) findPreference("source_time");
+        timePref.setChecked(arguments.getBoolean("use_time"));
+        timePref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+
+                if (!(Boolean) newValue) {
+                    return true;
+                }
+
+                DialogFactory.TimeDialogListener listener = new DialogFactory.TimeDialogListener() {
+
+                    @Override
+                    public void onClickRight(View v) {
+                        startHour = getTimePicker().getCurrentHour();
+                        startMinute = getTimePicker().getCurrentMinute();
+
+                        DialogFactory.TimeDialogListener listener = new DialogFactory.TimeDialogListener() {
+
+                            @Override
+                            public void onClickRight(View v) {
+                                endHour = getTimePicker().getCurrentHour();
+                                endMinute = getTimePicker().getCurrentMinute();
+
+                                timePref.setSummary(String.format(
+                                        "Time active: %02d:%02d - %02d:%02d",
+                                        startHour,
+                                        startMinute,
+                                        endHour,
+                                        endMinute));
+
+                                dismissDialog();
+                            }
+
+                            @Override
+                            public void onDismiss() {
+                                timePref.setSummary(String.format(
+                                        "Time active: %02d:%02d - %02d:%02d",
+                                        startHour,
+                                        startMinute,
+                                        endHour,
+                                        endMinute));
+                            }
+                        };
+
+                        DialogFactory.showTimeDialog(appContext,
+                                "End time?",
+                                "",
+                                listener,
+                                -1,
+                                R.string.cancel_button,
+                                R.string.ok_button,
+                                endHour,
+                                endMinute);
+
+                        dismissDialog();
+                    }
+
+                    @Override
+                    public void onDismiss() {
+                        timePref.setSummary(String.format(
+                                "Time active: %02d:%02d - %02d:%02d",
+                                startHour,
+                                startMinute,
+                                endHour,
+                                endMinute));
+                    }
+                };
+
+                DialogFactory.showTimeDialog(appContext,
+                        "Start time?",
+                        "",
+                        listener,
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button,
+                        startHour,
+                        startMinute);
+
+
+                return true;
+            }
+        });
 
         if (sourcePosition == -1) {
             sourceImage.setVisibility(View.GONE);
             sourceSpinnerText.setVisibility(View.VISIBLE);
             sourceSpinner.setVisibility(View.VISIBLE);
-            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(appContext,
-                    R.array.source_menu, android.R.layout.simple_spinner_item);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-            sourceSpinner.setAdapter(adapter);
 
+            SourceSpinnerAdapter adapter = new SourceSpinnerAdapter(appContext, R.layout.spinner_row,
+                    Arrays.asList(getResources().getStringArray(R.array.source_menu)));
+            sourceSpinner.setAdapter(adapter);
             sourceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent,
@@ -197,6 +288,11 @@ public class SourceInfoFragment extends PreferenceFragment {
             hint = "URL";
             prefix = "";
             suffix = "";
+
+            startHour = 0;
+            startMinute = 0;
+            endHour = 0;
+            endMinute = 0;
         }
         else {
             sourceImage.setVisibility(View.VISIBLE);
@@ -267,6 +363,24 @@ public class SourceInfoFragment extends PreferenceFragment {
             }
 
             ((CustomSwitchPreference) findPreference("source_show_preview")).setChecked(showPreview);
+
+            String[] timeArray = arguments.getString("time").split(":|[ -]+");
+
+            try {
+                startHour = Integer.parseInt(timeArray[0]);
+                startMinute = Integer.parseInt(timeArray[1]);
+                endHour = Integer.parseInt(timeArray[2]);
+                endMinute = Integer.parseInt(timeArray[3]);
+                timePref.setSummary(String.format("Time active: %02d:%02d - %02d:%02d",
+                        startHour, startMinute, endHour, endMinute));
+            }
+            catch (NumberFormatException e) {
+                e.printStackTrace();
+                startHour = 0;
+                startMinute = 0;
+                endHour = 0;
+                endMinute = 0;
+            }
 
         }
 
@@ -413,6 +527,9 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourceIntent.putExtra("use", sourceUse.isChecked());
         sourceIntent.putExtra("preview",
                 ((CustomSwitchPreference) findPreference("source_show_preview")).isChecked());
+        sourceIntent.putExtra("use_time", timePref.isChecked());
+        sourceIntent.putExtra("time", String.format("%02d:%02d - %02d:%02d",
+                startHour, startMinute, endHour, endMinute));
 
         try {
             InputMethodManager im = (InputMethodManager) appContext.getSystemService(Context.INPUT_METHOD_SERVICE);

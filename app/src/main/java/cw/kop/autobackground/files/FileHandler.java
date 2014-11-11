@@ -27,8 +27,11 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -143,6 +146,34 @@ public class FileHandler {
         for (int i = 0; i < AppSettings.getNumSources(); i++) {
 
             if (AppSettings.useSource(i)) {
+
+                if (AppSettings.useSourceTime(i)) {
+                    String[] timeArray = AppSettings.getSourceTime(i).split(":|[ -]+");
+
+                    try {
+                        int startTime = Integer.parseInt(timeArray[0] + "" + timeArray[1]);
+                        int endTime = Integer.parseInt(timeArray[2] + "" + timeArray[3]);
+                        int currentTime = Integer.parseInt(new SimpleDateFormat("HHmm").format(new Date()));
+
+                        Log.i(TAG, "currentTime: " + currentTime);
+
+                        if (startTime < endTime) {
+                            if (currentTime < startTime || currentTime > endTime) {
+                                continue;
+                            }
+                        }
+                        else {
+                            if (!(currentTime > startTime || currentTime < endTime)) {
+                                continue;
+                            }
+                        }
+
+                    }
+                    catch (NumberFormatException e) {
+                        Log.w(TAG, "Error parsing time");
+                    }
+                }
+
                 String type = AppSettings.getSourceType(i);
                 if (type.equals(AppSettings.FOLDER)) {
 

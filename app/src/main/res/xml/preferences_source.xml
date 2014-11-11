@@ -26,8 +26,17 @@
         <cw.kop.autobackground.CustomSwitchPreference
             android:key="source_show_preview"
             android:defaultValue="true"
-            android:summary="@string/source_show_preview"
+            android:persistent="false"
             android:title="@string/source_show_preview"
+            android:summary="@string/source_show_preview"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="source_time"
+            android:defaultValue="false"
+            android:persistent="false"
+            android:title="@string/source_time"
+            android:summary="@string/source_time"
             />
 
     </PreferenceCategory>

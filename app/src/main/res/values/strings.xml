@@ -50,6 +50,7 @@
 
     <string name="source_show_preview">Show Preview</string>
     <string name="source_show_preview_description">Load image preview into source list</string>
+    <string name="source_time">Time Active</string>
 
     <string name="preserve_context">Preserve Context</string>
     <string name="preserve_context_description">Hold image texture in RAM to prevent reloading on return</string>

@@ -168,12 +168,6 @@ public class SourceListAdapter extends BaseAdapter {
                 cardClickListener.onViewImageClick(position);
             }
         });
-        editButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cardClickListener.onEditClick(position);
-            }
-        });
 
         ImageView image = (ImageView) view.findViewById(R.id.source_image);
 
@@ -241,7 +235,7 @@ public class SourceListAdapter extends BaseAdapter {
     }
 
     public boolean setItem(int position, String type, String title, String data, boolean use,
-            String num, boolean preview) {
+            String num, boolean preview, boolean useTime, String time) {
 
         HashMap<String, String> changedItem = listData.get(position);
 
@@ -258,6 +252,8 @@ public class SourceListAdapter extends BaseAdapter {
         changedItem.put("num", "" + num);
         changedItem.put("use", "" + use);
         changedItem.put("preview", "" + preview);
+        changedItem.put("use_time", "" + useTime);
+        changedItem.put("time", time);
         File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
         if (folder.exists() && folder.isDirectory()) {
             changedItem.put("numStored",
@@ -272,7 +268,7 @@ public class SourceListAdapter extends BaseAdapter {
         return true;
     }
 
-    public boolean addItem(String type, String title, String data, boolean use, String num, boolean preview) {
+    public boolean addItem(String type, String title, String data, boolean use, String num, boolean preview, boolean useTime, String time) {
 
         if (titles.contains(title)) {
             return false;
@@ -286,6 +282,8 @@ public class SourceListAdapter extends BaseAdapter {
         newItem.put("use", "" + use);
         newItem.put("numStored", "0");
         newItem.put("preview", "" + preview);
+        newItem.put("use_time", "" + useTime);
+        newItem.put("time", time);
         File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
         if (folder.exists() && folder.isDirectory()) {
             newItem.put("numStored",
@@ -434,8 +432,6 @@ public class SourceListAdapter extends BaseAdapter {
         void onDeleteClick(int index);
 
         void onViewImageClick(int index);
-
-        void onEditClick(int index);
 
         void onViewClick(View view, int index);
     }

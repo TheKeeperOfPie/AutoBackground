@@ -405,6 +405,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         switch (item.getItemId()) {
 
             case R.id.cycle_wallpaper:
+                listAdapter.saveData();
                 cycleWallpaper();
                 if (AppSettings.useToast()) {
                     Toast.makeText(appContext, "Cycling wallpaper...", Toast.LENGTH_SHORT).show();
@@ -594,6 +595,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         arguments.putString("num", "");
         arguments.putBoolean("use", true);
         arguments.putBoolean("preview", true);
+        arguments.putBoolean("use_time", false);
+        arguments.putString("time", "00:00 - 00:00");
         sourceInfoFragment.setArguments(arguments);
 
         getFragmentManager().beginTransaction()
@@ -636,8 +639,15 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 R.array.source_sort_menu);
     }
 
-    public void addEntry(String type, String title, String data, String num, boolean use, boolean preview) {
-        if (!listAdapter.addItem(type, title, data, use, num, preview)) {
+    public void addEntry(String type,
+            String title,
+            String data,
+            String num,
+            boolean use,
+            boolean preview,
+            boolean useTime,
+            String time) {
+        if (!listAdapter.addItem(type, title, data, use, num, preview, useTime, time)) {
             Toast.makeText(appContext,
                     "Error: Title in use.\nPlease use a different title.",
                     Toast.LENGTH_SHORT).show();
@@ -651,126 +661,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             String path,
             String num,
             boolean use,
-            boolean preview) {
-        if (!listAdapter.setItem(position, type, title, path, use, num, preview)) {
+            boolean preview, boolean useTime, String time) {
+        if (!listAdapter.setItem(position, type, title, path, use, num, preview, useTime, time)) {
             Toast.makeText(appContext,
                     "Error: Title in use.\nPlease use a different title.",
                     Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private void showInputDialog(final String type, String title, String hint, final String prefix,
-            String data, final String suffix, String num, String mainTitle,
-            final int index) {
-
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
-                new Dialog(
-                        appContext,
-                        R.style.LightDialogTheme) :
-                new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.add_source_dialog, null);
-
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        final EditText sourceTitle = (EditText) dialogView.findViewById(R.id.source_title);
-        final EditText sourcePrefix = (EditText) dialogView.findViewById(R.id.source_data_prefix);
-        final EditText sourceData = (EditText) dialogView.findViewById(R.id.source_data);
-        final EditText sourceSuffix = (EditText) dialogView.findViewById(R.id.source_data_suffix);
-        final EditText sourceNum = (EditText) dialogView.findViewById(R.id.source_num);
-
-        dialogTitle.setText(mainTitle);
-        sourceTitle.setText(title);
-        sourcePrefix.setText(prefix);
-        sourceData.setHint(hint);
-        sourceData.setText(data);
-        sourceSuffix.setText(suffix);
-        sourceNum.setText(num);
-
-        Button negativeButton = (Button) dialogView.findViewById(R.id.source_negative_button);
-        negativeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        Button positiveButton = (Button) dialogView.findViewById(R.id.source_positive_button);
-        positiveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!sourceData.getText().toString().equals("") && !sourceTitle.getText().toString().equals(
-                        "")) {
-
-                    if (sourceNum.getText().toString().equals("")) {
-                        sourceNum.setText("1");
-                    }
-
-                    String newTitle = sourceTitle.getText().toString();
-                    String data = prefix + sourceData.getText().toString() + suffix;
-
-                    if ((type.equals(AppSettings.WEBSITE) ||
-                            type.equals(AppSettings.IMGUR) ||
-                            type.equals(AppSettings.PICASA) ||
-                            type.equals(AppSettings.TUMBLR_BLOG))
-                            && !data.contains("http")) {
-                        data = "http://" + data;
-                    }
-                    else if (type.equals(AppSettings.TUMBLR_TAG)) {
-                        data = "Tumblr Tag: " + data;
-                    }
-
-                    if (index >= 0) {
-                        String previousTitle = AppSettings.getSourceTitle(index);
-                        if (listAdapter.setItem(index,
-                                type,
-                                newTitle,
-                                data.trim(),
-                                AppSettings.useSource(index),
-                                sourceNum.getText().toString(),
-                                true)) {
-                            if (!previousTitle.equals(newTitle)) {
-                                AppSettings.setSourceSet(newTitle,
-                                        AppSettings.getSourceSet(previousTitle));
-                                FileHandler.renameFiles(appContext, previousTitle, newTitle);
-                            }
-                            new ImageCountTask().execute();
-                            dialog.dismiss();
-                        }
-                        else {
-                            Toast.makeText(appContext,
-                                    "Error: Title in use.\nPlease use a different title.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    else {
-                        if (listAdapter.addItem(type,
-                                newTitle,
-                                data.trim(),
-                                true,
-                                sourceNum.getText().toString(),
-                                true)) {
-                            AppSettings.setSourceSet(newTitle, new HashSet<String>());
-                            new ImageCountTask().execute();
-                            dialog.dismiss();
-                        }
-                        else {
-                            Toast.makeText(appContext,
-                                    "Error: Title in use.\nPlease use a different title.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }
-            }
-        });
-
-
-        negativeButton.setTextColor(getResources().getColor(R.color.ACCENT_OPAQUE));
-        positiveButton.setTextColor(getResources().getColor(R.color.ACCENT_OPAQUE));
-
-        dialog.show();
-
     }
 
     @Override
@@ -872,86 +768,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             }
 
             @Override
-            public void onEditClick(int index) {
-                listAdapter.saveData();
-                HashMap<String, String> item = listAdapter.getItem(index);
-                String type = item.get("type");
-                boolean use = Boolean.parseBoolean(item.get("use"));
-                switch (type) {
-                    case AppSettings.WEBSITE:
-                        showInputDialog(AppSettings.WEBSITE,
-                                AppSettings.getSourceTitle(index),
-                                "",
-                                "",
-                                AppSettings.getSourceData(index),
-                                "",
-                                "" + AppSettings.getSourceNum(index),
-                                "Edit website:",
-                                index);
-                        break;
-                    case AppSettings.IMGUR: {
-                        String hint = "";
-                        String prefix = "";
-                        String data = AppSettings.getSourceData(index);
-                        if (data.contains("imgur.com/a/")) {
-                            hint = "Album ID";
-                            prefix = "imgur.com/a/";
-                        }
-                        else if (data.contains("imgur.com/r/")) {
-                            hint = "Subreddit";
-                            prefix = "imgur.com/r/";
-                        }
-
-                        showInputDialog(AppSettings.IMGUR,
-                                AppSettings.getSourceTitle(index),
-                                hint,
-                                prefix,
-                                data.substring(data.indexOf(prefix) + prefix.length()),
-                                "",
-                                "" + AppSettings.getSourceNum(index),
-                                "Edit Imgur source:",
-                                index);
-                        break;
-                    }
-                    case AppSettings.PICASA:
-                        new PicasaAlbumTask(index, use).execute();
-                        break;
-                    case AppSettings.TUMBLR_BLOG:
-                        showInputDialog(AppSettings.TUMBLR_BLOG,
-                                AppSettings.getSourceTitle(index),
-                                "blog name",
-                                "",
-                                AppSettings.getSourceData(index),
-                                "",
-                                "" + AppSettings.getSourceNum(index),
-                                "Edit Tumblr Blog:",
-                                index);
-                        break;
-                    case AppSettings.TUMBLR_TAG: {
-                        String data = AppSettings.getSourceData(index);
-
-                        if (data.length() > 12) {
-                            data = data.substring(12);
-                        }
-
-                        showInputDialog(AppSettings.TUMBLR_TAG,
-                                AppSettings.getSourceTitle(index),
-                                "tag",
-                                "",
-                                data,
-                                "",
-                                "" + AppSettings.getSourceNum(index),
-                                "Edit Tumblr Tag:",
-                                index);
-                        break;
-                    }
-                    case AppSettings.FOLDER:
-                        showImageFragment(false, "", index, use);
-                        break;
-                }
-            }
-
-            @Override
             public void onViewClick(View view, int index) {
                 onItemClick(null, view, index, -1);
             }
@@ -965,7 +781,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         AppSettings.getSourceData(i),
                         AppSettings.useSource(i),
                         "" + AppSettings.getSourceNum(i),
-                        AppSettings.useSourcePreview(i));
+                        AppSettings.useSourcePreview(i),
+                        AppSettings.useSourceTime(i),
+                        AppSettings.getSourceTime(i));
                 Log.i("WLF", "Added: " + AppSettings.getSourceTitle(i));
             }
         }
@@ -1096,6 +914,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         else {
             arguments.putString("image", "");
         }
+
+        arguments.putBoolean("use_time", Boolean.parseBoolean(dataItem.get("use_time")));
+        arguments.putString("time", dataItem.get("time"));
+
         sourceInfoFragment.setArguments(arguments);
 
         final RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);

@@ -43,6 +43,7 @@
         android:layout_toEndOf="@id/source_spinner_text"
         android:layout_toRightOf="@id/source_spinner_text"
         android:layout_margin="16dp"
+        android:dropDownSelector="@color/ACCENT_OPAQUE"
         android:textAppearance="?android:attr/textAppearanceLarge"
         />
 
@@ -219,9 +220,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/source_num_container"
+            android:layout_above="@+id/save_button"
             android:layout_marginTop="16dp"
-            android:paddingBottom="85dp"
-            android:clipToPadding="false"
+            android:layout_marginBottom="16dp"
             />
 
         <Button

@@ -178,7 +178,9 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                         listener,
                         -1,
                         R.string.cancel_button,
-                        R.string.ok_button);
+                        R.string.ok_button,
+                        AppSettings.getTimerHour(),
+                        AppSettings.getTimerMinute());
 
                 return true;
             }

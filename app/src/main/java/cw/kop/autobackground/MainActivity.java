@@ -67,7 +67,9 @@ public class MainActivity extends ActionBarActivity {
                             intent.getStringExtra("data"),
                             "" + intent.getIntExtra("num", 0),
                             intent.getBooleanExtra("use", true),
-                            intent.getBooleanExtra("preview", true));
+                            intent.getBooleanExtra("preview", true),
+                            intent.getBooleanExtra("use_time", false),
+                            intent.getStringExtra("time"));
                     break;
                 case SourceListFragment.SET_ENTRY:
                     sourceListFragment.setEntry(
@@ -77,7 +79,9 @@ public class MainActivity extends ActionBarActivity {
                             intent.getStringExtra("data"),
                             "" + intent.getIntExtra("num", 0),
                             intent.getBooleanExtra("use", true),
-                            intent.getBooleanExtra("preview", true));
+                            intent.getBooleanExtra("preview", true),
+                            intent.getBooleanExtra("use_time", false),
+                            intent.getStringExtra("time"));
                     break;
                 case LOAD_NAV_PICTURE:
                     loadNavPicture();

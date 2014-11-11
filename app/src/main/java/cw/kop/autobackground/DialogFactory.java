@@ -275,7 +275,9 @@ public class DialogFactory {
             final TimeDialogListener listener,
             int textOneResource,
             int textTwoResource,
-            int textThreeResource) {
+            int textThreeResource,
+            int currentHour,
+            int currentMinute) {
 
         Dialog dialog = getDialog(context);
         listener.setDialog(dialog);
@@ -351,6 +353,91 @@ public class DialogFactory {
 
         dialog.show();
 
+
+    }
+
+    public static void showTimeIntervalDialog(Context context,
+            String title,
+            String summary,
+            final TimeIntervalDialogListener listener,
+            int textOneResource,
+            int textTwoResource,
+            int textThreeResource) {
+
+        Dialog dialog = getDialog(context);
+        listener.setDialog(dialog);
+
+        View dialogView = View.inflate(context, R.layout.time_interval_dialog, null);
+        dialog.setContentView(dialogView);
+
+        TimePicker timePickerStart = (TimePicker) dialogView.findViewById(R.id.dialog_time_picker_start);
+        TimePicker timePickerEnd = (TimePicker) dialogView.findViewById(R.id.dialog_time_picker_end);
+        listener.setTimePickers(timePickerStart, timePickerEnd);
+
+        if (title.length() > 0) {
+            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+            dialogTitle.setVisibility(View.VISIBLE);
+            dialogTitle.setText(title);
+
+            View titleUnderline = dialogView.findViewById(R.id.dialog_underline);
+            titleUnderline.setVisibility(View.VISIBLE);
+        }
+
+        if (summary.length() > 0) {
+            TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
+            dialogSummary.setText(summary);
+            dialogSummary.setVisibility(View.VISIBLE);
+        }
+
+        int textColorInt = context.getResources().getColor(R.color.ACCENT_OPAQUE);
+
+        if (textOneResource > 0) {
+            Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);
+            buttonOne.setText(context.getResources().getString(textOneResource));
+            buttonOne.setTextColor(textColorInt);
+            buttonOne.setVisibility(View.VISIBLE);
+            buttonOne.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickLeft(v);
+                }
+            });
+        }
+
+        if (textTwoResource > 0) {
+            Button buttonTwo = (Button) dialogView.findViewById(R.id.action_button_2);
+            buttonTwo.setText(context.getResources().getString(textTwoResource));
+            buttonTwo.setTextColor(textColorInt);
+            buttonTwo.setVisibility(View.VISIBLE);
+            buttonTwo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickMiddle(v);
+                }
+            });
+        }
+
+        if (textThreeResource > 0) {
+            Button buttonThree = (Button) dialogView.findViewById(R.id.action_button_3);
+            buttonThree.setText(context.getResources().getString(textThreeResource));
+            buttonThree.setTextColor(textColorInt);
+            buttonThree.setVisibility(View.VISIBLE);
+            buttonThree.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickRight(v);
+                }
+            });
+        }
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                listener.onDismiss();
+            }
+        });
+
+        dialog.show();
 
     }
 
@@ -434,6 +521,26 @@ public class DialogFactory {
 
         public void setTimePicker(TimePicker timePicker) {
             this.timePicker = timePicker;
+        }
+
+    }
+
+    public abstract static class TimeIntervalDialogListener extends ActionDialogListener {
+
+        private TimePicker timePickerStart;
+        private TimePicker timePickerEnd;
+
+        public TimePicker getTimePickerStart() {
+            return timePickerStart;
+        }
+
+        public TimePicker getTimePickerEnd() {
+            return timePickerEnd;
+        }
+
+        public void setTimePickers(TimePicker timePickerStart, TimePicker timePickerEnd) {
+            this.timePickerStart = timePickerStart;
+            this.timePickerEnd = timePickerEnd;
         }
 
     }

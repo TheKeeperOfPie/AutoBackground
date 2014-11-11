@@ -628,6 +628,9 @@ public class AppSettings {
                     Boolean.valueOf(listData.get(i).get("use"))).commit();
             prefs.edit().putBoolean("source_preview_" + i,
                     Boolean.valueOf(listData.get(i).get("preview"))).commit();
+            prefs.edit().putBoolean("use_source_time_" + i,
+                    Boolean.valueOf(listData.get(i).get("use_time"))).commit();
+            prefs.edit().putString("source_time_" + i, listData.get(i).get("time")).commit();
 
         }
 
@@ -683,6 +686,14 @@ public class AppSettings {
 
     public static String getSourceData(int index) {
         return prefs.getString("source_data_" + index, null);
+    }
+
+    public static boolean useSourceTime(int index) {
+        return prefs.getBoolean("use_source_time_" + index, false);
+    }
+
+    public static String getSourceTime(int index) {
+        return prefs.getString("source_time_" + index, "00:00 - 00:00");
     }
 
     public static boolean useImageHistory() {
