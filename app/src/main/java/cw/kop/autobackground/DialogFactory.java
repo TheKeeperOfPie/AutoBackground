@@ -87,7 +87,7 @@ public class DialogFactory {
             dialogSummary.setVisibility(View.VISIBLE);
         }
 
-        int textColorInt = context.getResources().getColor(R.color.LIGHT_BLUE_OPAQUE);
+        int textColorInt = context.getResources().getColor(R.color.ACCENT_OPAQUE);
 
         if (textOneResource > 0) {
             Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);
@@ -217,7 +217,7 @@ public class DialogFactory {
         }
         listener.setEditText(inputField);
 
-        int textColorInt = context.getResources().getColor(R.color.LIGHT_BLUE_OPAQUE);
+        int textColorInt = context.getResources().getColor(R.color.ACCENT_OPAQUE);
 
         if (textOneResource > 0) {
             Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);
@@ -301,7 +301,7 @@ public class DialogFactory {
             dialogSummary.setVisibility(View.VISIBLE);
         }
 
-        int textColorInt = context.getResources().getColor(R.color.LIGHT_BLUE_OPAQUE);
+        int textColorInt = context.getResources().getColor(R.color.ACCENT_OPAQUE);
 
         if (textOneResource > 0) {
             Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);

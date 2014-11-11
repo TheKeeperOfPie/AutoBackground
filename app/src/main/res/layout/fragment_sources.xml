@@ -22,20 +22,6 @@
     android:layout_height="match_parent"
     >
 
-    <!--<TextView-->
-    <!--android:id="@+id/no_image_indicator"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:layout_alignParentTop="true"-->
-    <!--android:gravity="center"-->
-    <!--android:text="@string/no_image_indicator"-->
-    <!--android:textAlignment="center"-->
-    <!--android:textAllCaps="true"-->
-    <!--android:textColor="@color/ALERT_TEXT"-->
-    <!--android:textSize="16sp"-->
-    <!--android:visibility="gone"-->
-    <!--/>-->
-
     <ListView
         android:id="@+id/source_list"
         android:layout_width="match_parent"
@@ -59,7 +45,7 @@
         android:textColor="@color/WHITE_OPAQUE"
         />
 
-    <ImageButton
+    <ImageView
         android:id="@+id/floating_button"
         android:layout_width="56dp"
         android:layout_height="56dp"
@@ -70,8 +56,22 @@
         android:layout_marginBottom="24dp"
         android:layout_marginEnd="24dp"
         android:layout_marginRight="24dp"
-        android:background="@drawable/floating_button_white"
+        android:background="@drawable/floating_button_circle"
         android:contentDescription="@string/floating_add_button_content_description"
+        />
+
+    <ImageView
+        android:id="@+id/floating_button_icon"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_alignTop="@+id/floating_button"
+        android:layout_alignBottom="@+id/floating_button"
+        android:layout_alignStart="@+id/floating_button"
+        android:layout_alignLeft="@+id/floating_button"
+        android:layout_alignEnd="@+id/floating_button"
+        android:layout_alignRight="@+id/floating_button"
+        android:padding="16dp"
+        android:src="@drawable/ic_add_white_24dp"
         />
 
 </cw.kop.autobackground.CustomRelativeLayout>

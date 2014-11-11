@@ -15,9 +15,21 @@
   ~ limitations under the License.
   -->
 
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:drawable="@color/ACCENT_OPAQUE" android:state_pressed="true"/>
-    <item android:drawable="@android:color/transparent"/>
 
-</selector>
+    <PreferenceCategory
+        android:key="title_source_settings"
+        android:title="@string/title_source_settings"
+        >
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="source_show_preview"
+            android:defaultValue="true"
+            android:summary="@string/source_show_preview"
+            android:title="@string/source_show_preview"
+            />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

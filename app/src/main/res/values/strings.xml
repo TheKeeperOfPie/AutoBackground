@@ -32,6 +32,8 @@
     <string name="sort_sources_content_description">Sort sources</string>
     <string name="floating_add_button_content_description">Add source</string>
 
+
+    <string name="title_source_settings">Source Settings</string>
     <string name="title_wallpaper_settings">Wallpaper Settings</string>
     <string name="title_effects_settings">Effect Settings</string>
     <string name="title_effects_parameters">Effect Parameters</string>
@@ -45,6 +47,9 @@
     <string name="title_gesture_settings">Gesture Settings</string>
     <string name="title_about">About Application</string>
     <string name="title_about_libraries">Used Libraries</string>
+
+    <string name="source_show_preview">Show Preview</string>
+    <string name="source_show_preview_description">Load image preview into source list</string>
 
     <string name="preserve_context">Preserve Context</string>
     <string name="preserve_context_description">Hold image texture in RAM to prevent reloading on return</string>
@@ -137,9 +142,10 @@
     <string name="use_long_press_reset_description">Long press wallpaper to reset image position</string>
 
     <string name="add_source">Add New Source</string>
+    <string name="source_type">Source</string>
     <string name="source_title">Title</string>
     <string name="source_data">Data</string>
-    <string name="num_images"># of images to download</string>
+    <string name="num_images"># of images</string>
     <string name="sort_sources">Sort Sources</string>
     <string name="download_wallpaper">Download Images</string>
     <string name="cycle_wallpaper">Cycle Wallpaper</string>

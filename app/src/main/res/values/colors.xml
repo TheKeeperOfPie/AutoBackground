@@ -25,9 +25,9 @@
     <color name="LIGHT_GRAY_TRANSPARENT">#66dedede</color>
     <color name="DARK_GRAY_OPAQUE">#ff404040</color>
     <color name="DARK_GRAY_TRANSPARENT">#66404040</color>
-    <color name="BLUE_OPAQUE">#ff628dbb</color>
-    <color name="LIGHT_BLUE_OPAQUE">#ff9dd9ff</color>
-    <color name="DARK_BLUE_OPAQUE">#ff3c5679</color>
+    <color name="BLUE_OPAQUE">#FF0255BD</color>
+    <color name="ACCENT_OPAQUE">#FFFF1744</color>
+    <color name="DARK_BLUE_OPAQUE">#FF0D4781</color>
 
 
     <color name="LIGHT_THEME_STATUS_BAR">#FF757575</color>

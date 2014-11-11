@@ -19,29 +19,33 @@ package cw.kop.autobackground.sources;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Random;
 
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
@@ -55,7 +59,7 @@ public class SourceListAdapter extends BaseAdapter {
     public static final String NO_IMAGES = "NO_IMAGES";
     public static final String OKAY = "OKAY";
 
-    private static final float OVERLAY_ALPHA = 0.75f;
+    private static final float OVERLAY_ALPHA = 0.85f;
 
     private Activity mainActivity;
     private ArrayList<HashMap<String, String>> listData;
@@ -91,28 +95,49 @@ public class SourceListAdapter extends BaseAdapter {
         final HashMap<String, String> listItem = listData.get(position);
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.source_list_card, parent, false);
+            convertView = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? inflater.inflate(R.layout.source_list_card, parent, false) : inflater.inflate(R.layout.source_list_card_dark, parent, false);
         }
 
         final View view = convertView;
 
         EditText title = (EditText) view.findViewById(R.id.source_title);
         title.setText(listItem.get("title"));
+        title.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cardClickListener.onViewClick(view, position);
+            }
+        });
 
         int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
 
         Resources resources = parent.getContext().getResources();
-
-        RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);
         View imageOverlay = view.findViewById(R.id.source_image_overlay);
 
-        if (!Boolean.parseBoolean(listItem.get("use"))) {
-            sourceContainer.setBackgroundColor(resources.getColor(R.color.DARK_GRAY_OPAQUE));
-            imageOverlay.setAlpha(OVERLAY_ALPHA);
+        int lightGrayColor = resources.getColor(R.color.LIGHT_GRAY_OPAQUE);
+        int darkGrayColor = resources.getColor(R.color.DARK_GRAY_OPAQUE);
+
+        if (Boolean.parseBoolean(listItem.get("use"))) {
+            imageOverlay.setAlpha(0);
+            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+                title.setTextColor(darkGrayColor);
+                title.setShadowLayer(4.0f, 0f, 0f, lightGrayColor);
+            }
+            else {
+                title.setTextColor(lightGrayColor);
+                title.setShadowLayer(4.0f, 0f, 0f, darkGrayColor);
+            }
         }
         else {
-            sourceContainer.setBackgroundColor(resources.getColor(R.color.DARK_BLUE_OPAQUE));
-            imageOverlay.setAlpha(0);
+            imageOverlay.setAlpha(OVERLAY_ALPHA);
+            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+                title.setTextColor(lightGrayColor);
+                title.setShadowLayer(4.0f, 0f, 0f, darkGrayColor);
+            }
+            else {
+                title.setTextColor(darkGrayColor);
+                title.setShadowLayer(4.0f, 0f, 0f, lightGrayColor);
+            }
         }
 
         ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
@@ -140,7 +165,7 @@ public class SourceListAdapter extends BaseAdapter {
         viewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cardClickListener.onViewClick(position);
+                cardClickListener.onViewImageClick(position);
             }
         });
         editButton.setOnClickListener(new View.OnClickListener() {
@@ -152,83 +177,52 @@ public class SourceListAdapter extends BaseAdapter {
 
         ImageView image = (ImageView) view.findViewById(R.id.source_image);
 
-        Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_24dp);
-        downloadDrawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
-                PorterDuff.Mode.MULTIPLY);
-        image.setImageDrawable(downloadDrawable);
+        if (Boolean.parseBoolean(listItem.get("preview"))) {
 
-        if (listItem.get("type").equals(AppSettings.FOLDER)) {
-            String[] folders = listItem.get("data").split(AppSettings.DATA_SPLITTER);
-            boolean needsImage = true;
-            for (int index = 0; needsImage && index < folders.length; index++) {
+            Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_24dp);
+            downloadDrawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
+                    PorterDuff.Mode.MULTIPLY);
+            image.setImageDrawable(downloadDrawable);
 
-                File[] files = new File(folders[index]).listFiles(FileHandler.getImageFileNameFilter());
+            if (listItem.get("type").equals(AppSettings.FOLDER)) {
+                String[] folders = listItem.get("data").split(AppSettings.DATA_SPLITTER);
+                boolean needsImage = true;
+                for (int index = 0; needsImage && index < folders.length; index++) {
 
-                if (files != null && files.length > 0) {
-                    needsImage = false;
-                    listItem.put("image", files[0].getAbsolutePath());
-                    image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                            160,
-                            resources.getDisplayMetrics()));
-                    Picasso.with(parent.getContext()).load(files[new Random().nextInt(files.length)]).fit().centerCrop().into(
-                            image);
+                    File[] files = new File(folders[index]).listFiles(FileHandler.getImageFileNameFilter());
+
+                    if (files != null && files.length > 0) {
+                        needsImage = false;
+                        listItem.put("image", files[0].getAbsolutePath());
+                        image.getLayoutParams().height = Math.round(TypedValue.applyDimension(
+                                TypedValue.COMPLEX_UNIT_DIP,
+                                160,
+                                resources.getDisplayMetrics()));
+                        Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(
+                                image);
+                    }
+                }
+            }
+            else {
+                File folder = new File(AppSettings.getDownloadPath() + "/" + listItem.get("title") + " " + AppSettings.getImagePrefix());
+                if (folder.exists() && folder.isDirectory()) {
+                    File[] files = folder.listFiles(FileHandler.getImageFileNameFilter());
+
+                    if (files != null && files.length > 0) {
+                        listItem.put("image", files[0].getAbsolutePath());
+                        image.getLayoutParams().height = Math.round(TypedValue.applyDimension(
+                                TypedValue.COMPLEX_UNIT_DIP,
+                                160,
+                                resources.getDisplayMetrics()));
+                        Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(
+                                image);
+                    }
                 }
             }
         }
         else {
-            File folder = new File(AppSettings.getDownloadPath() + "/" + listItem.get("title") + " " + AppSettings.getImagePrefix());
-            if (folder.exists() && folder.isDirectory()) {
-                File[] files = folder.listFiles(FileHandler.getImageFileNameFilter());
-
-                if (files != null && files.length > 0) {
-                    listItem.put("image", files[0].getAbsolutePath());
-                    image.getLayoutParams().height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                            160,
-                            resources.getDisplayMetrics()));
-                    Picasso.with(parent.getContext()).load(files[new Random().nextInt(files.length)]).fit().centerCrop().into(
-                            image);
-                }
-            }
+            image.getLayoutParams().height = 0;
         }
-
-
-//        if (convertView == null) {
-//            view = inflater.inflate(R.layout.source_list_row, parent, false);
-//        }
-//
-//        TextView title = (TextView) view.findViewById(R.id.title_text);
-//        TextView summary = (TextView) view.findViewById(R.id.summary_text);
-//        TextView num = (TextView) view.findViewById(R.id.num_text);
-//        final Switch useBox = (Switch) view.findViewById(R.id.use_source_checkbox);
-//        useBox.setTag(position);
-//
-//        useBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
-//
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//
-//                int index = Integer.parseInt(useBox.getTag().toString());
-//
-//                setActivated(index, isChecked);
-//
-//            }
-//
-//        });
-//
-//        title.setSelected(true);
-//        summary.setSelected(true);
-//        title.setText(listItem.get("title"));
-//        useBox.setChecked(Boolean.valueOf(listItem.get("use")));
-//
-//        if (listItem.get("type").equals(AppSettings.FOLDER)) {
-//            String[] folders = listItem.get("data").split(AppSettings.DATA_SPLITTER);
-//            num.setText("# Images: " + listItem.get("num"));
-//            summary.setText(folders[folders.length - 1]);
-//        }
-//        else {
-//            num.setText("# Images: " + listItem.get("numStored") + " / " + listItem.get("num"));
-//            summary.setText(listItem.get("data"));
-//        }
 
         return view;
     }
@@ -247,7 +241,7 @@ public class SourceListAdapter extends BaseAdapter {
     }
 
     public boolean setItem(int position, String type, String title, String data, boolean use,
-            String num) {
+            String num, boolean preview) {
 
         HashMap<String, String> changedItem = listData.get(position);
 
@@ -263,6 +257,7 @@ public class SourceListAdapter extends BaseAdapter {
         changedItem.put("data", data);
         changedItem.put("num", "" + num);
         changedItem.put("use", "" + use);
+        changedItem.put("preview", "" + preview);
         File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
         if (folder.exists() && folder.isDirectory()) {
             changedItem.put("numStored",
@@ -277,7 +272,7 @@ public class SourceListAdapter extends BaseAdapter {
         return true;
     }
 
-    public boolean addItem(String type, String title, String data, boolean use, String num) {
+    public boolean addItem(String type, String title, String data, boolean use, String num, boolean preview) {
 
         if (titles.contains(title)) {
             return false;
@@ -290,6 +285,7 @@ public class SourceListAdapter extends BaseAdapter {
         newItem.put("num", "" + num);
         newItem.put("use", "" + use);
         newItem.put("numStored", "0");
+        newItem.put("preview", "" + preview);
         File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
         if (folder.exists() && folder.isDirectory()) {
             newItem.put("numStored",
@@ -437,9 +433,11 @@ public class SourceListAdapter extends BaseAdapter {
 
         void onDeleteClick(int index);
 
-        void onViewClick(int index);
+        void onViewImageClick(int index);
 
         void onEditClick(int index);
+
+        void onViewClick(View view, int index);
     }
 
 }

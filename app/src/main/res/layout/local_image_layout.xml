@@ -19,6 +19,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clickable="true"
     >
 
     <TextView
@@ -77,7 +78,7 @@
             android:paddingTop="6dp"
             android:text="@string/use_directory_button"
             android:textAllCaps="true"
-            android:textColor="@color/LIGHT_BLUE_OPAQUE"
+            android:textColor="@color/ACCENT_OPAQUE"
             />
 
     </RelativeLayout>

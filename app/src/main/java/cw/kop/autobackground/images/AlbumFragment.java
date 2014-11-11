@@ -36,6 +36,7 @@ import java.util.ArrayList;
 
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.SourceInfoFragment;
 import cw.kop.autobackground.sources.SourceListFragment;
 
 public class AlbumFragment extends Fragment implements ListView.OnItemClickListener {
@@ -133,22 +134,27 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
 
-        Intent returnEntryIntent = new Intent();
-        if (changePosition > -1) {
-            returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
-            returnEntryIntent.putExtra("position", changePosition);
-            returnEntryIntent.putExtra("use", use);
-        }
-        else {
-            returnEntryIntent.setAction(SourceListFragment.ADD_ENTRY);
-        }
+//        Intent returnEntryIntent = new Intent();
+//        if (changePosition > -1) {
+//            returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
+//            returnEntryIntent.putExtra("position", changePosition);
+//            returnEntryIntent.putExtra("use", use);
+//            returnEntryIntent.putExtra("preview", true);
+//        }
+//        else {
+//            returnEntryIntent.setAction(SourceListFragment.ADD_ENTRY);
+//            returnEntryIntent.putExtra("use", true);
+//            returnEntryIntent.putExtra("preview", true);
+//        }
+//
+//        returnEntryIntent.putExtra("type", type);
+//        returnEntryIntent.putExtra("title", albumNames.get(positionInList));
+//        returnEntryIntent.putExtra("data", albumLinks.get(positionInList));
+//        returnEntryIntent.putExtra("num", albumNums.get(positionInList));
+//
+//        LocalBroadcastManager.getInstance(appContext).sendBroadcast(returnEntryIntent);
 
-        returnEntryIntent.putExtra("type", type);
-        returnEntryIntent.putExtra("title", albumNames.get(positionInList));
-        returnEntryIntent.putExtra("data", albumLinks.get(positionInList));
-        returnEntryIntent.putExtra("num", albumNums.get(positionInList));
-
-        LocalBroadcastManager.getInstance(appContext).sendBroadcast(returnEntryIntent);
+        ((SourceInfoFragment) getTargetFragment()).setData(type, albumNames.get(positionInList), "", albumLinks.get(positionInList), "", Integer.parseInt(albumNums.get(positionInList)));
 
         getActivity().onBackPressed();
     }

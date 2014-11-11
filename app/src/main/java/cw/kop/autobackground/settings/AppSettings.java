@@ -616,8 +616,6 @@ public class AppSettings {
 
     public static void setSources(ArrayList<HashMap<String, String>> listData) {
 
-        prefs.edit().putInt("num_sources", listData.size()).commit();
-
         for (int i = 0; i < listData.size(); i++) {
 
             String type = listData.get(i).get("type");
@@ -628,8 +626,12 @@ public class AppSettings {
             prefs.edit().putString("source_num_" + i, listData.get(i).get("num")).commit();
             prefs.edit().putBoolean("use_source_" + i,
                     Boolean.valueOf(listData.get(i).get("use"))).commit();
+            prefs.edit().putBoolean("source_preview_" + i,
+                    Boolean.valueOf(listData.get(i).get("preview"))).commit();
 
         }
+
+        prefs.edit().putInt("num_sources", listData.size()).commit();
     }
 
     public static int getSourceNum(int index) {
@@ -641,6 +643,10 @@ public class AppSettings {
             num = 0;
         }
         return num;
+    }
+
+    public static boolean useSourcePreview(int index) {
+        return prefs.getBoolean("source_preview_" + index, true);
     }
 
     public static void setSourceNumStored(int index, int num) {

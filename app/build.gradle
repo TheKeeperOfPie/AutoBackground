@@ -24,8 +24,8 @@ android {
         applicationId "cw.kop.autobackground"
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 48
-        versionName "1.40.2"
+        versionCode 49
+        versionName "1.40.21"
     }
 
     compileOptions {

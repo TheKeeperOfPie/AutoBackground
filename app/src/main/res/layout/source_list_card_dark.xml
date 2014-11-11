@@ -30,7 +30,7 @@
         android:id="@+id/source_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardBackgroundColor="@color/LIGHT_THEME_DIALOG"
+        app:cardBackgroundColor="@color/DARK_THEME_DIALOG"
         >
 
         <RelativeLayout

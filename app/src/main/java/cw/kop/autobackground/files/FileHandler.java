@@ -38,8 +38,9 @@ import cw.kop.autobackground.settings.AppSettings;
 public class FileHandler {
 
     public static final String DOWNLOAD_TERMINATED = "cw.kop.autobackground.files.FileHandler.DOWNLOAD_TERMINATED";
+    public static volatile boolean isDownloading = false;
+
     private static final String TAG = "FileHandler";
-    public static boolean isDownloading = false;
     private static Bitmap musicBitmap = null;
     private static File currentBitmapFile = null;
     private static int randIndex = 0;

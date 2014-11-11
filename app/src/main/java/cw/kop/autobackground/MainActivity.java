@@ -65,7 +65,9 @@ public class MainActivity extends ActionBarActivity {
                             intent.getStringExtra("type"),
                             intent.getStringExtra("title"),
                             intent.getStringExtra("data"),
-                            "" + intent.getIntExtra("num", 0));
+                            "" + intent.getIntExtra("num", 0),
+                            intent.getBooleanExtra("use", true),
+                            intent.getBooleanExtra("preview", true));
                     break;
                 case SourceListFragment.SET_ENTRY:
                     sourceListFragment.setEntry(
@@ -74,7 +76,8 @@ public class MainActivity extends ActionBarActivity {
                             intent.getStringExtra("title"),
                             intent.getStringExtra("data"),
                             "" + intent.getIntExtra("num", 0),
-                            intent.getBooleanExtra("use", true));
+                            intent.getBooleanExtra("use", true),
+                            intent.getBooleanExtra("preview", true));
                     break;
                 case LOAD_NAV_PICTURE:
                     loadNavPicture();
@@ -173,17 +176,14 @@ public class MainActivity extends ActionBarActivity {
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             navLayout.setBackgroundColor(getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
             toolbar.setTitleTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-            toolbar.setBackgroundColor(getResources().getColor(R.color.BLUE_OPAQUE));
         }
         else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)) {
             navLayout.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
             toolbar.setTitleTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            toolbar.setBackgroundColor(getResources().getColor(R.color.DARK_BLUE_OPAQUE));
         }
         else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
             navLayout.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
             toolbar.setTitleTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            toolbar.setBackgroundColor(getResources().getColor(R.color.DARK_BLUE_OPAQUE));
         }
 
         drawerToggle = new ActionBarDrawerToggle(
@@ -361,6 +361,9 @@ public class MainActivity extends ActionBarActivity {
             if (((LocalImageFragment) getFragmentManager().findFragmentByTag("image_fragment")).onBackPressed()) {
                 getFragmentManager().popBackStack();
             }
+        }
+        else if (getFragmentManager().findFragmentByTag("album_fragment") != null) {
+            getFragmentManager().popBackStack();
         }
         else if (getFragmentManager().findFragmentByTag("source_info_fragment") != null) {
             ((SourceInfoFragment) getFragmentManager().findFragmentByTag("source_info_fragment")).onBackPressed();

@@ -31,8 +31,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,6 +44,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -50,10 +55,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.ScaleAnimation;
 import android.view.animation.Transformation;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -79,6 +86,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -96,32 +104,29 @@ import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
 
-public class SourceListFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class SourceListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener {
 
     public static final String ADD_ENTRY = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
     public static final String SET_ENTRY = "cw.kop.autobackground.SourceListFragment.SET_ENTRY";
 
     private static final String TAG = SourceListFragment.class.getCanonicalName();
     private static final int INFO_ANIMATION_TIME = 250;
+    private static final int ADD_ANIMATION_TIME = 350;
 
     private ListView sourceList;
     private SourceListAdapter listAdapter;
     private Context appContext;
     private Handler handler;
     private Button setButton;
-    private ImageButton addButton;
+    private ImageView addButtonBackground;
+    private ImageView addButton;
     private Menu toolbarMenu;
-    private TextView noImageText;
-    private volatile boolean isAnimating = false;
+    private volatile boolean needsButtonReset = false;
+    private volatile boolean needsListReset = false;
 
     private int screenHeight;
     private int screenWidth;
 
-    private ShowcaseView sourceListTutorial;
-    private ShowcaseView addSourceTutorial;
-    private ShowcaseView downloadTutorial;
-    private ShowcaseView setTutorial;
-    private ShowcaseView settingsTutorial;
     private RelativeLayout.LayoutParams buttonParams;
     private boolean setShown = false;
     private boolean tutorialShowing = false;
@@ -259,15 +264,14 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         100,
                         appContext.getResources().getDisplayMetrics())));
 
-        addButton = (ImageButton) view.findViewById(R.id.floating_button);
-        addButton.setOnClickListener(new View.OnClickListener() {
+        addButtonBackground = (ImageView) view.findViewById(R.id.floating_button);
 
-            @Override
-            public void onClick(View v) {
-                showSourceMenu();
-            }
-
-        });
+        addButton = (ImageView) view.findViewById(R.id.floating_button_icon);
+        GradientDrawable circleDrawable = (GradientDrawable) getResources().getDrawable(R.drawable.floating_button_circle);
+        circleDrawable.setColor(getResources().getColor(R.color.ACCENT_OPAQUE));
+        addButtonBackground.setImageDrawable(circleDrawable);
+        addButton.setOnClickListener(this);
+        resetAddButtonIcon();
 
         setButton = (Button) view.findViewById(R.id.set_button);
         setButton.setText("Set Wallpaper");
@@ -275,20 +279,124 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             @Override
             public void onClick(View v) {
-//                if (setTutorial != null) {
-//                    hide(setTutorial);
-//                    showTutorial(4);
-//                }
                 setWallpaper();
             }
 
         });
 
-//        noImageText = (TextView) view.findViewById(R.id.no_image_indicator);
-
-        resetAddButton();
+        resetAddButtonIcon();
 
         return view;
+    }
+
+    @Override
+    public void onClick(final View v) {
+
+        if (v.getId() == R.id.floating_button_icon) {
+
+
+            final GradientDrawable circleDrawable = (GradientDrawable) getResources().getDrawable(R.drawable.floating_button_circle);
+            final float scale = (float) (Math.hypot(addButtonBackground.getX(), addButtonBackground.getY()) / addButtonBackground.getWidth() * 2);
+
+            Animation animation = new Animation() {
+
+                private boolean needsFragment = true;
+
+                @Override
+                protected void applyTransformation(float interpolatedTime, Transformation t) {
+
+                    if (needsFragment && interpolatedTime >= 1) {
+                        needsFragment = false;
+                        showSourceAddFragment();
+                    }
+                    else {
+                        addButtonBackground.setScaleX(interpolatedTime * scale + 1.0f);
+                        addButtonBackground.setScaleY(interpolatedTime * scale + 1.0f);
+                    }
+                }
+
+                @Override
+                public boolean willChangeBounds() {
+                    return true;
+                }
+
+
+            };
+
+            animation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    circleDrawable.setColor(getResources().getColor(R.color.ACCENT_OPAQUE));
+                    addButtonBackground.setImageDrawable(circleDrawable);
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (needsButtonReset) {
+                                addButton.setOnClickListener(SourceListFragment.this);
+                                addButtonBackground.setScaleX(1.0f);
+                                addButtonBackground.setScaleY(1.0f);
+                                addButtonBackground.clearAnimation();
+                                circleDrawable.setColor(getResources().getColor(R.color.ACCENT_OPAQUE));
+                                addButtonBackground.setImageDrawable(circleDrawable);
+                                addButton.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    }, 100);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+
+            });
+
+            ValueAnimator buttonColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                    getResources().getColor(R.color.ACCENT_OPAQUE),
+                    getResources().getColor(AppSettings.getBackgroundColorResource()));
+            buttonColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    circleDrawable.setColor((Integer) animation.getAnimatedValue());
+                    addButtonBackground.setImageDrawable(circleDrawable);
+                }
+
+            });
+
+            DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
+
+            animation.setDuration(ADD_ANIMATION_TIME);
+            buttonColorAnimation.setDuration((long) (ADD_ANIMATION_TIME * 0.9));
+            buttonColorAnimation.setInterpolator(decelerateInterpolator);
+            animation.setInterpolator(decelerateInterpolator);
+
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (needsButtonReset) {
+                        addButton.setOnClickListener(SourceListFragment.this);
+                        addButtonBackground.setScaleX(1.0f);
+                        addButtonBackground.setScaleY(1.0f);
+                        addButtonBackground.clearAnimation();
+                        circleDrawable.setColor(getResources().getColor(R.color.ACCENT_OPAQUE));
+                        addButtonBackground.setImageDrawable(circleDrawable);
+                        addButton.setVisibility(View.VISIBLE);
+                        needsButtonReset = false;
+                    }
+                }
+            }, (long) (ADD_ANIMATION_TIME * 1.1f));
+
+            needsButtonReset = true;
+            addButton.setOnClickListener(null);
+            addButton.setVisibility(View.GONE);
+            buttonColorAnimation.start();
+            addButtonBackground.startAnimation(animation);
+        }
     }
 
     @Override
@@ -306,7 +414,14 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 startDownload();
                 break;
             case R.id.sort_sources:
-                showSourceSortMenu();
+                if (FileHandler.isDownloading) {
+                    if (AppSettings.useToast()) {
+                        Toast.makeText(appContext, "Cannot sort while downloading", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                else {
+                    showSourceSortMenu();
+                }
                 break;
         }
 
@@ -322,10 +437,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     private void startDownload() {
         listAdapter.saveData();
-//        if (downloadTutorial != null) {
-//            hide(downloadTutorial);
-//            showTutorial(3);
-//        }
         if (FileHandler.isDownloading) {
 
             DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
@@ -472,90 +583,27 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         }
     }
 
-    private void showSourceMenu() {
+    private void showSourceAddFragment() {
 
-        DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        final SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
+        Bundle arguments = new Bundle();
+        arguments.putInt("position", -1);
+        arguments.putString("type", AppSettings.WEBSITE);
+        arguments.putString("title", "");
+        arguments.putString("data", "");
+        arguments.putString("num", "");
+        arguments.putBoolean("use", true);
+        arguments.putBoolean("preview", true);
+        sourceInfoFragment.setArguments(arguments);
 
-                switch (position) {
-                    case 0:
-                        showInputDialog(AppSettings.WEBSITE,
-                                "",
-                                "URL",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "Enter website:",
-                                -1);
-                        break;
-                    case 1:
-                        showImageFragment(false, "", -1, true);
-                        break;
-                    case 2:
-                        showInputDialog(AppSettings.IMGUR,
-                                "",
-                                "Subreddit",
-                                "imgur.com/r/",
-                                "",
-                                "",
-                                "",
-                                "Enter Imgur subreddit:",
-                                -1);
-                        break;
-                    case 3:
-                        showInputDialog(AppSettings.IMGUR,
-                                "",
-                                "Album ID",
-                                "imgur.com/a/",
-                                "",
-                                "",
-                                "",
-                                "Enter Imgur album:",
-                                -1);
-                        break;
-                    case 4:
-                        if (AppSettings.getGoogleAccountName().equals("")) {
-                            startActivityForResult(GoogleAccount.getPickerIntent(),
-                                    GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
-                        }
-                        else {
-                            new PicasaAlbumTask(-1, true).execute();
-                        }
-                        break;
-                    case 5:
-                        showInputDialog(AppSettings.TUMBLR_BLOG,
-                                "",
-                                "Blog name",
-                                "",
-                                "",
-                                ".tumblr.com",
-                                "",
-                                "Enter Tumblr blog:",
-                                -1);
-                        break;
-                    case 6:
-                        showInputDialog(AppSettings.TUMBLR_TAG,
-                                "",
-                                "Tag",
-                                "",
-                                "",
-                                "",
-                                "",
-                                "Enter Tumblr tag:",
-                                -1);
-                        break;
-                    default:
-                }
-                this.dismissDialog();
-            }
-        };
+        getFragmentManager().beginTransaction()
+                .add(R.id.content_frame,
+                        sourceInfoFragment,
+                        "source_info_fragment")
+                .addToBackStack(null)
+                .setTransition(FragmentTransaction.TRANSIT_NONE)
+                .commit();
 
-        DialogFactory.showListDialog(appContext,
-                "Source:",
-                clickListener,
-                R.array.source_menu);
     }
 
     private void showSourceSortMenu() {
@@ -588,8 +636,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 R.array.source_sort_menu);
     }
 
-    public void addEntry(String type, String title, String data, String num) {
-        if (!listAdapter.addItem(type, title, data, true, num)) {
+    public void addEntry(String type, String title, String data, String num, boolean use, boolean preview) {
+        if (!listAdapter.addItem(type, title, data, use, num, preview)) {
             Toast.makeText(appContext,
                     "Error: Title in use.\nPlease use a different title.",
                     Toast.LENGTH_SHORT).show();
@@ -602,8 +650,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             String title,
             String path,
             String num,
-            boolean use) {
-        if (!listAdapter.setItem(position, type, title, path, use, num)) {
+            boolean use,
+            boolean preview) {
+        if (!listAdapter.setItem(position, type, title, path, use, num, preview)) {
             Toast.makeText(appContext,
                     "Error: Title in use.\nPlease use a different title.",
                     Toast.LENGTH_SHORT).show();
@@ -679,7 +728,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                                 newTitle,
                                 data.trim(),
                                 AppSettings.useSource(index),
-                                sourceNum.getText().toString())) {
+                                sourceNum.getText().toString(),
+                                true)) {
                             if (!previousTitle.equals(newTitle)) {
                                 AppSettings.setSourceSet(newTitle,
                                         AppSettings.getSourceSet(previousTitle));
@@ -699,9 +749,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                                 newTitle,
                                 data.trim(),
                                 true,
-                                sourceNum.getText().toString())) {
+                                sourceNum.getText().toString(),
+                                true)) {
                             AppSettings.setSourceSet(newTitle, new HashSet<String>());
-                            hide(addSourceTutorial);
                             new ImageCountTask().execute();
                             dialog.dismiss();
                         }
@@ -716,177 +766,11 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         });
 
 
-        negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_BLUE_OPAQUE));
-        positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_BLUE_OPAQUE));
+        negativeButton.setTextColor(getResources().getColor(R.color.ACCENT_OPAQUE));
+        positiveButton.setTextColor(getResources().getColor(R.color.ACCENT_OPAQUE));
 
         dialog.show();
 
-    }
-
-
-    private void showDialogMenu(final int index) {
-
-        DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                HashMap<String, String> item = listAdapter.getItem(index);
-                String type = item.get("type");
-                boolean use = Boolean.parseBoolean(item.get("use"));
-                switch (position) {
-                    case 0:
-                        String directory;
-                        if (type.equals(AppSettings.WEBSITE) ||
-                                type.equals(AppSettings.IMGUR) ||
-                                type.equals(AppSettings.PICASA) ||
-                                type.equals(AppSettings.TUMBLR_BLOG) ||
-                                type.equals(AppSettings.TUMBLR_TAG)) {
-                            directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(
-                                    index) + " " + AppSettings.getImagePrefix();
-                        }
-                        else {
-                            directory = AppSettings.getSourceData(index);
-                        }
-                        showImageFragment(false, directory, index, use);
-                        break;
-                    case 1:
-                        switch (type) {
-                            case AppSettings.WEBSITE:
-                                showInputDialog(AppSettings.WEBSITE,
-                                        AppSettings.getSourceTitle(index),
-                                        "",
-                                        "",
-                                        AppSettings.getSourceData(index),
-                                        "",
-                                        "" + AppSettings.getSourceNum(index),
-                                        "Edit website:",
-                                        index);
-                                break;
-                            case AppSettings.IMGUR: {
-                                String prefix = "", hint = "";
-                                String data = AppSettings.getSourceData(index);
-                                if (data.contains("imgur.com/a/")) {
-                                    prefix = "imgur.com/a/";
-                                    hint = "Album ID";
-                                }
-                                else if (data.contains("imgur.com/r/")) {
-                                    prefix = "imgur.com/r/";
-                                    hint = "Subreddit";
-                                }
-
-                                showInputDialog(AppSettings.IMGUR,
-                                        AppSettings.getSourceTitle(index),
-                                        hint,
-                                        prefix,
-                                        data.substring(data.indexOf(prefix) + prefix.length()),
-                                        "",
-                                        "" + AppSettings.getSourceNum(index),
-                                        "Edit Imgur source:",
-                                        index);
-                                break;
-                            }
-                            case AppSettings.PICASA:
-                                new PicasaAlbumTask(index, use).execute();
-                                break;
-                            case AppSettings.TUMBLR_BLOG:
-                                showInputDialog(AppSettings.TUMBLR_BLOG,
-                                        AppSettings.getSourceTitle(index),
-                                        "Blog name",
-                                        "",
-                                        AppSettings.getSourceData(index),
-                                        "",
-                                        "" + AppSettings.getSourceNum(index),
-                                        "Edit Tumblr Blog:",
-                                        index);
-                                break;
-                            case AppSettings.TUMBLR_TAG: {
-                                String data = AppSettings.getSourceData(index);
-
-                                if (data.length() > 12) {
-                                    data = data.substring(12);
-                                }
-
-                                showInputDialog(AppSettings.TUMBLR_TAG,
-                                        AppSettings.getSourceTitle(index),
-                                        "Tag",
-                                        "",
-                                        data,
-                                        "",
-                                        "" + AppSettings.getSourceNum(index),
-                                        "Edit Tumblr Tag:",
-                                        index);
-                                break;
-                            }
-                            case AppSettings.FOLDER:
-                                showImageFragment(false, "", index, use);
-                                break;
-                        }
-                        break;
-                    case 2:
-                        if (type.equals(AppSettings.WEBSITE) ||
-                                type.equals(AppSettings.IMGUR) ||
-                                type.equals(AppSettings.PICASA) ||
-                                type.equals(AppSettings.TUMBLR_BLOG) ||
-                                type.equals(AppSettings.TUMBLR_TAG)) {
-
-                            DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
-                                @Override
-                                public void onClickLeft(View v) {
-                                    this.dismissDialog();
-                                }
-
-                                @Override
-                                public void onClickMiddle(View v) {
-                                    this.dismissDialog();
-                                    AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
-                                            new HashSet<String>());
-                                    listAdapter.removeItem(index);
-                                    new ImageCountTask().execute();
-                                }
-
-                                @Override
-                                public void onClickRight(View v) {
-                                    FileHandler.deleteBitmaps(appContext, index);
-                                    Toast.makeText(appContext,
-                                            "Deleting " + AppSettings.getSourceTitle(index) + " images",
-                                            Toast.LENGTH_SHORT).show();
-                                    AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
-                                            new HashSet<String>());
-                                    listAdapter.removeItem(index);
-                                    new ImageCountTask().execute();
-                                    this.dismissDialog();
-                                }
-
-                                @Override
-                                public void onDismiss() {
-                                    AppSettings.setTutorial(false, "source");
-                                    tutorialShowing = false;
-                                }
-                            };
-
-                            DialogFactory.showActionDialog(appContext,
-                                    "Delete images associated with this source?",
-                                    "This cannot be undone.",
-                                    clickListener,
-                                    R.string.cancel_button,
-                                    R.string.no_button,
-                                    R.string.yes_button);
-
-                        }
-                        else {
-                            listAdapter.removeItem(index);
-                            new ImageCountTask().execute();
-                        }
-                        break;
-                    default:
-                }
-                dismissDialog();
-            }
-        };
-
-        DialogFactory.showListDialog(appContext,
-                AppSettings.getSourceTitle(index),
-                clickListener,
-                R.array.source_edit_menu);
     }
 
     @Override
@@ -965,7 +849,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             }
 
             @Override
-            public void onViewClick(int index) {
+            public void onViewImageClick(int index) {
+                listAdapter.saveData();
                 HashMap<String, String> item = listAdapter.getItem(index);
                 String type = item.get("type");
                 String directory;
@@ -980,11 +865,15 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 else {
                     directory = AppSettings.getSourceData(index);
                 }
+
+                Log.i(TAG, "Directory: " + directory);
+
                 showImageFragment(false, directory, index, false);
             }
 
             @Override
             public void onEditClick(int index) {
+                listAdapter.saveData();
                 HashMap<String, String> item = listAdapter.getItem(index);
                 String type = item.get("type");
                 boolean use = Boolean.parseBoolean(item.get("use"));
@@ -1061,6 +950,11 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         break;
                 }
             }
+
+            @Override
+            public void onViewClick(View view, int index) {
+                onItemClick(null, view, index, -1);
+            }
         };
 
         if (listAdapter == null) {
@@ -1070,7 +964,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         AppSettings.getSourceTitle(i),
                         AppSettings.getSourceData(i),
                         AppSettings.useSource(i),
-                        "" + AppSettings.getSourceNum(i));
+                        "" + AppSettings.getSourceNum(i),
+                        AppSettings.useSourcePreview(i));
                 Log.i("WLF", "Added: " + AppSettings.getSourceTitle(i));
             }
         }
@@ -1093,194 +988,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         }
 
         sourceList.setOnItemClickListener(this);
-
-        // TODO: Find better implementation for action bar hide
-//        sourceList.setOnScrollListener(new AbsListView.OnScrollListener() {
-//
-//            final static int ITEMS_THRESHOLD = 3;
-//            int lastFirstVisibleItem = 0;
-//
-//            @Override
-//            public void onScrollStateChanged(AbsListView view, int scrollState) {
-//
-//            }
-//
-//            @Override
-//            public void onScroll(AbsListView view,
-//                    int firstVisibleItem,
-//                    int visibleItemCount,
-//                    int totalItemCount) {
-//
-//                if (lastFirstVisibleItem < firstVisibleItem) {
-//                    ActionBar actionBar = ((MainActivity) getActivity()).getSupportActionBar();
-//
-//                    if (actionBar.isShowing()) {
-//                        actionBar.hide();
-//                    }
-//                }
-//                else if (lastFirstVisibleItem > firstVisibleItem) {
-//                    ActionBar actionBar = ((MainActivity) getActivity()).getSupportActionBar();
-//                    if (!actionBar.isShowing()) {
-//                        actionBar.show();
-//                    }
-//                }
-//                lastFirstVisibleItem = firstVisibleItem;
-//            }
-//        });
-
     }
-
-    private void hide(ShowcaseView view) {
-        if (view != null) {
-            view.hide();
-        }
-    }
-
-    private void showTutorial() {
-
-    }
-
-//    private void showTutorial(int page) {
-//
-//        switch (page) {
-//            case 0:
-//                View.OnClickListener websiteListListener = new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        hide(sourceListTutorial);
-//                        showTutorial(1);
-//                        sourceListTutorial = null;
-//                        Log.i("SLF", "Shown");
-//                    }
-//                };
-//
-//                sourceListTutorial = new ShowcaseView.Builder(getActivity())
-//                        .setContentTitle("Sources List")
-//                        .setContentText("This is a list of your sources. \n" +
-//                                "These can include both sources and your \n" +
-//                                "own image folders. You can edit them by \n" +
-//                                "tapping on their boxes.")
-//                        .setStyle(R.style.ShowcaseStyle)
-//                        .setOnClickListener(websiteListListener)
-//                        .setTarget((new ViewTarget(getActivity().findViewById(R.id.toolbar))))
-//                        .build();
-//                sourceListTutorial.setButtonPosition(buttonParams);
-//                break;
-//            case 1:
-//                View.OnClickListener addWebsiteListener = new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        hide(addSourceTutorial);
-//                        showTutorial(2);
-//                        addSourceTutorial = null;
-//                    }
-//                };
-//
-//                addSourceTutorial = new ShowcaseView.Builder(getActivity())
-//                        .setContentTitle("Adding Sources")
-//                        .setContentText(
-//                                "To add a new source entry, \n" +
-//                                        "click the plus (+) sign. \n" +
-//                                        "\n" +
-//                                        "Not all sources will work, \n" +
-//                                        "so if there are no images, \n" +
-//                                        "try a different source. \n" +
-//                                        "\n" +
-//                                        "Provided is a page \n" +
-//                                        "of some landscape photos \n" +
-//                                        "taken by Kai Lehnberg.")
-//                        .setStyle(R.style.ShowcaseStyle)
-//                        .setOnClickListener(addWebsiteListener)
-//                        .setTarget(new ViewTarget(addButton))
-//                        .build();
-//                addSourceTutorial.setButtonPosition(buttonParams);
-//                break;
-//            case 2:
-//                View.OnClickListener downloadListener = new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        hide(downloadTutorial);
-//                        showTutorial(3);
-//                        downloadTutorial = null;
-//                    }
-//                };
-//                downloadTutorial = new ShowcaseView.Builder(getActivity())
-//                        .setContentTitle("Downloading Images")
-//                        .setContentText("Once you have a website entered, \n" +
-//                                "click this download button to start \n" +
-//                                "downloading some images. \n" +
-//                                "\n" +
-//                                "The app will only use WiFi to \n" +
-//                                "download as a default. If you \n" +
-//                                "wish to change this setting, \n" +
-//                                "go into the FileHandler settings \n" +
-//                                "and enable mobile data.")
-//                        .setStyle(R.style.ShowcaseStyle)
-//                        .setTarget(new ActionItemTarget(getActivity(), toolbarMenu.getItem(1).getItemId()))
-//                        .setOnClickListener(downloadListener)
-//                        .build();
-//                downloadTutorial.setButtonPosition(buttonParams);
-//                break;
-//            case 3:
-//                View.OnClickListener setListener = new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        hide(setTutorial);
-//                        showTutorial(4);
-//                        setTutorial = null;
-//                    }
-//                };
-//                if (setButton.getVisibility() == View.VISIBLE) {
-//                    setTutorial = new ShowcaseView.Builder(getActivity())
-//                            .setContentTitle("Setting the wallpaper")
-//                            .setContentText("Now that it's downloading, \n" +
-//                                    "it's time to set the app \n" +
-//                                    "as your system wallpaper. \n" +
-//                                    "Click the set button and \n" +
-//                                    "hit apply on next page.")
-//                            .setStyle(R.style.ShowcaseStyle)
-//                            .setTarget(new ViewTarget(setButton))
-//                            .setOnClickListener(setListener)
-//                            .build();
-//                    setTutorial.setButtonPosition(buttonParams);
-//                    setShown = true;
-//                }
-//                else {
-//                    showTutorial(4);
-//                }
-//                break;
-//            case 4:
-//                if (setShown) {
-//                    hide(setTutorial);
-//                }
-//                View.OnClickListener settingsListener = new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        hide(settingsTutorial);
-//                        showTutorial(5);
-//                        settingsTutorial = null;
-//                    }
-//                };
-//                settingsTutorial = new ShowcaseView.Builder(getActivity())
-//                        .setContentTitle("Accessing Settings")
-//                        .setContentText("To open the other settings, \n" +
-//                                "click the entry in the top left, \n" +
-//                                "which opens a list of settings.")
-//                        .setStyle(R.style.ShowcaseStyle)
-//                        .setOnClickListener(settingsListener)
-//                        .setTarget((new ViewTarget(((Toolbar) getActivity().findViewById(R.id.toolbar)))))
-//                        .build();
-//                settingsTutorial.setButtonPosition(buttonParams);
-//                ((MainActivity) appContext).toggleDrawer();
-//                break;
-//            case 5:
-//                AppSettings.setTutorial(false, "source");
-//                break;
-//            default:
-//        }
-//
-//    }
-
 
     protected void setWallpaper() {
 
@@ -1320,44 +1028,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         else {
             setButton.setVisibility(View.VISIBLE);
         }
-
-        if (AppSettings.useSourceTutorial() && sourceListTutorial == null && !tutorialShowing) {
-            Log.i("WLF", "Showing tutorial");
-            tutorialShowing = true;
-
-            DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
-                @Override
-                public void onClickLeft(View v) {
-
-                }
-
-                @Override
-                public void onClickMiddle(View v) {
-                    this.dismissDialog();
-                }
-
-                @Override
-                public void onClickRight(View v) {
-                    showTutorial();
-                    this.dismissDialog();
-                }
-
-                @Override
-                public void onDismiss() {
-                    AppSettings.setTutorial(false, "source");
-                    tutorialShowing = false;
-                }
-            };
-
-            DialogFactory.showActionDialog(appContext,
-                    "",
-                    "Show Sources Tutorial?",
-                    clickListener,
-                    -1,
-                    R.string.cancel_button,
-                    R.string.ok_button);
-
-        }
     }
 
     @Override
@@ -1368,10 +1038,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         super.onPause();
     }
 
-    public void resetAddButton() {
+    public void resetAddButtonIcon() {
 
-        Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
-        addDrawable.setColorFilter(getResources().getColor(R.color.BLUE_OPAQUE),
+        Drawable addDrawable = getResources().getDrawable(R.drawable.ic_add_white_24dp);
+        addDrawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
                 PorterDuff.Mode.MULTIPLY);
         addButton.setImageDrawable(addDrawable);
 
@@ -1418,6 +1088,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         arguments.putString("data", dataItem.get("data"));
         arguments.putString("num", dataItem.get("num"));
         arguments.putBoolean("use", Boolean.parseBoolean(dataItem.get("use")));
+        arguments.putBoolean("preview", Boolean.parseBoolean(dataItem.get("preview")));
         String imageFileName = dataItem.get("image");
         if (imageFileName != null && imageFileName.length() > 0) {
             arguments.putString("image", imageFileName);
@@ -1428,20 +1099,20 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         sourceInfoFragment.setArguments(arguments);
 
         final RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);
+        final CardView sourceCard = (CardView) view.findViewById(R.id.source_card);
+        final View imageOverlay = view.findViewById(R.id.source_image_overlay);
         final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
         final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
         final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
         final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
 
+        final float cardStartShadow = sourceCard.getPaddingLeft();
         final float viewStartHeight = view.getHeight();
         final float viewStartY = view.getY();
         final int viewStartPadding = view.getPaddingLeft();
         final float textStartX = sourceTitle.getX();
         final float textStartY = sourceTitle.getY();
-        final float textTranslationY = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
-                48,
-                getResources().getDisplayMetrics())
-                + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+        final float textTranslationY = sourceTitle.getHeight() + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                 8,
                 getResources().getDisplayMetrics());
 
@@ -1465,11 +1136,13 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                             .commit();
                 }
                 int newPadding = Math.round(viewStartPadding * (1 - interpolatedTime));
+                int newShadowPadding = (int) (cardStartShadow * (1.0f - interpolatedTime));
+                sourceCard.setShadowPadding(newShadowPadding, 0, newShadowPadding, 0);
                 view.setPadding(newPadding, 0, newPadding, 0);
                 view.setY(viewStartY - interpolatedTime * viewStartY);
                 sourceContainer.getLayoutParams().height = (int) (viewStartHeight + screenHeight * interpolatedTime);
                 sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
-                sourceTitle.setX(textStartX + (viewStartPadding - newPadding));
+                sourceTitle.setX(textStartX + viewStartPadding - newPadding);
                 deleteButton.setAlpha(1.0f - interpolatedTime);
                 viewButton.setAlpha(1.0f - interpolatedTime);
                 editButton.setAlpha(1.0f - interpolatedTime);
@@ -1489,11 +1162,14 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                Parcelable state = sourceList.onSaveInstanceState();
-                sourceList.setAdapter(null);
-                sourceList.setAdapter(listAdapter);
-                sourceList.onRestoreInstanceState(state);
-                sourceList.setOnItemClickListener(SourceListFragment.this);
+                if (needsListReset) {
+                    Parcelable state = sourceList.onSaveInstanceState();
+                    sourceList.setAdapter(null);
+                    sourceList.setAdapter(listAdapter);
+                    sourceList.onRestoreInstanceState(state);
+                    sourceList.setOnItemClickListener(SourceListFragment.this);
+                    needsListReset = false;
+                }
             }
 
             @Override
@@ -1516,7 +1192,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         ValueAnimator titleColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
                 sourceTitle.getCurrentTextColor(),
-                AppSettings.getColorFilterInt(appContext));
+                getResources().getColor(R.color.BLUE_OPAQUE));
         titleColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 
             @Override
@@ -1527,7 +1203,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         });
 
         ValueAnimator titleShadowAlphaAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
-                getResources().getColor(R.color.BLACK_OPAQUE),
+                AppSettings.getColorFilterInt(appContext),
                 getResources().getColor(android.R.color.transparent));
         titleShadowAlphaAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -1536,9 +1212,17 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             }
         });
 
-        int transitionTime = INFO_ANIMATION_TIME; //(int) Math.abs(INFO_ANIMATION_TIME * (viewStartY / screenHeight) + INFO_ANIMATION_TIME / 8);
+        ValueAnimator imageOverlayAlphaAnimation = ValueAnimator.ofFloat(imageOverlay.getAlpha(), 0f);
+        imageOverlayAlphaAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                imageOverlay.setAlpha((Float) animation.getAnimatedValue());
+            }
+        });
 
-        DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
+        int transitionTime = INFO_ANIMATION_TIME;
+
+        DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(1.5f);
 
         animation.setDuration(transitionTime);
         cardColorAnimation.setDuration(transitionTime);
@@ -1550,6 +1234,25 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         titleColorAnimation.setInterpolator(decelerateInterpolator);
         titleShadowAlphaAnimation.setInterpolator(decelerateInterpolator);
 
+        if (imageOverlay.getAlpha() > 0) {
+            imageOverlayAlphaAnimation.start();
+        }
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (needsListReset) {
+                    Parcelable state = sourceList.onSaveInstanceState();
+                    sourceList.setAdapter(null);
+                    sourceList.setAdapter(listAdapter);
+                    sourceList.onRestoreInstanceState(state);
+                    sourceList.setOnItemClickListener(SourceListFragment.this);
+                    needsListReset = false;
+                }
+            }
+        }, (long) (transitionTime * 1.1f));
+
+        needsListReset = true;
         view.startAnimation(animation);
         cardColorAnimation.start();
         titleColorAnimation.start();
@@ -1569,7 +1272,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             listAdapter.updateNum();
 
-            resetAddButton();
+            resetAddButtonIcon();
 
             if (toolbarMenu != null) {
                 Drawable drawable = FileHandler.isDownloading ?
@@ -1592,7 +1295,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 //                    Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
 //                    addDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
 //                            PorterDuff.Mode.MULTIPLY);
-//                    addButton.setImageDrawable(addDrawable);
+//                    addButtonBackground.setImageDrawable(addDrawable);
 //                    break;
 //                case SourceListAdapter.NO_ACTIVE_SOURCES:
 //                    noImageText.setText("No active sources");

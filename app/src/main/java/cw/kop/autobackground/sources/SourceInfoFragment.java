@@ -16,14 +16,19 @@
 
 package cw.kop.autobackground.sources;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,21 +36,48 @@ import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Transformation;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.GoogleAuthException;
+import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.auth.UserRecoverableAuthException;
+
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.w3c.dom.Text;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
+import cw.kop.autobackground.CustomSwitchPreference;
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.files.FileHandler;
+import cw.kop.autobackground.images.AlbumFragment;
+import cw.kop.autobackground.images.LocalImageFragment;
+import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
 
 /**
  * Created by TheKeeperOfPie on 11/5/2014.
  */
-public class SourceInfoFragment extends Fragment {
+public class SourceInfoFragment extends PreferenceFragment {
 
     private static final String TAG = SourceInfoFragment.class.getCanonicalName();
     private static final int FADE_IN_TIME = 350;
@@ -55,6 +87,8 @@ public class SourceInfoFragment extends Fragment {
     private Drawable imageDrawable;
 
     private RelativeLayout settingsContainer;
+    private TextView sourceSpinnerText;
+    private Spinner sourceSpinner;
     private ImageView sourceImage;
     private EditText sourceTitle;
     private EditText sourcePrefix;
@@ -65,9 +99,16 @@ public class SourceInfoFragment extends Fragment {
     private Button cancelButton;
     private Button saveButton;
 
+    private int sourcePosition;
+    private String type;
+    private String hint;
+    private String prefix;
+    private String suffix;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        addPreferencesFromResource(R.xml.preferences_source);
     }
 
     @Override
@@ -82,48 +123,19 @@ public class SourceInfoFragment extends Fragment {
         super.onDetach();
     }
 
-//    @Override
-//    public Animator onCreateAnimator(int transit, boolean enter, int nextAnim) {
-//
-//        Animator animator = AnimatorInflater.loadAnimator(appContext, nextAnim);
-//
-//        animator.addListener(new Animator.AnimatorListener() {
-//            @Override
-//            public void onAnimationStart(Animator animation) {
-//
-//            }
-//
-//            @Override
-//            public void onAnimationEnd(Animator animation) {
-//                if (sourceImage != null) {
-//                    sourceImage.setVisibility(View.VISIBLE);
-//                }
-//            }
-//
-//            @Override
-//            public void onAnimationCancel(Animator animation) {
-//
-//            }
-//
-//            @Override
-//            public void onAnimationRepeat(Animator animation) {
-//
-//            }
-//        });
-//
-//        return animator;
-//    }
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater,
             ViewGroup container,
             Bundle savedInstanceState) {
 
+        int colorFilterInt = AppSettings.getColorFilterInt(appContext);
+
         View view = inflater.inflate(R.layout.source_info_fragment, container, false);
 
         settingsContainer = (RelativeLayout) view.findViewById(R.id.source_settings_container);
 
+        sourceImage = (ImageView) view.findViewById(R.id.source_image);
         sourceTitle = (EditText) view.findViewById(R.id.source_title);
         sourcePrefix = (EditText) view.findViewById(R.id.source_data_prefix);
         sourceData = (EditText) view.findViewById(R.id.source_data);
@@ -132,6 +144,9 @@ public class SourceInfoFragment extends Fragment {
 
         cancelButton = (Button) view.findViewById(R.id.cancel_button);
         saveButton = (Button) view.findViewById(R.id.save_button);
+
+        cancelButton.setTextColor(colorFilterInt);
+        saveButton.setTextColor(colorFilterInt);
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -142,154 +157,134 @@ public class SourceInfoFragment extends Fragment {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (FileHandler.isDownloading) {
-                    Toast.makeText(appContext,
-                            "Cannot edit while downloading",
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                Bundle saveArguments = getArguments();
-
-                final Intent setIntent = new Intent(SourceListFragment.SET_ENTRY);
-                setIntent.putExtra("type", (String) saveArguments.get("type"));
-                setIntent.putExtra("title", sourceTitle.getText().toString());
-
-                String data = sourceData.getText().toString();
-
-                switch ((String) saveArguments.get("type")) {
-
-                    case AppSettings.FOLDER:
-                        if (!data.contains("http")) {
-                            data = "http://" + data;
-                        }
-                        break;
-                    case AppSettings.IMGUR:
-                        data = sourcePrefix.getText().toString() + data;
-                        break;
-                    case AppSettings.TUMBLR_TAG:
-                        data = "Tumblr Tag: " + data;
-                        break;
-
-                }
-
-                setIntent.putExtra("data", data);
-                setIntent.putExtra("num", Integer.parseInt(sourceNum.getText().toString()));
-                setIntent.putExtra("position", (Integer) saveArguments.get("position"));
-                setIntent.putExtra("use", sourceUse.isChecked());
-
-                try {
-                    InputMethodManager im = (InputMethodManager) appContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    im.hideSoftInputFromWindow(getView().getWindowToken(),
-                            InputMethodManager.HIDE_NOT_ALWAYS);
-                }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-
-                final int screenHeight = getResources().getDisplayMetrics().heightPixels;
-                final View fragmentView = getView();
-
-                if (fragmentView != null) {
-                    final float viewStartY = getView().getY();
-
-                    Animation animation = new Animation() {
-                        @Override
-                        protected void applyTransformation(float interpolatedTime,
-                                Transformation t) {
-                            fragmentView.setY((screenHeight - viewStartY) * interpolatedTime + viewStartY);
-                        }
-
-                        @Override
-                        public boolean willChangeBounds() {
-                            return true;
-                        }
-                    };
-
-                    animation.setAnimationListener(new Animation.AnimationListener() {
-                        @Override
-                        public void onAnimationStart(Animation animation) {
-
-                        }
-
-                        @Override
-                        public void onAnimationEnd(Animation animation) {
-                            LocalBroadcastManager.getInstance(appContext).sendBroadcast(setIntent);
-                            getFragmentManager().popBackStack();
-                        }
-
-                        @Override
-                        public void onAnimationRepeat(Animation animation) {
-
-                        }
-                    });
-
-                    animation.setDuration(SLIDE_EXIT_TIME);
-                    getView().startAnimation(animation);
-                }
-                else {
-                    LocalBroadcastManager.getInstance(appContext).sendBroadcast(setIntent);
-                }
+                saveSource();
             }
         });
 
+        sourceSpinnerText = (TextView) view.findViewById(R.id.source_spinner_text);
+        sourceSpinner = (Spinner) view.findViewById(R.id.source_spinner);
+
         Bundle arguments = getArguments();
-        String data = arguments.getString("data");
+        sourcePosition = (Integer) arguments.get("position");
 
-        String hint = "";
-        String prefix = "";
-        String suffix = "";
+        if (sourcePosition == -1) {
+            sourceImage.setVisibility(View.GONE);
+            sourceSpinnerText.setVisibility(View.VISIBLE);
+            sourceSpinner.setVisibility(View.VISIBLE);
+            ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(appContext,
+                    R.array.source_menu, android.R.layout.simple_spinner_item);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            sourceSpinner.setAdapter(adapter);
 
-        switch (arguments.getString("type")) {
+            sourceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent,
+                        View view,
+                        int position,
+                        long id) {
 
-            case AppSettings.IMGUR:
-                if (data.contains("imgur.com/a/")) {
-                    hint = "Album ID";
-                    prefix = "imgur.com/a/";
+                    selectSource(position);
                 }
-                else if (data.contains("imgur.com/r/")) {
-                    hint = "Subreddit";
-                    prefix = "imgur.com/r/";
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
                 }
-                data = data.substring(data.indexOf(prefix) + prefix.length());
-                break;
-            case AppSettings.TUMBLR_BLOG:
-                prefix = "Blog name";
-                suffix = ".tumblr.com";
-                break;
-            case AppSettings.TUMBLR_TAG:
-                hint = "Tag";
-                if (data.length() > 12) {
-                    data = data.substring(12);
+            });
+
+            sourceSpinner.setSelection(0);
+            type = AppSettings.WEBSITE;
+            hint = "URL";
+            prefix = "";
+            suffix = "";
+        }
+        else {
+            sourceImage.setVisibility(View.VISIBLE);
+            sourceSpinnerText.setVisibility(View.GONE);
+            sourceSpinner.setVisibility(View.GONE);
+
+            type = arguments.getString("type");
+
+            sourceNum.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_ENTER) {
+                        saveSource();
+                        return true;
+                    }
+                    return false;
                 }
-                break;
-            case AppSettings.FOLDER:
-                sourceData.setClickable(false);
-                sourceData.setFocusable(false);
-                sourceNum.setClickable(false);
-                sourceNum.setFocusable(false);
+            });
+
+            String data = arguments.getString("data");
+
+            hint = "";
+            prefix = "";
+            suffix = "";
+
+            switch (arguments.getString("type")) {
+
+                case AppSettings.IMGUR:
+                    if (data.contains("imgur.com/a/")) {
+                        hint = "Album ID";
+                        prefix = "imgur.com/a/";
+                    }
+                    else if (data.contains("imgur.com/r/")) {
+                        hint = "Subreddit";
+                        prefix = "imgur.com/r/";
+                    }
+                    data = data.substring(data.indexOf(prefix) + prefix.length());
+                    break;
+                case AppSettings.TUMBLR_BLOG:
+                    prefix = "Blog name";
+                    suffix = ".tumblr.com";
+                    break;
+                case AppSettings.TUMBLR_TAG:
+                    hint = "Tag";
+                    if (data.length() > 12) {
+                        data = data.substring(12);
+                    }
+                    break;
+                case AppSettings.FOLDER:
+                    sourceData.setEnabled(false);
+                    sourceData.setClickable(false);
+                    sourceNum.setEnabled(false);
+                    sourceNum.setClickable(false);
+
+            }
+
+            sourceTitle.setText(arguments.getString("title"));
+            sourceNum.setText(arguments.getString("num"));
+            sourceData.setText(data);
+
+            if (imageDrawable != null) {
+                sourceImage.setImageDrawable(imageDrawable);
+            }
+
+            boolean showPreview = arguments.getBoolean("preview");
+            if (showPreview) {
+                sourceImage.setVisibility(View.VISIBLE);
+            }
+
+            ((CustomSwitchPreference) findPreference("source_show_preview")).setChecked(showPreview);
 
         }
 
-        sourceTitle.setText(arguments.getString("title"));
-        sourceNum.setText(arguments.getString("num"));
         sourcePrefix.setText(prefix);
-        sourceData.setText(data);
         sourceData.setHint(hint);
         sourceSuffix.setText(suffix);
 
         if (prefix.equals("")) {
-            sourcePrefix.setVisibility(View.GONE);
+            sourcePrefix.setVisibility(View.INVISIBLE);
+        }
+        else {
+            sourcePrefix.setVisibility(View.VISIBLE);
         }
         if (suffix.equals("")) {
-            sourceSuffix.setVisibility(View.GONE);
+            sourceSuffix.setVisibility(View.INVISIBLE);
         }
-
-        sourceImage = (ImageView) view.findViewById(R.id.source_image);
-        if (imageDrawable != null) {
-            sourceImage.setImageDrawable(imageDrawable);
+        else {
+            sourceSuffix.setVisibility(View.VISIBLE);
         }
 
         sourceUse = (Switch) view.findViewById(R.id.source_use_switch);
@@ -313,16 +308,32 @@ public class SourceInfoFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        Animation animation;
+        if (sourcePosition == -1) {
+            animation = new Animation() {
+                @Override
+                protected void applyTransformation(float interpolatedTime, Transformation t) {
 
-        Animation animation = new Animation() {
-            @Override
-            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                    sourceSpinnerText.setAlpha(interpolatedTime);
+                    sourceSpinner.setAlpha(interpolatedTime);
+                    sourceTitle.setAlpha(interpolatedTime);
+                    settingsContainer.setAlpha(interpolatedTime);
+                    sourceUse.setAlpha(interpolatedTime);
 
-                settingsContainer.setAlpha(interpolatedTime);
-                sourceUse.setAlpha(interpolatedTime);
+                }
+            };
+        }
+        else {
+            animation = new Animation() {
+                @Override
+                protected void applyTransformation(float interpolatedTime, Transformation t) {
 
-            }
-        };
+                    settingsContainer.setAlpha(interpolatedTime);
+                    sourceUse.setAlpha(interpolatedTime);
+
+                }
+            };
+        }
 
         animation.setDuration(FADE_IN_TIME);
         animation.setInterpolator(new DecelerateInterpolator(3.0f));
@@ -330,11 +341,367 @@ public class SourceInfoFragment extends Fragment {
 
     }
 
+    private void saveSource() {
+
+        final Intent sourceIntent = new Intent();
+
+        String title = sourceTitle.getText().toString();
+        String data = sourceData.getText().toString();
+
+        if (title.equals("")) {
+            Toast.makeText(appContext, "Title cannot be empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (data.equals("")) {
+            Toast.makeText(appContext, "Data cannot be empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int num = 0;
+        try {
+            num = Integer.parseInt(sourceNum.getText().toString());
+        }
+        catch (NumberFormatException e) {
+            num = 1;
+        }
+
+        switch (type) {
+
+            case AppSettings.WEBSITE:
+                if (!data.contains("http")) {
+                    data = "http://" + data;
+                }
+                break;
+            case AppSettings.IMGUR:
+                data = sourcePrefix.getText().toString() + data;
+                break;
+            case AppSettings.TUMBLR_TAG:
+                data = "Tumblr Tag: " + data;
+                break;
+
+        }
+
+        if (sourcePosition == -1) {
+
+            if (FileHandler.isDownloading) {
+                Toast.makeText(appContext,
+                        "Cannot add source while downloading",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            sourceIntent.setAction(SourceListFragment.ADD_ENTRY);
+
+        }
+        else {
+
+            if (FileHandler.isDownloading) {
+                Toast.makeText(appContext,
+                        "Cannot edit while downloading",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            sourceIntent.setAction(SourceListFragment.SET_ENTRY);
+        }
+
+        sourceIntent.putExtra("type", type);
+        sourceIntent.putExtra("title", sourceTitle.getText().toString());
+        sourceIntent.putExtra("data", data);
+        sourceIntent.putExtra("num", num);
+        sourceIntent.putExtra("position", sourcePosition);
+        sourceIntent.putExtra("use", sourceUse.isChecked());
+        sourceIntent.putExtra("preview",
+                ((CustomSwitchPreference) findPreference("source_show_preview")).isChecked());
+
+        try {
+            InputMethodManager im = (InputMethodManager) appContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+            im.hideSoftInputFromWindow(getView().getWindowToken(),
+                    InputMethodManager.HIDE_NOT_ALWAYS);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        final int screenHeight = getResources().getDisplayMetrics().heightPixels;
+        final View fragmentView = getView();
+
+        if (fragmentView != null) {
+            final float viewStartY = getView().getY();
+
+            Animation animation = new Animation() {
+                @Override
+                protected void applyTransformation(float interpolatedTime,
+                        Transformation t) {
+                    fragmentView.setY((screenHeight - viewStartY) * interpolatedTime + viewStartY);
+                }
+
+                @Override
+                public boolean willChangeBounds() {
+                    return true;
+                }
+            };
+
+            animation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    LocalBroadcastManager.getInstance(appContext).sendBroadcast(sourceIntent);
+                    getFragmentManager().popBackStack();
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+
+            animation.setDuration(SLIDE_EXIT_TIME);
+            getView().startAnimation(animation);
+        }
+        else {
+            LocalBroadcastManager.getInstance(appContext).sendBroadcast(sourceIntent);
+        }
+
+    }
+
     public void setImageDrawable(Drawable drawable) {
         imageDrawable = drawable;
         if (sourceImage != null) {
-            sourceImage.setImageDrawable(drawable);
-            sourceImage.setVisibility(View.VISIBLE);
+            sourceImage.setImageDrawable(imageDrawable);
+        }
+    }
+
+    public void setData(String type, String title, String prefix, String data, String suffix, int num) {
+
+        this.type = type;
+        this.prefix = prefix;
+        this.suffix = suffix;
+
+        sourceTitle.setText(title);
+        sourcePrefix.setText(prefix);
+        sourceData.setText(data);
+        sourceSuffix.setText(suffix);
+        sourceNum.setText("" + num);
+
+    }
+
+    private void selectSource(int position) {
+
+        hint = "";
+        prefix = "";
+        suffix = "";
+
+        boolean blockData = false;
+
+        if (type.equals(AppSettings.PICASA) ||
+                type.equals(AppSettings.FOLDER)) {
+            sourceTitle.setText("");
+            sourceData.setText("");
+            sourceNum.setText("");
+        }
+
+        switch (position) {
+            case 0:
+                type = AppSettings.WEBSITE;
+                hint = "URL";
+                break;
+            case 1:
+                showImageFragment(false, "", -1, true);
+                blockData = true;
+                break;
+            case 2:
+                type = AppSettings.IMGUR;
+                prefix = "imgur.com/r/";
+                hint = "Subreddit";
+                break;
+            case 3:
+                type = AppSettings.IMGUR;
+                prefix = "imgur.com/a/";
+                hint = "Album ID";
+                break;
+            case 4:
+                if (AppSettings.getGoogleAccountName().equals("")) {
+                    startActivityForResult(GoogleAccount.getPickerIntent(),
+                            GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
+                }
+                else {
+                    new PicasaAlbumTask(-1, true).execute();
+                }
+                blockData = true;
+                break;
+            case 5:
+                type = AppSettings.TUMBLR_BLOG;
+                hint = "Blog name";
+                suffix = ".tumblr.com";
+                break;
+            case 6:
+                type = AppSettings.TUMBLR_TAG;
+                hint = "Tag";
+                break;
+            default:
+        }
+
+        sourcePrefix.setText(prefix);
+        sourceData.setHint(hint);
+        sourceSuffix.setText(suffix);
+
+        if (prefix.equals("")) {
+            sourcePrefix.setVisibility(View.INVISIBLE);
+        }
+        else {
+            sourcePrefix.setVisibility(View.VISIBLE);
+        }
+        if (suffix.equals("")) {
+            sourceSuffix.setVisibility(View.INVISIBLE);
+        }
+        else {
+            sourceSuffix.setVisibility(View.VISIBLE);
+        }
+
+        if (blockData) {
+            sourceTitle.setEnabled(false);
+            sourceTitle.setClickable(false);
+            sourceData.setEnabled(false);
+            sourceData.setClickable(false);
+            sourceNum.setEnabled(false);
+            sourceNum.setClickable(false);
+
+//            sourceTitle.setFocusable(false);
+//            sourceData.setFocusable(false);
+//            sourceNum.setFocusable(false);
+        }
+        else {
+            sourceTitle.setEnabled(true);
+            sourceTitle.setClickable(true);
+            sourceData.setEnabled(true);
+            sourceData.setClickable(true);
+            sourceNum.setEnabled(true);
+            sourceNum.setClickable(true);
+
+//            sourceTitle.setClickable(true);
+//            sourceTitle.setFocusable(true);
+//            sourceData.setClickable(true);
+//            sourceData.setFocusable(true);
+//            sourceNum.setClickable(true);
+//            sourceNum.setFocusable(true);
+            Log.i(TAG, "Reset fields");
+        }
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int responseCode, Intent intent) {
+
+        if (requestCode == GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN) {
+            if (intent != null && responseCode == Activity.RESULT_OK) {
+                final String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+                AppSettings.setGoogleAccountName(accountName);
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        try {
+                            String authToken = GoogleAuthUtil.getToken(appContext,
+                                    accountName,
+                                    "oauth2:https://picasaweb.google.com/data/");
+                            AppSettings.setGoogleAccountToken(authToken);
+                            AppSettings.setGoogleAccount(true);
+                            new PicasaAlbumTask(-1, true).execute();
+                        }
+                        catch (IOException transientEx) {
+                            return null;
+                        }
+                        catch (UserRecoverableAuthException e) {
+                            e.printStackTrace();
+                            startActivityForResult(e.getIntent(), GoogleAccount.GOOGLE_AUTH_CODE);
+                            return null;
+                        }
+                        catch (GoogleAuthException authEx) {
+                            return null;
+                        }
+                        catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        return null;
+                    }
+                }.execute();
+            }
+        }
+        if (requestCode == GoogleAccount.GOOGLE_AUTH_CODE) {
+            if (responseCode == Activity.RESULT_OK) {
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... params) {
+                        try {
+                            String authToken = GoogleAuthUtil.getToken(appContext,
+                                    AppSettings.getGoogleAccountName(),
+                                    "oauth2:https://picasaweb.google.com/data/");
+                            AppSettings.setGoogleAccountToken(authToken);
+                            AppSettings.setGoogleAccount(true);
+                            new PicasaAlbumTask(-1, true).execute();
+                        }
+                        catch (IOException transientEx) {
+                            return null;
+                        }
+                        catch (UserRecoverableAuthException e) {
+                            return null;
+                        }
+                        catch (GoogleAuthException authEx) {
+                            return null;
+                        }
+                        catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                        return null;
+                    }
+                }.execute();
+            }
+        }
+    }
+
+    private void showImageFragment(boolean setPath, String viewPath, int position, boolean use) {
+        LocalImageFragment localImageFragment = new LocalImageFragment();
+        Bundle arguments = new Bundle();
+        arguments.putBoolean("set_path", setPath);
+        arguments.putString("view_path", viewPath);
+        arguments.putInt("position", position);
+        arguments.putBoolean("use", use);
+        localImageFragment.setArguments(arguments);
+        localImageFragment.setTargetFragment(this, -1);
+
+        getFragmentManager().beginTransaction()
+                .add(R.id.content_frame, localImageFragment, "image_fragment")
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void showAlbumFragment(String type, int position, ArrayList<String> names,
+            ArrayList<String> images, ArrayList<String> links,
+            ArrayList<String> nums, boolean use) {
+        AlbumFragment albumFragment = new AlbumFragment();
+        Bundle arguments = new Bundle();
+        arguments.putString("type", type);
+        arguments.putInt("position", position);
+        arguments.putBoolean("use", use);
+        arguments.putStringArrayList("album_names", names);
+        arguments.putStringArrayList("album_images", images);
+        arguments.putStringArrayList("album_links", links);
+        arguments.putStringArrayList("album_nums", nums);
+        albumFragment.setArguments(arguments);
+        albumFragment.setTargetFragment(this, -1);
+
+        FragmentManager fragmentManager = getFragmentManager();
+
+        if (fragmentManager != null) {
+            fragmentManager.beginTransaction()
+                    .add(R.id.content_frame, albumFragment, "album_fragment")
+                    .addToBackStack(null)
+                    .commit();
         }
     }
 
@@ -387,4 +754,105 @@ public class SourceInfoFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
     }
+
+    class PicasaAlbumTask extends AsyncTask<Void, String, Void> {
+
+        ArrayList<String> albumNames = new ArrayList<>();
+        ArrayList<String> albumImageLinks = new ArrayList<>();
+        ArrayList<String> albumLinks = new ArrayList<>();
+        ArrayList<String> albumNums = new ArrayList<>();
+        private int changePosition;
+        private boolean use;
+
+        public PicasaAlbumTask(int position, boolean use) {
+            changePosition = position;
+            this.use = use;
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            Toast.makeText(appContext, values[0], Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            publishProgress("Loading albums...");
+            String authToken = null;
+            try {
+                authToken = GoogleAuthUtil.getToken(appContext,
+                        AppSettings.getGoogleAccountName(),
+                        "oauth2:https://picasaweb.google.com/data/");
+            }
+            catch (IOException e) {
+                publishProgress("Error loading albums");
+                return null;
+            }
+            catch (GoogleAuthException e) {
+                publishProgress("Error loading albums");
+                return null;
+            }
+            AppSettings.setGoogleAccountToken(authToken);
+
+            HttpClient httpClient = new DefaultHttpClient();
+            HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/user/" + AppSettings.getGoogleAccountName());
+            httpGet.setHeader("Authorization", "OAuth " + authToken);
+            httpGet.setHeader("X-GData-Client", ApiKeys.PICASA_CLIENT_ID);
+            httpGet.setHeader("GData-Version", "2");
+
+            InputStream inputStream = null;
+            BufferedReader reader = null;
+            String result = null;
+            try {
+                inputStream = httpClient.execute(httpGet).getEntity().getContent();
+                reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
+                StringBuilder stringBuilder = new StringBuilder();
+
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    stringBuilder.append(line + "\n");
+                }
+                result = stringBuilder.toString();
+
+            }
+            catch (Exception e) {
+            }
+            finally {
+                try {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                    if (reader != null) {
+                        reader.close();
+                    }
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            Document albumDoc = Jsoup.parse(result);
+
+            for (Element link : albumDoc.select("entry")) {
+                albumNames.add(link.select("title").text());
+                albumImageLinks.add(link.select("media|group").select("media|content").attr("url"));
+                albumLinks.add(link.select("id").text().replace("entry", "feed"));
+                albumNums.add(link.select("gphoto|numphotos").text());
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            showAlbumFragment(AppSettings.PICASA,
+                    changePosition,
+                    albumNames,
+                    albumImageLinks,
+                    albumLinks,
+                    albumNums,
+                    use);
+        }
+    }
+
 }

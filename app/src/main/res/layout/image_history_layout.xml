@@ -59,7 +59,7 @@
             android:paddingTop="6dp"
             android:text="@string/clear_history_button"
             android:textAllCaps="true"
-            android:textColor="@color/LIGHT_BLUE_OPAQUE"
+            android:textColor="@color/ACCENT_OPAQUE"
             />
 
     </RelativeLayout>

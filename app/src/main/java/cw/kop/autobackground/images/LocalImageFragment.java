@@ -46,6 +46,7 @@ import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.SourceInfoFragment;
 import cw.kop.autobackground.sources.SourceListFragment;
 
 public class LocalImageFragment extends Fragment implements ListView.OnItemClickListener {
@@ -200,22 +201,27 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                 stringBuilder.append(dir.getAbsolutePath());
             }
 
-            Intent returnEntryIntent = new Intent();
-            if (position > -1) {
-                returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
-                returnEntryIntent.putExtra("position", position);
-                returnEntryIntent.putExtra("use", use);
-            }
-            else {
-                returnEntryIntent.setAction(SourceListFragment.ADD_ENTRY);
-            }
+//            Intent returnEntryIntent = new Intent();
+//            if (position > -1) {
+//                returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
+//                returnEntryIntent.putExtra("position", position);
+//                returnEntryIntent.putExtra("use", use);
+//                returnEntryIntent.putExtra("preview", true);
+//            }
+//            else {
+//                returnEntryIntent.setAction(SourceListFragment.ADD_ENTRY);
+//                returnEntryIntent.putExtra("use", true);
+//                returnEntryIntent.putExtra("preview", true);
+//            }
+//
+//            returnEntryIntent.putExtra("type", AppSettings.FOLDER);
+//            returnEntryIntent.putExtra("title", dir.getName());
+//            returnEntryIntent.putExtra("data", stringBuilder.toString());
+//            returnEntryIntent.putExtra("num", numImages);
+//
+//            LocalBroadcastManager.getInstance(appContext).sendBroadcast(returnEntryIntent);
 
-            returnEntryIntent.putExtra("type", AppSettings.FOLDER);
-            returnEntryIntent.putExtra("title", dir.getName());
-            returnEntryIntent.putExtra("data", stringBuilder.toString());
-            returnEntryIntent.putExtra("num", numImages);
-
-            LocalBroadcastManager.getInstance(appContext).sendBroadcast(returnEntryIntent);
+            ((SourceInfoFragment) getTargetFragment()).setData(AppSettings.FOLDER, dir.getName(), "", stringBuilder.toString(), "", numImages);
 
         }
         imageAdapter.setFinished();
