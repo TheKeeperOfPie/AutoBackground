@@ -68,7 +68,6 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                 "title_app_settings");
         preferenceCategory.removePreference(findPreference("force_multipane"));
 
-
         Preference clearPref = findPreference("clear_pref");
         clearPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -110,6 +109,10 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
         });
 
         toastPref = (SwitchPreference) findPreference("use_toast");
+
+        if (!AppSettings.useAdvanced()) {
+            preferenceCategory.removePreference(toastPref);
+        }
 
         return inflater.inflate(R.layout.fragment_list, container, false);
 

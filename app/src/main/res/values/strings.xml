@@ -24,6 +24,7 @@
     <string name="no_image_indicator">No images found. Try downloading some.</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="set_wallpaper">Set Wallpaper</string>
     <string name="letters_and_numbers">ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890</string>
 
     <string name="drawer_indicator_content_description">Open drawer</string>
@@ -31,7 +32,6 @@
     <string name="download_wallpaper_content_description">Download wallpaper</string>
     <string name="sort_sources_content_description">Sort sources</string>
     <string name="floating_add_button_content_description">Add source</string>
-
 
     <string name="title_source_settings">Source Settings</string>
     <string name="title_wallpaper_settings">Wallpaper Settings</string>

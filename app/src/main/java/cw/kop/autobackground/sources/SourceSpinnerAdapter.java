@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground;
+package cw.kop.autobackground.sources;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -26,6 +26,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 
 /**

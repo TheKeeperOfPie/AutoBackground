@@ -42,7 +42,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="@color/DARK_GRAY_OPAQUE"
-        android:textColor="@color/WHITE_OPAQUE"
+        android:text="@string/set_wallpaper"
+        android:textColor="@color/ACCENT_OPAQUE"
+        android:textAllCaps="true"
         />
 
     <ImageView

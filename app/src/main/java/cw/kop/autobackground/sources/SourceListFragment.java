@@ -121,26 +121,28 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     private ImageView addButtonBackground;
     private ImageView addButton;
     private Menu toolbarMenu;
+
+    // Volatile variables to assure animations are reset properly
     private volatile boolean needsButtonReset = false;
     private volatile boolean needsListReset = false;
 
+    // Hold screen dimensions to calculate animations
     private int screenHeight;
     private int screenWidth;
 
-    private RelativeLayout.LayoutParams buttonParams;
-    private boolean setShown = false;
-    private boolean tutorialShowing = false;
-
+    /**
+     * Receives DOWNLOAD_TERMINATED intent to reset download button icon and recount available images
+     */
     private BroadcastReceiver sourceListReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 
             String action = intent.getAction();
-
             switch (action) {
                 case FileHandler.DOWNLOAD_TERMINATED:
                     new ImageCountTask().execute();
-
+                    break;
+                default:
             }
 
         }
@@ -201,30 +203,34 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             };
         }
 
+        // Inflate menu and hold reference in toolbarMenu
         inflater.inflate(R.menu.source_list_menu, menu);
         super.onCreateOptionsMenu(menu, inflater);
         toolbarMenu = menu;
 
+        // Sets correct colors of toolbar icons
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
         Drawable refreshIcon = getResources().getDrawable(R.drawable.ic_refresh_white_24dp);
         Drawable storageIcon = getResources().getDrawable(R.drawable.ic_sort_white_24dp);
         refreshIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
         storageIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-
         menu.getItem(0).setIcon(refreshIcon);
         menu.getItem(2).setIcon(storageIcon);
 
+        // Recounts images
         new ImageCountTask().execute();
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        appContext = activity;
+        appContext = activity.getApplicationContext();
     }
 
     @Override
     public void onDestroy() {
+
+        // Attempt using Reflection to force clear Picasso cache to make sure previews are accurate
         try {
             Field clearCache = Class.forName("com.squareup.picasso.Picasso").getDeclaredField(
                     "cache");
@@ -252,39 +258,13 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         View view = inflater.inflate(R.layout.fragment_sources, container, false);
 
         sourceList = (ListView) view.findViewById(R.id.source_list);
-
-        buttonParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        buttonParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        buttonParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        buttonParams.setMargins(0,
-                0,
-                0,
-                Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                        100,
-                        appContext.getResources().getDisplayMetrics())));
-
         addButtonBackground = (ImageView) view.findViewById(R.id.floating_button);
-
         addButton = (ImageView) view.findViewById(R.id.floating_button_icon);
-        GradientDrawable circleDrawable = (GradientDrawable) getResources().getDrawable(R.drawable.floating_button_circle);
-        circleDrawable.setColor(getResources().getColor(R.color.ACCENT_OPAQUE));
-        addButtonBackground.setImageDrawable(circleDrawable);
         addButton.setOnClickListener(this);
         resetAddButtonIcon();
 
         setButton = (Button) view.findViewById(R.id.set_button);
-        setButton.setText("Set Wallpaper");
-        setButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                setWallpaper();
-            }
-
-        });
-
-        resetAddButtonIcon();
+        setButton.setOnClickListener(this);
 
         return view;
     }
@@ -292,110 +272,114 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     @Override
     public void onClick(final View v) {
 
-        if (v.getId() == R.id.floating_button_icon) {
+        switch (v.getId()) {
 
+            case R.id.set_button:
+                setWallpaper();
+                break;
+            case R.id.floating_button_icon:
+                final GradientDrawable circleDrawable = (GradientDrawable) getResources().getDrawable(R.drawable.floating_button_circle);
+                final float scale = (float) (Math.hypot(addButtonBackground.getX(), addButtonBackground.getY()) / addButtonBackground.getWidth() * 2);
 
-            final GradientDrawable circleDrawable = (GradientDrawable) getResources().getDrawable(R.drawable.floating_button_circle);
-            final float scale = (float) (Math.hypot(addButtonBackground.getX(), addButtonBackground.getY()) / addButtonBackground.getWidth() * 2);
+                Animation animation = new Animation() {
 
-            Animation animation = new Animation() {
+                    private boolean needsFragment = true;
 
-                private boolean needsFragment = true;
+                    @Override
+                    protected void applyTransformation(float interpolatedTime, Transformation t) {
 
-                @Override
-                protected void applyTransformation(float interpolatedTime, Transformation t) {
-
-                    if (needsFragment && interpolatedTime >= 1) {
-                        needsFragment = false;
-                        showSourceAddFragment();
-                    }
-                    else {
-                        addButtonBackground.setScaleX(interpolatedTime * scale + 1.0f);
-                        addButtonBackground.setScaleY(interpolatedTime * scale + 1.0f);
-                    }
-                }
-
-                @Override
-                public boolean willChangeBounds() {
-                    return true;
-                }
-
-
-            };
-
-            animation.setAnimationListener(new Animation.AnimationListener() {
-                @Override
-                public void onAnimationStart(Animation animation) {
-                    circleDrawable.setColor(getResources().getColor(R.color.ACCENT_OPAQUE));
-                    addButtonBackground.setImageDrawable(circleDrawable);
-                }
-
-                @Override
-                public void onAnimationEnd(Animation animation) {
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (needsButtonReset) {
-                                addButton.setOnClickListener(SourceListFragment.this);
-                                addButtonBackground.setScaleX(1.0f);
-                                addButtonBackground.setScaleY(1.0f);
-                                addButtonBackground.clearAnimation();
-                                circleDrawable.setColor(getResources().getColor(R.color.ACCENT_OPAQUE));
-                                addButtonBackground.setImageDrawable(circleDrawable);
-                                addButton.setVisibility(View.VISIBLE);
-                            }
+                        if (needsFragment && interpolatedTime >= 1) {
+                            needsFragment = false;
+                            showSourceAddFragment();
                         }
-                    }, 100);
-                }
+                        else {
+                            addButtonBackground.setScaleX(interpolatedTime * scale + 1.0f);
+                            addButtonBackground.setScaleY(interpolatedTime * scale + 1.0f);
+                        }
+                    }
 
-                @Override
-                public void onAnimationRepeat(Animation animation) {
+                    @Override
+                    public boolean willChangeBounds() {
+                        return true;
+                    }
 
-                }
 
-            });
+                };
 
-            ValueAnimator buttonColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
-                    getResources().getColor(R.color.ACCENT_OPAQUE),
-                    getResources().getColor(AppSettings.getBackgroundColorResource()));
-            buttonColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    circleDrawable.setColor((Integer) animation.getAnimatedValue());
-                    addButtonBackground.setImageDrawable(circleDrawable);
-                }
-
-            });
-
-            DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
-
-            animation.setDuration(ADD_ANIMATION_TIME);
-            buttonColorAnimation.setDuration((long) (ADD_ANIMATION_TIME * 0.9));
-            buttonColorAnimation.setInterpolator(decelerateInterpolator);
-            animation.setInterpolator(decelerateInterpolator);
-
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (needsButtonReset) {
-                        addButton.setOnClickListener(SourceListFragment.this);
-                        addButtonBackground.setScaleX(1.0f);
-                        addButtonBackground.setScaleY(1.0f);
-                        addButtonBackground.clearAnimation();
+                animation.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
                         circleDrawable.setColor(getResources().getColor(R.color.ACCENT_OPAQUE));
                         addButtonBackground.setImageDrawable(circleDrawable);
-                        addButton.setVisibility(View.VISIBLE);
-                        needsButtonReset = false;
                     }
-                }
-            }, (long) (ADD_ANIMATION_TIME * 1.1f));
 
-            needsButtonReset = true;
-            addButton.setOnClickListener(null);
-            addButton.setVisibility(View.GONE);
-            buttonColorAnimation.start();
-            addButtonBackground.startAnimation(animation);
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (needsButtonReset) {
+                                    addButton.setOnClickListener(SourceListFragment.this);
+                                    addButtonBackground.setScaleX(1.0f);
+                                    addButtonBackground.setScaleY(1.0f);
+                                    addButtonBackground.clearAnimation();
+                                    circleDrawable.setColor(getResources().getColor(R.color.ACCENT_OPAQUE));
+                                    addButtonBackground.setImageDrawable(circleDrawable);
+                                    addButton.setVisibility(View.VISIBLE);
+                                }
+                            }
+                        }, 100);
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+
+                });
+
+                ValueAnimator buttonColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                        getResources().getColor(R.color.ACCENT_OPAQUE),
+                        getResources().getColor(AppSettings.getBackgroundColorResource()));
+                buttonColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        circleDrawable.setColor((Integer) animation.getAnimatedValue());
+                        addButtonBackground.setImageDrawable(circleDrawable);
+                    }
+
+                });
+
+                DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator();
+
+                animation.setDuration(ADD_ANIMATION_TIME);
+                buttonColorAnimation.setDuration((long) (ADD_ANIMATION_TIME * 0.9));
+                buttonColorAnimation.setInterpolator(decelerateInterpolator);
+                animation.setInterpolator(decelerateInterpolator);
+
+                // Post a delayed Runnable to ensure reset even if animation is interrupted
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (needsButtonReset) {
+                            addButtonBackground.setScaleX(1.0f);
+                            addButtonBackground.setScaleY(1.0f);
+                            addButtonBackground.clearAnimation();
+                            circleDrawable.setColor(getResources().getColor(R.color.ACCENT_OPAQUE));
+                            addButtonBackground.setImageDrawable(circleDrawable);
+                            addButton.setVisibility(View.VISIBLE);
+                            needsButtonReset = false;
+                        }
+                    }
+                }, (long) (ADD_ANIMATION_TIME * 1.1f));
+
+                needsButtonReset = true;
+                addButton.setVisibility(View.GONE);
+                buttonColorAnimation.start();
+                addButtonBackground.startAnimation(animation);
+                break;
+            default:
         }
     }
 
@@ -403,22 +387,16 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-
             case R.id.cycle_wallpaper:
-                listAdapter.saveData();
                 cycleWallpaper();
-                if (AppSettings.useToast()) {
-                    Toast.makeText(appContext, "Cycling wallpaper...", Toast.LENGTH_SHORT).show();
-                }
+                sendToast("Cycling wallpaper...");
                 break;
             case R.id.download_wallpaper:
                 startDownload();
                 break;
             case R.id.sort_sources:
                 if (FileHandler.isDownloading) {
-                    if (AppSettings.useToast()) {
-                        Toast.makeText(appContext, "Cannot sort while downloading", Toast.LENGTH_SHORT).show();
-                    }
+                    sendToast("Cannot sort while downloading");
                 }
                 else {
                     showSourceSortMenu();
@@ -429,13 +407,20 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         return true;
     }
 
+    /**
+     * Saves data in list and sends Intent to cycle wallpaper
+     */
     private void cycleWallpaper() {
+        listAdapter.saveData();
         Intent intent = new Intent();
         intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
         appContext.sendBroadcast(intent);
     }
 
+    /**
+     * Starts (or stops) download and sets download icon appropriately
+     */
     private void startDownload() {
         listAdapter.saveData();
         if (FileHandler.isDownloading) {
@@ -476,10 +461,16 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         AppSettings.getTimerDuration(),
                         pendingIntent);
             }
-
         }
     }
 
+    /**
+     * Shows LocalImageFragment to view images
+     * @param setPath whether or not to show set directory button
+     * @param viewPath top level path to start file view in
+     * @param position source index with which to save data from fragment
+     * @param use whether or not source will be active
+     */
     private void showImageFragment(boolean setPath, String viewPath, int position, boolean use) {
         LocalImageFragment localImageFragment = new LocalImageFragment();
         Bundle arguments = new Bundle();
@@ -495,97 +486,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 .commit();
     }
 
-    private void showAlbumFragment(String type, int position, ArrayList<String> names,
-            ArrayList<String> images, ArrayList<String> links,
-            ArrayList<String> nums, boolean use) {
-        AlbumFragment albumFragment = new AlbumFragment();
-        Bundle arguments = new Bundle();
-        arguments.putString("type", type);
-        arguments.putInt("position", position);
-        arguments.putBoolean("use", use);
-        arguments.putStringArrayList("album_names", names);
-        arguments.putStringArrayList("album_images", images);
-        arguments.putStringArrayList("album_links", links);
-        arguments.putStringArrayList("album_nums", nums);
-        albumFragment.setArguments(arguments);
-
-        getFragmentManager().beginTransaction()
-                .add(R.id.content_frame, albumFragment, "album_fragment")
-                .addToBackStack(null)
-                .commit();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int responseCode, Intent intent) {
-
-        if (requestCode == GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN) {
-            if (intent != null && responseCode == Activity.RESULT_OK) {
-                final String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-                AppSettings.setGoogleAccountName(accountName);
-                new AsyncTask<Void, Void, Void>() {
-                    @Override
-                    protected Void doInBackground(Void... params) {
-                        try {
-                            String authToken = GoogleAuthUtil.getToken(appContext,
-                                    accountName,
-                                    "oauth2:https://picasaweb.google.com/data/");
-                            AppSettings.setGoogleAccountToken(authToken);
-                            AppSettings.setGoogleAccount(true);
-                            new PicasaAlbumTask(-1, true).execute();
-                        }
-                        catch (IOException transientEx) {
-                            return null;
-                        }
-                        catch (UserRecoverableAuthException e) {
-                            e.printStackTrace();
-                            startActivityForResult(e.getIntent(), GoogleAccount.GOOGLE_AUTH_CODE);
-                            return null;
-                        }
-                        catch (GoogleAuthException authEx) {
-                            return null;
-                        }
-                        catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                        return null;
-                    }
-                }.execute();
-            }
-        }
-        if (requestCode == GoogleAccount.GOOGLE_AUTH_CODE) {
-            if (responseCode == Activity.RESULT_OK) {
-                new AsyncTask<Void, Void, Void>() {
-                    @Override
-                    protected Void doInBackground(Void... params) {
-                        try {
-                            String authToken = GoogleAuthUtil.getToken(appContext,
-                                    AppSettings.getGoogleAccountName(),
-                                    "oauth2:https://picasaweb.google.com/data/");
-                            AppSettings.setGoogleAccountToken(authToken);
-                            AppSettings.setGoogleAccount(true);
-                            new PicasaAlbumTask(-1, true).execute();
-                        }
-                        catch (IOException transientEx) {
-                            return null;
-                        }
-                        catch (UserRecoverableAuthException e) {
-                            return null;
-                        }
-                        catch (GoogleAuthException authEx) {
-                            return null;
-                        }
-                        catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                        return null;
-                    }
-                }.execute();
-            }
-        }
-    }
-
+    /**
+     * Show SourceInfoFragment with position -1 to add new source
+     */
     private void showSourceAddFragment() {
-
         final SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
         Bundle arguments = new Bundle();
         arguments.putInt("position", -1);
@@ -609,6 +513,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     }
 
+    /**
+     * Shows sort menu for sources in a dialog
+     */
     private void showSourceSortMenu() {
 
         DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
@@ -639,6 +546,17 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 R.array.source_sort_menu);
     }
 
+    /**
+     * Adds source to listAdapter
+     * @param type source type
+     * @param title source title
+     * @param data source data
+     * @param num number of images for source
+     * @param use whether or not source will be active
+     * @param preview show preview in source list
+     * @param useTime use active time setting
+     * @param time time for active time setting
+     */
     public void addEntry(String type,
             String title,
             String data,
@@ -648,27 +566,39 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             boolean useTime,
             String time) {
         if (!listAdapter.addItem(type, title, data, use, num, preview, useTime, time)) {
-            Toast.makeText(appContext,
-                    "Error: Title in use.\nPlease use a different title.",
-                    Toast.LENGTH_SHORT).show();
+            sendToast("Error: Title in use.\nPlease use a different title.");
         }
 
     }
 
+    /**
+     * Changes entry in listAdapter
+     * @param position source index
+     * @param type source type
+     * @param title source title
+     * @param data source data
+     * @param num number of images for source
+     * @param use whether or not source will be active
+     * @param preview show preview in source list
+     * @param useTime use active time setting
+     * @param time time for active time setting
+     */
     public void setEntry(int position,
             String type,
             String title,
-            String path,
+            String data,
             String num,
             boolean use,
             boolean preview, boolean useTime, String time) {
-        if (!listAdapter.setItem(position, type, title, path, use, num, preview, useTime, time)) {
-            Toast.makeText(appContext,
-                    "Error: Title in use.\nPlease use a different title.",
-                    Toast.LENGTH_SHORT).show();
+        if (!listAdapter.setItem(position, type, title, data, use, num, preview, useTime, time)) {
+            sendToast("Error: Title in use.\nPlease use a different title.");
         }
     }
 
+    /**
+     * Sets up sourceList behavior
+     * @param savedInstanceState
+     */
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -698,9 +628,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         @Override
                         public void onClickRight(View v) {
                             FileHandler.deleteBitmaps(appContext, index);
-                            Toast.makeText(appContext,
-                                    "Deleting " + AppSettings.getSourceTitle(index) + " images",
-                                    Toast.LENGTH_SHORT).show();
+                            sendToast("Deleting " + AppSettings.getSourceTitle(index) + " images");
                             AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
                                     new HashSet<String>());
                             listAdapter.removeItem(index);
@@ -800,10 +728,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 return true;
             }
         });
-
-        if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
-            sourceList.setBackgroundColor(getResources().getColor(android.R.color.transparent));
-        }
 
         sourceList.setOnItemClickListener(this);
     }
@@ -1139,104 +1063,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         }
     }
 
-    class PicasaAlbumTask extends AsyncTask<Void, String, Void> {
+    private void sendToast(String toast) {
 
-        ArrayList<String> albumNames = new ArrayList<>();
-        ArrayList<String> albumImageLinks = new ArrayList<>();
-        ArrayList<String> albumLinks = new ArrayList<>();
-        ArrayList<String> albumNums = new ArrayList<>();
-        private int changePosition;
-        private boolean use;
-
-        public PicasaAlbumTask(int position, boolean use) {
-            changePosition = position;
-            this.use = use;
+        if (AppSettings.useToast()) {
+            Toast.makeText(appContext, toast, Toast.LENGTH_SHORT).show();
         }
 
-        @Override
-        protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
-            Toast.makeText(appContext, values[0], Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            publishProgress("Loading albums...");
-            String authToken = null;
-            try {
-                authToken = GoogleAuthUtil.getToken(appContext,
-                        AppSettings.getGoogleAccountName(),
-                        "oauth2:https://picasaweb.google.com/data/");
-            }
-            catch (IOException e) {
-                publishProgress("Error loading albums");
-                return null;
-            }
-            catch (GoogleAuthException e) {
-                publishProgress("Error loading albums");
-                return null;
-            }
-            AppSettings.setGoogleAccountToken(authToken);
-
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/user/" + AppSettings.getGoogleAccountName());
-            httpGet.setHeader("Authorization", "OAuth " + authToken);
-            httpGet.setHeader("X-GData-Client", ApiKeys.PICASA_CLIENT_ID);
-            httpGet.setHeader("GData-Version", "2");
-
-            InputStream inputStream = null;
-            BufferedReader reader = null;
-            String result = null;
-            try {
-                inputStream = httpClient.execute(httpGet).getEntity().getContent();
-                reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
-                StringBuilder stringBuilder = new StringBuilder();
-
-                String line = null;
-                while ((line = reader.readLine()) != null) {
-                    stringBuilder.append(line + "\n");
-                }
-                result = stringBuilder.toString();
-
-            }
-            catch (Exception e) {
-            }
-            finally {
-                try {
-                    if (inputStream != null) {
-                        inputStream.close();
-                    }
-                    if (reader != null) {
-                        reader.close();
-                    }
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            Document albumDoc = Jsoup.parse(result);
-
-            for (Element link : albumDoc.select("entry")) {
-                albumNames.add(link.select("title").text());
-                albumImageLinks.add(link.select("media|group").select("media|content").attr("url"));
-                albumLinks.add(link.select("id").text().replace("entry", "feed"));
-                albumNums.add(link.select("gphoto|numphotos").text());
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            showAlbumFragment(AppSettings.PICASA,
-                    changePosition,
-                    albumNames,
-                    albumImageLinks,
-                    albumLinks,
-                    albumNums,
-                    use);
-        }
     }
 
 }

@@ -26,7 +26,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -38,7 +37,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Transformation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -69,7 +67,6 @@ import java.util.Arrays;
 import cw.kop.autobackground.CustomSwitchPreference;
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.R;
-import cw.kop.autobackground.SourceSpinnerAdapter;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.AlbumFragment;
@@ -122,7 +119,7 @@ public class SourceInfoFragment extends PreferenceFragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        appContext = activity;
+        appContext = activity.getApplicationContext();
     }
 
     @Override
@@ -131,7 +128,6 @@ public class SourceInfoFragment extends PreferenceFragment {
         super.onDetach();
     }
 
-    @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater,
             ViewGroup container,

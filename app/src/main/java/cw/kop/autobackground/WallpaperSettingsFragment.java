@@ -57,7 +57,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
-        appContext = activity;
+        appContext = activity.getApplicationContext();
 
         Intent intent = new Intent();
         intent.setAction(LiveWallpaperService.UPDATE_WALLPAPER);
