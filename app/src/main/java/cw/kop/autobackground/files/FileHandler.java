@@ -27,7 +27,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,9 +40,8 @@ import cw.kop.autobackground.settings.AppSettings;
 public class FileHandler {
 
     public static final String DOWNLOAD_TERMINATED = "cw.kop.autobackground.files.FileHandler.DOWNLOAD_TERMINATED";
-    public static volatile boolean isDownloading = false;
-
     private static final String TAG = "FileHandler";
+    public static volatile boolean isDownloading = false;
     private static Bitmap musicBitmap = null;
     private static File currentBitmapFile = null;
     private static int randIndex = 0;

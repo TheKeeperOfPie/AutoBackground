@@ -19,9 +19,7 @@ package cw.kop.autobackground.images;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -37,7 +35,6 @@ import java.util.ArrayList;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.SourceInfoFragment;
-import cw.kop.autobackground.sources.SourceListFragment;
 
 public class AlbumFragment extends Fragment implements ListView.OnItemClickListener {
 
@@ -154,7 +151,12 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
 //
 //        LocalBroadcastManager.getInstance(appContext).sendBroadcast(returnEntryIntent);
 
-        ((SourceInfoFragment) getTargetFragment()).setData(type, albumNames.get(positionInList), "", albumLinks.get(positionInList), "", Integer.parseInt(albumNums.get(positionInList)));
+        ((SourceInfoFragment) getTargetFragment()).setData(type,
+                albumNames.get(positionInList),
+                "",
+                albumLinks.get(positionInList),
+                "",
+                Integer.parseInt(albumNums.get(positionInList)));
 
         getActivity().onBackPressed();
     }

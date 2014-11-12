@@ -55,12 +55,12 @@
         android:layout_toEndOf="@+id/source_icon"
         android:layout_toRightOf="@+id/source_icon"
         android:background="@android:color/transparent"
-        android:ellipsize="marquee"
         android:focusable="false"
         android:gravity="center_vertical"
         android:marqueeRepeatLimit="marquee_forever"
         android:scrollHorizontally="true"
         android:singleLine="true"
+        android:ellipsize="marquee"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textStyle="bold"
         />

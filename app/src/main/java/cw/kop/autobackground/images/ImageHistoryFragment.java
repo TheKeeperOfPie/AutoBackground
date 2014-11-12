@@ -53,7 +53,7 @@ public class ImageHistoryFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        appContext = activity.getApplicationContext();
+        appContext = activity;
     }
 
     @Override

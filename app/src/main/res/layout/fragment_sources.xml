@@ -43,8 +43,8 @@
         android:layout_alignParentBottom="true"
         android:background="@color/DARK_GRAY_OPAQUE"
         android:text="@string/set_wallpaper"
-        android:textColor="@color/ACCENT_OPAQUE"
         android:textAllCaps="true"
+        android:textColor="@color/ACCENT_OPAQUE"
         />
 
     <ImageView
@@ -66,12 +66,12 @@
         android:id="@+id/floating_button_icon"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        android:layout_alignTop="@+id/floating_button"
         android:layout_alignBottom="@+id/floating_button"
-        android:layout_alignStart="@+id/floating_button"
-        android:layout_alignLeft="@+id/floating_button"
         android:layout_alignEnd="@+id/floating_button"
+        android:layout_alignLeft="@+id/floating_button"
         android:layout_alignRight="@+id/floating_button"
+        android:layout_alignStart="@+id/floating_button"
+        android:layout_alignTop="@+id/floating_button"
         android:padding="16dp"
         android:src="@drawable/ic_add_white_24dp"
         />

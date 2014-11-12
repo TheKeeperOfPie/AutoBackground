@@ -22,7 +22,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -47,7 +46,6 @@ import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.SourceInfoFragment;
-import cw.kop.autobackground.sources.SourceListFragment;
 
 public class LocalImageFragment extends Fragment implements ListView.OnItemClickListener {
 
@@ -145,7 +143,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
 
                     @Override
                     public void onClickRight(View v) {
-                        setAppDirectory(false);
+                        setAppDirectory(true);
                         this.dismissDialog();
                     }
                 };
@@ -172,7 +170,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
     }
 
     private void setAppDirectory(boolean useSubdirectories) {
-        File dir = imageAdapter.getDirectory();
+        final File dir = imageAdapter.getDirectory();
         FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
         if (setPath) {
             AppSettings.setDownloadPath(dir.getAbsolutePath());
@@ -186,42 +184,45 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                 numImages = dir.listFiles(filenameFilter).length;
             }
 
-            StringBuilder stringBuilder = new StringBuilder();
+            final StringBuilder stringBuilder = new StringBuilder();
 
             if (useSubdirectories) {
-                ArrayList<String> folderNames = getAllDirectories(dir);
 
-                for (String folderName : folderNames) {
-                    stringBuilder.append(folderName);
-                    stringBuilder.append(AppSettings.DATA_SPLITTER);
-                    Log.i("LIF", folderName);
-                }
+                Toast.makeText(appContext, "Loading subdirectories...", Toast.LENGTH_SHORT).show();
+
+                final int finalNumImages = numImages;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        ArrayList<String> folderNames = getAllDirectories(dir);
+
+                        for (String folderName : folderNames) {
+                            stringBuilder.append(folderName);
+                            stringBuilder.append(AppSettings.DATA_SPLITTER);
+                            Log.i("LIF", folderName);
+                        }
+
+                        if (getTargetFragment() != null) {
+
+                            ((SourceInfoFragment) getTargetFragment()).setData(AppSettings.FOLDER,
+                                    dir.getName(),
+                                    "",
+                                    stringBuilder.toString(),
+                                    "",
+                                    finalNumImages);
+                        }
+                    }
+                }).start();
             }
             else {
-                stringBuilder.append(dir.getAbsolutePath());
+                ((SourceInfoFragment) getTargetFragment()).setData(AppSettings.FOLDER,
+                        dir.getName(),
+                        "",
+                        dir.getAbsolutePath(),
+                        "",
+                        numImages);
             }
-
-//            Intent returnEntryIntent = new Intent();
-//            if (position > -1) {
-//                returnEntryIntent.setAction(SourceListFragment.SET_ENTRY);
-//                returnEntryIntent.putExtra("position", position);
-//                returnEntryIntent.putExtra("use", use);
-//                returnEntryIntent.putExtra("preview", true);
-//            }
-//            else {
-//                returnEntryIntent.setAction(SourceListFragment.ADD_ENTRY);
-//                returnEntryIntent.putExtra("use", true);
-//                returnEntryIntent.putExtra("preview", true);
-//            }
-//
-//            returnEntryIntent.putExtra("type", AppSettings.FOLDER);
-//            returnEntryIntent.putExtra("title", dir.getName());
-//            returnEntryIntent.putExtra("data", stringBuilder.toString());
-//            returnEntryIntent.putExtra("num", numImages);
-//
-//            LocalBroadcastManager.getInstance(appContext).sendBroadcast(returnEntryIntent);
-
-            ((SourceInfoFragment) getTargetFragment()).setData(AppSettings.FOLDER, dir.getName(), "", stringBuilder.toString(), "", numImages);
 
         }
         imageAdapter.setFinished();

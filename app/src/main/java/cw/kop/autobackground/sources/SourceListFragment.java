@@ -16,13 +16,11 @@
 
 package cw.kop.autobackground.sources;
 
-import android.accounts.AccountManager;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
-import android.app.Dialog;
 import android.app.Fragment;
 import android.app.PendingIntent;
 import android.app.WallpaperManager;
@@ -31,12 +29,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.media.Image;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -55,40 +50,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.ScaleAnimation;
 import android.view.animation.Transformation;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.amlcurran.showcaseview.ShowcaseView;
-import com.google.android.gms.auth.GoogleAuthException;
-import com.google.android.gms.auth.GoogleAuthUtil;
-import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.squareup.picasso.Cache;
 import com.squareup.picasso.Picasso;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -97,11 +72,8 @@ import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.MenuWrapper;
 import cw.kop.autobackground.R;
-import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.files.FileHandler;
-import cw.kop.autobackground.images.AlbumFragment;
 import cw.kop.autobackground.images.LocalImageFragment;
-import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener {
@@ -224,7 +196,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        appContext = activity.getApplicationContext();
+        appContext = activity;
     }
 
     @Override
@@ -278,12 +250,25 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 setWallpaper();
                 break;
             case R.id.floating_button_icon:
-                final GradientDrawable circleDrawable = (GradientDrawable) getResources().getDrawable(R.drawable.floating_button_circle);
-                final float scale = (float) (Math.hypot(addButtonBackground.getX(), addButtonBackground.getY()) / addButtonBackground.getWidth() * 2);
+                final GradientDrawable circleDrawable = (GradientDrawable) getResources().getDrawable(
+                        R.drawable.floating_button_circle);
+                final float scale = (float) (Math.hypot(addButtonBackground.getX(),
+                        addButtonBackground.getY()) / addButtonBackground.getWidth() * 2);
 
                 Animation animation = new Animation() {
 
                     private boolean needsFragment = true;
+                    private float pivot;
+
+                    @Override
+                    public void initialize(int width,
+                            int height,
+                            int parentWidth,
+                            int parentHeight) {
+                        super.initialize(width, height, parentWidth, parentHeight);
+
+                        pivot = resolveSize(RELATIVE_TO_SELF, 0.5f, width, parentWidth);
+                    }
 
                     @Override
                     protected void applyTransformation(float interpolatedTime, Transformation t) {
@@ -293,8 +278,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                             showSourceAddFragment();
                         }
                         else {
-                            addButtonBackground.setScaleX(interpolatedTime * scale + 1.0f);
-                            addButtonBackground.setScaleY(interpolatedTime * scale + 1.0f);
+                            float scaleFactor = 1.0f + ((scale - 1.0f) * interpolatedTime);
+                            t.getMatrix().setScale(scaleFactor, scaleFactor, pivot, pivot);
                         }
                     }
 
@@ -466,10 +451,11 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     /**
      * Shows LocalImageFragment to view images
-     * @param setPath whether or not to show set directory button
+     *
+     * @param setPath  whether or not to show set directory button
      * @param viewPath top level path to start file view in
      * @param position source index with which to save data from fragment
-     * @param use whether or not source will be active
+     * @param use      whether or not source will be active
      */
     private void showImageFragment(boolean setPath, String viewPath, int position, boolean use) {
         LocalImageFragment localImageFragment = new LocalImageFragment();
@@ -548,14 +534,15 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     /**
      * Adds source to listAdapter
-     * @param type source type
-     * @param title source title
-     * @param data source data
-     * @param num number of images for source
-     * @param use whether or not source will be active
+     *
+     * @param type    source type
+     * @param title   source title
+     * @param data    source data
+     * @param num     number of images for source
+     * @param use     whether or not source will be active
      * @param preview show preview in source list
      * @param useTime use active time setting
-     * @param time time for active time setting
+     * @param time    time for active time setting
      */
     public void addEntry(String type,
             String title,
@@ -573,15 +560,16 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     /**
      * Changes entry in listAdapter
+     *
      * @param position source index
-     * @param type source type
-     * @param title source title
-     * @param data source data
-     * @param num number of images for source
-     * @param use whether or not source will be active
-     * @param preview show preview in source list
-     * @param useTime use active time setting
-     * @param time time for active time setting
+     * @param type     source type
+     * @param title    source title
+     * @param data     source data
+     * @param num      number of images for source
+     * @param use      whether or not source will be active
+     * @param preview  show preview in source list
+     * @param useTime  use active time setting
+     * @param time     time for active time setting
      */
     public void setEntry(int position,
             String type,
@@ -597,6 +585,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     /**
      * Sets up sourceList behavior
+     *
      * @param savedInstanceState
      */
     @Override
@@ -847,7 +836,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);
         final CardView sourceCard = (CardView) view.findViewById(R.id.source_card);
         final View imageOverlay = view.findViewById(R.id.source_image_overlay);
-        final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
+        final TextView sourceTitle = (TextView) view.findViewById(R.id.source_title);
         final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
         final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
         final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
@@ -858,7 +847,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final int viewStartPadding = view.getPaddingLeft();
         final float textStartX = sourceTitle.getX();
         final float textStartY = sourceTitle.getY();
-        final float textTranslationY = sourceTitle.getHeight() + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+        final float textTranslationY = sourceTitle.getHeight() + TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
                 8,
                 getResources().getDisplayMetrics());
 
@@ -887,7 +877,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 view.setPadding(newPadding, 0, newPadding, 0);
                 view.setY(viewStartY - interpolatedTime * viewStartY);
                 sourceContainer.getLayoutParams().height = (int) (viewStartHeight + screenHeight * interpolatedTime);
-                sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
+//                sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
                 sourceTitle.setX(textStartX + viewStartPadding - newPadding);
                 deleteButton.setAlpha(1.0f - interpolatedTime);
                 viewButton.setAlpha(1.0f - interpolatedTime);
@@ -925,7 +915,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         });
 
         ValueAnimator cardColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
-                getResources().getColor(R.color.DARK_BLUE_OPAQUE),
+                getResources().getColor(R.color.ACCENT_OPAQUE),
                 getResources().getColor(AppSettings.getBackgroundColorResource()));
         cardColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 
@@ -958,7 +948,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             }
         });
 
-        ValueAnimator imageOverlayAlphaAnimation = ValueAnimator.ofFloat(imageOverlay.getAlpha(), 0f);
+        ValueAnimator imageOverlayAlphaAnimation = ValueAnimator.ofFloat(imageOverlay.getAlpha(),
+                0f);
         imageOverlayAlphaAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -1003,6 +994,14 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         cardColorAnimation.start();
         titleColorAnimation.start();
         titleShadowAlphaAnimation.start();
+    }
+
+    private void sendToast(String toast) {
+
+        if (AppSettings.useToast()) {
+            Toast.makeText(appContext, toast, Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     class ImageCountTask extends AsyncTask<Void, String, String> {
@@ -1061,14 +1060,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 //            }
 
         }
-    }
-
-    private void sendToast(String toast) {
-
-        if (AppSettings.useToast()) {
-            Toast.makeText(appContext, toast, Toast.LENGTH_SHORT).show();
-        }
-
     }
 
 }

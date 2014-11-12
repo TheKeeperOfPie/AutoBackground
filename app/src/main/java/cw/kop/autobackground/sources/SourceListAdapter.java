@@ -19,28 +19,22 @@ package cw.kop.autobackground.sources;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.PorterDuff;
-import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -95,12 +89,14 @@ public class SourceListAdapter extends BaseAdapter {
         final HashMap<String, String> listItem = listData.get(position);
 
         if (convertView == null) {
-            convertView = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ? inflater.inflate(R.layout.source_list_card, parent, false) : inflater.inflate(R.layout.source_list_card_dark, parent, false);
+            convertView = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
+                    inflater.inflate(R.layout.source_list_card, parent, false) :
+                    inflater.inflate(R.layout.source_list_card_dark, parent, false);
         }
 
         final View view = convertView;
 
-        EditText title = (EditText) view.findViewById(R.id.source_title);
+        TextView title = (TextView) view.findViewById(R.id.source_title);
         title.setText(listItem.get("title"));
         title.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -168,6 +164,7 @@ public class SourceListAdapter extends BaseAdapter {
                 cardClickListener.onViewImageClick(position);
             }
         });
+        editButton.setOnClickListener(null);
 
         ImageView image = (ImageView) view.findViewById(R.id.source_image);
 
@@ -268,7 +265,14 @@ public class SourceListAdapter extends BaseAdapter {
         return true;
     }
 
-    public boolean addItem(String type, String title, String data, boolean use, String num, boolean preview, boolean useTime, String time) {
+    public boolean addItem(String type,
+            String title,
+            String data,
+            boolean use,
+            String num,
+            boolean preview,
+            boolean useTime,
+            String time) {
 
         if (titles.contains(title)) {
             return false;

@@ -48,7 +48,7 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        appContext = activity.getApplicationContext();
+        appContext = activity;
     }
 
     @Override

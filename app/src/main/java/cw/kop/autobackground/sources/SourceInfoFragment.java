@@ -24,9 +24,11 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -41,6 +43,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Scroller;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -109,17 +112,19 @@ public class SourceInfoFragment extends PreferenceFragment {
     private int endHour;
     private int endMinute;
     private CustomSwitchPreference timePref;
+    private Handler handler;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_source);
+        handler = new Handler();
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        appContext = activity.getApplicationContext();
+        appContext = activity;
     }
 
     @Override
@@ -260,7 +265,8 @@ public class SourceInfoFragment extends PreferenceFragment {
             sourceSpinnerText.setVisibility(View.VISIBLE);
             sourceSpinner.setVisibility(View.VISIBLE);
 
-            SourceSpinnerAdapter adapter = new SourceSpinnerAdapter(appContext, R.layout.spinner_row,
+            SourceSpinnerAdapter adapter = new SourceSpinnerAdapter(appContext,
+                    R.layout.spinner_row,
                     Arrays.asList(getResources().getStringArray(R.array.source_menu)));
             sourceSpinner.setAdapter(adapter);
             sourceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -338,10 +344,9 @@ public class SourceInfoFragment extends PreferenceFragment {
                     }
                     break;
                 case AppSettings.FOLDER:
-                    sourceData.setEnabled(false);
-                    sourceData.setClickable(false);
-                    sourceNum.setEnabled(false);
-                    sourceNum.setClickable(false);
+                    sourceTitle.setFocusable(false);
+                    sourceData.setFocusable(false);
+                    sourceNum.setFocusable(false);
 
             }
 
@@ -590,17 +595,27 @@ public class SourceInfoFragment extends PreferenceFragment {
         }
     }
 
-    public void setData(String type, String title, String prefix, String data, String suffix, int num) {
+    public void setData(String type,
+            final String title,
+            final String prefix,
+            final String data,
+            final String suffix,
+            final int num) {
 
         this.type = type;
         this.prefix = prefix;
         this.suffix = suffix;
 
-        sourceTitle.setText(title);
-        sourcePrefix.setText(prefix);
-        sourceData.setText(data);
-        sourceSuffix.setText(suffix);
-        sourceNum.setText("" + num);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                sourceTitle.setText(title);
+                sourcePrefix.setText(prefix);
+                sourceData.setText(data);
+                sourceSuffix.setText(suffix);
+                sourceNum.setText("" + num);
+            }
+        });
 
     }
 
@@ -678,31 +693,15 @@ public class SourceInfoFragment extends PreferenceFragment {
         }
 
         if (blockData) {
-            sourceTitle.setEnabled(false);
-            sourceTitle.setClickable(false);
-            sourceData.setEnabled(false);
-            sourceData.setClickable(false);
-            sourceNum.setEnabled(false);
-            sourceNum.setClickable(false);
-
-//            sourceTitle.setFocusable(false);
-//            sourceData.setFocusable(false);
-//            sourceNum.setFocusable(false);
+            sourceTitle.setFocusable(false);
+            sourceData.setFocusable(false);
+            sourceNum.setFocusable(false);
         }
         else {
-            sourceTitle.setEnabled(true);
-            sourceTitle.setClickable(true);
-            sourceData.setEnabled(true);
-            sourceData.setClickable(true);
-            sourceNum.setEnabled(true);
-            sourceNum.setClickable(true);
+            sourceTitle.setFocusable(true);
+            sourceData.setFocusable(true);
+            sourceNum.setFocusable(true);
 
-//            sourceTitle.setClickable(true);
-//            sourceTitle.setFocusable(true);
-//            sourceData.setClickable(true);
-//            sourceData.setFocusable(true);
-//            sourceNum.setClickable(true);
-//            sourceNum.setFocusable(true);
             Log.i(TAG, "Reset fields");
         }
 
