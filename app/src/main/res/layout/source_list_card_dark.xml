@@ -61,7 +61,7 @@
                 android:background="@color/DARK_GRAY_OPAQUE"
                 />
 
-            <TextView
+            <EditText
                 android:id="@+id/source_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -84,6 +84,7 @@
                 android:shadowRadius="5"
                 android:textColor="@color/WHITE_OPAQUE"
                 android:textSize="28sp"
+                android:background="@drawable/edit_text_blank"
                 />
 
             <ImageView

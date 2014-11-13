@@ -45,7 +45,7 @@ public class AppSettings {
     public static final String TUMBLR_BLOG = "tumblr_blog";
     public static final String TUMBLR_TAG = "tumblr_tag";
 
-    public static final String DATA_SPLITTER = ";break;";
+    public static final String DATA_SPLITTER = ", ";
 
     // Themes are user readable to easier set indicator using theme String
     public static final String APP_LIGHT_THEME = "Light Theme";
@@ -163,6 +163,25 @@ public class AppSettings {
 
             prefs.edit().putBoolean("reset_ver_1_30", false).commit();
         }
+    }
+
+    public static void resetVer1_40() {
+
+        for (int i = 0; i < getNumSources(); i++) {
+
+            if (getSourceType(i).equals(TUMBLR_TAG)) {
+
+                if (getSourceData(i).contains("Tumblr Tag:")) {
+
+                    prefs.edit().putString("source_data_" + i, getSourceData(i).substring(12));
+
+                }
+
+            }
+
+        }
+
+
     }
 
     public static void clearPrefs(Context context) {

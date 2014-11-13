@@ -505,14 +505,6 @@ public class DownloadThread extends Thread {
 
     private void downloadTumblrTag(String tag, int index) {
 
-        if (tag.length() <= 12 || isInterrupted()) {
-            return;
-        }
-
-        tag = tag.substring(12);
-
-        Log.i(TAG, "Tumblr Tag: " + tag);
-
         try {
             HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/tagged?tag=" + tag + "&api_key=" + ApiKeys.TUMBLR_CLIENT_ID);
 

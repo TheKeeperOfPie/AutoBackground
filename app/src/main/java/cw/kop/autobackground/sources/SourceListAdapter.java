@@ -96,7 +96,7 @@ public class SourceListAdapter extends BaseAdapter {
 
         final View view = convertView;
 
-        TextView title = (TextView) view.findViewById(R.id.source_title);
+        EditText title = (EditText) view.findViewById(R.id.source_title);
         title.setText(listItem.get("title"));
         title.setOnClickListener(new View.OnClickListener() {
             @Override

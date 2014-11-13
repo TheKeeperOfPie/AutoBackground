@@ -339,9 +339,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                     break;
                 case AppSettings.TUMBLR_TAG:
                     hint = "Tag";
-                    if (data.length() > 12) {
-                        data = data.substring(12);
-                    }
                     break;
                 case AppSettings.FOLDER:
                     sourceTitle.setFocusable(false);
@@ -489,9 +486,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                 break;
             case AppSettings.IMGUR:
                 data = sourcePrefix.getText().toString() + data;
-                break;
-            case AppSettings.TUMBLR_TAG:
-                data = "Tumblr Tag: " + data;
                 break;
 
         }

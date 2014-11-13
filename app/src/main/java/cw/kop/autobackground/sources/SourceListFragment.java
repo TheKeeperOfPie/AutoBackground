@@ -836,7 +836,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);
         final CardView sourceCard = (CardView) view.findViewById(R.id.source_card);
         final View imageOverlay = view.findViewById(R.id.source_image_overlay);
-        final TextView sourceTitle = (TextView) view.findViewById(R.id.source_title);
+        final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
         final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
         final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
         final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);

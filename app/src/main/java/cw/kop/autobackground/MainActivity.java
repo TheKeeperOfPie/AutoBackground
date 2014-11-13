@@ -145,13 +145,15 @@ public class MainActivity extends ActionBarActivity {
 
         Configuration configuration = getResources().getConfiguration();
         navLayout.getLayoutParams().width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                configuration.screenWidthDp - 56,
+                Math.min(320, configuration.screenWidthDp - 56),
                 getResources().getDisplayMetrics()));
+
+        Log.i("WidthDP: ", "" + configuration.screenWidthDp);
 
         CustomRelativeLayout navHeader = (CustomRelativeLayout) findViewById(R.id.nav_drawer_header);
         navHeader.getLayoutParams().height = Math.round(TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
-                Math.min(320, (configuration.screenWidthDp - 56) / 16 * 9),
+                Math.min(180, (configuration.screenWidthDp - 56) / 16 * 9),
                 getResources().getDisplayMetrics()));
         navHeader.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -222,11 +224,13 @@ public class MainActivity extends ActionBarActivity {
             int position = bundle.getInt("fragment", 0);
             selectItem(position, false);
         }
-        else if (action != null && action.equals(Intent.ACTION_MANAGE_NETWORK_USAGE)) {
-            selectItem(2, false);
-        }
-        else {
-            selectItem(0, false);
+        else if (savedInstanceState == null) {
+            if (action != null && action.equals(Intent.ACTION_MANAGE_NETWORK_USAGE)) {
+                selectItem(2, false);
+            }
+            else {
+                selectItem(0, false);
+            }
         }
 
         loadNavPicture();
