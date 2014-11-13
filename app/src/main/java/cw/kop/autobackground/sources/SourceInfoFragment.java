@@ -693,8 +693,11 @@ public class SourceInfoFragment extends PreferenceFragment {
         }
         else {
             sourceTitle.setFocusable(true);
+            sourceTitle.setFocusableInTouchMode(true);
             sourceData.setFocusable(true);
+            sourceData.setFocusableInTouchMode(true);
             sourceNum.setFocusable(true);
+            sourceNum.setFocusableInTouchMode(true);
 
             Log.i(TAG, "Reset fields");
         }

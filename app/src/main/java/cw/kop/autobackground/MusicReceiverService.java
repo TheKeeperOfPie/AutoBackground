@@ -18,18 +18,26 @@ package cw.kop.autobackground;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
+import android.media.MediaMetadata;
 import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
 import android.media.RemoteController;
+import android.media.session.MediaController;
+import android.media.session.MediaSession;
+import android.media.session.MediaSessionManager;
+import android.media.session.PlaybackState;
 import android.os.Build;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.widget.Toast;
+
+import java.util.List;
 
 import cw.kop.autobackground.files.FileHandler;
 
@@ -45,10 +53,40 @@ public class MusicReceiverService extends NotificationListenerService implements
     private RemoteController audioRemoteController;
     private String previousAlbum = null;
     private String previousArtist = null;
+    private MediaController.Callback callback = new MediaController.Callback() {
+        @Override
+        public void onPlaybackStateChanged(PlaybackState state) {
+            Toast.makeText(getApplicationContext(), "PlaybackState: " + state, Toast.LENGTH_SHORT).show();
+            super.onPlaybackStateChanged(state);
+        }
+
+        @Override
+        public void onMetadataChanged(MediaMetadata metadata) {
+
+            Bitmap bitmap = metadata.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
+            if (bitmap != null) {
+                Toast.makeText(MusicReceiverService.this,
+                        "Bitmap ID: " + bitmap.getGenerationId(),
+                        Toast.LENGTH_SHORT).show();
+
+                FileHandler.setMusicBitmap(bitmap);
+
+                Intent intent = new Intent();
+                intent.setAction(LiveWallpaperService.LOAD_ALBUM_ART);
+                sendBroadcast(intent);
+            }
+
+            super.onMetadataChanged(metadata);
+        }
+    };
 
     @Override
     public void onCreate() {
         super.onCreate();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            registerAudioController();
+        }
 
         Log.i(TAG, "MusicReceiverService created");
 
@@ -58,25 +96,24 @@ public class MusicReceiverService extends NotificationListenerService implements
     public int onStartCommand(Intent intent, int flags, int startId) {
 
 
-        if (Build.VERSION.SDK_INT >= 19) {
-            registerAudioController();
-        }
 
         return super.onStartCommand(intent, flags, startId);
     }
 
     @SuppressLint("NewApi")
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void registerAudioController() {
 
         audioRemoteController = new RemoteController(getApplicationContext(), this);
         audioRemoteController.setArtworkConfiguration(4096, 4096);
-        boolean registered = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).registerRemoteController(
-                audioRemoteController);
+        boolean registered = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).registerRemoteController(audioRemoteController);
         Log.i(TAG, "Audio registered: " + registered);
-        Toast.makeText(MusicReceiverService.this,
-                "Audio registered: " + registered,
-                Toast.LENGTH_SHORT).show();
+        Toast.makeText(MusicReceiverService.this, "Audio registered: " + registered, Toast.LENGTH_SHORT).show();
+
+//        MediaSession mediaSession = new MediaSession(getApplicationContext(), "autobackground");
+//
+//        MediaController mediaController = new MediaController(getApplicationContext(), mediaSession.getSessionToken());
+//        mediaController.registerCallback(callback);
     }
 
     @Override
@@ -84,11 +121,6 @@ public class MusicReceiverService extends NotificationListenerService implements
 
         ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).unregisterRemoteController(
                 audioRemoteController);
-
-        Log.i(TAG, "MusicReceiverService destroyed");
-        Toast.makeText(MusicReceiverService.this,
-                "MusicReceiverService destroyed",
-                Toast.LENGTH_SHORT).show();
 
         super.onDestroy();
     }

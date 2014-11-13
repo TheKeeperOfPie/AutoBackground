@@ -35,7 +35,6 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
     <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
-    <uses-permission android:name="android.permission.MEDIA_CONTENT_CONTROL"/>
 
     <uses-feature
         android:name="android.software.live_wallpaper"
@@ -70,16 +69,24 @@
         </service>
 
         <service
-            android:name="cw.kop.autobackground.MusicReceiverService"
-            android:enabled="true"
-            android:label="@string/music_receiver_description"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
-            >
-
+            android:name=".DaydreamService"
+            android:exported="true"
+            android:icon="@drawable/app_icon"
+            android:label="@string/daydream_description"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
             <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService"/>
+                <action android:name="android.service.dreams.DreamService" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </service>
 
+
+        <service android:name=".MusicReceiverService"
+                 android:label="@string/music_receiver_description"
+                 android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
         </service>
 
         <activity

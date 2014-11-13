@@ -595,6 +595,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final SourceListAdapter.CardClickListener listener = new SourceListAdapter.CardClickListener() {
             @Override
             public void onDeleteClick(final int index) {
+
+                if (FileHandler.isDownloading) {
+                    Toast.makeText(appContext, "Cannot delete while downloading", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 HashMap<String, String> item = listAdapter.getItem(index);
                 String type = item.get("type");
                 if (type.equals(AppSettings.WEBSITE) ||
