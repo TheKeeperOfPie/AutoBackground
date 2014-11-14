@@ -1654,60 +1654,51 @@ public class LiveWallpaperService extends GLWallpaperService {
                 @Override
                 public void run() {
                     try {
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        if (!AppSettings.useHighQuality()) {
-                            options.inPreferredConfig = Bitmap.Config.RGB_565;
-                        }
+                        renderer.loadNext();
 
                         System.gc();
-                        try {
+//                        try {
 
-                            Bitmap checkBitmap;
-                            File imageFile = FileHandler.getNextImage();
-                            checkBitmap = imageFile.exists() ?
-                                    BitmapFactory.decodeFile(imageFile.getAbsolutePath(),
-                                            options) :
-                                    Bitmap.createBitmap(
-                                            1,
-                                            1,
-                                            Bitmap.Config.RGB_565);
-
-                            final Bitmap bitmap = checkBitmap;
-
-                            if (bitmap != null) {
-
-                                addEvent(new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                        renderer.setBitmap(bitmap);
-                                    }
-                                });
-
-                                if (AppSettings.useNotification()) {
-                                    handler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            notifyChangeImage();
-                                        }
-                                    });
-                                }
-
-                                if (previousBitmaps.size() > AppSettings.getHistorySize()) {
-                                    previousBitmaps.remove(previousBitmaps.size() - 1);
-                                }
-
-                                Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
-                                LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
-                                        loadNavPictureIntent);
-                            }
-                            else {
-                                Log.i(TAG, "Bitmap null");
-                            }
-                        }
-                        catch (NullPointerException e) {
-                            e.printStackTrace();
-                        }
+//                            Bitmap checkBitmap;
+//                            File imageFile = FileHandler.getNextImage();
+//                            checkBitmap = imageFile.exists() ?
+//                                    BitmapFactory.decodeFile(imageFile.getAbsolutePath(),
+//                                            options) :
+//                                    Bitmap.createBitmap(
+//                                            1,
+//                                            1,
+//                                            Bitmap.Config.RGB_565);
+//
+//                            final Bitmap bitmap = checkBitmap;
+//
+//                            if (bitmap != null) {
+//
+//                                renderer.setBitmap(bitmap);
+//
+//                                if (AppSettings.useNotification()) {
+//                                    handler.post(new Runnable() {
+//                                        @Override
+//                                        public void run() {
+//                                            notifyChangeImage();
+//                                        }
+//                                    });
+//                                }
+//
+//                                if (previousBitmaps.size() > AppSettings.getHistorySize()) {
+//                                    previousBitmaps.remove(previousBitmaps.size() - 1);
+//                                }
+//
+//                                Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
+//                                LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
+//                                        loadNavPictureIntent);
+//                            }
+//                            else {
+//                                Log.i(TAG, "Bitmap null");
+//                            }
+//                        }
+//                        catch (NullPointerException e) {
+//                            e.printStackTrace();
+//                        }
                     }
                     catch (OutOfMemoryError e) {
                         if (AppSettings.useToast()) {
@@ -1722,11 +1713,13 @@ public class LiveWallpaperService extends GLWallpaperService {
         }
 
         private void resetRenderMode() {
-            if (renderer.isAnimated()) {
-                setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-            }
-            else {
-                setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+            if (renderer != null) {
+                if (renderer.isAnimated()) {
+                    setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+                }
+                else {
+                    setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+                }
             }
         }
 

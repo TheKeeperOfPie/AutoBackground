@@ -18,6 +18,7 @@ package cw.kop.autobackground;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.media.effect.Effect;
@@ -33,6 +34,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.Toast;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -108,6 +110,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     private Callback callback;
     private static WallpaperRenderer instance;
+    private volatile boolean loadNext = false;
 
     private OvershootInterpolator horizontalOvershootInterpolator;
     private OvershootInterpolator verticalOvershootInterpolator;
@@ -152,6 +155,10 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         if (!contextInitialized) {
             effectContext = EffectContext.createWithCurrentGlContext();
             contextInitialized = true;
+        }
+
+        if (loadNext) {
+            loadNext = false;
         }
 
         if (toEffect && effectContext != null) {
@@ -727,39 +734,49 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             Log.i(TAG,
                     "currentBitmapFile loaded: " + FileHandler.getCurrentBitmapFile().getName());
 
+//            Log.i(TAG,
+//                    "startWidth: " + bitmap.getWidth() + " startHeight: " + bitmap.getHeight());
+
+//            if (AppSettings.useScale()) {
+//                if (bitmap.getWidth() < renderScreenWidth ||
+//                        bitmap.getWidth() > maxTextureSize[0] ||
+//                        bitmap.getHeight() < renderScreenHeight ||
+//                        bitmap.getHeight() > maxTextureSize[0]) {
+//                    nextImage = scaleBitmap(bitmap);
+//                }
+//            }
+//            else {
+//                nextImage = scaleBitmap(bitmap);
+//            }
+
+//            Log.i(TAG,
+//                    "scaledWidth: " + bitmap.getWidth() + " scaledHeight: " + bitmap.getHeight());
+            loadNext = true;
+        }
+        catch (IllegalArgumentException e) {
+            Log.i(TAG, "Error loading next image");
+        }
+
+        Log.i(TAG, "Set bitmap");
+
+    }
+
+    private void loadTexture(Bitmap bitmap) {
+
+        if (bitmap == null) {
+            return;
+        }
+
+        try {
+
+            Log.i(TAG, "bitmap width: " + bitmap.getWidth() + " bitmap height: " + bitmap.getHeight());
+
             int storeId = textureNames[0];
             textureNames[0] = textureNames[1];
             textureNames[1] = storeId;
 
-            Log.i(TAG,
-                    "startWidth: " + bitmap.getWidth() + " startHeight: " + bitmap.getHeight());
-
-            if (AppSettings.useScale()) {
-                if (bitmap.getWidth() < renderScreenWidth ||
-                        bitmap.getWidth() > maxTextureSize[0] ||
-                        bitmap.getHeight() < renderScreenHeight ||
-                        bitmap.getHeight() > maxTextureSize[0]) {
-                    bitmap = scaleBitmap(bitmap);
-                }
-            }
-            else {
-                bitmap = scaleBitmap(bitmap);
-            }
-
-            oldBitmapWidth = bitmapWidth;
-            oldBitmapHeight = bitmapHeight;
-            bitmapWidth = bitmap.getWidth();
-            bitmapHeight = bitmap.getHeight();
-
-
-            newOffsetX = rawOffsetX * (renderScreenWidth - bitmapWidth);
-            newOffsetY = -(bitmapHeight - renderScreenHeight) / 2;
-
-            Log.i(TAG,
-                    "scaledWidth: " + bitmap.getWidth() + " scaledHeight: " + bitmap.getHeight());
-
             setupContainer(bitmapWidth, bitmapHeight);
-
+            
             GLES20.glDeleteTextures(1, textureNames, 0);
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
@@ -805,12 +822,8 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                 toEffect = true;
             }
 
-
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
             Log.i(TAG, "Render texture: " + textureNames[0]);
-
-            bitmap.recycle();
-            System.gc();
 
             if (AppSettings.getTransitionTime() > 0) {
                 useTransition = true;
@@ -820,23 +833,76 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             else {
                 GLES20.glDeleteTextures(1, textureNames, 1);
             }
+
+            oldBitmapWidth = bitmapWidth;
+            oldBitmapHeight = bitmapHeight;
+            bitmapWidth = bitmap.getWidth();
+            bitmapHeight = bitmap.getHeight();
+
+            newOffsetX = rawOffsetX * (renderScreenWidth - bitmapWidth);
+            newOffsetY = -(bitmapHeight - renderScreenHeight) / 2;
+
+            bitmap.recycle();
+            bitmap = null;
+            System.gc();
         }
         catch (IllegalArgumentException e) {
+            e.printStackTrace();
             Log.i(TAG, "Error loading next image");
         }
-
-        Log.i(TAG, "Set bitmap");
-
     }
 
-    public void checkGLError(String op) {
+    private void checkGLError(String op) {
         int error;
         while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
             Log.e("MyApp", op + ": glError " + error);
         }
     }
 
-    private Bitmap scaleBitmap(Bitmap bitmap) {
+    public void loadNext() {
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        if (!AppSettings.useHighQuality()) {
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            options.inJustDecodeBounds = true;
+        }
+
+        try {
+
+            File nextImage = FileHandler.getNextImage();
+            if (nextImage == null) {
+                return;
+            }
+
+            Bitmap checkBitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath(), options);
+
+            if (!AppSettings.useFullResolution()) {
+
+                int sampleSize = 1;
+                if (options.outHeight > renderScreenHeight || options.outWidth > renderScreenWidth) {
+
+                    final int halfHeight = options.outHeight / 2;
+                    final int halfWidth = options.outWidth / 2;
+                    while ((halfHeight / sampleSize) > renderScreenHeight && (halfWidth / sampleSize) > renderScreenWidth) {
+                        sampleSize *= 2;
+                    }
+                }
+                options.inSampleSize = sampleSize > 1 ? sampleSize / 2 : sampleSize;
+            }
+            options.inJustDecodeBounds = false;
+
+            checkBitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath(), options);
+
+            loadTexture(scaleBitmap(checkBitmap));
+
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public Bitmap scaleBitmap(Bitmap bitmap) {
         int bitWidth = bitmap.getWidth();
         int bitHeight = bitmap.getHeight();
 

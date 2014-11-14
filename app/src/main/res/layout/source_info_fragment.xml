@@ -72,7 +72,6 @@
         android:nextFocusDown="@id/source_data"
         android:textColor="@color/BLUE_OPAQUE"
         android:textSize="28sp"
-        android:paddingLeft="4dp"
         />
 
     <Switch
