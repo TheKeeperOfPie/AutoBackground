@@ -1188,10 +1188,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                             render();
                         }
                     });
-
-            renderer.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
-            renderer.setAnimationModifierX(AppSettings.getAnimationSpeed() / 10f);
-            renderer.setAnimationModifierY(AppSettings.getVerticalAnimationSpeed() / 10f);
             renderer.setTargetFrameTime(1000 / AppSettings.getAnimationFrameRate());
             setRenderer(renderer);
             setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
@@ -1206,7 +1202,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 localIntentFilter.addAction(SET_ANIMATION_Y);
                 localIntentFilter.addAction(SET_FRAME_TIME);
 
-                LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(localReceiver, localIntentFilter);
+//                LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(localReceiver, localIntentFilter);
 
                 if (Build.VERSION.SDK_INT >= 19 && AppSettings.showAlbumArt()) {
                     Intent musicReceiverIntent = new Intent(LiveWallpaperService.this,
@@ -1672,13 +1668,13 @@ public class LiveWallpaperService extends GLWallpaperService {
                 switch (action) {
 
                     case SET_ANIMATED:
-                        renderer.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
+//                        renderer.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
                         break;
                     case SET_ANIMATION_X:
-                        renderer.setAnimationModifierX((float) AppSettings.getAnimationSpeed() / 10);
+//                        renderer.setAnimationModifierX((float) AppSettings.getAnimationSpeed() / 10);
                         break;
                     case SET_ANIMATION_Y:
-                        renderer.setAnimationModifierY((float) AppSettings.getVerticalAnimationSpeed() / 10);
+//                        renderer.setAnimationModifierY((float) AppSettings.getVerticalAnimationSpeed() / 10);
                         break;
                     case SET_FRAME_TIME:
                         renderer.setTargetFrameTime(1000 / AppSettings.getAnimationFrameRate());
