@@ -477,12 +477,20 @@ public class AppSettings {
         prefs.edit().putString("animation_safety_adv", buffer).commit();
     }
 
-    public static float getAnimationSpeed() {
-        return ((float) prefs.getInt("animation_speed", 10) / 10);
+    public static void setAnimationSpeed(int speed) {
+        prefs.edit().putInt("animation_speed", speed).commit();
     }
 
-    public static float getVerticalAnimationSpeed() {
-        return ((float) prefs.getInt("animation_speed_vertical", 10) / 10);
+    public static int getAnimationSpeed() {
+        return prefs.getInt("animation_speed", 10);
+    }
+
+    public static void setVerticalAnimationSpeed(int speed) {
+        prefs.edit().putInt("animation_speed_vertical", speed).commit();
+    }
+
+    public static int getVerticalAnimationSpeed() {
+        return prefs.getInt("animation_speed_vertical", 10);
     }
 
     public static boolean scaleAnimationSpeed() {
@@ -506,8 +514,12 @@ public class AppSettings {
         prefs.edit().putString("animation_frame_rate", rate).commit();
     }
 
-    public static long getTransitionTime() {
-        return (long) prefs.getInt("transition_speed", 20) * 100;
+    public static void setTransitionSpeed(int speed) {
+        prefs.edit().putInt("transition_speed", speed).commit();
+    }
+
+    public static int getTransitionSpeed() {
+        return prefs.getInt("transition_speed", 20);
     }
 
     public static boolean useFade() {
@@ -522,8 +534,12 @@ public class AppSettings {
         return prefs.getBoolean("reverse_overshoot", false);
     }
 
-    public static float getOvershootIntensity() {
-        return (float) prefs.getInt("overshoot_intensity", 10) / 10;
+    public static void setOvershootIntensity(int intensity) {
+        prefs.edit().putInt("overshoot_intensity", intensity).commit();
+    }
+
+    public static int getOvershootIntensity() {
+        return prefs.getInt("overshoot_intensity", 10);
     }
 
 
@@ -535,8 +551,12 @@ public class AppSettings {
         return prefs.getBoolean("reverse_overshoot_vertical", false);
     }
 
-    public static float getVerticalOvershootIntensity() {
-        return (float) prefs.getInt("overshoot_intensity_vertical", 10) / 10;
+    public static void setVerticalOvershootIntensity(int intensity) {
+        prefs.edit().putInt("overshoot_intensity_vertical", intensity).commit();
+    }
+
+    public static int getVerticalOvershootIntensity() {
+        return prefs.getInt("overshoot_intensity_vertical", 10);
     }
 
     public static boolean useZoomIn() {
@@ -555,8 +575,12 @@ public class AppSettings {
         return prefs.getBoolean("reverse_spin_in", false);
     }
 
-    public static float getSpinInAngle() {
-        return (float) prefs.getInt("spin_in_angle", 2700) / 10;
+    public static void setSpinInAngle(int angle) {
+        prefs.edit().putInt("spin_in_angle", angle).commit();
+    }
+
+    public static int getSpinInAngle() {
+        return prefs.getInt("spin_in_angle", 2700);
     }
 
     public static boolean useSpinOut() {
@@ -567,8 +591,12 @@ public class AppSettings {
         return prefs.getBoolean("reverse_spin_out", false);
     }
 
-    public static float getSpinOutAngle() {
-        return (float) prefs.getInt("spin_out_angle", 2700) / 10;
+    public static void setSpinOutAngle(int angle) {
+        prefs.edit().putInt("spin_out_angle", angle).commit();
+    }
+
+    public static int getSpinOutAngle() {
+        return prefs.getInt("spin_out_angle", 2700);
     }
 
     public static boolean useAdvanced() {

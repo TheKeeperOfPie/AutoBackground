@@ -24,6 +24,7 @@
     android:paddingLeft="8dp"
     android:paddingRight="8dp"
     android:paddingTop="4dp"
+    android:paddingBottom="4dp"
     >
 
     <android.support.v7.widget.CardView

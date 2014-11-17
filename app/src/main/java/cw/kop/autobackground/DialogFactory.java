@@ -25,6 +25,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
@@ -269,6 +270,116 @@ public class DialogFactory {
 
     }
 
+    public static void showSeekBarDialog(Context context,
+            String title,
+            String suffix,
+            final SeekBarDialogListener listener,
+            int max,
+            int defaultValue,
+            int textOneResource,
+            int textTwoResource,
+            int textThreeResource) {
+
+
+        Dialog dialog = getDialog(context);
+        listener.setDialog(dialog);
+
+        View dialogView = View.inflate(context, R.layout.seek_bar_dialog, null);
+        dialog.setContentView(dialogView);
+
+
+        if (title.length() > 0) {
+            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+            dialogTitle.setVisibility(View.VISIBLE);
+            dialogTitle.setText(title);
+
+            View titleUnderline = dialogView.findViewById(R.id.dialog_underline);
+            titleUnderline.setVisibility(View.VISIBLE);
+        }
+
+        if (suffix.length() > 0) {
+            TextView suffixText = (TextView) dialogView.findViewById(R.id.dialog_suffix_text);
+            suffixText.setVisibility(View.VISIBLE);
+            suffixText.setText(suffix);
+        }
+
+        TextView valueText = (TextView) dialogView.findViewById(R.id.value_text);
+        listener.setValueTextView(valueText);
+
+        SeekBar dialogSeekBar = (SeekBar) dialogView.findViewById(R.id.dialog_seek_bar);
+        dialogSeekBar.setMax(max);
+        dialogSeekBar.setProgress(defaultValue);
+        dialogSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                listener.onValueChanged(seekBar, progress, fromUser);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        listener.setSeekBar(dialogSeekBar);
+        listener.onValueChanged(dialogSeekBar, defaultValue, false);
+
+        int textColorInt = context.getResources().getColor(R.color.ACCENT_OPAQUE);
+
+        if (textOneResource > 0) {
+            Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);
+            buttonOne.setText(context.getResources().getString(textOneResource));
+            buttonOne.setTextColor(textColorInt);
+            buttonOne.setVisibility(View.VISIBLE);
+            buttonOne.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickLeft(v);
+                }
+            });
+        }
+
+        if (textTwoResource > 0) {
+            Button buttonTwo = (Button) dialogView.findViewById(R.id.action_button_2);
+            buttonTwo.setText(context.getResources().getString(textTwoResource));
+            buttonTwo.setTextColor(textColorInt);
+            buttonTwo.setVisibility(View.VISIBLE);
+            buttonTwo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickMiddle(v);
+                }
+            });
+        }
+
+        if (textThreeResource > 0) {
+            Button buttonThree = (Button) dialogView.findViewById(R.id.action_button_3);
+            buttonThree.setText(context.getResources().getString(textThreeResource));
+            buttonThree.setTextColor(textColorInt);
+            buttonThree.setVisibility(View.VISIBLE);
+            buttonThree.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickRight(v);
+                }
+            });
+        }
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                listener.onDismiss();
+            }
+        });
+
+        dialog.show();
+
+    }
+
     public static void showTimeDialog(Context context,
             String title,
             String summary,
@@ -441,6 +552,8 @@ public class DialogFactory {
 
     }
 
+
+
     public abstract static class DialogClickListener {
 
         private Dialog dialog;
@@ -508,6 +621,35 @@ public class DialogFactory {
         public String getEditTextString() {
             return editText.getText().toString();
         }
+
+    }
+
+    public abstract static class SeekBarDialogListener extends ActionDialogListener {
+
+        private TextView valueText;
+        private SeekBar seekBar;
+
+        public void setValueTextView(TextView valueText) {
+            this.valueText = valueText;
+        }
+
+        public void setValueText(String text) {
+            valueText.setText(text);
+        }
+
+        public String getValueText() {
+            return valueText.getText().toString();
+        }
+
+        public void setSeekBar(SeekBar seekBar) {
+            this.seekBar = seekBar;
+        }
+
+        public int getValue() {
+            return seekBar.getProgress();
+        }
+
+        public abstract void onValueChanged(SeekBar seekBar, int progress, boolean fromUser);
 
     }
 

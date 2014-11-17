@@ -100,11 +100,8 @@
         android:key="title_transition_settings"
         android:title="@string/title_transition_settings">
 
-        <cw.kop.autobackground.SeekBarPreference
-            android:defaultValue="10"
-            android:dialogMessage="seconds"
+        <Preference
             android:key="transition_speed"
-            android:max="100"
             android:summary="@string/transition_speed_description"
             android:title="@string/transition_speed"
             />
@@ -130,11 +127,8 @@
             android:title="@string/reverse_overshoot"
             />
 
-        <cw.kop.autobackground.SeekBarPreference
-            android:defaultValue="10"
-            android:dialogMessage=" "
+        <Preference
             android:key="overshoot_intensity"
-            android:max="100"
             android:summary="@string/overshoot_intensity_description"
             android:title="@string/overshoot_intensity"
             />
@@ -153,11 +147,8 @@
             android:title="@string/reverse_overshoot_vertical"
             />
 
-        <cw.kop.autobackground.SeekBarPreference
-            android:defaultValue="10"
-            android:dialogMessage=" "
+        <Preference
             android:key="overshoot_intensity_vertical"
-            android:max="100"
             android:summary="@string/overshoot_intensity_vertical_description"
             android:title="@string/overshoot_intensity_vertical"
             />
@@ -190,11 +181,8 @@
             android:title="@string/reverse_spin_in"
             />
 
-        <cw.kop.autobackground.SeekBarPreference
-            android:defaultValue="2700"
-            android:dialogMessage=" "
+        <Preference
             android:key="spin_in_angle"
-            android:max="7200"
             android:summary="@string/spin_in_angle_description"
             android:title="@string/spin_in_angle"
             />
@@ -213,11 +201,8 @@
             android:title="@string/reverse_spin_out"
             />
 
-        <cw.kop.autobackground.SeekBarPreference
-            android:defaultValue="2700"
-            android:dialogMessage=" "
+        <Preference
             android:key="spin_out_angle"
-            android:max="7200"
             android:summary="@string/spin_out_angle_description"
             android:title="@string/spin_out_angle"
             />
@@ -242,20 +227,14 @@
             android:title="@string/use_animation_vertical"
             />
 
-        <cw.kop.autobackground.SeekBarPreference
-            android:defaultValue="10"
-            android:dialogMessage="pixels per frame"
+        <Preference
             android:key="animation_speed"
-            android:max="50"
             android:summary="@string/animation_speed_description"
             android:title="@string/animation_speed"
             />
 
-        <cw.kop.autobackground.SeekBarPreference
-            android:defaultValue="10"
-            android:dialogMessage="pixels per frame"
+        <Preference
             android:key="animation_speed_vertical"
-            android:max="50"
             android:summary="@string/animation_speed_vertical_description"
             android:title="@string/animation_speed_vertical"
             />

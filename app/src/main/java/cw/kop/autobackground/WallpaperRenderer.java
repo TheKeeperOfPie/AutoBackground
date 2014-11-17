@@ -42,7 +42,9 @@ import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -87,7 +89,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
     private float newOffsetX = 0f;
     private float newOffsetY = 0f;
     private float rawOffsetX = 0f;
-    private float scaleFactor;
+    private float scaleFactor = 1.0f;
 
     private boolean animated = false;
     private float animationModifierX = 0.0f;
@@ -111,11 +113,15 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
     private Callback callback;
     private static WallpaperRenderer instance;
     private volatile boolean loadNext = false;
+    private Bitmap imageBitmap;
 
-    private OvershootInterpolator horizontalOvershootInterpolator;
-    private OvershootInterpolator verticalOvershootInterpolator;
-    private AccelerateInterpolator accelerateInterpolator;
-    private DecelerateInterpolator decelerateInterpolator;
+    private int mPositionHandle;
+    private int mTexCoordLoc;
+    private int mtrxhandle;
+
+    private volatile List<RenderImage> renderImages;
+    private static volatile boolean isLoadingTexture = false;
+
     private EffectUpdateListener effectUpdateListener = new EffectUpdateListener() {
         @Override
         public void onEffectUpdated(Effect effect, Object info) {
@@ -131,6 +137,15 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         }
     };
 
+    public static boolean isLoadingTexture() {
+        return isLoadingTexture;
+    }
+
+    public static void setIsLoadingTexture(boolean loading) {
+        isLoadingTexture = loading;
+        instance.renderImages.get(0).startFinish();
+    }
+
     public static WallpaperRenderer getInstance(Context context, Callback callback) {
         if (instance == null) {
             instance = new WallpaperRenderer(context.getApplicationContext(), callback);
@@ -143,46 +158,44 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         serviceContext = context;
         this.callback = callback;
         startTime = System.currentTimeMillis();
-        horizontalOvershootInterpolator = new OvershootInterpolator();
-        verticalOvershootInterpolator = new OvershootInterpolator();
-        accelerateInterpolator = new AccelerateInterpolator();
-        decelerateInterpolator = new DecelerateInterpolator();
+        renderImages = new CopyOnWriteArrayList<>();
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
 
-        if (!contextInitialized) {
-            effectContext = EffectContext.createWithCurrentGlContext();
-            contextInitialized = true;
-        }
-
-        if (loadNext) {
-            loadNext = false;
-        }
-
-        if (toEffect && effectContext != null) {
-            toEffect = false;
-
-            try {
-                initEffects(0);
-            }
-            catch (RuntimeException e) {
-                e.printStackTrace();
-            }
-            GLES20.glDeleteTextures(1, textureNames, 2);
-            Log.i(TAG, "Deleted texture: " + textureNames[2]);
-
-            setupContainer(bitmapWidth, bitmapHeight);
-
-        }
+//        if (!contextInitialized) {
+//            effectContext = EffectContext.createWithCurrentGlContext();
+//            contextInitialized = true;
+//        }
+//
+//        if (loadNext) {
+//            loadTexture();
+//            loadNext = false;
+//        }
+//
+//        if (toEffect && effectContext != null) {
+//            toEffect = false;
+//
+//            try {
+//                initEffects(0);
+//            }
+//            catch (RuntimeException e) {
+//                e.printStackTrace();
+//            }
+//            GLES20.glDeleteTextures(1, textureNames, 2);
+//            Log.i(TAG, "Deleted texture: " + textureNames[2]);
+//
+//            setupContainer(bitmapWidth, bitmapHeight);
+//
+//        }
 
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-        if (useTransition) {
-            applyTransition();
-        }
-        else {
+//        if (useTransition) {
+//            applyTransition();
+//        }
+//        else {
 
             try {
                 endTime = System.currentTimeMillis();
@@ -195,44 +208,34 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             catch (InterruptedException e) {
             }
 
-            if (animated) {
-                float safety = AppSettings.getAnimationSafety();
-                if (AppSettings.useAnimation() && bitmapWidth - (renderScreenWidth / scaleFactor) > safety) {
-                    float animationFactor = 1;
+//            calculateBounds();
+//
+//            android.opengl.Matrix.orthoM(matrixProjection,
+//                    0,
+//                    0,
+//                    renderScreenWidth / scaleFactor,
+//                    0,
+//                    renderScreenHeight / scaleFactor,
+//                    0,
+//                    10f);
 
-                    animationX += animationFactor * ((AppSettings.scaleAnimationSpeed()) ?
-                            (animationModifierX / scaleFactor) :
-                            animationModifierX);
-                    offsetX = animationX;
-                    newOffsetX -= animationX;
-                }
+//            GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+//            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
+//            android.opengl.Matrix.setIdentityM(transMatrix, 0);
+//            android.opengl.Matrix.translateM(transMatrix, 0, offsetX, offsetY, 0f);
+//            renderImage();
 
-                if (AppSettings.useVerticalAnimation() && bitmapHeight - (renderScreenHeight / scaleFactor) > AppSettings.getAnimationSafety()) {
-                    animationY += ((AppSettings.scaleAnimationSpeed()) ?
-                            (animationModifierY / scaleFactor) :
-                            animationModifierY);
-                    offsetY = animationY;
-                    newOffsetY -= animationY;
-                }
+//        imageOne.setOffsets(offsetX, offsetY);
 
+        for (RenderImage image : renderImages) {
+            image.renderImage();
+            // Works to remove due to renderImages being an instance of CopyOnWriteArrayList
+            // Iterating list is separate from volatile instance
+            if (image.isFinished()) {
+                renderImages.remove(image);
             }
-
-            calculateBounds();
-
-            android.opengl.Matrix.orthoM(matrixProjection,
-                    0,
-                    0,
-                    renderScreenWidth / scaleFactor,
-                    0,
-                    renderScreenHeight / scaleFactor,
-                    0,
-                    10f);
-
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
-            android.opengl.Matrix.setIdentityM(transMatrix, 0);
-            android.opengl.Matrix.translateM(transMatrix, 0, offsetX, offsetY, 0f);
-            renderImage();
         }
+//        }
     }
 
     private void applyTransition() {
@@ -298,7 +301,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
             calculateBounds();
 
-            float timeRatio = (float) (transitionTime - time) / AppSettings.getTransitionTime();
+            float timeRatio = (float) (transitionTime - time) / (AppSettings.getTransitionSpeed() * 100);
             float transitionNewScaleFactor = 1.0f;
             float transitionOldScaleFactor = scaleFactor;
             float transitionOldOffsetX = offsetX;
@@ -322,7 +325,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             }
 
             if (AppSettings.useOvershoot()) {
-                horizontalOvershootInterpolator = new OvershootInterpolator(AppSettings.getOvershootIntensity());
+                OvershootInterpolator horizontalOvershootInterpolator = new OvershootInterpolator(AppSettings.getOvershootIntensity() / 10f);
                 transitionNewOffsetX = (AppSettings.reverseOvershoot() ?
                         transitionNewOffsetX + renderScreenWidth - (renderScreenWidth * horizontalOvershootInterpolator.getInterpolation(
                                 1.0f - timeRatio)) :
@@ -331,7 +334,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             }
 
             if (AppSettings.useVerticalOvershoot()) {
-                verticalOvershootInterpolator = new OvershootInterpolator(AppSettings.getVerticalOvershootIntensity());
+                OvershootInterpolator verticalOvershootInterpolator = new OvershootInterpolator(AppSettings.getVerticalOvershootIntensity() / 10f);
                 transitionNewOffsetY = (AppSettings.reverseVerticalOvershoot() ?
                         transitionNewOffsetY + renderScreenHeight - (renderScreenHeight * verticalOvershootInterpolator.getInterpolation(
                                 1.0f - timeRatio)) :
@@ -342,14 +345,14 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
             if (AppSettings.useSpinIn()) {
                 transitionNewAngle = AppSettings.reverseSpinIn()
-                        ? AppSettings.getSpinInAngle() * -timeRatio
-                        : AppSettings.getSpinInAngle() * timeRatio;
+                        ? AppSettings.getSpinInAngle() / 10f * -timeRatio
+                        : AppSettings.getSpinInAngle() / 10f * timeRatio;
             }
 
             if (AppSettings.useSpinOut()) {
                 transitionOldAngle = AppSettings.reverseSpinOut()
-                        ? AppSettings.getSpinOutAngle() * -(1.0f - timeRatio)
-                        : AppSettings.getSpinOutAngle() * -(1.0f - timeRatio);
+                        ? AppSettings.getSpinOutAngle() / 10f * -(1.0f - timeRatio)
+                        : AppSettings.getSpinOutAngle() / 10f * -(1.0f - timeRatio);
             }
 
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
@@ -453,9 +456,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     private void renderImage() {
 
-        // get handle to vertex shader's vPosition member
-        int mPositionHandle = GLES20.glGetAttribLocation(program, "vPosition");
-
         // Enable generic vertex attribute array
         GLES20.glEnableVertexAttribArray(mPositionHandle);
 
@@ -467,17 +467,11 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                 0,
                 vertexBuffer);
 
-        // Get handle to texture coordinates location
-        int mTexCoordLoc = GLES20.glGetAttribLocation(program, "a_texCoord");
-
         // Enable generic vertex attribute array
         GLES20.glEnableVertexAttribArray(mTexCoordLoc);
 
         // Prepare the texturecoordinates
         GLES20.glVertexAttribPointer(mTexCoordLoc, 2, GLES20.GL_FLOAT, false, 0, uvBuffer);
-
-        // Get handle to shape's transformation matrix
-        int mtrxhandle = GLES20.glGetUniformLocation(program, "uMVPMatrix");
 
         android.opengl.Matrix.multiplyMM(matrixProjectionAndView,
                 0,
@@ -511,38 +505,22 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
         Log.i(TAG, "Renderer onSurfaceChanged");
 
-        if (AppSettings.preserveContext()) {
-            callback.setPreserveContext(true);
-        }
-        else {
-            callback.setPreserveContext(false);
-            contextInitialized = false;
-            loadCurrent = true;
-        }
-
-        if (bitmapHeight == 0) {
-            callback.loadNext();
-        }
-
         if (width != renderScreenWidth) {
             GLES20.glViewport(0, 0, width, height);
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
+            for (RenderImage image : renderImages) {
+                image.setDimensions(width, height);
+            }
             callback.loadCurrent();
-        }
-
-        if (loadCurrent) {
-            callback.loadCurrent();
-            loadCurrent = false;
-        }
-
-        if (isPlayingMusic) {
-            callback.loadMusic();
-            isPlayingMusic = false;
         }
 
         renderScreenWidth = width;
         renderScreenHeight = height;
+
+        for (RenderImage image : renderImages) {
+            image.resetMatrices();
+        }
 
         for (int i = 0; i < 16; i++) {
             matrixProjection[i] = 0.0f;
@@ -550,14 +528,14 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             matrixProjectionAndView[i] = 0.0f;
         }
 
-        android.opengl.Matrix.orthoM(matrixProjection,
-                0,
-                0f,
-                renderScreenWidth / scaleFactor,
-                0.0f,
-                renderScreenHeight / scaleFactor,
-                0,
-                10f);
+//        android.opengl.Matrix.orthoM(matrixProjection,
+//                0,
+//                0f,
+//                renderScreenWidth / scaleFactor,
+//                0.0f,
+//                renderScreenHeight / scaleFactor,
+//                0,
+//                10f);
 
         // Set the camera position (View matrix)
         android.opengl.Matrix.setLookAtM(matrixView,
@@ -572,13 +550,13 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                 1f,
                 0.0f);
 
-        // Calculate the projection and view transformation
-        android.opengl.Matrix.multiplyMM(matrixProjectionAndView,
-                0,
-                matrixProjection,
-                0,
-                matrixView,
-                0);
+//        // Calculate the projection and view transformation
+//        android.opengl.Matrix.multiplyMM(matrixProjectionAndView,
+//                0,
+//                matrixProjection,
+//                0,
+//                matrixView,
+//                0);
 
     }
 
@@ -595,6 +573,13 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         GLES20.glAttachShader(program, fragmentShader);
         GLES20.glLinkProgram(program);
         GLES20.glUseProgram(program);
+
+        // get handle to vertex shader's vPosition member
+        mPositionHandle = GLES20.glGetAttribLocation(program, "vPosition");
+        // Get handle to texture coordinates location
+        mTexCoordLoc = GLES20.glGetAttribLocation(program, "aTexCoords");
+        // Get handle to shape's transformation matrix
+        mtrxhandle = GLES20.glGetUniformLocation(program, "uMVPMatrix");
 
         if (firstRun) {
             GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
@@ -625,7 +610,21 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
+        RenderImage.setupRenderValues();
+        if (renderImages.size() == 0) {
+            renderImages.add(getNewImage(BitmapFactory.decodeFile(FileHandler.getNextImage().getAbsolutePath())));
+        }
+
         Log.i(TAG, "onSurfaceCreated");
+    }
+
+    private RenderImage getNewImage(Bitmap bitmap) {
+
+        RenderImage image = new RenderImage(bitmap, getNewTextureId());
+        image.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
+        image.setAnimationModifierX(AppSettings.getAnimationSpeed() / 10f);
+        image.setAnimationModifierY(AppSettings.getVerticalAnimationSpeed() / 10f);
+        return image;
     }
 
     public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep,
@@ -655,6 +654,9 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                 offsetX = (renderScreenWidth - oldBitmapWidth) * scaleFactor * (xOffset);
             }
             rawOffsetX = xOffset;
+        }
+        for (RenderImage image : renderImages) {
+            image.onOffsetsChanged(xOffset, yOffset, xStep, yStep, xPixels, yPixels);
         }
     }
 
@@ -688,6 +690,9 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                     newOffsetY += yMovement;
                 }
             }
+        }
+        for (RenderImage image : renderImages) {
+            image.onSwipe(xMovement, yMovement);
         }
     }
 
@@ -728,58 +733,30 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     }
 
-    public void setBitmap(Bitmap bitmap) {
+    private void loadTexture() {
 
-        try {
-            Log.i(TAG,
-                    "currentBitmapFile loaded: " + FileHandler.getCurrentBitmapFile().getName());
-
-//            Log.i(TAG,
-//                    "startWidth: " + bitmap.getWidth() + " startHeight: " + bitmap.getHeight());
-
-//            if (AppSettings.useScale()) {
-//                if (bitmap.getWidth() < renderScreenWidth ||
-//                        bitmap.getWidth() > maxTextureSize[0] ||
-//                        bitmap.getHeight() < renderScreenHeight ||
-//                        bitmap.getHeight() > maxTextureSize[0]) {
-//                    nextImage = scaleBitmap(bitmap);
-//                }
-//            }
-//            else {
-//                nextImage = scaleBitmap(bitmap);
-//            }
-
-//            Log.i(TAG,
-//                    "scaledWidth: " + bitmap.getWidth() + " scaledHeight: " + bitmap.getHeight());
-            loadNext = true;
-        }
-        catch (IllegalArgumentException e) {
-            Log.i(TAG, "Error loading next image");
+        if (imageBitmap == null) {
+            return;
         }
 
-        Log.i(TAG, "Set bitmap");
-
-    }
-
-    private void loadTexture(Bitmap bitmap) {
-
-        if (bitmap == null) {
+        if (true) {
             return;
         }
 
         try {
 
-            Log.i(TAG, "bitmap width: " + bitmap.getWidth() + " bitmap height: " + bitmap.getHeight());
+            Log.i(TAG, "imageBitmap width: " + imageBitmap.getWidth() + " imageBitmap height: " + imageBitmap.getHeight());
 
-            int storeId = textureNames[0];
-            textureNames[0] = textureNames[1];
-            textureNames[1] = storeId;
+            int newTexture = getNewTextureId();
 
             setupContainer(bitmapWidth, bitmapHeight);
-            
+
+            textureNames[1] = textureNames[0];
+            textureNames[0] = newTexture;
+
             GLES20.glDeleteTextures(1, textureNames, 0);
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, newTexture);
 
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D,
                     GLES20.GL_TEXTURE_MIN_FILTER,
@@ -794,9 +771,9 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                     GLES20.GL_TEXTURE_WRAP_T,
                     GLES20.GL_CLAMP_TO_EDGE);
 
-            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-            checkGLError("Bind textureNames[0]");
-            Log.i(TAG, "Bind texture: " + textureNames[0]);
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, imageBitmap, 0);
+            checkGLError("texImage2D");
+            Log.i(TAG, "Bind texture: " + newTexture);
 
             GLES20.glDeleteTextures(1, textureNames, 2);
 
@@ -816,8 +793,8 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                         GLES20.GL_TEXTURE_WRAP_T,
                         GLES20.GL_CLAMP_TO_EDGE);
 
-                GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-                checkGLError("Bind textureNames[2]");
+                GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, imageBitmap, 0);
+                checkGLError("texImage2D");
                 Log.i(TAG, "Bind texture: " + textureNames[2]);
                 toEffect = true;
             }
@@ -825,31 +802,41 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
             Log.i(TAG, "Render texture: " + textureNames[0]);
 
-            if (AppSettings.getTransitionTime() > 0) {
+            if (AppSettings.getTransitionSpeed() > 0) {
                 useTransition = true;
-                transitionTime = System.currentTimeMillis() + AppSettings.getTransitionTime();
+                transitionTime = System.currentTimeMillis() + (AppSettings.getTransitionSpeed() * 100);
                 callback.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
             }
             else {
                 GLES20.glDeleteTextures(1, textureNames, 1);
             }
 
+            textureNames[0] = newTexture;
+
             oldBitmapWidth = bitmapWidth;
             oldBitmapHeight = bitmapHeight;
-            bitmapWidth = bitmap.getWidth();
-            bitmapHeight = bitmap.getHeight();
+            bitmapWidth = imageBitmap.getWidth();
+            bitmapHeight = imageBitmap.getHeight();
 
             newOffsetX = rawOffsetX * (renderScreenWidth - bitmapWidth);
             newOffsetY = -(bitmapHeight - renderScreenHeight) / 2;
 
-            bitmap.recycle();
-            bitmap = null;
+            imageBitmap.recycle();
+            imageBitmap = null;
             System.gc();
         }
         catch (IllegalArgumentException e) {
             e.printStackTrace();
             Log.i(TAG, "Error loading next image");
         }
+    }
+
+    private int getNewTextureId() {
+
+        int[] tempIntArray = new int[1];
+        GLES20.glGenTextures(1, tempIntArray, 0);
+        return tempIntArray[0];
+
     }
 
     private void checkGLError(String op) {
@@ -859,7 +846,15 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public void loadNext() {
+    public void setLoadNext(boolean load) {
+        loadNext = load;
+    }
+
+    public void loadNext(File nextImage) {
+
+        if (nextImage == null) {
+            return;
+        }
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         if (!AppSettings.useHighQuality()) {
@@ -869,32 +864,21 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
         try {
 
-            File nextImage = FileHandler.getNextImage();
-            if (nextImage == null) {
-                return;
+            long start = System.currentTimeMillis();
+            Bitmap bitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath(), options);
+            long finish = System.currentTimeMillis();
+
+            Log.d(TAG, "Time to load bitmap: " + (finish - start));
+
+            RenderImage newImage = getNewImage(scaleBitmap(bitmap));
+            newImage.setRawOffsetX(rawOffsetX);
+            while (renderImages.size() > 2) {
+                renderImages.remove(0);
             }
+            renderImages.add(newImage);
+            isLoadingTexture = true;
 
-            Bitmap checkBitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath(), options);
-
-            if (!AppSettings.useFullResolution()) {
-
-                int sampleSize = 1;
-                if (options.outHeight > renderScreenHeight || options.outWidth > renderScreenWidth) {
-
-                    final int halfHeight = options.outHeight / 2;
-                    final int halfWidth = options.outWidth / 2;
-                    while ((halfHeight / sampleSize) > renderScreenHeight && (halfWidth / sampleSize) > renderScreenWidth) {
-                        sampleSize *= 2;
-                    }
-                }
-                options.inSampleSize = sampleSize > 1 ? sampleSize / 2 : sampleSize;
-            }
-            options.inJustDecodeBounds = false;
-
-            checkBitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath(), options);
-
-            loadTexture(scaleBitmap(checkBitmap));
-
+//            loadNext = true;
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -1358,29 +1342,33 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     public void setScaleFactor(float factor) {
 
-        scaleFactor *= factor;
+//        scaleFactor *= factor;
+//
+//        float minScaleFactor;
+//
+//        if (AppSettings.extendScale() || !AppSettings.fillImages()) {
+//            minScaleFactor = renderScreenWidth < renderScreenHeight
+//                    ?
+//                    renderScreenWidth / bitmapWidth
+//                    :
+//                    renderScreenHeight / bitmapHeight;
+//        }
+//        else {
+//            minScaleFactor = renderScreenWidth > renderScreenHeight
+//                    ?
+//                    renderScreenWidth / bitmapWidth
+//                    :
+//                    renderScreenHeight / bitmapHeight;
+//        }
+//
+//        scaleFactor = Math.max(
+//                minScaleFactor,
+//                Math.min(scaleFactor,
+//                        5.0f));
 
-        float minScaleFactor;
-
-        if (AppSettings.extendScale() || !AppSettings.fillImages()) {
-            minScaleFactor = renderScreenWidth < renderScreenHeight
-                    ?
-                    renderScreenWidth / bitmapWidth
-                    :
-                    renderScreenHeight / bitmapHeight;
+        for (RenderImage image : renderImages) {
+            image.setScaleFactor(factor);
         }
-        else {
-            minScaleFactor = renderScreenWidth > renderScreenHeight
-                    ?
-                    renderScreenWidth / bitmapWidth
-                    :
-                    renderScreenHeight / bitmapHeight;
-        }
-
-        scaleFactor = Math.max(
-                minScaleFactor,
-                Math.min(scaleFactor,
-                        5.0f));
     }
 
 
@@ -1430,6 +1418,10 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     public void setPlayingMusic(boolean playingMusic) {
         isPlayingMusic = playingMusic;
+    }
+
+    public void setContextInitialized(boolean contextInitialized) {
+        this.contextInitialized = contextInitialized;
     }
 
     public interface Callback {

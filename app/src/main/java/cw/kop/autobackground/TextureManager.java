@@ -93,9 +93,9 @@ public class TextureManager {
 //            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
 //            Log.i(TAG, "Render texture: " + textureNames[0]);
 //
-//            if (AppSettings.getTransitionTime() > 0) {
+//            if (AppSettings.getTransitionSpeed() > 0) {
 //                useTransition = true;
-//                transitionTime = System.currentTimeMillis() + AppSettings.getTransitionTime();
+//                transitionTime = System.currentTimeMillis() + AppSettings.getTransitionSpeed();
 //                callback.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 //            }
 //            else {

@@ -69,29 +69,34 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class LiveWallpaperService extends GLWallpaperService {
 
-    public static final String UPDATE_NOTIFICATION = "cw.kop.autobackgrond.UPDATE_NOTIFICATION";
-    public static final String DOWNLOAD_WALLPAPER = "cw.kop.autobackgrond.DOWNLOAD_WALLPAPER";
-    public static final String LOAD_ALBUM_ART = "cw.kop.autobackgrond.LOAD_ALBUM_ART";
-    public static final String UPDATE_WALLPAPER = "cw.kop.autobackgrond.UPDATE_WALLPAPER";
-    public static final String TOAST_LOCATION = "cw.kop.autobackgrond.TOAST_LOCATION";
-    public static final String COPY_IMAGE = "cw.kop.autobackgrond.COPY_IMAGE";
-    public static final String CYCLE_IMAGE = "cw.kop.autobackgrond.CYCLE_IMAGE";
-    public static final String DELETE_IMAGE = "cw.kop.autobackgrond.DELETE_IMAGE";
-    public static final String OPEN_IMAGE = "cw.kop.autobackgrond.OPEN_IMAGE";
-    public static final String PIN_IMAGE = "cw.kop.autobackgrond.PIN_IMAGE";
-    public static final String PREVIOUS_IMAGE = "cw.kop.autobackgrond.PREVIOUS_IMAGE";
-    public static final String SHARE_IMAGE = "cw.kop.autobackgrond.SHARE_IMAGE";
-    public static final String CURRENT_IMAGE = "cw.kop.autobackgrond.CURRENT_IMAGE";
-    public static final String GAME_TILE0 = "cw.kop.autobackgrond.GAME_TILE0";
-    public static final String GAME_TILE1 = "cw.kop.autobackgrond.GAME_TILE1";
-    public static final String GAME_TILE2 = "cw.kop.autobackgrond.GAME_TILE2";
-    public static final String GAME_TILE3 = "cw.kop.autobackgrond.GAME_TILE3";
-    public static final String GAME_TILE4 = "cw.kop.autobackgrond.GAME_TILE4";
-    public static final String GAME_TILE5 = "cw.kop.autobackgrond.GAME_TILE5";
-    public static final String GAME_TILE6 = "cw.kop.autobackgrond.GAME_TILE6";
-    public static final String GAME_TILE7 = "cw.kop.autobackgrond.GAME_TILE7";
-    public static final String GAME_TILE8 = "cw.kop.autobackgrond.GAME_TILE8";
-    public static final String GAME_TILE9 = "cw.kop.autobackgrond.GAME_TILE9";
+    public static final String SET_ANIMATED = "cw.kop.autobackground.LiveWallpaperService.SET_ANIMATED";
+    public static final String SET_ANIMATION_X = "cw.kop.autobackground.LiveWallpaperService.SET_ANIMATION_X";
+    public static final String SET_ANIMATION_Y = "cw.kop.autobackground.LiveWallpaperService.SET_ANIMATION_Y";
+    public static final String SET_FRAME_TIME = "cw.kop.autobackground.LiveWallpaperService.SET_FRAME_TIME";
+
+    public static final String UPDATE_NOTIFICATION = "cw.kop.autobackground.LiveWallpaperService.UPDATE_NOTIFICATION";
+    public static final String DOWNLOAD_WALLPAPER = "cw.kop.autobackground.LiveWallpaperService.DOWNLOAD_WALLPAPER";
+    public static final String LOAD_ALBUM_ART = "cw.kop.autobackground.LiveWallpaperService.LOAD_ALBUM_ART";
+    public static final String UPDATE_WALLPAPER = "cw.kop.autobackground.LiveWallpaperService.UPDATE_WALLPAPER";
+    public static final String TOAST_LOCATION = "cw.kop.autobackground.LiveWallpaperService.TOAST_LOCATION";
+    public static final String COPY_IMAGE = "cw.kop.autobackground.LiveWallpaperService.COPY_IMAGE";
+    public static final String CYCLE_IMAGE = "cw.kop.autobackground.LiveWallpaperService.CYCLE_IMAGE";
+    public static final String DELETE_IMAGE = "cw.kop.autobackground.LiveWallpaperService.DELETE_IMAGE";
+    public static final String OPEN_IMAGE = "cw.kop.autobackground.LiveWallpaperService.OPEN_IMAGE";
+    public static final String PIN_IMAGE = "cw.kop.autobackground.LiveWallpaperService.PIN_IMAGE";
+    public static final String PREVIOUS_IMAGE = "cw.kop.autobackground.LiveWallpaperService.PREVIOUS_IMAGE";
+    public static final String SHARE_IMAGE = "cw.kop.autobackground.LiveWallpaperService.SHARE_IMAGE";
+    public static final String CURRENT_IMAGE = "cw.kop.autobackground.LiveWallpaperService.CURRENT_IMAGE";
+    public static final String GAME_TILE0 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE0";
+    public static final String GAME_TILE1 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE1";
+    public static final String GAME_TILE2 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE2";
+    public static final String GAME_TILE3 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE3";
+    public static final String GAME_TILE4 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE4";
+    public static final String GAME_TILE5 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE5";
+    public static final String GAME_TILE6 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE6";
+    public static final String GAME_TILE7 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE7";
+    public static final String GAME_TILE8 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE8";
+    public static final String GAME_TILE9 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE9";
     public static final int NUM_TO_WIN = 5;
     private static final int NOTIFICATION_ID = 0;
     private static final int NOTIFICATION_ICON_SAMPLE_SIZE = 15;
@@ -291,6 +296,8 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         Log.i(TAG, "onCreateService");
     }
+
+
 
     private void setIntents() {
         Intent downloadIntent = new Intent(LiveWallpaperService.DOWNLOAD_WALLPAPER);
@@ -1121,10 +1128,13 @@ public class LiveWallpaperService extends GLWallpaperService {
                         public boolean onScale(
                                 ScaleGestureDetector detector) {
 
-                            renderer.setScaleFactor(detector.getScaleFactor());
+                            if (AppSettings.useScale()) {
+                                renderer.setScaleFactor(detector.getScaleFactor());
 
-                            render();
-                            return true;
+                                render();
+                                return true;
+                            }
+                            return false;
                         }
                     });
 
@@ -1178,12 +1188,25 @@ public class LiveWallpaperService extends GLWallpaperService {
                             render();
                         }
                     });
+
+            renderer.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
+            renderer.setAnimationModifierX(AppSettings.getAnimationSpeed() / 10f);
+            renderer.setAnimationModifierY(AppSettings.getVerticalAnimationSpeed() / 10f);
+            renderer.setTargetFrameTime(1000 / AppSettings.getAnimationFrameRate());
             setRenderer(renderer);
             setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
             keyguardManager = (KeyguardManager) LiveWallpaperService.this.getSystemService(Context.KEYGUARD_SERVICE);
 
             if (!isPreview()) {
                 registerReceiver(updateReceiver, getEngineIntentFilter());
+
+                IntentFilter localIntentFilter = new IntentFilter();
+                localIntentFilter.addAction(SET_ANIMATED);
+                localIntentFilter.addAction(SET_ANIMATION_X);
+                localIntentFilter.addAction(SET_ANIMATION_Y);
+                localIntentFilter.addAction(SET_FRAME_TIME);
+
+                LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(localReceiver, localIntentFilter);
 
                 if (Build.VERSION.SDK_INT >= 19 && AppSettings.showAlbumArt()) {
                     Intent musicReceiverIntent = new Intent(LiveWallpaperService.this,
@@ -1335,13 +1358,9 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         @Override
         public void onTouchEvent(MotionEvent event) {
-            if (AppSettings.useDoubleTap() || AppSettings.useDrag()) {
-                touchCount = event.getPointerCount();
-                gestureDetector.onTouchEvent(event);
-                if (AppSettings.useScale()) {
-                    scaleGestureDetector.onTouchEvent(event);
-                }
-            }
+            touchCount = event.getPointerCount();
+            gestureDetector.onTouchEvent(event);
+            scaleGestureDetector.onTouchEvent(event);
         }
 
         private void getNewImages() {
@@ -1382,6 +1401,8 @@ public class LiveWallpaperService extends GLWallpaperService {
             renderer = null;
             if (!isPreview()) {
                 unregisterReceiver(updateReceiver);
+                LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(
+                        localReceiver);
                 if (downloadOnConnection) {
                     unregisterReceiver(networkReceiver);
                 }
@@ -1398,10 +1419,15 @@ public class LiveWallpaperService extends GLWallpaperService {
         public void onVisibilityChanged(final boolean visible) {
             if (visible) {
                 super.resume();
-                renderer.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
-                renderer.setAnimationModifierX(AppSettings.getAnimationSpeed());
-                renderer.setAnimationModifierY(AppSettings.getVerticalAnimationSpeed());
-                renderer.setTargetFrameTime(1000 / AppSettings.getAnimationFrameRate());
+
+                if (AppSettings.preserveContext()) {
+                    setPreserveEGLContextOnPause(true);
+                }
+                else {
+                    setPreserveEGLContextOnPause(false);
+                    renderer.setContextInitialized(false);
+                    renderer.setLoadCurrent(true);
+                }
 
                 resetRenderMode();
 
@@ -1437,47 +1463,49 @@ public class LiveWallpaperService extends GLWallpaperService {
         }
 
         private void loadMusicBitmap() {
-            resetRenderMode();
 
-            if (FileHandler.getMusicBitmap() == null) {
-                return;
-            }
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        final Bitmap bitmap = FileHandler.getMusicBitmap();
-
-                        if (bitmap != null) {
-
-                            addEvent(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    renderer.setBitmap(bitmap);
-                                }
-                            });
-
-                            if (AppSettings.useNotification()) {
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        notifyChangeImage();
-                                    }
-                                });
-                            }
-                        }
-                    }
-                    catch (OutOfMemoryError e) {
-                        if (AppSettings.useToast()) {
-                            Toast.makeText(LiveWallpaperService.this,
-                                    "Out of memory error",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }
-            }).start();
+            // TODO: Finish album art support in renderer
+//            resetRenderMode();
+//
+//            if (FileHandler.getMusicBitmap() == null) {
+//                return;
+//            }
+//
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        final Bitmap bitmap = FileHandler.getMusicBitmap();
+//
+//                        if (bitmap != null) {
+//
+//                            addEvent(new Runnable() {
+//
+//                                @Override
+//                                public void run() {
+//                                    renderer.setBitmap(bitmap);
+//                                }
+//                            });
+//
+//                            if (AppSettings.useNotification()) {
+//                                handler.post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        notifyChangeImage();
+//                                    }
+//                                });
+//                            }
+//                        }
+//                    }
+//                    catch (OutOfMemoryError e) {
+//                        if (AppSettings.useToast()) {
+//                            Toast.makeText(LiveWallpaperService.this,
+//                                    "Out of memory error",
+//                                    Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//                }
+//            }).start();
         }
 
         public void loadCurrentImage() {
@@ -1491,61 +1519,30 @@ public class LiveWallpaperService extends GLWallpaperService {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        if (!AppSettings.useHighQuality()) {
-                            options.inPreferredConfig = Bitmap.Config.RGB_565;
-                        }
-
-                        System.gc();
-                        try {
-
-                            Bitmap checkBitmap;
-                            File imageFile = FileHandler.getCurrentBitmapFile();
-                            checkBitmap = imageFile.exists() ?
-                                    BitmapFactory.decodeFile(imageFile.getAbsolutePath(),
-                                            options) :
-                                    Bitmap.createBitmap(
-                                            1,
-                                            1,
-                                            Bitmap.Config.RGB_565);
-
-                            final Bitmap bitmap = checkBitmap;
-
-                            if (bitmap != null) {
-
-                                addEvent(new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                        renderer.setBitmap(bitmap);
-                                    }
-                                });
-
-                                if (AppSettings.useNotification()) {
-                                    handler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            notifyChangeImage();
-                                        }
-                                    });
-                                }
-                            }
-                            else {
-                                Log.i(TAG, "Bitmap null");
-                            }
-                        }
-                        catch (NullPointerException e) {
-                            e.printStackTrace();
-                        }
+                    if (renderer == null) {
+                        return;
                     }
-                    catch (OutOfMemoryError e) {
-                        if (AppSettings.useToast()) {
-                            Toast.makeText(LiveWallpaperService.this,
-                                    "Out of memory error",
-                                    Toast.LENGTH_SHORT).show();
-                        }
+
+                    File nextImage = FileHandler.getCurrentBitmapFile();
+                    if (nextImage == null) {
+                        return;
                     }
+
+                    renderer.loadNext(nextImage);
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyChangeImage();
+                        }
+                    });
+                    if (!AppSettings.shuffleImages()) {
+                        FileHandler.decreaseIndex();
+                    }
+
+                    Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
+                    LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
+                            loadNavPictureIntent);
                 }
             }).start();
         }
@@ -1568,70 +1565,32 @@ public class LiveWallpaperService extends GLWallpaperService {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        if (!AppSettings.useHighQuality()) {
-                            options.inPreferredConfig = Bitmap.Config.RGB_565;
-                        }
-
-                        System.gc();
-                        try {
-
-                            Bitmap checkBitmap;
-                            File imageFile = previousBitmaps.get(0);
-                            checkBitmap = imageFile.exists() ?
-                                    BitmapFactory.decodeFile(imageFile.getAbsolutePath(),
-                                            options) :
-                                    Bitmap.createBitmap(
-                                            1,
-                                            1,
-                                            Bitmap.Config.RGB_565);
-
-                            final Bitmap bitmap = checkBitmap;
-
-                            FileHandler.setCurrentBitmapFile(previousBitmaps.get(0));
-
-                            if (bitmap != null) {
-
-                                addEvent(new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                        renderer.setBitmap(bitmap);
-                                    }
-                                });
-
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        notifyChangeImage();
-                                    }
-                                });
-                                if (!AppSettings.shuffleImages()) {
-                                    FileHandler.decreaseIndex();
-                                }
-
-                                previousBitmaps.remove(0);
-
-                                Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
-                                LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
-                                        loadNavPictureIntent);
-                            }
-                            else {
-                                Log.i(TAG, "Bitmap null");
-                            }
-                        }
-                        catch (NullPointerException e) {
-                            e.printStackTrace();
-                        }
+                    if (renderer == null) {
+                        return;
                     }
-                    catch (OutOfMemoryError e) {
-                        if (AppSettings.useToast()) {
-                            Toast.makeText(LiveWallpaperService.this,
-                                    "Out of memory error",
-                                    Toast.LENGTH_SHORT).show();
-                        }
+
+                    File nextImage = previousBitmaps.get(0);
+                    if (nextImage == null) {
+                        return;
                     }
+
+                    renderer.loadNext(nextImage);
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyChangeImage();
+                        }
+                    });
+                    if (!AppSettings.shuffleImages()) {
+                        FileHandler.decreaseIndex();
+                    }
+
+                    previousBitmaps.remove(0);
+
+                    Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
+                    LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
+                            loadNavPictureIntent);
                 }
             }).start();
 
@@ -1654,51 +1613,31 @@ public class LiveWallpaperService extends GLWallpaperService {
                 @Override
                 public void run() {
                     try {
-                        renderer.loadNext();
+                        if (renderer == null) {
+                            return;
+                        }
 
-                        System.gc();
-//                        try {
+                        File nextImage = FileHandler.getNextImage();
+                        if (nextImage == null) {
+                            return;
+                        }
+//
+//                        Bitmap bitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath());
+//
+//                        renderer.loadImageOneTexture(bitmap);
 
-//                            Bitmap checkBitmap;
-//                            File imageFile = FileHandler.getNextImage();
-//                            checkBitmap = imageFile.exists() ?
-//                                    BitmapFactory.decodeFile(imageFile.getAbsolutePath(),
-//                                            options) :
-//                                    Bitmap.createBitmap(
-//                                            1,
-//                                            1,
-//                                            Bitmap.Config.RGB_565);
-//
-//                            final Bitmap bitmap = checkBitmap;
-//
-//                            if (bitmap != null) {
-//
-//                                renderer.setBitmap(bitmap);
-//
-//                                if (AppSettings.useNotification()) {
-//                                    handler.post(new Runnable() {
-//                                        @Override
-//                                        public void run() {
-//                                            notifyChangeImage();
-//                                        }
-//                                    });
-//                                }
-//
-//                                if (previousBitmaps.size() > AppSettings.getHistorySize()) {
-//                                    previousBitmaps.remove(previousBitmaps.size() - 1);
-//                                }
-//
-//                                Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
-//                                LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
-//                                        loadNavPictureIntent);
-//                            }
-//                            else {
-//                                Log.i(TAG, "Bitmap null");
-//                            }
-//                        }
-//                        catch (NullPointerException e) {
-//                            e.printStackTrace();
-//                        }
+                        renderer.loadNext(nextImage);
+
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                notifyChangeImage();
+                            }
+                        });
+
+                        Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
+                        LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
+                                loadNavPictureIntent);
                     }
                     catch (OutOfMemoryError e) {
                         if (AppSettings.useToast()) {
@@ -1718,11 +1657,37 @@ public class LiveWallpaperService extends GLWallpaperService {
                     setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
                 }
                 else {
-                    setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+                    setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+//                    setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                 }
             }
         }
 
+        private final BroadcastReceiver localReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                String action = intent.getAction();
+
+                switch (action) {
+
+                    case SET_ANIMATED:
+                        renderer.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
+                        break;
+                    case SET_ANIMATION_X:
+                        renderer.setAnimationModifierX((float) AppSettings.getAnimationSpeed() / 10);
+                        break;
+                    case SET_ANIMATION_Y:
+                        renderer.setAnimationModifierY((float) AppSettings.getVerticalAnimationSpeed() / 10);
+                        break;
+                    case SET_FRAME_TIME:
+                        renderer.setTargetFrameTime(1000 / AppSettings.getAnimationFrameRate());
+                        break;
+
+                }
+
+            }
+        };
 
         private final BroadcastReceiver updateReceiver = new BroadcastReceiver() {
 

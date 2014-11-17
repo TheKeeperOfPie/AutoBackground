@@ -153,8 +153,6 @@ public class FileHandler {
                         int endTime = Integer.parseInt(timeArray[2] + "" + timeArray[3]);
                         int currentTime = Integer.parseInt(new SimpleDateFormat("HHmm").format(new Date()));
 
-                        Log.i(TAG, "currentTime: " + currentTime);
-
                         if (startTime < endTime) {
                             if (currentTime < startTime || currentTime > endTime) {
                                 continue;

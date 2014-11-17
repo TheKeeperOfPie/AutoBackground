@@ -208,6 +208,11 @@ public class MainActivity extends ActionBarActivity {
                 super.onDrawerOpened(drawerView);
                 getFragmentManager().popBackStack();
             }
+
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+                super.onDrawerSlide(drawerView, 0);
+            }
         };
 
         drawerLayout.setDrawerListener(drawerToggle);

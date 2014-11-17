@@ -16,20 +16,84 @@
 
 package cw.kop.autobackground;
 
+import android.annotation.TargetApi;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.service.dreams.DreamService;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
+
+import cw.kop.autobackground.files.FileHandler;
+import cw.kop.autobackground.settings.AppSettings;
 
 /**
  * Created by TheKeeperOfPie on 11/13/2014.
  */
+@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class DaydreamService extends DreamService {
 
     private GLSurfaceView glSurfaceView;
+    private WallpaperRenderer renderer;
+    private GestureDetector gestureDetector;
+    private ScaleGestureDetector scaleGestureDetector;
+    private int touchCount = 0;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        gestureDetector = new GestureDetector(getApplicationContext(),
+                new GestureDetector.SimpleOnGestureListener() {
 
+                    @Override
+                    public void onLongPress(MotionEvent e) {
+                        if (AppSettings.useLongPressReset()) {
+                            renderer.resetPosition();
+                        }
+                        super.onLongPress(e);
+                    }
+
+                    @Override
+                    public boolean onDoubleTap(MotionEvent e) {
+                        renderer.loadNext(FileHandler.getNextImage());
+                        return super.onDoubleTap(e);
+                    }
+
+                    @Override
+                    public boolean onScroll(MotionEvent e1,
+                            MotionEvent e2,
+                            float distanceX,
+                            float distanceY) {
+                        if (AppSettings.useDrag() && touchCount == 2) {
+                            renderer.onSwipe(distanceX,
+                                    distanceY);
+                            glSurfaceView.requestRender();
+                            return true;
+                        }
+                        return super.onScroll(e1,
+                                e2,
+                                distanceX,
+                                distanceY);
+                    }
+
+
+                });
+
+        scaleGestureDetector = new ScaleGestureDetector(getApplicationContext(),
+                new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+                    @Override
+                    public boolean onScale(
+                            ScaleGestureDetector detector) {
+
+                        if (AppSettings.useScale()) {
+                            renderer.setScaleFactor(detector.getScaleFactor());
+
+                            glSurfaceView.requestRender();
+                            return true;
+                        }
+                        return false;
+                    }
+                });
         glSurfaceView = new GLSurfaceView(getApplicationContext());
     }
 
@@ -37,8 +101,9 @@ public class DaydreamService extends DreamService {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
 
+
         glSurfaceView.setEGLContextClientVersion(2);
-        glSurfaceView.setRenderer(WallpaperRenderer.getInstance(getApplicationContext(), new WallpaperRenderer.Callback() {
+        renderer = WallpaperRenderer.getInstance(getApplicationContext(), new WallpaperRenderer.Callback() {
             @Override
             public void resetMode() {
 
@@ -46,12 +111,12 @@ public class DaydreamService extends DreamService {
 
             @Override
             public void setRenderMode(int mode) {
-
+                glSurfaceView.setRenderMode(mode);
             }
 
             @Override
             public void setPreserveContext(boolean preserveContext) {
-
+                glSurfaceView.setPreserveEGLContextOnPause(preserveContext);
             }
 
             @Override
@@ -76,12 +141,15 @@ public class DaydreamService extends DreamService {
 
             @Override
             public void requestRender() {
-
+                glSurfaceView.requestRender();
             }
-        }));
+        });
+        glSurfaceView.setRenderer(renderer);
         glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
         setContentView(glSurfaceView);
+        renderer.loadNext(FileHandler.getNextImage());
+        setInteractive(true);
     }
 
     @Override
@@ -97,5 +165,14 @@ public class DaydreamService extends DreamService {
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        touchCount = event.getPointerCount();
+        gestureDetector.onTouchEvent(event);
+        scaleGestureDetector.onTouchEvent(event);
+
+        return super.dispatchTouchEvent(event);
     }
 }

@@ -28,12 +28,14 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
+import android.support.v4.content.LocalBroadcastManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.SeekBar;
 
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -88,6 +90,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                     public void onClickRight(View v) {
                         AppSettings.setAnimationFrameRate(getEditTextString());
                         frameRatePref.setSummary(AppSettings.getAnimationFrameRate() + " FPS");
+                        broadcastSettingChange(LiveWallpaperService.SET_FRAME_TIME);
                         dismissDialog();
                     }
                 };
@@ -101,6 +104,239 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                         R.string.cancel_button,
                         R.string.ok_button,
                         InputType.TYPE_CLASS_NUMBER);
+
+                return true;
+            }
+        });
+
+        Preference animationSpeed = findPreference("animation_speed");
+        animationSpeed.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.SeekBarDialogListener listener = new DialogFactory.SeekBarDialogListener() {
+
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setAnimationSpeed(getValue());
+                        broadcastSettingChange(LiveWallpaperService.SET_ANIMATION_X);
+                        this.dismissDialog();
+                    }
+
+                    @Override
+                    public void onValueChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        setValueText("" + ((float) progress / 10));
+                    }
+                };
+
+                DialogFactory.showSeekBarDialog(appContext,
+                        "Horizontal Speed",
+                        "pixels per frame",
+                        listener,
+                        50,
+                        AppSettings.getAnimationSpeed(),
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button);
+
+                return true;
+            }
+        });
+
+        Preference animationSpeedVertical = findPreference("animation_speed_vertical");
+        animationSpeedVertical.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.SeekBarDialogListener listener = new DialogFactory.SeekBarDialogListener() {
+
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setVerticalAnimationSpeed(getValue());
+                        broadcastSettingChange(LiveWallpaperService.SET_ANIMATION_Y);
+                        this.dismissDialog();
+                    }
+
+                    @Override
+                    public void onValueChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        setValueText("" + ((float) progress / 10));
+                    }
+                };
+
+                DialogFactory.showSeekBarDialog(appContext,
+                        "Vertical Speed",
+                        "pixels per frame",
+                        listener,
+                        50,
+                        AppSettings.getVerticalAnimationSpeed(),
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button);
+
+                return true;
+            }
+        });
+
+        Preference transitionSpeed = findPreference("transition_speed");
+        transitionSpeed.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.SeekBarDialogListener listener = new DialogFactory.SeekBarDialogListener() {
+
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setTransitionSpeed(getValue());
+                        this.dismissDialog();
+                    }
+
+                    @Override
+                    public void onValueChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        setValueText("" + ((float) progress / 10));
+                    }
+                };
+
+                DialogFactory.showSeekBarDialog(appContext,
+                        "Transition Speed",
+                        "seconds",
+                        listener,
+                        100,
+                        AppSettings.getTransitionSpeed(),
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button);
+
+                return true;
+            }
+        });
+
+        Preference overshootIntensity = findPreference("overshoot_intensity");
+        overshootIntensity.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.SeekBarDialogListener listener = new DialogFactory.SeekBarDialogListener() {
+
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setOvershootIntensity(getValue());
+                        this.dismissDialog();
+                    }
+
+                    @Override
+                    public void onValueChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        setValueText("" + ((float) progress / 10));
+                    }
+                };
+
+                DialogFactory.showSeekBarDialog(appContext,
+                        "Horizontal Overshoot Intensity",
+                        "",
+                        listener,
+                        100,
+                        AppSettings.getOvershootIntensity(),
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button);
+
+                return true;
+            }
+        });
+
+        Preference overshootIntensityVertical = findPreference("overshoot_intensity_vertical");
+        overshootIntensityVertical.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.SeekBarDialogListener listener = new DialogFactory.SeekBarDialogListener() {
+
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setVerticalOvershootIntensity(getValue());
+                        this.dismissDialog();
+                    }
+
+                    @Override
+                    public void onValueChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        setValueText("" + ((float) progress / 10));
+                    }
+                };
+
+                DialogFactory.showSeekBarDialog(appContext,
+                        "Vertical Overshoot Intensity",
+                        "",
+                        listener,
+                        100,
+                        AppSettings.getVerticalOvershootIntensity(),
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button);
+
+                return true;
+            }
+        });
+
+        Preference spinInAngle = findPreference("spin_in_angle");
+        spinInAngle.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.SeekBarDialogListener listener = new DialogFactory.SeekBarDialogListener() {
+
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setSpinInAngle(getValue());
+                        this.dismissDialog();
+                    }
+
+                    @Override
+                    public void onValueChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        setValueText("" + ((float) progress / 10));
+                    }
+                };
+
+                DialogFactory.showSeekBarDialog(appContext,
+                        "Spin In Angle",
+                        "degrees",
+                        listener,
+                        7200,
+                        AppSettings.getSpinInAngle(),
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button);
+
+                return true;
+            }
+        });
+
+        Preference spinOutAngle = findPreference("spin_out_angle");
+        spinOutAngle.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.SeekBarDialogListener listener = new DialogFactory.SeekBarDialogListener() {
+
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setSpinOutAngle(getValue());
+                        this.dismissDialog();
+                    }
+
+                    @Override
+                    public void onValueChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        setValueText("" + ((float) progress / 10));
+                    }
+                };
+
+                DialogFactory.showSeekBarDialog(appContext,
+                        "Spin Out Angle",
+                        "degrees",
+                        listener,
+                        7200,
+                        AppSettings.getSpinOutAngle(),
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button);
 
                 return true;
             }
@@ -198,6 +434,11 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 
+    }
+
+    private void broadcastSettingChange(String action) {
+        Intent settingIntent = new Intent(action);
+        LocalBroadcastManager.getInstance(appContext).sendBroadcast(settingIntent);
     }
 
     private void showDialogIntervalMenu() {
@@ -348,6 +589,10 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                     setIntervalAlarm();
                 }
                 Log.i("WSF", "Interval Set: " + AppSettings.useInterval());
+            }
+
+            if (key.equals("use_animation")) {
+                broadcastSettingChange(LiveWallpaperService.SET_ANIMATED);
             }
 
             if (key.equals("show_album_art")) {
