@@ -131,6 +131,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         screenHeight = getResources().getDisplayMetrics().heightPixels;
         screenWidth = getResources().getDisplayMetrics().widthPixels;
+
+        AppSettings.resetVer1_30();
+        AppSettings.resetVer1_40();
+        AppSettings.resetVer2_00();
     }
 
     @Override
@@ -596,6 +600,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             @Override
             public void onDeleteClick(final int index) {
 
+                listAdapter.saveData();
                 if (FileHandler.isDownloading) {
                     Toast.makeText(appContext, "Cannot delete while downloading", Toast.LENGTH_SHORT).show();
                     return;
@@ -604,7 +609,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 HashMap<String, String> item = listAdapter.getItem(index);
                 String type = item.get("type");
                 if (type.equals(AppSettings.WEBSITE) ||
-                        type.equals(AppSettings.IMGUR) ||
+//                        type.equals(AppSettings.IMGUR) ||
+                        type.equals(AppSettings.IMGUR_SUBREDDIT) ||
+                        type.equals(AppSettings.IMGUR_ALBUM) ||
                         type.equals(AppSettings.PICASA) ||
                         type.equals(AppSettings.TUMBLR_BLOG) ||
                         type.equals(AppSettings.TUMBLR_TAG)) {
@@ -674,7 +681,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 String type = item.get("type");
                 String directory;
                 if (type.equals(AppSettings.WEBSITE) ||
-                        type.equals(AppSettings.IMGUR) ||
+//                        type.equals(AppSettings.IMGUR) ||
+                        type.equals(AppSettings.IMGUR_SUBREDDIT) ||
+                        type.equals(AppSettings.IMGUR_ALBUM) ||
                         type.equals(AppSettings.PICASA) ||
                         type.equals(AppSettings.TUMBLR_BLOG) ||
                         type.equals(AppSettings.TUMBLR_TAG)) {

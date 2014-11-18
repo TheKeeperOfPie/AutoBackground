@@ -281,6 +281,8 @@ public class LiveWallpaperService extends GLWallpaperService {
         AppSettings.setPrefs(prefs);
 
         AppSettings.resetVer1_30();
+        AppSettings.resetVer1_40();
+        AppSettings.resetVer2_00();
 
         setIntents();
         createGameIntents();

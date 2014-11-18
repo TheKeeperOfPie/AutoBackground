@@ -158,6 +158,8 @@ public class SourceInfoFragment extends PreferenceFragment {
         cancelButton = (Button) view.findViewById(R.id.cancel_button);
         saveButton = (Button) view.findViewById(R.id.save_button);
 
+        sourcePrefix.setTextColor(colorFilterInt);
+        sourceSuffix.setTextColor(colorFilterInt);
         cancelButton.setTextColor(colorFilterInt);
         saveButton.setTextColor(colorFilterInt);
 
@@ -324,15 +326,25 @@ public class SourceInfoFragment extends PreferenceFragment {
 
             switch (arguments.getString("type")) {
 
-                case AppSettings.IMGUR:
-                    if (data.contains("imgur.com/a/")) {
-                        hint = "Album ID";
-                        prefix = "imgur.com/a/";
-                    }
-                    else if (data.contains("imgur.com/r/")) {
-                        hint = "Subreddit";
-                        prefix = "imgur.com/r/";
-                    }
+//                case AppSettings.IMGUR:
+//                    if (data.contains("imgur.com/a/")) {
+//                        hint = "Album ID";
+//                        prefix = "imgur.com/a/";
+//                    }
+//                    else if (data.contains("imgur.com/r/")) {
+//                        hint = "Subreddit";
+//                        prefix = "imgur.com/r/";
+//                    }
+//                    data = data.substring(data.indexOf(prefix) + prefix.length());
+//                    break;
+                case AppSettings.IMGUR_SUBREDDIT:
+                    hint = "Subreddit";
+                    prefix = "imgur.com/r/";
+                    data = data.substring(data.indexOf(prefix) + prefix.length());
+                    break;
+                case AppSettings.IMGUR_ALBUM:
+                    hint = "Album ID";
+                    prefix = "imgur.com/a/";
                     data = data.substring(data.indexOf(prefix) + prefix.length());
                     break;
                 case AppSettings.TUMBLR_BLOG:
@@ -489,7 +501,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                     data = "http://" + data;
                 }
                 break;
-            case AppSettings.IMGUR:
+            case AppSettings.IMGUR_SUBREDDIT:
+            case AppSettings.IMGUR_ALBUM:
                 data = sourcePrefix.getText().toString() + data;
                 break;
 
@@ -643,12 +656,12 @@ public class SourceInfoFragment extends PreferenceFragment {
                 blockData = true;
                 break;
             case 2:
-                type = AppSettings.IMGUR;
+                type = AppSettings.IMGUR_SUBREDDIT;
                 prefix = "imgur.com/r/";
                 hint = "Subreddit";
                 break;
             case 3:
-                type = AppSettings.IMGUR;
+                type = AppSettings.IMGUR_ALBUM;
                 prefix = "imgur.com/a/";
                 hint = "Album ID";
                 break;

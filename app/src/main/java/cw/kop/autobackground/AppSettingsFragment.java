@@ -73,13 +73,37 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 if (appContext != null) {
-                    AppSettings.clearPrefs(appContext);
-                    if (AppSettings.useToast()) {
-                        Toast.makeText(appContext,
-                                "Resetting settings to default",
-                                Toast.LENGTH_SHORT).show();
-                    }
-                    restartActivity();
+
+                    DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
+
+                        @Override
+                        public void onClickMiddle(View v) {
+                            // TODO: Remove this
+                            AppSettings.debugVer2_00();
+                            this.dismissDialog();
+                        }
+
+                        @Override
+                        public void onClickRight(View v) {
+                            AppSettings.clearPrefs(appContext);
+                            if (AppSettings.useToast()) {
+                                Toast.makeText(appContext,
+                                        "Resetting settings to default",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                            this.dismissDialog();
+                            restartActivity();
+                        }
+                    };
+
+                    DialogFactory.showActionDialog(appContext,
+                            "Reset All Settings?",
+                            "This cannot be undone.",
+                            listener,
+                            -1,
+                            R.string.cancel_button,
+                            R.string.ok_button);
+
                 }
                 return false;
             }

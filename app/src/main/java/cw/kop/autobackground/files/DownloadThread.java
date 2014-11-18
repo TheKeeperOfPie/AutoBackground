@@ -163,8 +163,14 @@ public class DownloadThread extends Thread {
                     case AppSettings.WEBSITE:
                         downloadWebsite(sourceData, index);
                         break;
-                    case AppSettings.IMGUR:
-                        downloadImgur(sourceData, index);
+//                    case AppSettings.IMGUR:
+//                        downloadImgur(sourceData, index);
+//                        break;
+                    case AppSettings.IMGUR_SUBREDDIT:
+                        downloadImgurSubreddit(sourceData, index);
+                        break;
+                    case AppSettings.IMGUR_ALBUM:
+                        downloadImgurAlbum(sourceData, index);
                         break;
                     case AppSettings.PICASA:
                         downloadPicasa(sourceData, index);
@@ -358,6 +364,108 @@ public class DownloadThread extends Thread {
         Collections.shuffle(imageList);
 
         startDownload(imageList, imageList, index);
+    }
+
+    private void downloadImgurSubreddit(String url, int index) {
+
+        if (isInterrupted()) {
+            return;
+        }
+
+        String apiUrl = "https://api.imgur.com/3/gallery/r/" + url.substring(url.indexOf("imgur.com/r/") + 12);
+
+        Log.i(TAG, "apiUrl: " + apiUrl);
+
+        try {
+            HttpGet httpGet = new HttpGet(apiUrl);
+            httpGet.setHeader("Authorization", "Client-ID " + ApiKeys.IMGUR_CLIENT_ID);
+            httpGet.setHeader("Content-type", "application/json");
+
+            String response = getResponse(httpGet);
+            if (response == null) {
+                return;
+            }
+
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jArray = jsonObject.getJSONArray("data");
+
+            List<String> imageList = new ArrayList<>();
+            List<String> imagePages = new ArrayList<>();
+
+            for (int i = 0; i < jArray.length(); i++) {
+                JSONObject imageObject = jArray.getJSONObject(i);
+
+                imageList.add(imageObject.getString("link"));
+
+                String subredditPage = imageObject.getString("reddit_comments");
+                if (subredditPage != null && !subredditPage.equals("")) {
+                    imagePages.add("http://reddit.com" + subredditPage);
+                }
+                else {
+                    imagePages.add(imageObject.getString("link"));
+                }
+
+            }
+
+            Log.i(TAG, "imageList size: " + imageList.size());
+
+            startDownload(imageList, imagePages, index);
+
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+            Log.i(TAG, "JSON parse error");
+        }
+    }
+
+    private void downloadImgurAlbum(String url, int index) {
+
+        if (isInterrupted()) {
+            return;
+        }
+
+        String apiUrl = url;
+
+        String albumId = url.substring(url.indexOf("imgur.com/a/") + 12);
+        if (albumId.contains("/")) {
+            albumId = albumId.substring(0, albumId.indexOf("/"));
+        }
+        apiUrl = "https://api.imgur.com/3/album/" + albumId + "/images";
+
+        Log.i(TAG, "apiUrl: " + apiUrl);
+
+        try {
+            HttpGet httpGet = new HttpGet(apiUrl);
+            httpGet.setHeader("Authorization", "Client-ID " + ApiKeys.IMGUR_CLIENT_ID);
+            httpGet.setHeader("Content-type", "application/json");
+
+            String response = getResponse(httpGet);
+            if (response == null) {
+                return;
+            }
+
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jArray = jsonObject.getJSONArray("data");
+
+            List<String> imageList = new ArrayList<>();
+            List<String> imagePages = new ArrayList<>();
+
+            for (int i = 0; i < jArray.length(); i++) {
+                JSONObject imageObject = jArray.getJSONObject(i);
+
+                imageList.add(imageObject.getString("link"));
+
+            }
+
+            Log.i(TAG, "imageList size: " + imageList.size());
+
+            startDownload(imageList, imagePages, index);
+
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+            Log.i(TAG, "JSON parse error");
+        }
     }
 
     private void downloadImgur(String url, int index) {

@@ -187,7 +187,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             for (RenderImage image : renderImages) {
                 image.setDimensions(width, height);
             }
-            callback.loadCurrent();
+//            callback.loadCurrent();
         }
 
         renderScreenWidth = width;

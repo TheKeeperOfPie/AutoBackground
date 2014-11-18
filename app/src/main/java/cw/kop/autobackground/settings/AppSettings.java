@@ -38,12 +38,14 @@ import cw.kop.autobackground.R;
 
 public class AppSettings {
 
-    public static final String WEBSITE = "website";
-    public static final String FOLDER = "folder";
-    public static final String IMGUR = "imgur";
-    public static final String PICASA = "picasa";
-    public static final String TUMBLR_BLOG = "tumblr_blog";
-    public static final String TUMBLR_TAG = "tumblr_tag";
+    public static final String WEBSITE = "Website";
+    public static final String FOLDER = "Folder";
+//    public static final String IMGUR = "imgur";
+    public static final String IMGUR_SUBREDDIT = "Imgur Subreddit";
+    public static final String IMGUR_ALBUM = "Imgur Album";
+    public static final String PICASA = "Picasa";
+    public static final String TUMBLR_BLOG = "Tumblr Blog";
+    public static final String TUMBLR_TAG = "Tumblr Tag";
 
     public static final String DATA_SPLITTER = ", ";
 
@@ -148,6 +150,51 @@ public class AppSettings {
 
     public static void setVersionUpdate(boolean update) {
         prefs.edit().putBoolean("version_update_1.0", true).apply();
+    }
+
+    public static void debugVer2_00() {
+        prefs.edit().putBoolean("reset_ver_2_00", true).commit();
+    }
+
+    public static void resetVer2_00() {
+
+        if (prefs.getBoolean("reset_ver_2_00", true)) {
+
+            Log.i("AppSettings", "RESET VER 2_00");
+
+            for (int i = 0; i < getNumSources(); i++) {
+
+                String newType = AppSettings.WEBSITE;
+                switch (getSourceType(i)) {
+                    case "imgur":
+                        if (getSourceData(i).contains("imgur.com/r/")) {
+                            newType = AppSettings.IMGUR_SUBREDDIT;
+                        }
+                        else if (getSourceData(i).contains("imgur.com/a/")) {
+                            newType = AppSettings.IMGUR_ALBUM;
+                        }
+                        break;
+                    case "folder":
+                        newType = AppSettings.FOLDER;
+                        break;
+                    case "picasa":
+                        newType = AppSettings.PICASA;
+                        break;
+                    case "tumblr_blog":
+                        newType = AppSettings.TUMBLR_BLOG;
+                        break;
+                    case "tumblr_tag":
+                        newType = AppSettings.TUMBLR_TAG;
+                        break;
+                }
+
+                prefs.edit().putString("source_type_" + i, newType).commit();
+
+            }
+
+            prefs.edit().putBoolean("reset_ver_2_00", false).commit();
+        }
+
     }
 
     public static void resetVer1_30() {

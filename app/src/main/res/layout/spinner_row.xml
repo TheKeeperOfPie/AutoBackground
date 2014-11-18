@@ -27,9 +27,9 @@
         android:layout_height="match_parent"
         android:layout_centerVertical="true"
         android:gravity="center_vertical"
-        android:paddingEnd="16dp"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
+        android:paddingEnd="@dimen/side_margin"
+        android:paddingLeft="@dimen/side_margin"
+        android:paddingRight="@dimen/side_margin"
         />
 
 </RelativeLayout>
