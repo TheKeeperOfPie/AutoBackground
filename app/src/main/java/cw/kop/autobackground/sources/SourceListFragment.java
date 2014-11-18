@@ -252,8 +252,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             case R.id.floating_button_icon:
                 final GradientDrawable circleDrawable = (GradientDrawable) getResources().getDrawable(
                         R.drawable.floating_button_circle);
-                final float scale = (float) (Math.hypot(addButtonBackground.getX(),
-                        addButtonBackground.getY()) / addButtonBackground.getWidth() * 2);
+                final float scale = (float) ((Math.hypot(addButtonBackground.getX(),
+                        addButtonBackground.getY()) + addButtonBackground.getWidth()) / addButtonBackground.getWidth() * 2);
 
                 Animation animation = new Animation() {
 

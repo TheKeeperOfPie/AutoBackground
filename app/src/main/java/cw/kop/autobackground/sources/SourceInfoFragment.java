@@ -42,6 +42,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Scroller;
 import android.widget.Spinner;
@@ -143,15 +144,16 @@ public class SourceInfoFragment extends PreferenceFragment {
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
         View view = inflater.inflate(R.layout.source_info_fragment, container, false);
+        View headerView = inflater.inflate(R.layout.source_info_header, null, false);
 
-        settingsContainer = (RelativeLayout) view.findViewById(R.id.source_settings_container);
+        settingsContainer = (RelativeLayout) headerView.findViewById(R.id.source_settings_container);
 
-        sourceImage = (ImageView) view.findViewById(R.id.source_image);
-        sourceTitle = (EditText) view.findViewById(R.id.source_title);
-        sourcePrefix = (EditText) view.findViewById(R.id.source_data_prefix);
-        sourceData = (EditText) view.findViewById(R.id.source_data);
-        sourceSuffix = (EditText) view.findViewById(R.id.source_data_suffix);
-        sourceNum = (EditText) view.findViewById(R.id.source_num);
+        sourceImage = (ImageView) headerView.findViewById(R.id.source_image);
+        sourceTitle = (EditText) headerView.findViewById(R.id.source_title);
+        sourcePrefix = (EditText) headerView.findViewById(R.id.source_data_prefix);
+        sourceData = (EditText) headerView.findViewById(R.id.source_data);
+        sourceSuffix = (EditText) headerView.findViewById(R.id.source_data_suffix);
+        sourceNum = (EditText) headerView.findViewById(R.id.source_num);
 
         cancelButton = (Button) view.findViewById(R.id.cancel_button);
         saveButton = (Button) view.findViewById(R.id.save_button);
@@ -172,8 +174,8 @@ public class SourceInfoFragment extends PreferenceFragment {
             }
         });
 
-        sourceSpinnerText = (TextView) view.findViewById(R.id.source_spinner_text);
-        sourceSpinner = (Spinner) view.findViewById(R.id.source_spinner);
+        sourceSpinnerText = (TextView) headerView.findViewById(R.id.source_spinner_text);
+        sourceSpinner = (Spinner) headerView.findViewById(R.id.source_spinner);
 
         timePref = (CustomSwitchPreference) findPreference("source_time");
         timePref.setChecked(arguments.getBoolean("use_time"));
@@ -399,7 +401,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             sourceSuffix.setVisibility(View.VISIBLE);
         }
 
-        sourceUse = (Switch) view.findViewById(R.id.source_use_switch);
+        sourceUse = (Switch) headerView.findViewById(R.id.source_use_switch);
         sourceUse.setChecked(arguments.getBoolean("use"));
 
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
@@ -408,6 +410,9 @@ public class SourceInfoFragment extends PreferenceFragment {
         else {
             view.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
         }
+
+        ListView listView = (ListView) view.findViewById(android.R.id.list);
+        listView.addHeaderView(headerView);
 
         return view;
     }
