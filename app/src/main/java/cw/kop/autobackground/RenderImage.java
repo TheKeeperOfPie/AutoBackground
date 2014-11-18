@@ -58,12 +58,12 @@ public class RenderImage {
     private Bitmap imageBitmap;
     private boolean textureLoaded = false;
     private boolean animated = false;
-    private int textureName;
     private int[] textureNames;
     private float scaleFactor = 1.0f;
     private float offsetX = 0f;
     private float offsetY = 0f;
     private float rawOffsetX = -1f;
+    private float saveOffsetX = 0f;
     private float bitmapWidth = 1f;
     private float bitmapHeight = 1f;
     private float animationModifierX = 0f;
@@ -77,7 +77,7 @@ public class RenderImage {
 
     public RenderImage(Bitmap bitmap, int textureName) {
         setBitmap(bitmap);
-        this.textureName = textureName;
+        textureNames = new int[] {textureName};
         uvs = new float[] {
                 0.0f, 0.0f,
                 0.0f, 1.0f,
@@ -153,24 +153,24 @@ public class RenderImage {
 
     public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep,
             int xPixels, int yPixels) {
-//        if (AppSettings.forceParallax()) {
-//            if (AppSettings.useDrag() || animated) {
-//                offsetX += (renderScreenWidth - bitmapWidth) * scaleFactor * (1.0f - xOffset - rawOffsetX);
-//            }
-//            else {
-//                offsetX = (renderScreenWidth - bitmapWidth) * scaleFactor * (1.0f - xOffset);
-//            }
-//            rawOffsetX = 1.0f - xOffset;
-//        }
-//        else {
-//            if (AppSettings.useDrag() || animated) {
-//                offsetX += (renderScreenWidth - bitmapWidth) * scaleFactor * (xOffset - rawOffsetX);
-//            }
-//            else {
-//                offsetX = (renderScreenWidth - bitmapWidth) * scaleFactor * (xOffset);
-//            }
-//            rawOffsetX = xOffset;
-//        }
+        if (AppSettings.forceParallax()) {
+            if (AppSettings.useDrag() || animated) {
+                offsetX += (renderScreenWidth - bitmapWidth) * scaleFactor * (1.0f - xOffset - rawOffsetX);
+            }
+            else {
+                offsetX = (renderScreenWidth - bitmapWidth) * scaleFactor * (1.0f - xOffset);
+            }
+            rawOffsetX = 1.0f - xOffset;
+        }
+        else {
+            if (AppSettings.useDrag() || animated) {
+                offsetX += (renderScreenWidth - bitmapWidth) * scaleFactor * (xOffset - rawOffsetX);
+            }
+            else {
+                offsetX = (renderScreenWidth - bitmapWidth) * scaleFactor * (xOffset);
+            }
+            rawOffsetX = xOffset;
+        }
     }
 
     public void onSwipe(float xMovement, float yMovement) {
@@ -196,15 +196,6 @@ public class RenderImage {
 //        }
     }
 
-    private int getNewTextureId() {
-
-        int[] tempIntArray = new int[1];
-        GLES20.glGenTextures(1, tempIntArray, 0);
-        return tempIntArray[0];
-
-    }
-
-
     public void loadTexture() {
         if (imageBitmap == null || textureLoaded) {
             return;
@@ -215,13 +206,10 @@ public class RenderImage {
             Log.i(TAG,
                     "imageBitmap width: " + imageBitmap.getWidth() + " imageBitmap height: " + imageBitmap.getHeight());
 
-            int[] newTextures = new int[1];
-            GLES20.glGenTextures(1, newTextures, 0);
-            textureName = newTextures[0];
 
-            GLES20.glDeleteTextures(1, newTextures, 0);
+            GLES20.glGenTextures(1, textureNames, 0);
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, newTextures[0]);
+            GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
 
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D,
                     GLES20.GL_TEXTURE_MIN_FILTER,
@@ -242,6 +230,8 @@ public class RenderImage {
 
             if (rawOffsetX > -1) {
                 offsetX = rawOffsetX * (renderScreenWidth - bitmapWidth);
+                Log.i(TAG, "rawOffsetX: " + rawOffsetX);
+                Log.i(TAG, "value: " + -(bitmapWidth - renderScreenWidth));
             }
             offsetY = -(bitmapHeight / renderScreenHeight) / 2;
 
@@ -261,7 +251,6 @@ public class RenderImage {
             checkGLError("textImage2D: ");
             textureLoaded = true;
             WallpaperRenderer.setIsLoadingTexture(false);
-            Log.i(TAG, "RENDER IMAGE LOADED TEXTURE");
             imageBitmap.recycle();
             imageBitmap = null;
             System.gc();
@@ -269,6 +258,10 @@ public class RenderImage {
         catch (IllegalArgumentException e) {
             e.printStackTrace();
             Log.i(TAG, "Error loading next image");
+        }
+        catch (NullPointerException e) {
+            e.printStackTrace();
+            Log.w(TAG, "Null on loading image error");
         }
     }
 
@@ -338,7 +331,7 @@ public class RenderImage {
     }
 
     public int getTextureName() {
-        return textureName;
+        return textureNames[0];
     }
 
     public void renderImage() {
@@ -368,14 +361,12 @@ public class RenderImage {
         }
 
 
+        calculateBounds();
         if (inStartTransition) {
             applyStartTransition();
         }
         else if (inEndTransition) {
             applyEndTransition();
-        }
-        else {
-            calculateBounds();
         }
 
         GLES20.glEnable(GLES20.GL_BLEND);
@@ -408,7 +399,7 @@ public class RenderImage {
         android.opengl.Matrix.translateM(transMatrix, 0, offsetX, offsetY, 0);
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureName);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
         // Enable generic vertex attribute array
         GLES20.glEnableVertexAttribArray(mPositionHandle);
 
@@ -484,11 +475,14 @@ public class RenderImage {
 
         if (AppSettings.useOvershoot()) {
             OvershootInterpolator horizontalOvershootInterpolator = new OvershootInterpolator(AppSettings.getOvershootIntensity() / 10f);
-            offsetX = (AppSettings.reverseOvershoot() ?
-                    (bitmapWidth -renderScreenWidth) * -0.5f + renderScreenWidth - (renderScreenWidth * horizontalOvershootInterpolator.getInterpolation(
-                            1.0f - timeRatio)) :
-                    (bitmapWidth - renderScreenWidth) * -0.5f - renderScreenWidth + (renderScreenWidth * horizontalOvershootInterpolator.getInterpolation(
-                            1.0f - timeRatio)));
+            if (AppSettings.reverseOvershoot()) {
+                offsetX = rawOffsetX * (renderScreenWidth - bitmapWidth) - renderScreenWidth * horizontalOvershootInterpolator.getInterpolation(1.0f - timeRatio);
+                animationModifierX = Math.abs(animationModifierX);
+            }
+            else {
+                offsetX = rawOffsetX * (renderScreenWidth - bitmapWidth) + renderScreenWidth * horizontalOvershootInterpolator.getInterpolation(1.0f - timeRatio);
+                animationModifierX = -Math.abs(animationModifierX);
+            }
         }
 
         if (AppSettings.useVerticalOvershoot()) {
@@ -526,6 +520,7 @@ public class RenderImage {
 
         if (transitionEndtime < time) {
             finished = true;
+            GLES20.glDeleteTextures(1, textureNames, 0);
             return;
         }
 
@@ -533,7 +528,7 @@ public class RenderImage {
 
         if (AppSettings.useZoomOut()) {
             scaleFactor = timeRatio;
-            offsetX = bitmapWidth / scaleFactor / 2 * (1.0f - timeRatio) - ((bitmapWidth / scaleFactor - renderScreenWidth / scaleFactor) / 2);// - (bitmapWidth - renderScreenWidth) / scaleFactor * (offsetX / (renderScreenWidth - bitmapWidth) - 0.5f);
+            //offsetX = bitmapWidth / scaleFactor / 2 * (1.0f - timeRatio) - ((bitmapWidth / scaleFactor - renderScreenWidth / scaleFactor) / 2) - (bitmapWidth - renderScreenWidth) / scaleFactor * (offsetX / (renderScreenWidth - bitmapWidth) - 0.5f);
             offsetY = bitmapHeight / scaleFactor / 2 * (1.0f - timeRatio) - ((bitmapHeight / scaleFactor - renderScreenHeight / scaleFactor) / 2);
         }
 

@@ -163,7 +163,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             catch (InterruptedException e) {
             }
 
-//        imageOne.setOffsets(offsetX, offsetY);
 
         for (RenderImage image : renderImages) {
             image.renderImage();
@@ -192,6 +191,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         }
 
         renderScreenWidth = width;
+        renderScreenHeight = height;
 
         for (RenderImage image : renderImages) {
             image.resetMatrices();
@@ -241,6 +241,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep,
             int xPixels, int yPixels) {
+        rawOffsetX = AppSettings.forceParallax() ? 1.0f - xOffset : xOffset;
         for (RenderImage image : renderImages) {
             image.onOffsetsChanged(xOffset, yOffset, xStep, yStep, xPixels, yPixels);
         }
@@ -375,6 +376,8 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                         maxTextureSize[0]);
             }
         }
+
+
         return bitmap;
     }
 

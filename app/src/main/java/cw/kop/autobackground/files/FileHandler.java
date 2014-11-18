@@ -297,15 +297,12 @@ public class FileHandler {
         if (!AppSettings.shuffleImages()) {
             randIndex++;
         }
-        else if (images.size() > 0) {
-            randIndex += new Random().nextInt(images.size() - 2) + 1;
+        else if (images.size() > 1) {
+            randIndex += new Random().nextInt(images.size() - 1) + 1;
         }
 
         if (randIndex >= images.size()) {
             randIndex -= images.size();
-        }
-        else if (randIndex < 0) {
-            randIndex += images.size();
         }
 
         if (images.size() > 0 && randIndex < images.size()) {
