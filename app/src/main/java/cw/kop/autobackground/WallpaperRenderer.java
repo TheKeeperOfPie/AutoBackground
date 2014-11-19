@@ -109,7 +109,9 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     public static void setIsLoadingTexture(boolean loading) {
         isLoadingTexture = loading;
-        instance.renderImages.get(0).startFinish();
+        if (instance.renderImages.size() > 1) {
+            instance.renderImages.get(0).startFinish();
+        }
     }
 
     public static WallpaperRenderer getInstance(Context context, Callback callback) {
@@ -292,6 +294,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
             RenderImage newImage = getNewImage(scaleBitmap(bitmap));
             newImage.setRawOffsetX(rawOffsetX);
+            newImage.setDimensions(renderScreenWidth, renderScreenHeight);
             while (renderImages.size() > 2) {
                 renderImages.remove(0);
             }

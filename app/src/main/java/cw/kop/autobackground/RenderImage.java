@@ -64,6 +64,7 @@ public class RenderImage {
     private float offsetY = 0f;
     private float rawOffsetX = -1f;
     private float saveOffsetX = 0f;
+    private float saveOffsetY = 0f;
     private float bitmapWidth = 1f;
     private float bitmapHeight = 1f;
     private float animationModifierX = 0f;
@@ -469,8 +470,10 @@ public class RenderImage {
 
         if (AppSettings.useZoomIn()) {
             scaleFactor = 1.0f - timeRatio;
-            offsetX = bitmapWidth / scaleFactor / 2 * timeRatio - ((bitmapWidth / scaleFactor - renderScreenWidth / scaleFactor) / 2.0f) - (bitmapWidth - renderScreenWidth) / scaleFactor * (offsetX / (renderScreenWidth - bitmapWidth) - 0.5f);
-            offsetY = bitmapHeight / scaleFactor / 2 * timeRatio - ((bitmapHeight / scaleFactor - renderScreenHeight / scaleFactor) / 2);
+            offsetX = rawOffsetX * (renderScreenWidth - bitmapWidth) + renderScreenWidth / 2 / scaleFactor * (timeRatio);
+            offsetY = renderScreenHeight / 2 / scaleFactor * (timeRatio);
+//            offsetX = bitmapWidth / scaleFactor / 2 * timeRatio - ((bitmapWidth / scaleFactor - renderScreenWidth / scaleFactor) / 2.0f) - (bitmapWidth - renderScreenWidth) / scaleFactor * (offsetX / (renderScreenWidth - bitmapWidth) - 0.5f);
+//            offsetY = bitmapHeight / scaleFactor / 2 * timeRatio - ((bitmapHeight / scaleFactor - renderScreenHeight / scaleFactor) / 2);
         }
 
         if (AppSettings.useOvershoot()) {
@@ -480,7 +483,7 @@ public class RenderImage {
                 animationModifierX = Math.abs(animationModifierX);
             }
             else {
-                offsetX = rawOffsetX * (renderScreenWidth - bitmapWidth) + renderScreenWidth * horizontalOvershootInterpolator.getInterpolation(1.0f - timeRatio);
+                offsetX = rawOffsetX * (renderScreenWidth - bitmapWidth) - renderScreenWidth + renderScreenWidth * horizontalOvershootInterpolator.getInterpolation(1.0f - timeRatio);
                 animationModifierX = -Math.abs(animationModifierX);
             }
         }
@@ -518,6 +521,11 @@ public class RenderImage {
             transitionEndtime = time + AppSettings.getTransitionSpeed() * 100;
         }
 
+        if (saveOffsetX == 0) {
+            saveOffsetX = offsetX;
+            saveOffsetY = offsetY;
+        }
+
         if (transitionEndtime < time) {
             finished = true;
             GLES20.glDeleteTextures(1, textureNames, 0);
@@ -528,15 +536,17 @@ public class RenderImage {
 
         if (AppSettings.useZoomOut()) {
             scaleFactor = timeRatio;
-            //offsetX = bitmapWidth / scaleFactor / 2 * (1.0f - timeRatio) - ((bitmapWidth / scaleFactor - renderScreenWidth / scaleFactor) / 2) - (bitmapWidth - renderScreenWidth) / scaleFactor * (offsetX / (renderScreenWidth - bitmapWidth) - 0.5f);
-            offsetY = bitmapHeight / scaleFactor / 2 * (1.0f - timeRatio) - ((bitmapHeight / scaleFactor - renderScreenHeight / scaleFactor) / 2);
+            offsetX = saveOffsetX + renderScreenWidth / 2 / scaleFactor * (1.0f - timeRatio);
+            offsetY = saveOffsetY + renderScreenHeight / 2 / scaleFactor * (1.0f - timeRatio);
+//            offsetY = bitmapHeight / scaleFactor / 2 * (1.0f - timeRatio) - ((bitmapHeight / scaleFactor - renderScreenHeight / scaleFactor) / 2);
         }
+
+        Log.i(TAG, "offsetX: " + offsetX);
 
         if (AppSettings.useSpinOut()) {
             angle = AppSettings.reverseSpinOut()
                     ? AppSettings.getSpinOutAngle() / 10f * -(1.0f - timeRatio)
                     : AppSettings.getSpinOutAngle() / 10f * (1.0f - timeRatio);
-            Log.i(TAG, "Angle: " + angle);
         }
 
         if (AppSettings.useFade()) {
