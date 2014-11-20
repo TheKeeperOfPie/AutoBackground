@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cw.kop.autobackground.BuildConfig;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.ApiKeys;
@@ -163,9 +164,6 @@ public class DownloadThread extends Thread {
                     case AppSettings.WEBSITE:
                         downloadWebsite(sourceData, index);
                         break;
-//                    case AppSettings.IMGUR:
-//                        downloadImgur(sourceData, index);
-//                        break;
                     case AppSettings.IMGUR_SUBREDDIT:
                         downloadImgurSubreddit(sourceData, index);
                         break;
@@ -181,6 +179,8 @@ public class DownloadThread extends Thread {
                     case AppSettings.TUMBLR_TAG:
                         downloadTumblrTag(sourceData, index);
                         break;
+                    case AppSettings.REDDIT_SUBREDDIT:
+                        downloadRedditSubreddit(sourceData, index);
                 }
 
                 totalTarget += AppSettings.getSourceNum(index);
@@ -468,73 +468,6 @@ public class DownloadThread extends Thread {
         }
     }
 
-    private void downloadImgur(String url, int index) {
-
-        if (isInterrupted()) {
-            return;
-        }
-
-        boolean isSubreddit = url.contains("imgur.com/r/");
-        boolean isAlbum = url.contains("imgur.com/a/");
-        String apiUrl = url;
-
-        if (isAlbum) {
-            String albumId = url.substring(url.indexOf("imgur.com/a/") + 12);
-            if (albumId.contains("/")) {
-                albumId = albumId.substring(0, albumId.indexOf("/"));
-            }
-            apiUrl = "https://api.imgur.com/3/album/" + albumId + "/images";
-        }
-        else if (isSubreddit) {
-            apiUrl = "https://api.imgur.com/3/gallery/r/" + url.substring(url.indexOf("imgur.com/r/") + 12);
-        }
-
-        Log.i(TAG, "apiUrl: " + apiUrl);
-
-        try {
-            HttpGet httpGet = new HttpGet(apiUrl);
-            httpGet.setHeader("Authorization", "Client-ID " + ApiKeys.IMGUR_CLIENT_ID);
-            httpGet.setHeader("Content-type", "application/json");
-
-            String response = getResponse(httpGet);
-            if (response == null) {
-                return;
-            }
-
-            JSONObject jsonObject = new JSONObject(response);
-            JSONArray jArray = jsonObject.getJSONArray("data");
-
-            List<String> imageList = new ArrayList<>();
-            List<String> imagePages = new ArrayList<>();
-
-            for (int i = 0; i < jArray.length(); i++) {
-                JSONObject imageObject = jArray.getJSONObject(i);
-
-                imageList.add(imageObject.getString("link"));
-
-                if (isSubreddit) {
-                    String subredditPage = imageObject.getString("reddit_comments");
-                    if (subredditPage != null && !subredditPage.equals("")) {
-                        imagePages.add("http://reddit.com" + subredditPage);
-                    }
-                    else {
-                        imagePages.add(imageObject.getString("link"));
-                    }
-                }
-
-            }
-
-            Log.i(TAG, "imageList size: " + imageList.size());
-
-            startDownload(imageList, imagePages, index);
-
-        }
-        catch (JSONException e) {
-            e.printStackTrace();
-            Log.i(TAG, "JSON parse error");
-        }
-    }
-
     private void downloadPicasa(String data, int index) {
 
         if (isInterrupted()) {
@@ -654,6 +587,56 @@ public class DownloadThread extends Thread {
             e.printStackTrace();
         }
 
+    }
+
+    private void downloadRedditSubreddit(String sourceData, int index) {
+        if (isInterrupted()) {
+            return;
+        }
+
+        String apiUrl = "https://reddit.com/r/" + sourceData + "/hot/.json?limit=100";
+
+        Log.i(TAG, "apiUrl: " + apiUrl);
+
+        try {
+            HttpGet httpGet = new HttpGet(apiUrl);
+            httpGet.setHeader("User-Agent", "AutoBackground/" + BuildConfig.VERSION_NAME + " by TheKeeperOfPie");
+
+            String response = getResponse(httpGet);
+            if (response == null) {
+                return;
+            }
+
+            JSONObject jsonObject = new JSONObject(response);
+
+            Log.i(TAG, "Reddit return JSON: " + jsonObject.toString());
+
+            JSONArray jArray = jsonObject.getJSONObject("data").getJSONArray("children");
+
+            List<String> imageList = new ArrayList<>();
+            List<String> imagePages = new ArrayList<>();
+//
+            for (int i = 0; i < jArray.length(); i++) {
+                JSONObject linkObject = jArray.getJSONObject(i).getJSONObject("data");
+                if (i == 0) {
+                    Log.i(TAG, "First object: " + linkObject.toString());
+                }
+                imageList.add(linkObject.getString("url"));
+                imagePages.add(linkObject.getString("permalink"));
+
+            }
+
+            Log.i(TAG, "imageList size: " + imageList.size());
+            Log.i(TAG, "imageList " + imageList.toString());
+            Log.i(TAG, "imagePages " + imagePages.toString());
+
+            startDownload(imageList, imagePages, index);
+
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+            Log.i(TAG, "JSON parse error");
+        }
     }
 
     private String getResponse(HttpGet httpGet) {

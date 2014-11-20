@@ -472,6 +472,7 @@
         <item>Google+ Album</item>
         <item>Tumblr Blog</item>
         <item>Tumblr Tag Search</item>
+        <item>Reddit Subreddit</item>
     </string-array>
 
     <string-array name="source_sort_menu">

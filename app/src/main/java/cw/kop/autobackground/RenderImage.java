@@ -37,12 +37,12 @@ public class RenderImage {
 
     public static final String TAG = RenderImage.class.getCanonicalName();
 
+    public static int[] maxTextureSize = new int[1];
     private static int mPositionHandle;
     private static int mTexCoordLoc;
     private static int mtrxhandle;
     private static int mAlphaHandle;
     private static int program;
-    private static int[] maxTextureSize = new int[1];
     private static float renderScreenWidth;
     private static float renderScreenHeight;
     public float vertices[];
@@ -470,8 +470,6 @@ public class RenderImage {
             scaleFactor = 1.0f - timeRatio;
             offsetX = rawOffsetX * (renderScreenWidth - bitmapWidth) + renderScreenWidth / 2 / scaleFactor * (timeRatio);
             offsetY = renderScreenHeight / 2 / scaleFactor * (timeRatio);
-//            offsetX = bitmapWidth / scaleFactor / 2 * timeRatio - ((bitmapWidth / scaleFactor - renderScreenWidth / scaleFactor) / 2.0f) - (bitmapWidth - renderScreenWidth) / scaleFactor * (offsetX / (renderScreenWidth - bitmapWidth) - 0.5f);
-//            offsetY = bitmapHeight / scaleFactor / 2 * timeRatio - ((bitmapHeight / scaleFactor - renderScreenHeight / scaleFactor) / 2);
         }
 
         if (AppSettings.useOvershoot()) {
@@ -536,10 +534,7 @@ public class RenderImage {
             scaleFactor = timeRatio;
             offsetX = saveOffsetX + renderScreenWidth / 2 / scaleFactor * (1.0f - timeRatio);
             offsetY = saveOffsetY + renderScreenHeight / 2 / scaleFactor * (1.0f - timeRatio);
-//            offsetY = bitmapHeight / scaleFactor / 2 * (1.0f - timeRatio) - ((bitmapHeight / scaleFactor - renderScreenHeight / scaleFactor) / 2);
         }
-
-        Log.i(TAG, "offsetX: " + offsetX);
 
         if (AppSettings.useSpinOut()) {
             angle = AppSettings.reverseSpinOut()

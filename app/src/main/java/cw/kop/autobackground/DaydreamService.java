@@ -104,10 +104,6 @@ public class DaydreamService extends DreamService {
 
         glSurfaceView.setEGLContextClientVersion(2);
         renderer = WallpaperRenderer.getInstance(getApplicationContext(), new WallpaperRenderer.Callback() {
-            @Override
-            public void resetMode() {
-
-            }
 
             @Override
             public void setRenderMode(int mode) {

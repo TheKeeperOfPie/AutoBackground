@@ -608,14 +608,29 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
                 HashMap<String, String> item = listAdapter.getItem(index);
                 String type = item.get("type");
-                if (type.equals(AppSettings.WEBSITE) ||
-//                        type.equals(AppSettings.IMGUR) ||
-                        type.equals(AppSettings.IMGUR_SUBREDDIT) ||
-                        type.equals(AppSettings.IMGUR_ALBUM) ||
-                        type.equals(AppSettings.PICASA) ||
-                        type.equals(AppSettings.TUMBLR_BLOG) ||
-                        type.equals(AppSettings.TUMBLR_TAG)) {
+                if (type.equals(AppSettings.FOLDER)) {
 
+                    DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
+
+                        @Override
+                        public void onClickRight(View v) {
+                            listAdapter.removeItem(index);
+                            new ImageCountTask().execute();
+                            this.dismissDialog();
+                        }
+                    };
+
+                    DialogFactory.showActionDialog(appContext,
+                            "",
+                            "Delete " + item.get("title") + "?",
+                            clickListener,
+                            -1,
+                            R.string.cancel_button,
+                            R.string.ok_button);
+
+
+                }
+                else {
                     DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
 
                         @Override
@@ -647,29 +662,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                             R.string.cancel_button,
                             R.string.no_button,
                             R.string.yes_button);
-
-                }
-                else {
-
-                    DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
-
-                        @Override
-                        public void onClickRight(View v) {
-                            listAdapter.removeItem(index);
-                            new ImageCountTask().execute();
-                            this.dismissDialog();
-                        }
-                    };
-
-                    DialogFactory.showActionDialog(appContext,
-                            "",
-                            "Delete " + item.get("title") + "?",
-                            clickListener,
-                            -1,
-                            R.string.cancel_button,
-                            R.string.ok_button);
-
-
                 }
 
             }
@@ -680,18 +672,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 HashMap<String, String> item = listAdapter.getItem(index);
                 String type = item.get("type");
                 String directory;
-                if (type.equals(AppSettings.WEBSITE) ||
-//                        type.equals(AppSettings.IMGUR) ||
-                        type.equals(AppSettings.IMGUR_SUBREDDIT) ||
-                        type.equals(AppSettings.IMGUR_ALBUM) ||
-                        type.equals(AppSettings.PICASA) ||
-                        type.equals(AppSettings.TUMBLR_BLOG) ||
-                        type.equals(AppSettings.TUMBLR_TAG)) {
-                    directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(
-                            index) + " " + AppSettings.getImagePrefix();
+                if (type.equals(AppSettings.FOLDER)){
+                    directory = AppSettings.getSourceData(index);
                 }
                 else {
-                    directory = AppSettings.getSourceData(index);
+                    directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(
+                            index) + " " + AppSettings.getImagePrefix();
                 }
 
                 Log.i(TAG, "Directory: " + directory);

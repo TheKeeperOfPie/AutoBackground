@@ -46,6 +46,7 @@ public class AppSettings {
     public static final String PICASA = "Picasa";
     public static final String TUMBLR_BLOG = "Tumblr Blog";
     public static final String TUMBLR_TAG = "Tumblr Tag";
+    public static final String REDDIT_SUBREDDIT = "Reddit Subreddit";
 
     public static final String DATA_SPLITTER = ", ";
 
@@ -165,13 +166,16 @@ public class AppSettings {
             for (int i = 0; i < getNumSources(); i++) {
 
                 String newType = AppSettings.WEBSITE;
+                String data = getSourceData(i);
                 switch (getSourceType(i)) {
                     case "imgur":
-                        if (getSourceData(i).contains("imgur.com/r/")) {
+                        if (data.contains("imgur.com/r/")) {
                             newType = AppSettings.IMGUR_SUBREDDIT;
+                            prefs.edit().putString("source_data_" + i, data.substring(12)).commit();
                         }
-                        else if (getSourceData(i).contains("imgur.com/a/")) {
+                        else if (data.contains("imgur.com/a/")) {
                             newType = AppSettings.IMGUR_ALBUM;
+                            prefs.edit().putString("source_data_" + i, data.substring(12)).commit();
                         }
                         break;
                     case "folder":

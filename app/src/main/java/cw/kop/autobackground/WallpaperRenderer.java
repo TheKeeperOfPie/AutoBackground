@@ -68,13 +68,8 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
     private long targetFrameTime;
 
     private Context serviceContext;
-
-    private int[] maxTextureSize = new int[] {0};
     private float rawOffsetX = 0f;
 
-    private boolean animated = false;
-
-    private int[] textureNames = new int[3];
     private boolean toEffect = false;
     private boolean contextInitialized = false;
     private boolean loadCurrent = false;
@@ -83,7 +78,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     private Callback callback;
     private static WallpaperRenderer instance;
-
     private volatile List<RenderImage> renderImages;
     private static volatile boolean isLoadingTexture = false;
 
@@ -171,6 +165,9 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             // Works to remove due to renderImages being an instance of CopyOnWriteArrayList
             // Iterating list is separate from volatile instance
             if (image.isFinished()) {
+                if (!(AppSettings.useAnimation() || AppSettings.useVerticalAnimation())) {
+                    callback.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+                }
                 renderImages.remove(image);
             }
         }
@@ -188,7 +185,12 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             for (RenderImage image : renderImages) {
                 image.setDimensions(width, height);
             }
-//            callback.loadCurrent();
+            loadCurrent = true;
+        }
+
+        if (loadCurrent) {
+            callback.loadCurrent();
+            loadCurrent = false;
         }
 
         renderScreenWidth = width;
@@ -222,11 +224,13 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        GLES20.glGetIntegerv(GLES20.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
 
         RenderImage.setupRenderValues();
         if (renderImages.size() == 0) {
-            renderImages.add(getNewImage(BitmapFactory.decodeFile(FileHandler.getNextImage().getAbsolutePath())));
+            File nextImage = FileHandler.getNextImage();
+            if (nextImage != null && nextImage.exists()) {
+                renderImages.add(getNewImage(BitmapFactory.decodeFile(nextImage.getAbsolutePath())));
+            }
         }
 
         Log.i(TAG, "onSurfaceCreated");
@@ -297,6 +301,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             while (renderImages.size() > 2) {
                 renderImages.remove(0);
             }
+            callback.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
             renderImages.add(newImage);
             isLoadingTexture = true;
         }
@@ -310,24 +315,26 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         int bitWidth = bitmap.getWidth();
         int bitHeight = bitmap.getHeight();
 
-        if (bitWidth > 0 && bitHeight > 0 && maxTextureSize[0] > 0) {
+        int maxTextureSize = RenderImage.maxTextureSize[0];
+
+        if (bitWidth > 0 && bitHeight > 0 && maxTextureSize > 0) {
             float scaleWidth = renderScreenWidth / bitWidth;
             float scaleHeight = renderScreenHeight / bitHeight;
 
-            if (bitWidth * scaleWidth > maxTextureSize[0] ||
-                    bitWidth * scaleHeight > maxTextureSize[0] ||
-                    bitHeight * scaleWidth > maxTextureSize[0] ||
-                    bitHeight * scaleHeight > maxTextureSize[0]) {
+            if (bitWidth * scaleWidth > maxTextureSize ||
+                    bitWidth * scaleHeight > maxTextureSize ||
+                    bitHeight * scaleWidth > maxTextureSize ||
+                    bitHeight * scaleHeight > maxTextureSize) {
 
-                float ratio = maxTextureSize[0] / renderScreenHeight;
+                float ratio = maxTextureSize / renderScreenHeight;
 
                 int scaledWidth = Math.round(bitHeight * ratio);
                 if (scaledWidth > bitWidth || scaledWidth == 0) {
                     scaledWidth = bitWidth;
                 }
 
-                if (scaledWidth > maxTextureSize[0]) {
-                    scaledWidth = maxTextureSize[0];
+                if (scaledWidth > maxTextureSize) {
+                    scaledWidth = maxTextureSize;
                 }
 
                 bitmap = Bitmap.createBitmap(bitmap,
@@ -363,22 +370,21 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
             bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitWidth, bitHeight, matrix, false);
 
-            if (bitmap.getWidth() > maxTextureSize[0]) {
+            if (bitmap.getWidth() > maxTextureSize) {
                 bitmap = Bitmap.createBitmap(bitmap,
                         0,
                         0,
-                        maxTextureSize[0],
+                        maxTextureSize,
                         bitmap.getHeight());
             }
-            if (bitmap.getHeight() > maxTextureSize[0]) {
+            if (bitmap.getHeight() > maxTextureSize) {
                 bitmap = Bitmap.createBitmap(bitmap,
                         0,
                         0,
                         bitmap.getWidth(),
-                        maxTextureSize[0]);
+                        maxTextureSize);
             }
         }
-
 
         return bitmap;
     }
@@ -413,7 +419,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     private void applyEffect(Effect setEffect, int texture, String name,
             String description) {
-
+/*
         setEffect.setUpdateListener(effectUpdateListener);
 
         GLES20.glDeleteTextures(1, textureNames, texture);
@@ -435,7 +441,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[texture]);
 
         toastEffect(name, description);
-        Log.i(TAG, "Effect applied: " + name + "\n" + description);
+        Log.i(TAG, "Effect applied: " + name + "\n" + description);*/
 
     }
 
@@ -777,10 +783,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public void setAnimated(boolean animated) {
-        this.animated = animated;
-    }
-
     public void setLoadCurrent(boolean load) {
         loadCurrent = load;
     }
@@ -793,10 +795,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         Log.i(TAG, "release");
     }
 
-    public boolean isAnimated() {
-        return animated;
-    }
-
     public void setPlayingMusic(boolean playingMusic) {
         isPlayingMusic = playingMusic;
     }
@@ -807,7 +805,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     public interface Callback {
 
-        void resetMode();
         void setRenderMode(int mode);
         void setPreserveContext(boolean preserveContext);
         void loadCurrent();

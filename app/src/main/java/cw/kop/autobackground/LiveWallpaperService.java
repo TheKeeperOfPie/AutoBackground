@@ -1161,10 +1161,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             renderer = WallpaperRenderer.getInstance(LiveWallpaperService.this,
                     new WallpaperRenderer.Callback() {
-                        @Override
-                        public void resetMode() {
-                            resetRenderMode();
-                        }
 
                         @Override
                         public void setRenderMode(int mode) {
@@ -1439,7 +1435,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     renderer.setLoadCurrent(true);
                 }
 
-                resetRenderMode();
 
                 if (!keyguardManager.inKeyguardRestrictedInputMode() || AppSettings.changeWhenLocked()) {
                     if (toChange) {
@@ -1519,7 +1514,6 @@ public class LiveWallpaperService extends GLWallpaperService {
         }
 
         public void loadCurrentImage() {
-            resetRenderMode();
 
             if (FileHandler.getCurrentBitmapFile() == null) {
                 loadNextImage();
@@ -1562,13 +1556,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 pinned = false;
             }
 
-            if (pinned || previousBitmaps.size() == 0) {
-                return;
-            }
-
-            resetRenderMode();
-
-            if (previousBitmaps.get(0) == null) {
+            if (pinned || previousBitmaps.size() == 0 || previousBitmaps.get(0) == null) {
                 return;
             }
 
@@ -1615,8 +1603,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 return;
             }
 
-            resetRenderMode();
-
             previousBitmaps.add(0, FileHandler.getCurrentBitmapFile());
 
             new Thread(new Runnable() {
@@ -1631,10 +1617,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                         if (nextImage == null) {
                             return;
                         }
-//
-//                        Bitmap bitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath());
-//
-//                        renderer.loadImageOneTexture(bitmap);
 
                         renderer.loadNext(nextImage);
 
@@ -1661,17 +1643,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         }
 
-        private void resetRenderMode() {
-            if (renderer != null) {
-                if (renderer.isAnimated()) {
-                    setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-                }
-                else {
-                    setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-                }
-            }
-        }
-
         private final BroadcastReceiver localReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -1679,16 +1650,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 String action = intent.getAction();
 
                 switch (action) {
-
-                    case SET_ANIMATED:
-//                        renderer.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
-                        break;
-                    case SET_ANIMATION_X:
-//                        renderer.setAnimationModifierX((float) AppSettings.getAnimationSpeed() / 10);
-                        break;
-                    case SET_ANIMATION_Y:
-//                        renderer.setAnimationModifierY((float) AppSettings.getVerticalAnimationSpeed() / 10);
-                        break;
                     case SET_FRAME_TIME:
                         renderer.setTargetFrameTime(1000 / AppSettings.getAnimationFrameRate());
                         break;

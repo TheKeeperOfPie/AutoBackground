@@ -340,12 +340,10 @@ public class SourceInfoFragment extends PreferenceFragment {
                 case AppSettings.IMGUR_SUBREDDIT:
                     hint = "Subreddit";
                     prefix = "imgur.com/r/";
-                    data = data.substring(data.indexOf(prefix) + prefix.length());
                     break;
                 case AppSettings.IMGUR_ALBUM:
                     hint = "Album ID";
                     prefix = "imgur.com/a/";
-                    data = data.substring(data.indexOf(prefix) + prefix.length());
                     break;
                 case AppSettings.TUMBLR_BLOG:
                     prefix = "Blog name";
@@ -353,6 +351,10 @@ public class SourceInfoFragment extends PreferenceFragment {
                     break;
                 case AppSettings.TUMBLR_TAG:
                     hint = "Tag";
+                    break;
+                case AppSettings.REDDIT_SUBREDDIT:
+                    prefix = "/r/";
+                    hint = "Subreddit";
                     break;
                 case AppSettings.FOLDER:
                     sourceTitle.setFocusable(false);
@@ -396,22 +398,7 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         }
 
-        sourcePrefix.setText(prefix);
-        sourceData.setHint(hint);
-        sourceSuffix.setText(suffix);
-
-        if (prefix.equals("")) {
-            sourcePrefix.setVisibility(View.INVISIBLE);
-        }
-        else {
-            sourcePrefix.setVisibility(View.VISIBLE);
-        }
-        if (suffix.equals("")) {
-            sourceSuffix.setVisibility(View.INVISIBLE);
-        }
-        else {
-            sourceSuffix.setVisibility(View.VISIBLE);
-        }
+        setDataWrappers();
 
         sourceUse = (Switch) headerView.findViewById(R.id.source_use_switch);
         sourceUse.setChecked(arguments.getBoolean("use"));
@@ -500,10 +487,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                 if (!data.contains("http")) {
                     data = "http://" + data;
                 }
-                break;
-            case AppSettings.IMGUR_SUBREDDIT:
-            case AppSettings.IMGUR_ALBUM:
-                data = sourcePrefix.getText().toString() + data;
                 break;
 
         }
@@ -622,12 +605,30 @@ public class SourceInfoFragment extends PreferenceFragment {
             @Override
             public void run() {
                 sourceTitle.setText(title);
-                sourcePrefix.setText(prefix);
                 sourceData.setText(data);
-                sourceSuffix.setText(suffix);
                 sourceNum.setText("" + num);
+                setDataWrappers();
             }
         });
+
+    }
+
+    private void setDataWrappers() {
+        sourcePrefix.setText(prefix);
+        sourceSuffix.setText(suffix);
+        if (prefix.length() > 0) {
+            sourcePrefix.setVisibility(View.VISIBLE);
+        }
+        else {
+            sourcePrefix.setVisibility(View.GONE);
+        }
+        if (suffix.length() > 0) {
+            sourceSuffix.setVisibility(View.VISIBLE);
+        }
+        else {
+            sourceSuffix.setVisibility(View.GONE);
+        }
+        sourceData.setHint(hint);
 
     }
 
@@ -684,25 +685,14 @@ public class SourceInfoFragment extends PreferenceFragment {
                 type = AppSettings.TUMBLR_TAG;
                 hint = "Tag";
                 break;
+            case 7:
+                type = AppSettings.REDDIT_SUBREDDIT;
+                hint = "Subreddit";
+                break;
             default:
         }
 
-        sourcePrefix.setText(prefix);
-        sourceData.setHint(hint);
-        sourceSuffix.setText(suffix);
-
-        if (prefix.equals("")) {
-            sourcePrefix.setVisibility(View.INVISIBLE);
-        }
-        else {
-            sourcePrefix.setVisibility(View.VISIBLE);
-        }
-        if (suffix.equals("")) {
-            sourceSuffix.setVisibility(View.INVISIBLE);
-        }
-        else {
-            sourceSuffix.setVisibility(View.VISIBLE);
-        }
+        setDataWrappers();
 
         if (blockData) {
             sourceTitle.setFocusable(false);
