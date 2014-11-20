@@ -175,26 +175,24 @@ public class RenderImage {
     }
 
     public void onSwipe(float xMovement, float yMovement) {
-//        if (!useTransition) {
-            if (AppSettings.reverseDrag()) {
-                if (bitmapWidth * scaleFactor < renderScreenWidth
-                        || offsetX + xMovement > (-bitmapWidth + renderScreenWidth / scaleFactor) && offsetX + xMovement < 0) {
-                    offsetX += xMovement;
-                }
-                if (bitmapHeight * scaleFactor < renderScreenHeight || offsetY - yMovement > (-bitmapHeight + renderScreenHeight / scaleFactor) && offsetY - yMovement < 0) {
-                    offsetY -= yMovement;
-                }
+        if (AppSettings.reverseDrag()) {
+            if (bitmapWidth * scaleFactor < renderScreenWidth
+                    || offsetX + xMovement > (-bitmapWidth + renderScreenWidth / scaleFactor) && offsetX + xMovement < 0) {
+                offsetX += xMovement;
             }
-            else {
-                if (bitmapWidth * scaleFactor < renderScreenWidth
-                        || offsetX - xMovement > (-bitmapWidth + renderScreenWidth / scaleFactor) && offsetX - xMovement < 0) {
-                    offsetX -= xMovement;
-                }
-                if (bitmapHeight * scaleFactor < renderScreenHeight || offsetY + yMovement > (-bitmapHeight + renderScreenHeight / scaleFactor) && offsetY + yMovement < 0) {
-                    offsetY += yMovement;
-                }
+            if (bitmapHeight * scaleFactor < renderScreenHeight || offsetY - yMovement > (-bitmapHeight + renderScreenHeight / scaleFactor) && offsetY - yMovement < 0) {
+                offsetY -= yMovement;
             }
-//        }
+        }
+        else {
+            if (bitmapWidth * scaleFactor < renderScreenWidth
+                    || offsetX - xMovement > (-bitmapWidth + renderScreenWidth / scaleFactor) && offsetX - xMovement < 0) {
+                offsetX -= xMovement;
+            }
+            if (bitmapHeight * scaleFactor < renderScreenHeight || offsetY + yMovement > (-bitmapHeight + renderScreenHeight / scaleFactor) && offsetY + yMovement < 0) {
+                offsetY += yMovement;
+            }
+        }
     }
 
     public void loadTexture() {

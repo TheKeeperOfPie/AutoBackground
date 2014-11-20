@@ -174,7 +174,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                 renderImages.remove(image);
             }
         }
-//        }
     }
 
     @Override

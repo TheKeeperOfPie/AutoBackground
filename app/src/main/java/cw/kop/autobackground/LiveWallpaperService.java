@@ -86,6 +86,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     public static final String PIN_IMAGE = "cw.kop.autobackground.LiveWallpaperService.PIN_IMAGE";
     public static final String PREVIOUS_IMAGE = "cw.kop.autobackground.LiveWallpaperService.PREVIOUS_IMAGE";
     public static final String SHARE_IMAGE = "cw.kop.autobackground.LiveWallpaperService.SHARE_IMAGE";
+    public static final String TOGGLE_GAME = "cw.kop.autobackground.LiveWallpaperService.TOGGLE_GAME";
     public static final String CURRENT_IMAGE = "cw.kop.autobackground.LiveWallpaperService.CURRENT_IMAGE";
     public static final String GAME_TILE0 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE0";
     public static final String GAME_TILE1 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE1";
@@ -187,6 +188,10 @@ public class LiveWallpaperService extends GLWallpaperService {
                             layers[1] = LiveWallpaperService.this.getResources().getDrawable(R.drawable.pin_overlay);
 
                             LayerDrawable layerDrawable = new LayerDrawable(layers);
+                            int bufferInPixels = notifyIconWidth > notifyIconHeight ?
+                                    (notifyIconWidth - notifyIconHeight) / 2 :
+                                    (notifyIconHeight - notifyIconWidth) / 2;
+                            layerDrawable.setLayerInset(1, bufferInPixels, 0, 0, 0);
 
                             Bitmap mutableBitmap = Bitmap.createBitmap(notifyIconWidth,
                                     notifyIconHeight,
@@ -247,6 +252,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     private PendingIntent pendingPinIntent;
     private PendingIntent pendingPreviousIntent;
     private PendingIntent pendingShareIntent;
+    private PendingIntent pendingGameIntent;
     private PendingIntent pendingTile0;
     private PendingIntent pendingTile1;
     private PendingIntent pendingTile2;
@@ -342,7 +348,10 @@ public class LiveWallpaperService extends GLWallpaperService {
                 0,
                 new Intent(LiveWallpaperService.SHARE_IMAGE),
                 0);
-
+        pendingGameIntent = PendingIntent.getBroadcast(this,
+                0,
+                new Intent(LiveWallpaperService.TOGGLE_GAME),
+                0);
         pendingAppIntent = PendingIntent.getActivity(this,
                 0,
                 new Intent(this, MainActivity.class),
@@ -795,6 +804,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                 return pendingPreviousIntent;
             case "Share":
                 return pendingShareIntent;
+            case "Game":
+                return pendingGameIntent;
         }
 
         return null;
@@ -1228,6 +1239,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             intentFilter.addAction(LiveWallpaperService.PREVIOUS_IMAGE);
             intentFilter.addAction(LiveWallpaperService.PIN_IMAGE);
             intentFilter.addAction(LiveWallpaperService.SHARE_IMAGE);
+            intentFilter.addAction(LiveWallpaperService.TOGGLE_GAME);
             intentFilter.addAction(LiveWallpaperService.CURRENT_IMAGE);
             return intentFilter;
         }
@@ -1655,8 +1667,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
                 }
                 else {
-                    setRendererMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-//                    setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+                    setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
                 }
             }
         }
@@ -1803,6 +1814,10 @@ public class LiveWallpaperService extends GLWallpaperService {
                         Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
                         context.sendBroadcast(closeDrawer);
                         break;
+                    case TOGGLE_GAME:
+                        AppSettings.setUseNotificationGame(!AppSettings.useNotificationGame());
+                        startNotification(true);
+                        break;
                     case LiveWallpaperService.UPDATE_WALLPAPER:
                         if (AppSettings.forceInterval()) {
                             loadNextImage();
@@ -1833,7 +1848,5 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             }
         };
-
-
     }
 }

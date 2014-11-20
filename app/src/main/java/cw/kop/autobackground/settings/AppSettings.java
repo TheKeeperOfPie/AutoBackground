@@ -968,26 +968,23 @@ public class AppSettings {
 
         String value = prefs.getString("notification_icon_action_drawable_string", "None");
 
-        if (value.equals("Copy")) {
-            return R.drawable.ic_content_copy_white_24dp;
-        }
-        if (value.equals("Cycle")) {
-            return R.drawable.ic_refresh_white_24dp;
-        }
-        if (value.equals("Delete")) {
-            return R.drawable.ic_delete_white_24dp;
-        }
-        if (value.equals("Open")) {
-            return R.drawable.ic_photo_white_24dp;
-        }
-        if (value.equals("Pin")) {
-            return R.drawable.ic_pin_drop_white_24dp;
-        }
-        if (value.equals("Previous")) {
-            return R.drawable.ic_arrow_back_white_24dp;
-        }
-        if (value.equals("Share")) {
-            return R.drawable.ic_share_white_24dp;
+        switch (value) {
+            case "Copy":
+                return R.drawable.ic_content_copy_white_24dp;
+            case "Cycle":
+                return R.drawable.ic_refresh_white_24dp;
+            case "Delete":
+                return R.drawable.ic_delete_white_24dp;
+            case "Open":
+                return R.drawable.ic_photo_white_24dp;
+            case "Pin":
+                return R.drawable.ic_pin_drop_white_24dp;
+            case "Previous":
+                return R.drawable.ic_arrow_back_white_24dp;
+            case "Share":
+                return R.drawable.ic_share_white_24dp;
+            case "Game":
+                return R.drawable.ic_gamepad_white_24dp;
         }
 
         return R.color.TRANSPARENT_BACKGROUND;
@@ -1018,6 +1015,9 @@ public class AppSettings {
                 break;
             case R.drawable.ic_share_white_24dp:
                 value = "Share";
+                break;
+            case R.drawable.ic_gamepad_white_24dp:
+                value = "Game";
                 break;
         }
 
@@ -1074,6 +1074,9 @@ public class AppSettings {
             case R.drawable.ic_share_white_24dp:
                 value = "Share";
                 break;
+            case R.drawable.ic_gamepad_white_24dp:
+                value = "Game";
+                break;
         }
 
         prefs.edit().putString("notification_drawable_string" + position, value).apply();
@@ -1083,29 +1086,25 @@ public class AppSettings {
 
         String value = prefs.getString("notification_drawable_string" + position, "None");
 
-        if (value.equals("Copy")) {
-            return R.drawable.ic_content_copy_white_24dp;
-        }
-        if (value.equals("Cycle")) {
-            return R.drawable.ic_refresh_white_24dp;
-        }
-        if (value.equals("Delete")) {
-            return R.drawable.ic_delete_white_24dp;
-        }
-        if (value.equals("Open")) {
-            return R.drawable.ic_photo_white_24dp;
-        }
-        if (value.equals("Pin")) {
-            return R.drawable.ic_pin_drop_white_24dp;
-        }
-        if (value.equals("Previous")) {
-            return R.drawable.ic_arrow_back_white_24dp;
-        }
-        if (value.equals("Share")) {
-            return R.drawable.ic_share_white_24dp;
-        }
-        if (value.equals("None")) {
-            return R.drawable.ic_check_box_outline_blank_white_24dp;
+        switch (value) {
+            case "Copy":
+                return R.drawable.ic_content_copy_white_24dp;
+            case "Cycle":
+                return R.drawable.ic_refresh_white_24dp;
+            case "Delete":
+                return R.drawable.ic_delete_white_24dp;
+            case "Open":
+                return R.drawable.ic_photo_white_24dp;
+            case "Pin":
+                return R.drawable.ic_pin_drop_white_24dp;
+            case "Previous":
+                return R.drawable.ic_arrow_back_white_24dp;
+            case "Share":
+                return R.drawable.ic_share_white_24dp;
+            case "Game":
+                return R.drawable.ic_gamepad_white_24dp;
+            case "None":
+                return R.drawable.ic_check_box_outline_blank_white_24dp;
         }
 
         return R.drawable.ic_check_box_outline_blank_white_24dp;

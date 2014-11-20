@@ -670,6 +670,11 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         ArrayList<NotificationOptionData> optionsList = new ArrayList<>();
 
         for (int index = 0; index < optionsTitles.length; index++) {
+
+            if (!AppSettings.useAdvanced() && optionsTitles[index].equals("Game")) {
+                continue;
+            }
+
             optionsList.add(new NotificationOptionData(optionsTitles[index],
                     optionsSummaries[index],
                     optionsIcons.getResourceId(index,

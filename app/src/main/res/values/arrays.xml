@@ -39,6 +39,7 @@
         <item>@drawable/ic_pin_drop_white_24dp</item>
         <item>@drawable/ic_arrow_back_white_24dp</item>
         <item>@drawable/ic_share_white_24dp</item>
+        <item>@drawable/ic_gamepad_white_24dp</item>
         <item>@drawable/ic_check_box_outline_blank_white_24dp</item>
     </array>
 

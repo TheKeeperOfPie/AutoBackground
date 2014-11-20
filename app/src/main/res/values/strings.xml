@@ -420,6 +420,7 @@
         <item>Pin</item>
         <item>Previous</item>
         <item>Share</item>
+        <item>Game</item>
         <item>None</item>
     </string-array>
 
@@ -431,6 +432,7 @@
         <item>Pin the current image for a certain amount of time</item>
         <item>Go back to the previous image</item>
         <item>Share the image URL</item>
+        <item>Toggle the notification game</item>
         <item>Show nothing</item>
     </string-array>
 
