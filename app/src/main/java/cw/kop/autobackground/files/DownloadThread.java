@@ -170,7 +170,7 @@ public class DownloadThread extends Thread {
                     case AppSettings.IMGUR_ALBUM:
                         downloadImgurAlbum(sourceData, index);
                         break;
-                    case AppSettings.PICASA:
+                    case AppSettings.GOOGLE_ALBUM:
                         downloadPicasa(sourceData, index);
                         break;
                     case AppSettings.TUMBLR_BLOG:
@@ -181,6 +181,7 @@ public class DownloadThread extends Thread {
                         break;
                     case AppSettings.REDDIT_SUBREDDIT:
                         downloadRedditSubreddit(sourceData, index);
+                        break;
                 }
 
                 totalTarget += AppSettings.getSourceNum(index);

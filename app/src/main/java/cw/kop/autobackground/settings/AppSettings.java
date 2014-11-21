@@ -43,7 +43,7 @@ public class AppSettings {
 //    public static final String IMGUR = "imgur";
     public static final String IMGUR_SUBREDDIT = "Imgur Subreddit";
     public static final String IMGUR_ALBUM = "Imgur Album";
-    public static final String PICASA = "Picasa";
+    public static final String GOOGLE_ALBUM = "Google+ Album";
     public static final String TUMBLR_BLOG = "Tumblr Blog";
     public static final String TUMBLR_TAG = "Tumblr Tag";
     public static final String REDDIT_SUBREDDIT = "Reddit Subreddit";
@@ -182,7 +182,7 @@ public class AppSettings {
                         newType = AppSettings.FOLDER;
                         break;
                     case "picasa":
-                        newType = AppSettings.PICASA;
+                        newType = AppSettings.GOOGLE_ALBUM;
                         break;
                     case "tumblr_blog":
                         newType = AppSettings.TUMBLR_BLOG;

@@ -28,7 +28,6 @@ import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -44,7 +43,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.Scroller;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -640,7 +638,7 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         boolean blockData = false;
 
-        if (type.equals(AppSettings.PICASA) ||
+        if (type.equals(AppSettings.GOOGLE_ALBUM) ||
                 type.equals(AppSettings.FOLDER)) {
             sourceTitle.setText("");
             sourceData.setText("");
@@ -962,7 +960,7 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            showAlbumFragment(AppSettings.PICASA,
+            showAlbumFragment(AppSettings.GOOGLE_ALBUM,
                     changePosition,
                     albumNames,
                     albumImageLinks,
