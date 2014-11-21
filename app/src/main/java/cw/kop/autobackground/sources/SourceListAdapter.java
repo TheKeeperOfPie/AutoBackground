@@ -29,7 +29,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
@@ -98,12 +97,6 @@ public class SourceListAdapter extends BaseAdapter {
 
         EditText title = (EditText) view.findViewById(R.id.source_title);
         title.setText(listItem.get("title"));
-        title.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cardClickListener.onViewClick(view, position);
-            }
-        });
 
         int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
 
@@ -164,7 +157,12 @@ public class SourceListAdapter extends BaseAdapter {
                 cardClickListener.onViewImageClick(position);
             }
         });
-        editButton.setOnClickListener(null);
+        editButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cardClickListener.onEditClick(view, position);
+            }
+        });
 
         ImageView image = (ImageView) view.findViewById(R.id.source_image);
 
@@ -437,7 +435,7 @@ public class SourceListAdapter extends BaseAdapter {
 
         void onViewImageClick(int index);
 
-        void onViewClick(View view, int index);
+        void onEditClick(View view, int index);
     }
 
 }

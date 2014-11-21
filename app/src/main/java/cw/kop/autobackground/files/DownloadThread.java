@@ -242,6 +242,7 @@ public class DownloadThread extends Thread {
     }
 
     private void startDownload(List<String> links, List<String> data, int index) {
+        Collections.shuffle(links);
         String dir = AppSettings.getDownloadPath();
         String title = AppSettings.getSourceTitle(index);
         int stored = AppSettings.getSourceNumStored(index);
@@ -291,11 +292,8 @@ public class DownloadThread extends Thread {
             }
         }
         renameAndReorder(dir, stored, num, title);
-
         imagesDownloaded = num - stored;
-
         imageDetails += title + ": " + imagesDownloaded + " images" + AppSettings.DATA_SPLITTER;
-
         AppSettings.setSourceNumStored(index, num);
     }
 
@@ -362,18 +360,16 @@ public class DownloadThread extends Thread {
         imageLinks.addAll(compileImageLinks(linkDoc, "img", "src"));
         imageList.addAll(imageLinks);
 
-        Collections.shuffle(imageList);
-
         startDownload(imageList, imageList, index);
     }
 
-    private void downloadImgurSubreddit(String url, int index) {
+    private void downloadImgurSubreddit(String subreddit, int index) {
 
         if (isInterrupted()) {
             return;
         }
 
-        String apiUrl = "https://api.imgur.com/3/gallery/r/" + url.substring(url.indexOf("imgur.com/r/") + 12);
+        String apiUrl = "https://api.imgur.com/3/gallery/r/" + subreddit;
 
         Log.i(TAG, "apiUrl: " + apiUrl);
 
@@ -405,7 +401,6 @@ public class DownloadThread extends Thread {
                 else {
                     imagePages.add(imageObject.getString("link"));
                 }
-
             }
 
             Log.i(TAG, "imageList size: " + imageList.size());
@@ -419,19 +414,16 @@ public class DownloadThread extends Thread {
         }
     }
 
-    private void downloadImgurAlbum(String url, int index) {
+    private void downloadImgurAlbum(String albumId, int index) {
 
         if (isInterrupted()) {
             return;
         }
 
-        String apiUrl = url;
-
-        String albumId = url.substring(url.indexOf("imgur.com/a/") + 12);
         if (albumId.contains("/")) {
             albumId = albumId.substring(0, albumId.indexOf("/"));
         }
-        apiUrl = "https://api.imgur.com/3/album/" + albumId + "/images";
+        String apiUrl = "https://api.imgur.com/3/album/" + albumId + "/images";
 
         Log.i(TAG, "apiUrl: " + apiUrl);
 

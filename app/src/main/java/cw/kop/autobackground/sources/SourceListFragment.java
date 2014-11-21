@@ -686,7 +686,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             }
 
             @Override
-            public void onViewClick(View view, int index) {
+            public void onEditClick(View view, int index) {
                 onItemClick(null, view, index, -1);
             }
         };
@@ -808,6 +808,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     @Override
     public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
+        onEditClick(view, position);
+    }
+
+    private void onEditClick(final View view, int position) {
         sourceList.setOnItemClickListener(null);
 
         HashMap<String, String> dataItem = listAdapter.getItem(position);
@@ -915,17 +919,17 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             }
         });
 
-        ValueAnimator cardColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
-                getResources().getColor(R.color.ACCENT_OPAQUE),
-                getResources().getColor(AppSettings.getBackgroundColorResource()));
-        cardColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                sourceContainer.setBackgroundColor((Integer) animation.getAnimatedValue());
-            }
-
-        });
+//        ValueAnimator cardColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+//                getResources().getColor(R.color.ACCENT_OPAQUE),
+//                getResources().getColor(AppSettings.getBackgroundColorResource()));
+//        cardColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//
+//            @Override
+//            public void onAnimationUpdate(ValueAnimator animation) {
+//                sourceContainer.setBackgroundColor((Integer) animation.getAnimatedValue());
+//            }
+//
+//        });
 
         ValueAnimator titleColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
                 sourceTitle.getCurrentTextColor(),
@@ -963,12 +967,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(1.5f);
 
         animation.setDuration(transitionTime);
-        cardColorAnimation.setDuration(transitionTime);
+//        cardColorAnimation.setDuration(transitionTime);
         titleColorAnimation.setDuration(transitionTime);
         titleShadowAlphaAnimation.setDuration(transitionTime);
 
         animation.setInterpolator(decelerateInterpolator);
-        cardColorAnimation.setInterpolator(decelerateInterpolator);
+//        cardColorAnimation.setInterpolator(decelerateInterpolator);
         titleColorAnimation.setInterpolator(decelerateInterpolator);
         titleShadowAlphaAnimation.setInterpolator(decelerateInterpolator);
 
@@ -992,7 +996,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         needsListReset = true;
         view.startAnimation(animation);
-        cardColorAnimation.start();
+//        cardColorAnimation.start();
         titleColorAnimation.start();
         titleShadowAlphaAnimation.start();
     }
