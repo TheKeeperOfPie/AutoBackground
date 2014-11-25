@@ -271,8 +271,8 @@
 
     <string name="use_toast">Use Toasts</string>
     <string name="use_toast_description">Notify user of info on screen</string>
-    <string name="force_multipane">Force Multi-Pane</string>
-    <string name="force_multipane_description">Use a dual pane layout</string>
+    <string name="force_multi_pane">Force Multi-Pane</string>
+    <string name="force_multi_pane_description">Use a dual pane layout</string>
     <string name="use_right_drawer">Right Drawer</string>
     <string name="use_right_drawer_description">Place navigation drawer on right side</string>
     <string name="change_theme">Change Theme</string>
@@ -283,8 +283,8 @@
     <string name="use_fabric_description">Send usage and crash data (no personal data is collected)</string>
     <string name="clear_pref">Reset Settings</string>
     <string name="clear_pref_description">Set default settings</string>
-    <string name="show_tutorial_source">Reshow Source List Tutorial</string>
-    <string name="show_tutorial_source_description">Click to reshow source tutorial</string>
+    <string name="show_tutorial_source">Reshow Tutorial</string>
+    <string name="show_tutorial_source_description">Click to reshow tutorial</string>
 
     <string name="notification_instructions">How to Customize</string>
     <string name="notification_instructions_description">Simply click one of the parts of the notification above to view that part\'s settings</string>
@@ -447,7 +447,7 @@
         <item>Wallpaper</item>
         <item>Downloader</item>
         <item>Accounts</item>
-        <item>Effects</item>
+        <!--<item>Effects</item>-->
         <item>Notification</item>
         <item>Application</item>
         <item>History</item>
@@ -459,7 +459,7 @@
         <item>Change settings for wallpaper</item>
         <item>Change settings for downloading</item>
         <item>Connect accounts</item>
-        <item>Change image effects</item>
+        <!--<item>Change image effects</item>-->
         <item>Change notification look</item>
         <item>Various settings for app</item>
         <item>Various information</item>

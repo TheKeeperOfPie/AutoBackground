@@ -65,6 +65,7 @@ public class SourceListAdapter extends BaseAdapter {
     private HashSet<String> titles;
     private LayoutInflater inflater = null;
     private CardClickListener cardClickListener;
+    private float screenWidth = 0;
 
     public SourceListAdapter(Activity activity, CardClickListener listener) {
         mainActivity = activity;
@@ -72,6 +73,7 @@ public class SourceListAdapter extends BaseAdapter {
         titles = new HashSet<>();
         inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         cardClickListener = listener;
+        screenWidth = activity.getResources().getDisplayMetrics().widthPixels;
     }
 
     @Override
@@ -119,7 +121,7 @@ public class SourceListAdapter extends BaseAdapter {
         if (Boolean.parseBoolean(listItem.get("use"))) {
             imageOverlay.setAlpha(0);
             title.setTextColor(resources.getColor(R.color.WHITE_OPAQUE));
-            title.setShadowLayer(0f, 0f, 0f, 0xFF000000);
+            title.setShadowLayer(5f, -1f, -1f, 0xFF000000);
 //            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
 //                title.setTextColor(darkGrayColor);
 //                title.setShadowLayer(5.0f, -1f, -1f, lightGrayColor);
@@ -179,7 +181,7 @@ public class SourceListAdapter extends BaseAdapter {
         });
 
         ImageView image = (ImageView) view.findViewById(R.id.source_image);
-        image.getLayoutParams().height = (int) (image.getWidth() / 16f * 9);
+        image.getLayoutParams().height = (int) ((parent.getWidth() - 2f * resources.getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
 
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) title.getLayoutParams();
 
@@ -219,9 +221,9 @@ public class SourceListAdapter extends BaseAdapter {
             }
         }
         else {
-//            Picasso.with(parent.getContext()).load(android.R.color.transparent).into(image);
-//            title.setTextColor(AppSettings.getColorFilterInt(parent.getContext()));
-            image.getLayoutParams().height = 0;
+            Picasso.with(parent.getContext()).load(android.R.color.transparent).into(image);
+            title.setTextColor(AppSettings.getColorFilterInt(parent.getContext()));
+            image.getLayoutParams().height = title.getHeight();
         }
 
         title.setLayoutParams(params);

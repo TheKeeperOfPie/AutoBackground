@@ -136,10 +136,16 @@ public class MainActivity extends ActionBarActivity {
         }
 
         super.onCreate(savedInstanceState);
+        Configuration configuration = getResources().getConfiguration();
 
-        setContentView(R.layout.activity_layout);
+        if (configuration.screenWidthDp >= 600 || AppSettings.forceMultiPane()) {
+            setContentView(R.layout.activity_layout_multi_pane);
+        }
+        else {
+            setContentView(R.layout.activity_layout);
+        }
         if (AppSettings.useFabric()) {
-            final Fabric fabric = new Fabric.Builder(this)
+            final Fabric fabric = new Fabric.Builder(getApplicationContext())
                     .kits(new Crashlytics())
                     .build();
             Fabric.with(fabric);
@@ -147,17 +153,13 @@ public class MainActivity extends ActionBarActivity {
 
         fragmentList = getResources().getStringArray(R.array.fragment_titles);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
 
         navLayout = (LinearLayout) findViewById(R.id.navigation_drawer);
         navPicture = (ImageView) findViewById(R.id.nav_drawer_picture);
 
-        Configuration configuration = getResources().getConfiguration();
         navLayout.getLayoutParams().width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                Math.min(320, configuration.screenWidthDp - 56),
+                Math.max(320, configuration.screenWidthDp - 56),
                 getResources().getDisplayMetrics()));
-
-        Log.i("WidthDP: ", "" + configuration.screenWidthDp);
 
         CustomRelativeLayout navHeader = (CustomRelativeLayout) findViewById(R.id.nav_drawer_header);
         navHeader.getLayoutParams().height = Math.round(TypedValue.applyDimension(
@@ -174,18 +176,56 @@ public class MainActivity extends ActionBarActivity {
 
         drawerList = (ListView) findViewById(R.id.nav_list);
         drawerList.setAdapter(new NavListAdapter(this, fragmentList));
-        drawerList.setOnItemClickListener(new DrawerItemClickListener());
+        drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                getFragmentManager().popBackStack();
+                selectItem(position, true);
+            }
+        });
 
         drawerList.setDividerHeight(0);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitleTextAppearance(getApplicationContext(), R.style.ToolbarTitle);
-
         try {
             setSupportActionBar(toolbar);
         }
         catch (Throwable t) {
 
+        }
+
+        if (drawerLayout != null) {
+            drawerList.setOnItemClickListener(new DrawerItemClickListener());
+            drawerToggle = new ActionBarDrawerToggle(
+                    this,
+                    drawerLayout,
+                    toolbar,
+                    R.string.drawer_open,
+                    R.string.drawer_close) {
+
+                public void onDrawerClosed(View view) {
+                    super.onDrawerClosed(view);
+                    selectItem(newPosition, true);
+                }
+
+                public void onDrawerOpened(View drawerView) {
+                    super.onDrawerOpened(drawerView);
+                    getFragmentManager().popBackStack();
+                }
+
+                @Override
+                public void onDrawerSlide(View drawerView, float slideOffset) {
+                    super.onDrawerSlide(drawerView, 0);
+                }
+            };
+
+            drawerLayout.setDrawerListener(drawerToggle);
+            drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
+        }
+        else {
+            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
@@ -200,31 +240,6 @@ public class MainActivity extends ActionBarActivity {
             navLayout.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
             toolbar.setTitleTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
         }
-
-        drawerToggle = new ActionBarDrawerToggle(
-                this,
-                drawerLayout,
-                toolbar,
-                R.string.drawer_open,
-                R.string.drawer_close) {
-
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-                selectItem(newPosition, true);
-            }
-
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                getFragmentManager().popBackStack();
-            }
-
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-                super.onDrawerSlide(drawerView, 0);
-            }
-        };
-
-        drawerLayout.setDrawerListener(drawerToggle);
 
         if (sourceListFragment == null) {
             sourceListFragment = new SourceListFragment();
@@ -264,7 +279,9 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        drawerToggle.syncState();
+        if (drawerToggle != null) {
+            drawerToggle.syncState();
+        }
 
         if (AppSettings.useSourceTutorial()) {
             Intent tutorialIntent = new Intent(this, TutorialActivity.class);
@@ -341,22 +358,22 @@ public class MainActivity extends ActionBarActivity {
                 fragmentTransaction.replace(R.id.content_frame,
                         new AccountSettingsFragment()).commit();
                 break;
+//            case 4:
+//                fragmentTransaction.replace(R.id.content_frame,
+//                        new EffectsSettingsFragment()).commit();
+//                break;
             case 4:
-                fragmentTransaction.replace(R.id.content_frame,
-                        new EffectsSettingsFragment()).commit();
-                break;
-            case 5:
                 fragmentTransaction.replace(R.id.content_frame,
                         new NotificationSettingsFragment()).commit();
                 break;
-            case 6:
+            case 5:
                 fragmentTransaction.replace(R.id.content_frame, new AppSettingsFragment()).commit();
                 break;
-            case 7:
+            case 6:
                 fragmentTransaction.replace(R.id.content_frame,
                         new ImageHistoryFragment()).commit();
                 break;
-            case 8:
+            case 7:
                 fragmentTransaction.replace(R.id.content_frame, new AboutFragment()).commit();
                 break;
             default:
@@ -367,10 +384,13 @@ public class MainActivity extends ActionBarActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        Log.i("MP", "Item pressed: " + item.getItemId());
-
-        if (getFragmentManager().findFragmentByTag("image_fragment") == null && drawerToggle.onOptionsItemSelected(
-                item)) {
+        if (getFragmentManager().findFragmentByTag("image_fragment") == null) {
+            if (drawerToggle != null) {
+                return drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
+            }
+            else {
+                getFragmentManager().popBackStack();
+            }
             return item.getItemId() != android.R.id.home || super.onOptionsItemSelected(item);
         }
         else if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
@@ -425,7 +445,9 @@ public class MainActivity extends ActionBarActivity {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             newPosition = position;
             drawerList.setItemChecked(position, true);
-            drawerLayout.closeDrawer(navLayout);
+            if (drawerLayout != null) {
+                drawerLayout.closeDrawer(navLayout);
+            }
         }
     }
 }

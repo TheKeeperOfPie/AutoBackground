@@ -27,8 +27,16 @@
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/close_button"
+        android:layout_above="@+id/button_divider"
         />
+
+    <View
+        android:id="@+id/button_divider"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_above="@+id/close_button"
+        android:background="@color/DARK_GRAY_OPAQUE"
+        android:minHeight="1px"/>
 
     <Button
         android:id="@+id/close_button"

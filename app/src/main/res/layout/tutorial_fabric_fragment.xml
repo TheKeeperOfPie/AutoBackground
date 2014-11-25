@@ -15,90 +15,28 @@
   ~ limitations under the License.
   -->
 
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_centerInParent="true"
+    android:layout_height="match_parent"
     >
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fadeScrollbars="false">
-
-        <LinearLayout
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/button_toolbar"
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/colorPrimary"
-                android:minHeight="?attr/actionBarSize"
-                android:layout_marginTop="32dp"
-                />
-
-            <TextView
-                android:id="@+id/button_title_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginStart="@dimen/side_margin"
-                android:layout_marginLeft="@dimen/side_margin"
-                android:layout_marginEnd="@dimen/side_margin"
-                android:layout_marginRight="@dimen/side_margin"
-                android:layout_marginBottom="8dp"
-                android:textSize="24sp"
-                />
-
-            <TextView
-                android:id="@+id/button_tutorial_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxHeight="240dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginStart="@dimen/side_margin"
-                android:layout_marginLeft="@dimen/side_margin"
-                android:layout_marginEnd="@dimen/side_margin"
-                android:layout_marginRight="@dimen/side_margin"
-                android:layout_marginBottom="8dp"
-                android:textSize="16sp"
-                />
-
-        </LinearLayout>
-
-    </ScrollView>
-
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fadeScrollbars="false">
+        android:layout_height="wrap_content"
+        android:fadeScrollbars="false"
+        android:layout_centerInParent="true">
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:padding="@dimen/side_margin"
             >
 
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/setting_toolbar"
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="?attr/colorPrimary"
-                android:minHeight="?attr/actionBarSize"
-                />
-
             <TextView
-                android:id="@+id/setting_title_text"
+                android:id="@+id/title_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -111,7 +49,7 @@
                 />
 
             <TextView
-                android:id="@+id/setting_tutorial_text"
+                android:id="@+id/tutorial_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxHeight="240dp"
@@ -124,8 +62,35 @@
                 android:textSize="16sp"
                 />
 
+            <TextView
+                android:id="@+id/fabric_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="@dimen/side_margin"
+                android:layout_marginLeft="@dimen/side_margin"
+                android:layout_marginEnd="@dimen/side_margin"
+                android:layout_marginRight="@dimen/side_margin"
+                android:layout_marginBottom="8dp"
+                android:textSize="24sp"
+                android:layout_gravity="center_horizontal"
+                />
+
+            <CheckBox
+                android:id="@+id/fabric_check_box"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="@dimen/side_margin"
+                android:layout_marginLeft="@dimen/side_margin"
+                android:layout_marginEnd="@dimen/side_margin"
+                android:layout_marginRight="@dimen/side_margin"
+                android:layout_marginBottom="@dimen/side_margin"
+                android:layout_gravity="center_horizontal"
+                />
+
         </LinearLayout>
 
     </ScrollView>
 
-</LinearLayout>
+</RelativeLayout>

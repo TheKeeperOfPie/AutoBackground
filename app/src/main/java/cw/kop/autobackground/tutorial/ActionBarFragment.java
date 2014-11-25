@@ -83,12 +83,11 @@ public class ActionBarFragment extends Fragment {
         menu.getItem(2).setIcon(storageIcon);
 
         TextView buttonTitleText = (TextView) view.findViewById(R.id.button_title_text);
-        buttonTitleText.setText("ActionBar actions");
+        buttonTitleText.setText("ActionBar buttons");
 
         TextView buttonTutorialText = (TextView) view.findViewById(R.id.button_tutorial_text);
-        buttonTutorialText.setText("Cycle wallpaper, download new images, and sort sources." +
-                "\n" +
-                "You will have to hit download at least once after adding some sources.");
+        buttonTutorialText.setText("Cycle wallpaper, download new images, and sort sources. " +
+                "Hit download after adding some sources to fetch the images.");
 
         Toolbar settingToolbar = (Toolbar) view.findViewById(R.id.setting_toolbar);
         Drawable navIcon = getResources().getDrawable(R.drawable.drawer_menu_white);

@@ -25,7 +25,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
  */
 public class TutorialPagerAdapter extends FragmentStatePagerAdapter {
 
-    private static final int NUM_ITEMS = 5;
+    private static final int NUM_ITEMS = 6;
 
     public TutorialPagerAdapter(FragmentManager fm) {
         super(fm);
@@ -43,7 +43,9 @@ public class TutorialPagerAdapter extends FragmentStatePagerAdapter {
             case 3:
                 return new ActionBarFragment();
             case 4:
-                return new ActionBarFragment();
+                return new FabricFragment();
+            case 5:
+                return new FinishFragment();
         }
         return null;
     }

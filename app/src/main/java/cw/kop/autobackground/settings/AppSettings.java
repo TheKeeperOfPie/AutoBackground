@@ -73,7 +73,11 @@ public class AppSettings {
     }
 
     public static boolean useFabric() {
-        return prefs.getBoolean("use_fabric", true);
+        return prefs.getBoolean("use_fabric", false);
+    }
+
+    public static void setUseFabric(boolean use) {
+        prefs.edit().putBoolean("use_fabric", use).commit();
     }
 
     public static boolean useSourceTutorial() {
@@ -515,8 +519,8 @@ public class AppSettings {
         return prefs.getBoolean("force_interval", false);
     }
 
-    public static boolean forceMultipane() {
-        return prefs.getBoolean("force_multipane", false);
+    public static boolean forceMultiPane() {
+        return prefs.getBoolean("force_multi_pane", false);
     }
 
     public static boolean useAnimation() {
@@ -1197,7 +1201,8 @@ public class AppSettings {
     }
 
     public static boolean useEffects() {
-        return prefs.getBoolean("use_effects", false);
+        return false;
+//        return prefs.getBoolean("use_effects", false);
     }
 
     public static boolean useToastEffects() {

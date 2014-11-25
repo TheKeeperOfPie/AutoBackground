@@ -892,32 +892,15 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             @Override
             public void onAnimationEnd(Animation animation) {
-//                if (needsListReset) {
-//                    sourceCard.setShadowPadding((int) cardStartShadow, 0, (int) cardStartShadow, 0);
-//                    ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).topMargin = (int) cardStartShadow;
-//                    ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).bottomMargin = (int) cardStartShadow;
-//                    ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).leftMargin = (int) cardStartShadow;
-//                    ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).rightMargin = (int) cardStartShadow;
-//                    view.setPadding(viewStartPadding, 0, viewStartPadding, 0);
-//                    view.setY(viewStartY);
-//                    sourceContainer.getLayoutParams().height = (int) (viewStartHeight);
-//                    sourceTitle.setY(textStartY);
-//                    sourceTitle.setX(textStartX);
-//                    deleteButton.setAlpha(1.0f);
-//                    viewButton.setAlpha(1.0f);
-//                    editButton.setAlpha(1.0f);
-//                    sourceExpandContainer.setAlpha(1.0f);
-//                    listAdapter.getView(position, view, sourceList);
-//                    sourceList.setEnabled(true);
-////                    Parcelable state = sourceList.onSaveInstanceState();
-////                    sourceList.setAdapter(null);
-////                    sourceList.setAdapter(listAdapter);
-////                    sourceList.onRestoreInstanceState(state);
-////                    sourceList.setOnItemClickListener(SourceListFragment.this);
-////                    listAdapter.notifyDataSetChanged();
-//                    Log.i(TAG, "Animation reset");
-//                    needsListReset = false;
-//                }
+                if (needsListReset) {
+                    Parcelable state = sourceList.onSaveInstanceState();
+                    sourceList.setAdapter(null);
+                    sourceList.setAdapter(listAdapter);
+                    sourceList.onRestoreInstanceState(state);
+                    sourceList.setOnItemClickListener(SourceListFragment.this);
+                    sourceList.setEnabled(true);
+                    needsListReset = false;
+                }
             }
 
             @Override
@@ -996,7 +979,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                     sourceList.setAdapter(listAdapter);
                     sourceList.onRestoreInstanceState(state);
                     sourceList.setOnItemClickListener(SourceListFragment.this);
-                    listAdapter.notifyDataSetChanged();
+                    sourceList.setEnabled(true);
                     needsListReset = false;
                 }
             }

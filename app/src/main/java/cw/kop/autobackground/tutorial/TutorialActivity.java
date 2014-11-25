@@ -22,8 +22,11 @@ import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.widget.Button;
 
+import com.crashlytics.android.Crashlytics;
+
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
+import io.fabric.sdk.android.Fabric;
 
 /**
  * Created by TheKeeperOfPie on 10/30/2014.
@@ -32,6 +35,7 @@ public class TutorialActivity extends FragmentActivity {
 
     private ViewPager viewPager;
     private TutorialPagerAdapter pagerAdapter;
+    private Button nextButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,22 +55,34 @@ public class TutorialActivity extends FragmentActivity {
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (AppSettings.useFabric()) {
+                    final Fabric fabric = new Fabric.Builder(getApplicationContext())
+                            .kits(new Crashlytics())
+                            .build();
+                    Fabric.with(fabric);
+                }
                 finish();
                 AppSettings.setTutorial(false, "source");
             }
         });
 
-        Button nextButton = (Button) findViewById(R.id.next_button);
+        nextButton = (Button) findViewById(R.id.next_button);
         nextButton.setText("Next");
         nextButton.setTextColor(AppSettings.getColorFilterInt(getApplicationContext()));
         nextButton.setVisibility(View.VISIBLE);
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (viewPager.getCurrentItem() < viewPager.getAdapter().getCount()) {
+                if (viewPager.getCurrentItem() < viewPager.getAdapter().getCount() - 1) {
                     viewPager.setCurrentItem(viewPager.getCurrentItem() + 1, true);
                 }
                 else {
+                    if (AppSettings.useFabric()) {
+                        final Fabric fabric = new Fabric.Builder(getApplicationContext())
+                                .kits(new Crashlytics())
+                                .build();
+                        Fabric.with(fabric);
+                    }
                     finish();
                     AppSettings.setTutorial(false, "source");
                 }

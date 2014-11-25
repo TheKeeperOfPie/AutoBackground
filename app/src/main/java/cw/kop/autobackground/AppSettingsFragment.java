@@ -67,7 +67,6 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
         PreferenceCategory preferenceCategory = (PreferenceCategory) findPreference(
                 "title_app_settings");
-        preferenceCategory.removePreference(findPreference("force_multipane"));
 
         Preference clearPref = findPreference("clear_pref");
         clearPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -105,7 +104,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                             R.string.ok_button);
 
                 }
-                return false;
+                return true;
             }
         });
 
@@ -114,7 +113,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
             @Override
             public boolean onPreferenceClick(Preference preference) {
                 showThemeDialogMenu();
-                return false;
+                return true;
             }
         });
 
@@ -124,13 +123,10 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
         tutorialPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                AppSettings.setTutorial(true, "source");
-                Toast.makeText(appContext,
-                        "Will reshow source tutorial",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(appContext, "Showing tutorial...", Toast.LENGTH_SHORT).show();
                 Intent tutorialIntent = new Intent(appContext, TutorialActivity.class);
                 startActivity(tutorialIntent);
-                return false;
+                return true;
             }
         });
 
@@ -138,6 +134,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
         if (!AppSettings.useAdvanced()) {
             preferenceCategory.removePreference(toastPref);
+            preferenceCategory.removePreference(findPreference("force_multi_pane"));
         }
 
         return inflater.inflate(R.layout.fragment_list, container, false);

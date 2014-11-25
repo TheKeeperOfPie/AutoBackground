@@ -22,6 +22,12 @@
         android:title="@string/title_app_settings"
         >
 
+        <Preference
+            android:key="show_tutorial_source"
+            android:summary="@string/show_tutorial_source_description"
+            android:title="@string/show_tutorial_source"
+            />
+
         <cw.kop.autobackground.CustomSwitchPreference
             android:defaultValue="true"
             android:key="use_toast"
@@ -31,9 +37,9 @@
 
         <cw.kop.autobackground.CustomSwitchPreference
             android:defaultValue="false"
-            android:key="force_multipane"
-            android:summary="@string/force_multipane_description"
-            android:title="@string/force_multipane"
+            android:key="force_multi_pane"
+            android:summary="@string/force_multi_pane_description"
+            android:title="@string/force_multi_pane"
             />
 
         <Preference
@@ -60,12 +66,6 @@
             android:key="clear_pref"
             android:summary="@string/clear_pref_description"
             android:title="@string/clear_pref"
-            />
-
-        <Preference
-            android:key="show_tutorial_source"
-            android:summary="@string/show_tutorial_source_description"
-            android:title="@string/show_tutorial_source"
             />
 
     </PreferenceCategory>
