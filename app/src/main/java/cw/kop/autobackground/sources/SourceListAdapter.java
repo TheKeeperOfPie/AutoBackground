@@ -21,6 +21,10 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -29,6 +33,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
@@ -94,39 +100,47 @@ public class SourceListAdapter extends BaseAdapter {
         }
 
         final View view = convertView;
-
-        EditText title = (EditText) view.findViewById(R.id.source_title);
-        title.setText(listItem.get("title"));
-
-        int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
-
         Resources resources = parent.getContext().getResources();
-        View imageOverlay = view.findViewById(R.id.source_image_overlay);
-
+        int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
         int lightGrayColor = resources.getColor(R.color.LIGHT_GRAY_OPAQUE);
         int darkGrayColor = resources.getColor(R.color.DARK_GRAY_OPAQUE);
 
+        EditText title = (EditText) view.findViewById(R.id.source_title);
+        title.setText(listItem.get("title"));
+        title.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cardClickListener.onExpandClick(view, position);
+            }
+        });
+
+        View imageOverlay = view.findViewById(R.id.source_image_overlay);
+
         if (Boolean.parseBoolean(listItem.get("use"))) {
             imageOverlay.setAlpha(0);
-            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                title.setTextColor(darkGrayColor);
-                title.setShadowLayer(4.0f, 0f, 0f, lightGrayColor);
-            }
-            else {
-                title.setTextColor(lightGrayColor);
-                title.setShadowLayer(4.0f, 0f, 0f, darkGrayColor);
-            }
+            title.setTextColor(resources.getColor(R.color.WHITE_OPAQUE));
+            title.setShadowLayer(0f, 0f, 0f, 0xFF000000);
+//            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+//                title.setTextColor(darkGrayColor);
+//                title.setShadowLayer(5.0f, -1f, -1f, lightGrayColor);
+//            }
+//            else {
+//                title.setTextColor(lightGrayColor);
+//                title.setShadowLayer(5.0f, -1f, -1f, darkGrayColor);
+//            }
         }
         else {
-            imageOverlay.setAlpha(OVERLAY_ALPHA);
             if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                title.setTextColor(lightGrayColor);
-                title.setShadowLayer(4.0f, 0f, 0f, darkGrayColor);
+                imageOverlay.setBackgroundColor(lightGrayColor);
+                title.setTextColor(darkGrayColor);
+                title.setShadowLayer(5.0f, -1f, -1f, lightGrayColor);
             }
             else {
-                title.setTextColor(darkGrayColor);
-                title.setShadowLayer(4.0f, 0f, 0f, lightGrayColor);
+                imageOverlay.setBackgroundColor(darkGrayColor);
+                title.setTextColor(lightGrayColor);
+                title.setShadowLayer(5.0f, -1f, -1f, darkGrayColor);
             }
+            imageOverlay.setAlpha(OVERLAY_ALPHA);
         }
 
         ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
@@ -165,9 +179,12 @@ public class SourceListAdapter extends BaseAdapter {
         });
 
         ImageView image = (ImageView) view.findViewById(R.id.source_image);
+        image.getLayoutParams().height = (int) (image.getWidth() / 16f * 9);
+
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) title.getLayoutParams();
 
         if (Boolean.parseBoolean(listItem.get("preview"))) {
-
+            title.setTextColor(resources.getColor(R.color.WHITE_OPAQUE));
             Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_24dp);
             downloadDrawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
                     PorterDuff.Mode.MULTIPLY);
@@ -183,10 +200,6 @@ public class SourceListAdapter extends BaseAdapter {
                     if (files != null && files.length > 0) {
                         needsImage = false;
                         listItem.put("image", files[0].getAbsolutePath());
-                        image.getLayoutParams().height = Math.round(TypedValue.applyDimension(
-                                TypedValue.COMPLEX_UNIT_DIP,
-                                160,
-                                resources.getDisplayMetrics()));
                         Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(
                                 image);
                     }
@@ -199,10 +212,6 @@ public class SourceListAdapter extends BaseAdapter {
 
                     if (files != null && files.length > 0) {
                         listItem.put("image", files[0].getAbsolutePath());
-                        image.getLayoutParams().height = Math.round(TypedValue.applyDimension(
-                                TypedValue.COMPLEX_UNIT_DIP,
-                                160,
-                                resources.getDisplayMetrics()));
                         Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(
                                 image);
                     }
@@ -210,8 +219,40 @@ public class SourceListAdapter extends BaseAdapter {
             }
         }
         else {
+//            Picasso.with(parent.getContext()).load(android.R.color.transparent).into(image);
+//            title.setTextColor(AppSettings.getColorFilterInt(parent.getContext()));
             image.getLayoutParams().height = 0;
         }
+
+        title.setLayoutParams(params);
+
+        TextView sourceType = (TextView) view.findViewById(R.id.source_type);
+        TextView sourceData = (TextView) view.findViewById(R.id.source_data);
+        TextView sourceNum = (TextView) view.findViewById(R.id.source_num);
+        TextView sourceTime = (TextView) view.findViewById(R.id.source_time);
+
+        int colorPrimary = resources.getColor(R.color.BLUE_OPAQUE);
+        SpannableString typePrefix = new SpannableString("Type: ");
+        typePrefix.setSpan(new ForegroundColorSpan(colorPrimary), 0, typePrefix.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        SpannableString dataPrefix = new SpannableString("Data: ");
+        dataPrefix.setSpan(new ForegroundColorSpan(colorPrimary), 0, dataPrefix.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        SpannableString numPrefix = new SpannableString("Number of Images: ");
+        numPrefix.setSpan(new ForegroundColorSpan(colorPrimary), 0, numPrefix.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        SpannableString timePrefix = new SpannableString("Active Time: ");
+        timePrefix.setSpan(new ForegroundColorSpan(colorPrimary), 0, timePrefix.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        sourceType.setText(typePrefix);
+        sourceType.append(listItem.get("type"));
+        sourceData.setText(dataPrefix);
+        sourceData.append(listItem.get("data"));
+        sourceNum.setText(numPrefix);
+        sourceNum.append(listItem.get("numStored") + " / " + listItem.get("num"));
+        sourceTime.setText(timePrefix);
+        sourceTime.append(listItem.get("time"));
 
         return view;
     }
@@ -436,6 +477,8 @@ public class SourceListAdapter extends BaseAdapter {
         void onViewImageClick(int index);
 
         void onEditClick(View view, int index);
+
+        void onExpandClick(View view, int position);
     }
 
 }

@@ -50,11 +50,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.ScaleAnimation;
 import android.view.animation.Transformation;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -82,6 +85,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     public static final String SET_ENTRY = "cw.kop.autobackground.SourceListFragment.SET_ENTRY";
 
     private static final String TAG = SourceListFragment.class.getCanonicalName();
+    private static final int SCROLL_ANIMATION_TIME = 150;
     private static final int INFO_ANIMATION_TIME = 250;
     private static final int ADD_ANIMATION_TIME = 350;
 
@@ -139,45 +143,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-
-        // Code by Stefan Rusek to fix possible Menu issue
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-            menu = new MenuWrapper(menu) {
-
-                private MenuItem fix(MenuItem item) {
-                    try {
-                        Field f = item.getClass().getDeclaredField(
-                                "mEmulateProviderVisibilityOverride");
-                        f.setAccessible(true);
-                        f.set(item, Boolean.FALSE);
-                    }
-                    catch (Throwable e) {
-                        e.printStackTrace();
-                    }
-                    return item;
-                }
-
-                @Override
-                public MenuItem add(CharSequence title) {
-                    return fix(super.add(title));
-                }
-
-                @Override
-                public MenuItem add(int titleRes) {
-                    return fix(super.add(titleRes));
-                }
-
-                @Override
-                public MenuItem add(int groupId, int itemId, int order, CharSequence title) {
-                    return fix(super.add(groupId, itemId, order, title));
-                }
-
-                @Override
-                public MenuItem add(int groupId, int itemId, int order, int titleRes) {
-                    return fix(super.add(groupId, itemId, order, titleRes));
-                }
-            };
-        }
 
         // Inflate menu and hold reference in toolbarMenu
         inflater.inflate(R.menu.source_list_menu, menu);
@@ -687,7 +652,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             @Override
             public void onEditClick(View view, int index) {
-                onItemClick(null, view, index, -1);
+                startEditFragment(view, index);
+            }
+
+            @Override
+            public void onExpandClick(View view, int position) {
+                onItemClick(null, view, position, 0);
             }
         };
 
@@ -808,11 +778,24 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     @Override
     public void onItemClick(AdapterView<?> parent, final View view, int position, long id) {
-        onEditClick(view, position);
+
+        View expandedView = view.findViewById(R.id.source_expand_container);
+        if (expandedView.isShown()) {
+            expandedView.setVisibility(View.GONE);
+        }
+        else {
+            expandedView.setVisibility(View.VISIBLE);
+            sourceList.smoothScrollToPositionFromTop(position,
+                    (int) (sourceList.getHeight() / 2 - view.getHeight() / 2 - addButtonBackground.getHeight() * 1.5),
+                    SCROLL_ANIMATION_TIME);
+        }
+
     }
 
-    private void onEditClick(final View view, int position) {
+    private void startEditFragment(final View view, final int position) {
         sourceList.setOnItemClickListener(null);
+        sourceList.setEnabled(false);
+        listAdapter.saveData();
 
         HashMap<String, String> dataItem = listAdapter.getItem(position);
         final SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
@@ -845,6 +828,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
         final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
         final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
+        final LinearLayout sourceExpandContainer = (LinearLayout) view.findViewById(R.id.source_expand_container);
 
         final float cardStartShadow = sourceCard.getPaddingLeft();
         final float viewStartHeight = view.getHeight();
@@ -852,10 +836,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final int viewStartPadding = view.getPaddingLeft();
         final float textStartX = sourceTitle.getX();
         final float textStartY = sourceTitle.getY();
-        final float textTranslationY = sourceTitle.getHeight() + TypedValue.applyDimension(
+        final float textTranslationY = sourceTitle.getHeight(); /*+ TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
                 8,
-                getResources().getDisplayMetrics());
+                getResources().getDisplayMetrics());*/
 
         Animation animation = new Animation() {
 
@@ -879,14 +863,19 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 int newPadding = Math.round(viewStartPadding * (1 - interpolatedTime));
                 int newShadowPadding = (int) (cardStartShadow * (1.0f - interpolatedTime));
                 sourceCard.setShadowPadding(newShadowPadding, 0, newShadowPadding, 0);
+                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).topMargin = newShadowPadding;
+                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).bottomMargin = newShadowPadding;
+                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).leftMargin = newShadowPadding;
+                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).rightMargin = newShadowPadding;
                 view.setPadding(newPadding, 0, newPadding, 0);
                 view.setY(viewStartY - interpolatedTime * viewStartY);
                 sourceContainer.getLayoutParams().height = (int) (viewStartHeight + screenHeight * interpolatedTime);
-//                sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
+                sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
                 sourceTitle.setX(textStartX + viewStartPadding - newPadding);
                 deleteButton.setAlpha(1.0f - interpolatedTime);
                 viewButton.setAlpha(1.0f - interpolatedTime);
                 editButton.setAlpha(1.0f - interpolatedTime);
+                sourceExpandContainer.setAlpha(1.0f - interpolatedTime);
             }
 
             @Override
@@ -903,14 +892,32 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                if (needsListReset) {
-                    Parcelable state = sourceList.onSaveInstanceState();
-                    sourceList.setAdapter(null);
-                    sourceList.setAdapter(listAdapter);
-                    sourceList.onRestoreInstanceState(state);
-                    sourceList.setOnItemClickListener(SourceListFragment.this);
-                    needsListReset = false;
-                }
+//                if (needsListReset) {
+//                    sourceCard.setShadowPadding((int) cardStartShadow, 0, (int) cardStartShadow, 0);
+//                    ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).topMargin = (int) cardStartShadow;
+//                    ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).bottomMargin = (int) cardStartShadow;
+//                    ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).leftMargin = (int) cardStartShadow;
+//                    ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).rightMargin = (int) cardStartShadow;
+//                    view.setPadding(viewStartPadding, 0, viewStartPadding, 0);
+//                    view.setY(viewStartY);
+//                    sourceContainer.getLayoutParams().height = (int) (viewStartHeight);
+//                    sourceTitle.setY(textStartY);
+//                    sourceTitle.setX(textStartX);
+//                    deleteButton.setAlpha(1.0f);
+//                    viewButton.setAlpha(1.0f);
+//                    editButton.setAlpha(1.0f);
+//                    sourceExpandContainer.setAlpha(1.0f);
+//                    listAdapter.getView(position, view, sourceList);
+//                    sourceList.setEnabled(true);
+////                    Parcelable state = sourceList.onSaveInstanceState();
+////                    sourceList.setAdapter(null);
+////                    sourceList.setAdapter(listAdapter);
+////                    sourceList.onRestoreInstanceState(state);
+////                    sourceList.setOnItemClickListener(SourceListFragment.this);
+////                    listAdapter.notifyDataSetChanged();
+//                    Log.i(TAG, "Animation reset");
+//                    needsListReset = false;
+//                }
             }
 
             @Override
@@ -919,17 +926,17 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             }
         });
 
-//        ValueAnimator cardColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
-//                getResources().getColor(R.color.ACCENT_OPAQUE),
-//                getResources().getColor(AppSettings.getBackgroundColorResource()));
-//        cardColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-//
-//            @Override
-//            public void onAnimationUpdate(ValueAnimator animation) {
-//                sourceContainer.setBackgroundColor((Integer) animation.getAnimatedValue());
-//            }
-//
-//        });
+        ValueAnimator cardColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                AppSettings.getDialogColor(appContext),
+                getResources().getColor(AppSettings.getBackgroundColorResource()));
+        cardColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                sourceContainer.setBackgroundColor((Integer) animation.getAnimatedValue());
+            }
+
+        });
 
         ValueAnimator titleColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
                 sourceTitle.getCurrentTextColor(),
@@ -967,12 +974,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(1.5f);
 
         animation.setDuration(transitionTime);
-//        cardColorAnimation.setDuration(transitionTime);
+        cardColorAnimation.setDuration(transitionTime);
         titleColorAnimation.setDuration(transitionTime);
         titleShadowAlphaAnimation.setDuration(transitionTime);
 
         animation.setInterpolator(decelerateInterpolator);
-//        cardColorAnimation.setInterpolator(decelerateInterpolator);
+        cardColorAnimation.setInterpolator(decelerateInterpolator);
         titleColorAnimation.setInterpolator(decelerateInterpolator);
         titleShadowAlphaAnimation.setInterpolator(decelerateInterpolator);
 
@@ -989,6 +996,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                     sourceList.setAdapter(listAdapter);
                     sourceList.onRestoreInstanceState(state);
                     sourceList.setOnItemClickListener(SourceListFragment.this);
+                    listAdapter.notifyDataSetChanged();
                     needsListReset = false;
                 }
             }
@@ -996,7 +1004,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         needsListReset = true;
         view.startAnimation(animation);
-//        cardColorAnimation.start();
+        cardColorAnimation.start();
         titleColorAnimation.start();
         titleShadowAlphaAnimation.start();
     }

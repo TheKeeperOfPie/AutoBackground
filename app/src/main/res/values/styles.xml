@@ -59,6 +59,8 @@
         <item name="android:popupMenuStyle">@style/LightPopup</item>
         <item name="android:seekBarStyle">@style/LightSeekBar</item>
         <item name="android:listViewStyle">@style/LightListView</item>
+        <item name="android:actionBarWidgetTheme">@style/LightEditText</item>
+        <item name="android:dropDownListViewStyle">@style/LightListView</item>
     </style>
 
     <style name="AppDarkTheme" parent="AppBaseTheme">
@@ -70,6 +72,8 @@
         <item name="android:popupMenuStyle">@style/DarkPopup</item>
         <item name="android:seekBarStyle">@style/DarkSeekBar</item>
         <item name="android:listViewStyle">@style/DarkListView</item>
+        <item name="android:actionBarWidgetTheme">@style/DarkEditText</item>
+        <item name="android:dropDownListViewStyle">@style/DarkListView</item>
     </style>
 
     <style name="AppTransparentTheme" parent="AppBaseTheme">
@@ -101,11 +105,13 @@
     </style>
 
     <style name="LightPopup" parent="@android:style/Widget.Holo.Spinner">
-        <item name="android:popupBackground">@drawable/menu_dropdown_panel</item>
+        <item name="android:popupBackground">@color/DARK_THEME_TOOLBAR</item>
+        <item name="android:textColor">@color/DARK_GRAY_OPAQUE</item>
     </style>
 
     <style name="DarkPopup" parent="@android:style/Widget.Holo.Spinner">
-        <item name="android:popupBackground">@drawable/menu_dropdown_panel</item>
+        <item name="android:popupBackground">@color/LIGHT_THEME_TOOLBAR</item>
+        <item name="android:textColor">@color/LIGHT_GRAY_OPAQUE</item>
     </style>
 
     <style name="ListSeparator">

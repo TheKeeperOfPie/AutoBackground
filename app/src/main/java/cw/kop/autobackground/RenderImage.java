@@ -76,7 +76,10 @@ public class RenderImage {
     private long transitionEndtime = 0;
     private boolean finished = false;
 
-    public RenderImage(Bitmap bitmap, int textureName) {
+    private EventListener eventListener;
+
+    public RenderImage(Bitmap bitmap, int textureName, EventListener eventListener) {
+        this.eventListener = eventListener;
         setBitmap(bitmap);
         textureNames = new int[] {textureName};
         uvs = new float[] {
@@ -372,8 +375,6 @@ public class RenderImage {
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glUniform1f(mAlphaHandle, alpha);
 
-//        android.opengl.Matrix.setIdentityM(transMatrix, 0);
-//        android.opengl.Matrix.translateM(transMatrix, 0, offsetX, offsetY, 0f);
         android.opengl.Matrix.orthoM(matrixProjection,
                 0,
                 0,
@@ -509,6 +510,13 @@ public class RenderImage {
         inEndTransition = true;
     }
 
+    public void finishImmediately() {
+
+        GLES20.glDeleteTextures(1, textureNames, 0);
+        eventListener.removeSelf(this);
+
+    }
+
     private void applyEndTransition() {
 
         long time = System.currentTimeMillis();
@@ -525,6 +533,7 @@ public class RenderImage {
         if (transitionEndtime < time) {
             finished = true;
             GLES20.glDeleteTextures(1, textureNames, 0);
+            eventListener.removeSelf(this);
             return;
         }
 
@@ -554,4 +563,11 @@ public class RenderImage {
     public void setRawOffsetX(float rawOffsetX) {
         this.rawOffsetX = rawOffsetX;
     }
+
+    public interface EventListener {
+
+        public void removeSelf(RenderImage image);
+
+    }
+
 }

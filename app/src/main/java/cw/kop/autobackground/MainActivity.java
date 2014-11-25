@@ -42,6 +42,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
+import com.crashlytics.android.Crashlytics;
 import com.squareup.picasso.Picasso;
 
 import cw.kop.autobackground.files.FileHandler;
@@ -52,6 +53,8 @@ import cw.kop.autobackground.notification.NotificationSettingsFragment;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.SourceInfoFragment;
 import cw.kop.autobackground.sources.SourceListFragment;
+import cw.kop.autobackground.tutorial.TutorialActivity;
+import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -135,6 +138,12 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_layout);
+        if (AppSettings.useFabric()) {
+            final Fabric fabric = new Fabric.Builder(this)
+                    .kits(new Crashlytics())
+                    .build();
+            Fabric.with(fabric);
+        }
 
         fragmentList = getResources().getStringArray(R.array.fragment_titles);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -153,7 +162,7 @@ public class MainActivity extends ActionBarActivity {
         CustomRelativeLayout navHeader = (CustomRelativeLayout) findViewById(R.id.nav_drawer_header);
         navHeader.getLayoutParams().height = Math.round(TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
-                Math.min(180, (configuration.screenWidthDp - 56) / 16 * 9),
+                Math.min(180, (configuration.screenWidthDp - 56) / 16f * 9),
                 getResources().getDisplayMetrics()));
         navHeader.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -256,6 +265,11 @@ public class MainActivity extends ActionBarActivity {
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         drawerToggle.syncState();
+
+        if (AppSettings.useSourceTutorial()) {
+            Intent tutorialIntent = new Intent(this, TutorialActivity.class);
+            startActivity(tutorialIntent);
+        }
     }
 
     protected void onStart() {
@@ -395,6 +409,7 @@ public class MainActivity extends ActionBarActivity {
         super.onResume();
         loadNavPicture();
         LocalBroadcastManager.getInstance(this).registerReceiver(entryReceiver, entryFilter);
+
     }
 
     @Override

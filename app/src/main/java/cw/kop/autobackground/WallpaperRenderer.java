@@ -95,6 +95,16 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
         }
     };
+
+    private RenderImage.EventListener eventListener = new RenderImage.EventListener() {
+        @Override
+        public void removeSelf(RenderImage image) {
+            renderImages.remove(image);
+            if (!(AppSettings.useAnimation() || AppSettings.useVerticalAnimation())) {
+                callback.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+            }
+        }
+    };
     private boolean isPlayingMusic;
 
     public static boolean isLoadingTexture() {
@@ -162,14 +172,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
         for (RenderImage image : renderImages) {
             image.renderImage();
-            // Works to remove due to renderImages being an instance of CopyOnWriteArrayList
-            // Iterating list is separate from volatile instance
-            if (image.isFinished()) {
-                if (!(AppSettings.useAnimation() || AppSettings.useVerticalAnimation())) {
-                    callback.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-                }
-                renderImages.remove(image);
-            }
         }
     }
 
@@ -237,7 +239,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
     }
 
     private RenderImage getNewImage(Bitmap bitmap) {
-        RenderImage image = new RenderImage(bitmap, getNewTextureId());
+        RenderImage image = new RenderImage(bitmap, getNewTextureId(), eventListener);
         image.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
         image.setAnimationModifierX(AppSettings.getAnimationSpeed() / 10f);
         image.setAnimationModifierY(AppSettings.getVerticalAnimationSpeed() / 10f);
@@ -299,7 +301,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             newImage.setRawOffsetX(rawOffsetX);
             newImage.setDimensions(renderScreenWidth, renderScreenHeight);
             while (renderImages.size() > 2) {
-                renderImages.remove(0);
+                renderImages.get(0).finishImmediately();
             }
             callback.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
             renderImages.add(newImage);

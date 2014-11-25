@@ -72,6 +72,10 @@ public class AppSettings {
         prefs.edit().putBoolean("tutorial_" + name, use).apply();
     }
 
+    public static boolean useFabric() {
+        return prefs.getBoolean("use_fabric", true);
+    }
+
     public static boolean useSourceTutorial() {
         return prefs.getBoolean("tutorial_source", true);
     }
@@ -165,7 +169,7 @@ public class AppSettings {
 
             for (int i = 0; i < getNumSources(); i++) {
 
-                String newType = AppSettings.WEBSITE;
+                String newType = getSourceType(i);
                 String data = getSourceData(i);
                 switch (getSourceType(i)) {
                     case "imgur":
@@ -305,13 +309,25 @@ public class AppSettings {
     public static int getColorFilterInt(Context context) {
 
         switch (getTheme()) {
+            default:
             case APP_LIGHT_THEME:
                 return context.getResources().getColor(R.color.DARK_GRAY_OPAQUE);
             case APP_DARK_THEME:
             case APP_TRANSPARENT_THEME:
                 return context.getResources().getColor(R.color.LIGHT_GRAY_OPAQUE);
+        }
+
+    }
+
+    public static int getDialogColor(Context context) {
+
+        switch (getTheme()) {
             default:
-                return 0;
+            case APP_LIGHT_THEME:
+                return context.getResources().getColor(R.color.LIGHT_THEME_DIALOG);
+            case APP_DARK_THEME:
+            case APP_TRANSPARENT_THEME:
+                return context.getResources().getColor(R.color.DARK_THEME_DIALOG);
         }
 
     }
@@ -733,6 +749,50 @@ public class AppSettings {
         }
 
         prefs.edit().putInt("num_sources", listData.size()).commit();
+    }
+
+    public static String getSourceDataPrefix(String type) {
+
+        switch (type) {
+
+            default:
+            case WEBSITE:
+            case FOLDER:
+            case GOOGLE_ALBUM:
+            case TUMBLR_BLOG:
+            case TUMBLR_TAG:
+                return "";
+            case IMGUR_SUBREDDIT:
+                return "imgur.com/r/";
+            case IMGUR_ALBUM:
+                return "imgur.com/a/";
+            case REDDIT_SUBREDDIT:
+                return "/r/";
+
+        }
+    }
+
+    public static String getSourceDataHint(String type) {
+
+        switch (type) {
+
+            default:
+            case FOLDER:
+            case GOOGLE_ALBUM:
+                return "";
+            case AppSettings.WEBSITE:
+                return "URL";
+            case AppSettings.IMGUR_SUBREDDIT:
+                return "Subreddit";
+            case AppSettings.IMGUR_ALBUM:
+                return "Album ID";
+            case AppSettings.TUMBLR_BLOG:
+                return "Blog Name";
+            case AppSettings.TUMBLR_TAG:
+                return "Tag";
+            case AppSettings.REDDIT_SUBREDDIT:
+                return "Subreddit";
+        }
     }
 
     public static int getSourceNum(int index) {

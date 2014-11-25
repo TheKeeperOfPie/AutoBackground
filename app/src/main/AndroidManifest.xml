@@ -105,6 +105,15 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".tutorial.TutorialActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppLightTheme"
+            android:windowSoftInputMode="adjustPan"
+            >
+        </activity>
+        <meta-data android:name="com.crashlytics.ApiKey" android:value="5cda1cb2574fd377ad47423cbfb8d3f787c9f6b5"/>
+
     </application>
 
 </manifest>

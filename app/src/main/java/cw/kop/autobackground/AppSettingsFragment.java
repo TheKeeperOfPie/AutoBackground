@@ -34,6 +34,7 @@ import android.widget.AdapterView;
 import android.widget.Toast;
 
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.tutorial.TutorialActivity;
 
 public class AppSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
@@ -78,8 +79,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
                         @Override
                         public void onClickMiddle(View v) {
-                            // TODO: Remove this
-                            AppSettings.debugVer2_00();
+//                            AppSettings.debugVer2_00();
                             this.dismissDialog();
                         }
 
@@ -128,6 +128,8 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                 Toast.makeText(appContext,
                         "Will reshow source tutorial",
                         Toast.LENGTH_SHORT).show();
+                Intent tutorialIntent = new Intent(appContext, TutorialActivity.class);
+                startActivity(tutorialIntent);
                 return false;
             }
         });
@@ -213,6 +215,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
     public void onResume() {
         super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+        ((CustomSwitchPreference) findPreference("use_fabric")).setChecked(AppSettings.useFabric());
     }
 
     @Override

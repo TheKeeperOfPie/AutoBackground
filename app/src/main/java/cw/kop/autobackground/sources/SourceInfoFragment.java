@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -153,6 +154,8 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourceSuffix = (EditText) headerView.findViewById(R.id.source_data_suffix);
         sourceNum = (EditText) headerView.findViewById(R.id.source_num);
 
+        sourceImage.getLayoutParams().height = (int) (getResources().getDisplayMetrics().widthPixels / 16f * 9);
+
         cancelButton = (Button) view.findViewById(R.id.cancel_button);
         saveButton = (Button) view.findViewById(R.id.save_button);
 
@@ -160,6 +163,13 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourceSuffix.setTextColor(colorFilterInt);
         cancelButton.setTextColor(colorFilterInt);
         saveButton.setTextColor(colorFilterInt);
+
+        // Adjust alpha to get faded hint color from regular text color
+        int hintColor = Color.argb(0x88, Color.red(colorFilterInt), Color.green(colorFilterInt), Color.blue(colorFilterInt));
+
+        sourceTitle.setHintTextColor(hintColor);
+        sourceData.setHintTextColor(hintColor);
+        sourceNum.setHintTextColor(hintColor);
 
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -318,43 +328,15 @@ public class SourceInfoFragment extends PreferenceFragment {
 
             String data = arguments.getString("data");
 
-            hint = "";
-            prefix = "";
+            hint = AppSettings.getSourceDataHint(type);
+            prefix = AppSettings.getSourceDataPrefix(type);
             suffix = "";
 
-            switch (arguments.getString("type")) {
-
-//                case AppSettings.IMGUR:
-//                    if (data.contains("imgur.com/a/")) {
-//                        hint = "Album ID";
-//                        prefix = "imgur.com/a/";
-//                    }
-//                    else if (data.contains("imgur.com/r/")) {
-//                        hint = "Subreddit";
-//                        prefix = "imgur.com/r/";
-//                    }
-//                    data = data.substring(data.indexOf(prefix) + prefix.length());
-//                    break;
-                case AppSettings.IMGUR_SUBREDDIT:
-                    hint = "Subreddit";
-                    prefix = "imgur.com/r/";
-                    break;
-                case AppSettings.IMGUR_ALBUM:
-                    hint = "Album ID";
-                    prefix = "imgur.com/a/";
-                    break;
+            switch (type) {
                 case AppSettings.TUMBLR_BLOG:
-                    prefix = "Blog name";
                     suffix = ".tumblr.com";
-                    break;
-                case AppSettings.TUMBLR_TAG:
-                    hint = "Tag";
-                    break;
-                case AppSettings.REDDIT_SUBREDDIT:
-                    prefix = "/r/";
-                    hint = "Subreddit";
-                    break;
                 case AppSettings.FOLDER:
+                case AppSettings.GOOGLE_ALBUM:
                     sourceTitle.setFocusable(false);
                     sourceData.setFocusable(false);
                     sourceNum.setFocusable(false);
@@ -648,23 +630,20 @@ public class SourceInfoFragment extends PreferenceFragment {
         switch (position) {
             case 0:
                 type = AppSettings.WEBSITE;
-                hint = "URL";
                 break;
             case 1:
+                type = AppSettings.FOLDER;
                 showImageFragment(false, "", -1, true);
                 blockData = true;
                 break;
             case 2:
                 type = AppSettings.IMGUR_SUBREDDIT;
-                prefix = "imgur.com/r/";
-                hint = "Subreddit";
                 break;
             case 3:
                 type = AppSettings.IMGUR_ALBUM;
-                prefix = "imgur.com/a/";
-                hint = "Album ID";
                 break;
             case 4:
+                type = AppSettings.GOOGLE_ALBUM;
                 if (AppSettings.getGoogleAccountName().equals("")) {
                     startActivityForResult(GoogleAccount.getPickerIntent(),
                             GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
@@ -676,19 +655,19 @@ public class SourceInfoFragment extends PreferenceFragment {
                 break;
             case 5:
                 type = AppSettings.TUMBLR_BLOG;
-                hint = "Blog name";
                 suffix = ".tumblr.com";
                 break;
             case 6:
                 type = AppSettings.TUMBLR_TAG;
-                hint = "Tag";
                 break;
             case 7:
                 type = AppSettings.REDDIT_SUBREDDIT;
-                hint = "Subreddit";
                 break;
             default:
         }
+
+        hint = AppSettings.getSourceDataHint(type);
+        prefix = AppSettings.getSourceDataPrefix(type);
 
         setDataWrappers();
 
