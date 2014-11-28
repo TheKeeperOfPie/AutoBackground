@@ -73,7 +73,7 @@ public class AppSettings {
     }
 
     public static boolean useFabric() {
-        return prefs.getBoolean("use_fabric", false);
+        return prefs.getBoolean("use_fabric", true);
     }
 
     public static void setUseFabric(boolean use) {
@@ -254,6 +254,10 @@ public class AppSettings {
 
     public static String getUrl(String key) {
         return prefs.getString(key, null);
+    }
+
+    public static void clearUrl(String key) {
+        prefs.edit().putString(key, "").apply();
     }
 
     public static boolean useDownloadPath() {
@@ -553,7 +557,7 @@ public class AppSettings {
     }
 
     public static int getAnimationSpeed() {
-        return prefs.getInt("animation_speed", 10);
+        return prefs.getInt("animation_speed", 5);
     }
 
     public static void setVerticalAnimationSpeed(int speed) {
@@ -561,7 +565,7 @@ public class AppSettings {
     }
 
     public static int getVerticalAnimationSpeed() {
-        return prefs.getInt("animation_speed_vertical", 10);
+        return prefs.getInt("animation_speed_vertical", 5);
     }
 
     public static boolean scaleAnimationSpeed() {
@@ -569,10 +573,10 @@ public class AppSettings {
     }
 
     public static int getAnimationFrameRate() {
-        int rate = 30;
+        int rate = 60;
 
         try {
-            rate = Integer.parseInt(prefs.getString("animation_frame_rate", "30"));
+            rate = Integer.parseInt(prefs.getString("animation_frame_rate", "60"));
         }
         catch (NumberFormatException e) {
             setImageHeight("" + rate);
@@ -812,22 +816,6 @@ public class AppSettings {
 
     public static boolean useSourcePreview(int index) {
         return prefs.getBoolean("source_preview_" + index, true);
-    }
-
-    public static void setSourceNumStored(int index, int num) {
-        prefs.edit().putInt("source_num_stored_" + index, num).apply();
-    }
-
-    public static int getSourceNumStored(int index) {
-        return prefs.getInt("source_num_stored_" + index, 0);
-    }
-
-    public static void setSourceSet(String title, HashSet<String> set) {
-        prefs.edit().putStringSet("source_set_" + title, set).apply();
-    }
-
-    public static HashSet<String> getSourceSet(String title) {
-        return (HashSet<String>) prefs.getStringSet("source_set_" + title, new HashSet<String>());
     }
 
     public static String getSourceType(int index) {

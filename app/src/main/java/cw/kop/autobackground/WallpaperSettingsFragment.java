@@ -90,7 +90,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                     public void onClickRight(View v) {
                         AppSettings.setAnimationFrameRate(getEditTextString());
                         frameRatePref.setSummary(AppSettings.getAnimationFrameRate() + " FPS");
-                        broadcastSettingChange(LiveWallpaperService.SET_FRAME_TIME);
                         dismissDialog();
                     }
                 };
@@ -119,7 +118,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                     @Override
                     public void onClickRight(View v) {
                         AppSettings.setAnimationSpeed(getValue());
-                        broadcastSettingChange(LiveWallpaperService.SET_ANIMATION_X);
                         this.dismissDialog();
                     }
 
@@ -153,7 +151,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                     @Override
                     public void onClickRight(View v) {
                         AppSettings.setVerticalAnimationSpeed(getValue());
-                        broadcastSettingChange(LiveWallpaperService.SET_ANIMATION_Y);
                         this.dismissDialog();
                     }
 
@@ -436,11 +433,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
     }
 
-    private void broadcastSettingChange(String action) {
-        Intent settingIntent = new Intent(action);
-        LocalBroadcastManager.getInstance(appContext).sendBroadcast(settingIntent);
-    }
-
     private void showDialogIntervalMenu() {
 
         AppSettings.setIntervalDuration(0);
@@ -589,10 +581,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                     setIntervalAlarm();
                 }
                 Log.i("WSF", "Interval Set: " + AppSettings.useInterval());
-            }
-
-            if (key.equals("use_animation")) {
-                broadcastSettingChange(LiveWallpaperService.SET_ANIMATED);
             }
 
             if (key.equals("show_album_art")) {

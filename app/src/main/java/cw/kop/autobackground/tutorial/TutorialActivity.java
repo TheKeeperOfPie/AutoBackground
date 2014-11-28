@@ -33,6 +33,8 @@ import io.fabric.sdk.android.Fabric;
  */
 public class TutorialActivity extends FragmentActivity {
 
+    public static final int TUTORIAL_REQUEST = 1;
+    public static final int TUTORIAL_TRUE = 1;
     private ViewPager viewPager;
     private TutorialPagerAdapter pagerAdapter;
     private Button nextButton;
@@ -55,12 +57,6 @@ public class TutorialActivity extends FragmentActivity {
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (AppSettings.useFabric()) {
-                    final Fabric fabric = new Fabric.Builder(getApplicationContext())
-                            .kits(new Crashlytics())
-                            .build();
-                    Fabric.with(fabric);
-                }
                 finish();
                 AppSettings.setTutorial(false, "source");
             }
@@ -77,12 +73,6 @@ public class TutorialActivity extends FragmentActivity {
                     viewPager.setCurrentItem(viewPager.getCurrentItem() + 1, true);
                 }
                 else {
-                    if (AppSettings.useFabric()) {
-                        final Fabric fabric = new Fabric.Builder(getApplicationContext())
-                                .kits(new Crashlytics())
-                                .build();
-                        Fabric.with(fabric);
-                    }
                     finish();
                     AppSettings.setTutorial(false, "source");
                 }

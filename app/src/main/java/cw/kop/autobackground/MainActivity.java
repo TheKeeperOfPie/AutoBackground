@@ -145,7 +145,7 @@ public class MainActivity extends ActionBarActivity {
             setContentView(R.layout.activity_layout);
         }
         if (AppSettings.useFabric()) {
-            final Fabric fabric = new Fabric.Builder(getApplicationContext())
+            final Fabric fabric = new Fabric.Builder(this)
                     .kits(new Crashlytics())
                     .build();
             Fabric.with(fabric);
@@ -158,7 +158,7 @@ public class MainActivity extends ActionBarActivity {
         navPicture = (ImageView) findViewById(R.id.nav_drawer_picture);
 
         navLayout.getLayoutParams().width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                Math.max(320, configuration.screenWidthDp - 56),
+                Math.min(320, configuration.screenWidthDp - 56),
                 getResources().getDisplayMetrics()));
 
         CustomRelativeLayout navHeader = (CustomRelativeLayout) findViewById(R.id.nav_drawer_header);
@@ -285,8 +285,23 @@ public class MainActivity extends ActionBarActivity {
 
         if (AppSettings.useSourceTutorial()) {
             Intent tutorialIntent = new Intent(this, TutorialActivity.class);
-            startActivity(tutorialIntent);
+            startActivityForResult(tutorialIntent, TutorialActivity.TUTORIAL_REQUEST);
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == TutorialActivity.TUTORIAL_REQUEST) {
+            if (AppSettings.useFabric()) {
+                final Fabric fabric = new Fabric.Builder(this)
+                        .kits(new Crashlytics())
+                        .build();
+                Fabric.with(fabric);
+            }
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     protected void onStart() {

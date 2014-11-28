@@ -44,7 +44,7 @@
         android:background="@color/DARK_GRAY_OPAQUE"
         android:text="@string/set_wallpaper"
         android:textAllCaps="true"
-        android:textColor="@color/ACCENT_OPAQUE"
+        android:textColor="@color/BLUE_OPAQUE"
         />
 
     <ImageView

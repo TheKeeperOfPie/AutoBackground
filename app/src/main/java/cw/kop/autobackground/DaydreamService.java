@@ -55,7 +55,7 @@ public class DaydreamService extends DreamService {
 
                     @Override
                     public boolean onDoubleTap(MotionEvent e) {
-                        renderer.loadNext(FileHandler.getNextImage());
+                        renderer.loadNext(FileHandler.getNextImage(), 0);
                         return super.onDoubleTap(e);
                     }
 
@@ -66,7 +66,7 @@ public class DaydreamService extends DreamService {
                             float distanceY) {
                         if (AppSettings.useDrag() && touchCount == 2) {
                             renderer.onSwipe(distanceX,
-                                    distanceY);
+                                    distanceY, 0);
                             glSurfaceView.requestRender();
                             return true;
                         }
@@ -86,7 +86,7 @@ public class DaydreamService extends DreamService {
                             ScaleGestureDetector detector) {
 
                         if (AppSettings.useScale()) {
-                            renderer.setScaleFactor(detector.getScaleFactor());
+                            renderer.setScaleFactor(detector.getScaleFactor(), 0);
 
                             glSurfaceView.requestRender();
                             return true;
@@ -144,7 +144,7 @@ public class DaydreamService extends DreamService {
         glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
         setContentView(glSurfaceView);
-        renderer.loadNext(FileHandler.getNextImage());
+        renderer.loadNext(FileHandler.getNextImage(), 0);
         setInteractive(true);
     }
 

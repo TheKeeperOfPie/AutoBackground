@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,18 +40,21 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class LocalImageAdapter extends BaseAdapter {
 
+    private static final String TAG = LocalImageAdapter.class.getCanonicalName();
     private static final int BYTE_TO_MEBIBYTE = 1048576;
     private File mainDir;
     private File startDir;
     private ArrayList<File> listFiles;
     private LayoutInflater inflater;
     private boolean finish;
+    private boolean hideFirst;
 
-    public LocalImageAdapter(Activity activity, File directory) {
+    public LocalImageAdapter(Activity activity, File directory, boolean hideFirst) {
         listFiles = new ArrayList<>();
         inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         startDir = directory;
         mainDir = directory;
+        this.hideFirst = hideFirst;
         setDirectory(mainDir);
     }
 
@@ -95,6 +99,10 @@ public class LocalImageAdapter extends BaseAdapter {
                 fileSummary.setVisibility(View.GONE);
                 fileImage.setVisibility(View.GONE);
 
+                ViewGroup.LayoutParams params = fileImageFull.getLayoutParams();
+                params.height = (int) ((parent.getWidth() - 2f * parent.getResources().getDimensionPixelSize(
+                        R.dimen.side_margin)) / 16f * 9);
+                fileImageFull.setLayoutParams(params);
 
                 Picasso.with(parent.getContext())
                         .load(file)
@@ -126,6 +134,11 @@ public class LocalImageAdapter extends BaseAdapter {
                 fileTitle.setText(file.getName());
                 fileSummary.setText("" + (file.length() / BYTE_TO_MEBIBYTE) + " MiB");
             }
+
+            if (position == 0 &&  hideFirst) {
+                view.setAlpha(1.0f);
+            }
+
             return view;
         }
         return null;

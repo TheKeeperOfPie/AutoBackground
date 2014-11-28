@@ -18,7 +18,6 @@ package cw.kop.autobackground;
 
 import android.graphics.Bitmap;
 import android.opengl.GLES20;
-import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.util.Log;
 import android.view.animation.OvershootInterpolator;
@@ -43,8 +42,8 @@ public class RenderImage {
     private static int mtrxhandle;
     private static int mAlphaHandle;
     private static int program;
-    private static float renderScreenWidth;
-    private static float renderScreenHeight;
+    private float renderScreenWidth;
+    private float renderScreenHeight;
     public float vertices[];
     public short indices[];
     public float uvs[];
@@ -60,8 +59,13 @@ public class RenderImage {
     private boolean animated = false;
     private int[] textureNames;
     private float scaleFactor = 1.0f;
+    private float saveScaleFactor = 0f;
     private float offsetX = 0f;
     private float offsetY = 0f;
+    private float minRatioX = 0f;
+    private float minRatioY = 1f;
+    private float maxRatioX = 0f;
+    private float maxRatioY = 1f;
     private float rawOffsetX = -1f;
     private float saveOffsetX = 0f;
     private float saveOffsetY = 0f;
@@ -77,8 +81,13 @@ public class RenderImage {
     private boolean finished = false;
 
     private EventListener eventListener;
+    private int position = 0;
 
-    public RenderImage(Bitmap bitmap, int textureName, EventListener eventListener) {
+    public RenderImage(Bitmap bitmap, int textureName, EventListener eventListener, float minRatioX, float maxRatioX, float minRatioY, float maxRatioY) {
+        this.minRatioX = minRatioX;
+        this.maxRatioX = maxRatioX;
+        this.minRatioY = minRatioY;
+        this.maxRatioY = maxRatioY;
         this.eventListener = eventListener;
         setBitmap(bitmap);
         textureNames = new int[] {textureName};
@@ -124,6 +133,7 @@ public class RenderImage {
     public void setDimensions(float width, float height) {
         renderScreenWidth = width;
         renderScreenHeight = height;
+        setScaleFactor(1.0f);
     }
 
     public void resetMatrices() {
@@ -136,6 +146,8 @@ public class RenderImage {
 
     public void setBitmap(Bitmap bitmap) {
         imageBitmap = bitmap;
+        bitmapWidth = imageBitmap.getWidth();
+        bitmapHeight = imageBitmap.getHeight();
         textureLoaded = false;
     }
 
@@ -179,23 +191,27 @@ public class RenderImage {
 
     public void onSwipe(float xMovement, float yMovement) {
         if (AppSettings.reverseDrag()) {
-            if (bitmapWidth * scaleFactor < renderScreenWidth
-                    || offsetX + xMovement > (-bitmapWidth + renderScreenWidth / scaleFactor) && offsetX + xMovement < 0) {
+//            if (bitmapWidth * scaleFactor < renderScreenWidth
+//                    || offsetX + xMovement > (-bitmapWidth + renderScreenWidth / scaleFactor) && offsetX + xMovement < 0) {
                 offsetX += xMovement;
-            }
-            if (bitmapHeight * scaleFactor < renderScreenHeight || offsetY - yMovement > (-bitmapHeight + renderScreenHeight / scaleFactor) && offsetY - yMovement < 0) {
+//            }
+//            if (bitmapHeight * scaleFactor < renderScreenHeight || offsetY - yMovement > (-bitmapHeight + renderScreenHeight / scaleFactor) && offsetY - yMovement < 0) {
                 offsetY -= yMovement;
-            }
+//            }
         }
         else {
-            if (bitmapWidth * scaleFactor < renderScreenWidth
-                    || offsetX - xMovement > (-bitmapWidth + renderScreenWidth / scaleFactor) && offsetX - xMovement < 0) {
+//            if (bitmapWidth * scaleFactor < renderScreenWidth
+//                    || offsetX - xMovement > (-bitmapWidth + renderScreenWidth / scaleFactor) && offsetX - xMovement < 0) {
                 offsetX -= xMovement;
-            }
-            if (bitmapHeight * scaleFactor < renderScreenHeight || offsetY + yMovement > (-bitmapHeight + renderScreenHeight / scaleFactor) && offsetY + yMovement < 0) {
+//            }
+//            if (bitmapHeight * scaleFactor < renderScreenHeight || offsetY + yMovement > (maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight) && offsetY + yMovement < 0) {
                 offsetY += yMovement;
-            }
+//            }
         }
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
     }
 
     public void loadTexture() {
@@ -207,7 +223,6 @@ public class RenderImage {
 
             Log.i(TAG,
                     "imageBitmap width: " + imageBitmap.getWidth() + " imageBitmap height: " + imageBitmap.getHeight());
-
 
             GLES20.glGenTextures(1, textureNames, 0);
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
@@ -227,8 +242,6 @@ public class RenderImage {
                     GLES20.GL_CLAMP_TO_EDGE);
 
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, imageBitmap, 0);
-            bitmapWidth = imageBitmap.getWidth();
-            bitmapHeight = imageBitmap.getHeight();
 
             if (rawOffsetX > -1) {
                 offsetX = rawOffsetX * (renderScreenWidth - bitmapWidth);
@@ -252,7 +265,7 @@ public class RenderImage {
             vertexBuffer.position(0);
             checkGLError("textImage2D: ");
             textureLoaded = true;
-            WallpaperRenderer.setIsLoadingTexture(false);
+            WallpaperRenderer.setIsLoadingTexture(false, position);
             imageBitmap.recycle();
             imageBitmap = null;
             System.gc();
@@ -276,20 +289,53 @@ public class RenderImage {
         scaleFactor *= factor;
 
         float minScaleFactor;
+        float scaledRenderHeight = renderScreenHeight * (maxRatioY - minRatioY);
 
         if (AppSettings.extendScale() || !AppSettings.fillImages()) {
-            minScaleFactor = renderScreenWidth < renderScreenHeight
+
+            minScaleFactor = (bitmapWidth > bitmapHeight) ^ (renderScreenWidth < renderScreenHeight)
                     ?
                     renderScreenWidth / bitmapWidth
                     :
-                    renderScreenHeight / bitmapHeight;
+                    renderScreenHeight * (maxRatioY - minRatioY) / bitmapHeight;
         }
         else {
-            minScaleFactor = renderScreenWidth > renderScreenHeight
-                    ?
-                    renderScreenWidth / bitmapWidth
-                    :
-                    renderScreenHeight / bitmapHeight;
+
+//            if (bitmapWidth < bitmapHeight && renderScreenWidth < scaledRenderHeight) {
+//                minScaleFactor = scaledRenderHeight / bitmapHeight;
+//            }
+//            else if (bitmapWidth < bitmapHeight && renderScreenWidth > scaledRenderHeight) {
+//                minScaleFactor = renderScreenWidth / bitmapWidth;
+//            }
+//            else if (bitmapWidth > bitmapHeight && renderScreenWidth < scaledRenderHeight) {
+//                minScaleFactor = scaledRenderHeight / bitmapHeight;
+//            }
+//            else {
+//                minScaleFactor = renderScreenWidth / bitmapWidth;
+//            }
+
+            if (bitmapWidth < bitmapHeight && renderScreenWidth < scaledRenderHeight) {
+                minScaleFactor = scaledRenderHeight / bitmapHeight;
+            }
+            else if (bitmapWidth < bitmapHeight && renderScreenWidth > scaledRenderHeight) {
+                minScaleFactor = renderScreenWidth / bitmapWidth;
+            }
+            else if (bitmapWidth > bitmapHeight && renderScreenWidth < scaledRenderHeight) {
+                minScaleFactor = scaledRenderHeight / bitmapHeight;
+            }
+            else if (bitmapWidth > bitmapHeight && renderScreenWidth > scaledRenderHeight) {
+                minScaleFactor = scaledRenderHeight / bitmapHeight;
+            }
+            else {
+                minScaleFactor = renderScreenWidth / bitmapWidth;
+            }
+//            if ((bitmapWidth < bitmapHeight) ^ (renderScreenWidth > renderScreenHeight)) {
+//                minScaleFactor = renderScreenWidth / bitmapWidth;
+//                Log.i(TAG, "renderScreenWidth: " + renderScreenWidth + " bitmapWidth: " + bitmapWidth + " scaleFactor: " + scaleFactor);
+//            }
+//            else {
+//                minScaleFactor = renderScreenHeight * (maxRatioY - minRatioY) / bitmapHeight;
+//            }
         }
 
         scaleFactor = Math.max(
@@ -301,7 +347,7 @@ public class RenderImage {
     private void checkGLError(String op) {
         int error;
         while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            Log.e("MyApp", op + ": glError " + error);
+            Log.e(TAG, op + ": glError " + error);
         }
     }
 
@@ -319,17 +365,36 @@ public class RenderImage {
             }
         }
 
-        if (bitmapHeight * scaleFactor >= renderScreenHeight) {
-            if (offsetY < (-bitmapHeight + renderScreenHeight / scaleFactor)) {
-                animationModifierY = Math.abs(animationModifierY);
-                offsetY = -bitmapHeight + renderScreenHeight / scaleFactor;
-            }
-            else if (offsetY > 0f) {
-                animationModifierY = -Math.abs(animationModifierY);
-                offsetY = 0f;
-            }
+//        if (bitmapHeight * scaleFactor >= renderScreenHeight) {
+//            if (offsetY < (-bitmapHeight + renderScreenHeight / scaleFactor)) {
+//                animationModifierY = Math.abs(animationModifierY);
+//                offsetY = -bitmapHeight + renderScreenHeight / scaleFactor;
+//            }
+//            else
+//            if (offsetY > 0f) {
+//                animationModifierY = -Math.abs(animationModifierY);
+//                offsetY = 0f;
+//            }
+//        }
+
+//        if (offsetX < (-bitmapWidth + renderScreenWidth / scaleFactor)) {
+//            animationModifierX = Math.abs(animationModifierX);
+//            offsetX = -bitmapWidth + renderScreenWidth;
+//
+//        }
+//        else if (offsetX > 0f) {
+//            animationModifierX = -Math.abs(animationModifierX);
+//            offsetX = 0f;
+//        }
+
+        if (offsetY < (maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight) ) {
+            animationModifierY = Math.abs(animationModifierY);
+            offsetY = maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight;
         }
-//        Log.i(TAG, "offsetY: " + offsetY + " Value: " + ((-bitmapHeight + renderScreenHeight / scaleFactor)));
+        else if (offsetY > minRatioY * renderScreenHeight / scaleFactor) {
+            animationModifierY = -Math.abs(animationModifierY);
+            offsetY = minRatioY * renderScreenHeight / scaleFactor;
+        }
     }
 
     public int getTextureName() {
@@ -340,6 +405,10 @@ public class RenderImage {
 
         if (!textureLoaded) {
             loadTexture();
+        }
+
+        if (renderScreenWidth / scaleFactor == 0) {
+            return;
         }
 
         GLES20.glUseProgram(program);
@@ -364,6 +433,15 @@ public class RenderImage {
 
 
         calculateBounds();
+
+
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glScissor(0, (int) (minRatioY * renderScreenHeight), (int) renderScreenWidth,
+                (int) ((maxRatioY - minRatioY) * renderScreenHeight));
+        GLES20.glUniform1f(mAlphaHandle, alpha);
+
         if (inStartTransition) {
             applyStartTransition();
         }
@@ -371,9 +449,7 @@ public class RenderImage {
             applyEndTransition();
         }
 
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glUniform1f(mAlphaHandle, alpha);
+//        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         android.opengl.Matrix.orthoM(matrixProjection,
                 0,
@@ -382,7 +458,7 @@ public class RenderImage {
                 0,
                 renderScreenHeight / scaleFactor,
                 0,
-                10f);
+                1f);
 
         android.opengl.Matrix.setIdentityM(transMatrix, 0);
         android.opengl.Matrix.translateM(transMatrix,
@@ -391,6 +467,7 @@ public class RenderImage {
                 renderScreenHeight / scaleFactor / 2,
                 0);
         android.opengl.Matrix.rotateM(transMatrix, 0, angle, 0.0f, 0.0f, 1.0f);
+//        android.opengl.Matrix.scaleM(transMatrix, 0, scaleFactor, scaleFactor, 1.0f);
         android.opengl.Matrix.translateM(transMatrix,
                 0,
                 -renderScreenWidth / scaleFactor / 2,
@@ -442,6 +519,9 @@ public class RenderImage {
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(mPositionHandle);
         GLES20.glDisableVertexAttribArray(mTexCoordLoc);
+
+        GLES20.glDisable(GLES20.GL_BLEND);
+        GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
     }
 
     private void applyStartTransition() {
@@ -461,14 +541,36 @@ public class RenderImage {
             transitionEndtime = 0;
             angle = 0.0f;
             alpha = 1.0f;
-            scaleFactor = 1.0f;
+            setScaleFactor(1.0f);
             return;
         }
 
         float timeRatio = (float) (transitionEndtime - time) / (AppSettings.getTransitionSpeed() * 100);
+        float ratio = maxRatioY - minRatioY;
+        float scaledRenderWidth = renderScreenWidth / scaleFactor;
+        float scaledRenderHeight = renderScreenHeight / scaleFactor;
+        float scaledRatioHeight = renderScreenHeight * (maxRatioY - minRatioY);
 
         if (AppSettings.useZoomIn()) {
-            scaleFactor = 1.0f - timeRatio;
+            float minScaleFactor;
+
+            if (bitmapWidth < bitmapHeight && renderScreenWidth < scaledRatioHeight) {
+                minScaleFactor = scaledRatioHeight / bitmapHeight;
+            }
+            else if (bitmapWidth < bitmapHeight && renderScreenWidth > scaledRatioHeight) {
+                minScaleFactor = renderScreenWidth / bitmapWidth;
+            }
+            else if (bitmapWidth > bitmapHeight && renderScreenWidth < scaledRatioHeight) {
+                minScaleFactor = scaledRatioHeight / bitmapHeight;
+            }
+            else if (bitmapWidth > bitmapHeight && renderScreenWidth > scaledRatioHeight) {
+                minScaleFactor = scaledRatioHeight / bitmapHeight;
+            }
+            else {
+                minScaleFactor = renderScreenWidth / bitmapWidth;
+            }
+
+            scaleFactor = minScaleFactor * (1.0f - timeRatio);
             offsetX = rawOffsetX * (renderScreenWidth - bitmapWidth) + renderScreenWidth / 2 / scaleFactor * (timeRatio);
             offsetY = renderScreenHeight / 2 / scaleFactor * (timeRatio);
         }
@@ -480,7 +582,7 @@ public class RenderImage {
                 animationModifierX = Math.abs(animationModifierX);
             }
             else {
-                offsetX = rawOffsetX * (renderScreenWidth - bitmapWidth) - renderScreenWidth + renderScreenWidth * horizontalOvershootInterpolator.getInterpolation(1.0f - timeRatio);
+                offsetX = rawOffsetX * (scaledRenderWidth - bitmapWidth) - scaledRenderWidth + scaledRenderWidth * horizontalOvershootInterpolator.getInterpolation(1.0f - timeRatio);
                 animationModifierX = -Math.abs(animationModifierX);
             }
         }
@@ -488,9 +590,9 @@ public class RenderImage {
         if (AppSettings.useVerticalOvershoot()) {
             OvershootInterpolator verticalOvershootInterpolator = new OvershootInterpolator(AppSettings.getVerticalOvershootIntensity() / 10f);
             offsetY = (AppSettings.reverseVerticalOvershoot() ?
-                    (bitmapHeight - renderScreenHeight) * -0.5f + renderScreenHeight - (renderScreenHeight * verticalOvershootInterpolator.getInterpolation(
+                    /*(bitmapHeight - renderScreenHeight) * -0.5f*/ + renderScreenHeight - (renderScreenHeight * verticalOvershootInterpolator.getInterpolation(
                             1.0f - timeRatio)) :
-                    (bitmapHeight - renderScreenHeight) * -0.5f - renderScreenHeight + (renderScreenHeight * verticalOvershootInterpolator.getInterpolation(
+                    /*(bitmapHeight - renderScreenHeight) * -0.5f*/ scaledRenderHeight * minRatioY - scaledRenderHeight * ratio + (scaledRenderHeight * ratio * verticalOvershootInterpolator.getInterpolation(
                             1.0f - timeRatio)));
 
         }
@@ -528,6 +630,7 @@ public class RenderImage {
         if (saveOffsetX == 0) {
             saveOffsetX = offsetX;
             saveOffsetY = offsetY;
+            saveScaleFactor = scaleFactor;
         }
 
         if (transitionEndtime < time) {
@@ -540,9 +643,10 @@ public class RenderImage {
         float timeRatio = (float) (transitionEndtime - time) / (AppSettings.getTransitionSpeed() * 100);
 
         if (AppSettings.useZoomOut()) {
-            scaleFactor = timeRatio;
+            scaleFactor = saveScaleFactor * timeRatio;
             offsetX = saveOffsetX + renderScreenWidth / 2 / scaleFactor * (1.0f - timeRatio);
             offsetY = saveOffsetY + renderScreenHeight / 2 / scaleFactor * (1.0f - timeRatio);
+//            offsetY = saveOffsetY + renderScreenHeight * (maxRatioY - minRatioY) / 2 / scaleFactor * (1.0f - timeRatio) + renderScreenHeight * minRatioY;
         }
 
         if (AppSettings.useSpinOut()) {

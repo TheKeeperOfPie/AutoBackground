@@ -90,7 +90,9 @@ public class FileHandler {
     public static void cancel(Context appContext) {
         if (downloadThread != null) {
             downloadThread.interrupt();
-            Log.i(TAG, "Download interrupted");
+            Toast.makeText(appContext, "Stopping download...", Toast.LENGTH_SHORT).show();
+            Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+            appContext.sendBroadcast(closeDrawer);
             Intent resetDownloadIntent = new Intent(FileHandler.DOWNLOAD_TERMINATED);
             LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
         }
@@ -252,9 +254,6 @@ public class FileHandler {
     }
 
     public static void deleteAllBitmaps(Context appContext) {
-        for (int i = 0; i < AppSettings.getNumSources(); i++) {
-            AppSettings.setSourceSet(AppSettings.getSourceTitle(i), new HashSet<String>());
-        }
         File mainDir = new File(AppSettings.getDownloadPath());
 
         for (File folder : mainDir.listFiles()) {
@@ -273,10 +272,6 @@ public class FileHandler {
 
         File folder = new File(AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(
                 position) + " " + AppSettings.getImagePrefix());
-
-        Log.i(TAG, folder.getAbsolutePath());
-
-        AppSettings.setSourceSet(AppSettings.getSourceTitle(position), new HashSet<String>());
 
         if (folder.exists() && folder.isDirectory()) {
             if (folder.listFiles().length > 0) {

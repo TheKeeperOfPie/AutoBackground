@@ -98,7 +98,7 @@ public class ActionBarFragment extends Fragment {
         settingTitleText.setText("More settings");
 
         TextView settingTutorialText = (TextView) view.findViewById(R.id.setting_tutorial_text);
-        settingTutorialText.setText("Open the drawer to access a plethora of additional settings.");
+        settingTutorialText.setText("Open the drawer to access additional settings.");
 
         return view;
     }

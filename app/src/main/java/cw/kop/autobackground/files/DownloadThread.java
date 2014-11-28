@@ -18,6 +18,7 @@ package cw.kop.autobackground.files;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -46,6 +47,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -77,8 +79,8 @@ public class DownloadThread extends Thread {
     private int progressMax = 0;
     private int totalDownloaded = 0;
     private int totalTarget = 0;
-    private int imagesDownloaded = 0;
     private HashSet<String> usedLinks;
+    private List<File> downloadedFiles;
 
     public DownloadThread(Context context) {
         appContext = context;
@@ -91,6 +93,11 @@ public class DownloadThread extends Thread {
         Looper.prepare();
 
         if (AppSettings.useDownloadNotification()) {
+            PendingIntent pendingStopIntent = PendingIntent.getBroadcast(appContext,
+                    0,
+                    new Intent(LiveWallpaperService.STOP_DOWNLOAD),
+                    0);
+
             notificationManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
             notifyProgress = new Notification.Builder(appContext)
                     .setContentTitle("AutoBackground")
@@ -99,8 +106,10 @@ public class DownloadThread extends Thread {
 
             if (Build.VERSION.SDK_INT >= 16) {
                 notifyProgress.setPriority(Notification.PRIORITY_MIN);
+                notifyProgress.addAction(R.drawable.ic_cancel_white_24dp, "Stop Download", pendingStopIntent);
             }
 
+            updateNotification(0);
         }
 
         String downloadCacheDir = AppSettings.getDownloadPath();
@@ -132,6 +141,8 @@ public class DownloadThread extends Thread {
             }
         }
 
+        downloadedFiles = new ArrayList<>();
+
         for (int index : indexes) {
 
             if (isInterrupted()) {
@@ -140,14 +151,9 @@ public class DownloadThread extends Thread {
             }
 
             try {
-                if (!AppSettings.keepImages()) {
-                    AppSettings.setSourceNumStored(index, 0);
-                }
 
                 if (AppSettings.deleteOldImages()) {
                     FileHandler.deleteBitmaps(appContext, index);
-                    AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
-                            new HashSet<String>());
                 }
 
                 String title = AppSettings.getSourceTitle(index);
@@ -187,17 +193,6 @@ public class DownloadThread extends Thread {
                 totalTarget += AppSettings.getSourceNum(index);
 
                 updateNotification(totalTarget);
-
-                if (imagesDownloaded == 0) {
-                    sendToast("No images downloaded from " + title);
-                }
-                if (imagesDownloaded < AppSettings.getSourceNum(index)) {
-                    sendToast("Not enough photos from " + AppSettings.getSourceData(index) + " " +
-                            "Try lowering the resolution or changing sources. " +
-                            "There may also have been too many duplicates.");
-                }
-
-                totalDownloaded += imagesDownloaded;
 
             }
             catch (IOException | IllegalArgumentException e) {
@@ -242,106 +237,81 @@ public class DownloadThread extends Thread {
     }
 
     private void startDownload(List<String> links, List<String> data, int index) {
-        Collections.shuffle(links);
         String dir = AppSettings.getDownloadPath();
         String title = AppSettings.getSourceTitle(index);
-        int stored = AppSettings.getSourceNumStored(index);
-        int num = stored;
+        int targetNum = AppSettings.getSourceNum(index);
+        int numDownloaded = 0;
 
-        if (links.size() > 0) {
-            int count = 0;
-            while (num < (AppSettings.getSourceNum(index) + stored) && count < links.size()) {
+        Set<File> downloadedFiles = new HashSet<>();
 
-                Log.i(TAG, "DownloadThread interrupted: " + isInterrupted());
+        for (int count = 0; numDownloaded < targetNum && count < links.size(); count++) {
+            if (isInterrupted()) {
+                break;
+            }
 
-                if (isInterrupted()) {
-                    return;
-                }
+            String randLink = links.get(count);
 
-                String randLink = links.get(count);
+            boolean newLink = usedLinks.add(randLink);
 
-                boolean newLink = usedLinks.add(randLink);
+            if (newLink) {
 
-                if (newLink) {
+                Bitmap bitmap = getImage(randLink);
 
-                    Bitmap bitmap = getImage(randLink);
+                if (bitmap != null) {
+                    long time = System.currentTimeMillis();
+                    File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + " " + time + ".png");
 
-                    if (bitmap != null) {
-                        if (AppSettings.useImageHistory()) {
-                            long time = System.currentTimeMillis();
-                            AppSettings.addUsedLink(randLink, time);
-                            if (AppSettings.cacheThumbnails()) {
-                                writeToFileWithThumbnail(bitmap,
-                                        data.get(count),
-                                        dir,
-                                        title,
-                                        num,
-                                        time);
-                            }
-                            else {
-                                writeToFile(bitmap, data.get(count), dir, title, num);
-                            }
+                    if (AppSettings.useImageHistory()) {
+                        AppSettings.addUsedLink(randLink, time);
+                        if (AppSettings.cacheThumbnails()) {
+                            writeToFileWithThumbnail(bitmap,
+                                    data.get(count),
+                                    dir,
+                                    file,
+                                    time);
                         }
                         else {
-                            writeToFile(bitmap, data.get(count), dir, title, num);
+                            writeToFile(bitmap, data.get(count), file);
                         }
-                        updateNotification(totalTarget + num++ - stored);
                     }
+                    else {
+                        writeToFile(bitmap, data.get(count), file);
+                    }
+                    downloadedFiles.add(file);
+                    numDownloaded++;
+                    updateNotification(++totalTarget);
                 }
-                count++;
             }
         }
-        renameAndReorder(dir, stored, num, title);
-        imagesDownloaded = num - stored;
-        imageDetails += title + ": " + imagesDownloaded + " images" + AppSettings.DATA_SPLITTER;
-        AppSettings.setSourceNumStored(index, num);
+
+        renameAndReorder(dir, title, targetNum, downloadedFiles);
+        imageDetails += title + ": " + numDownloaded + " images" + AppSettings.DATA_SPLITTER;
+        if (numDownloaded == 0) {
+            sendToast("No images downloaded from " + title);
+        }
+        if (!isInterrupted() && numDownloaded < AppSettings.getSourceNum(index)) {
+            sendToast("Not enough photos from " + AppSettings.getSourceData(index) + " " +
+                    "Try lowering the resolution or changing sources. " +
+                    "There may also have been too many duplicates.");
+        }
+
+        totalDownloaded += numDownloaded;
     }
 
-    private void renameAndReorder(String dir, int stored, int numDownloaded, String title) {
+    private void renameAndReorder(String dir, String title, int targetNum, Set<File> downloadedFiles) {
 
-        String prefix = AppSettings.getImagePrefix();
-        int renamed = 0;
-        int index = stored;
+        File mainDir = new File(dir + "/" + title + " " +  AppSettings.getImagePrefix());
 
-        File mainDir = new File(dir + "/" + title + " " + prefix);
+        FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
 
-        int filesIterated = numDownloaded;
-        int numFiles = mainDir.listFiles().length;
-
-        int num = 0;
-
-        Log.i(TAG, "stored: " + stored);
-        Log.i(TAG, "numDownloaded: " + numDownloaded);
-
-        while (filesIterated < numFiles) {
-            File oldImageFile = new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + num++ + ".png");
-
-            if (oldImageFile.exists() && oldImageFile.isFile()) {
-                Log.i(TAG, oldImageFile.getAbsolutePath());
-
-                File newImageFile = new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + index++ + ".png");
-
-                if (newImageFile.exists() && newImageFile.isFile()) {
-                    newImageFile.renameTo(new File(mainDir.getAbsolutePath() + "/" + "tempRenamed" + renamed++ + ".png"));
+        if (!AppSettings.keepImages()) {
+            for (File file : mainDir.listFiles(filenameFilter)) {
+                if (!downloadedFiles.contains(file) && mainDir.list(filenameFilter).length > targetNum) {
+                    AppSettings.clearUrl(file.getName());
+                    file.delete();
                 }
-                oldImageFile.renameTo(newImageFile);
-                filesIterated++;
             }
         }
-
-        int oldIndex = numDownloaded;
-
-        for (int i = 0; i < renamed; i++) {
-
-            File oldImageFile = new File(mainDir.getAbsolutePath() + "/" + "tempRenamed" + i + ".png");
-
-            oldImageFile.renameTo(new File(mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + oldIndex++ + ".png"));
-
-            Log.i(TAG, "renamedFile: " + oldImageFile.getAbsolutePath());
-            Log.i(TAG,
-                    "renamed to: " + mainDir.getAbsolutePath() + "/" + title + " " + prefix + "" + oldIndex + ".png");
-        }
-
     }
 
     private void downloadWebsite(String url, int index) throws IOException {
@@ -608,7 +578,7 @@ public class DownloadThread extends Thread {
 
             List<String> imageList = new ArrayList<>();
             List<String> imagePages = new ArrayList<>();
-//
+
             for (int i = 0; i < jArray.length(); i++) {
                 JSONObject linkObject = jArray.getJSONObject(i).getJSONObject("data");
                 if (i == 0) {
@@ -748,10 +718,7 @@ public class DownloadThread extends Thread {
         return null;
     }
 
-    private void writeToFile(Bitmap image, String saveData, String dir, String title,
-            int imageIndex) {
-
-        File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + imageIndex + ".png");
+    private void writeToFile(Bitmap image, String saveData, File file) {
 
         if (file.isFile()) {
             file.delete();
@@ -781,10 +748,7 @@ public class DownloadThread extends Thread {
         image.recycle();
     }
 
-    private void writeToFileWithThumbnail(Bitmap image, String saveData, String dir, String title,
-            int imageIndex, long time) {
-
-        File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + imageIndex + ".png");
+    private void writeToFileWithThumbnail(Bitmap image, String saveData, String dir, File file, long time) {
 
         if (file.isFile()) {
             file.delete();

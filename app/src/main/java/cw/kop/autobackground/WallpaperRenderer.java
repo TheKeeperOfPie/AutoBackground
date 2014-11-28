@@ -81,6 +81,9 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
     private volatile List<RenderImage> renderImages;
     private static volatile boolean isLoadingTexture = false;
 
+    private static final int MAX_IMAGES = 2;
+    private static boolean isTesting = true;
+
     private EffectUpdateListener effectUpdateListener = new EffectUpdateListener() {
         @Override
         public void onEffectUpdated(Effect effect, Object info) {
@@ -105,15 +108,27 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             }
         }
     };
-    private boolean isPlayingMusic;
+    private static boolean isPlayingMusic;
 
     public static boolean isLoadingTexture() {
         return isLoadingTexture;
     }
 
-    public static void setIsLoadingTexture(boolean loading) {
+    public static void setIsLoadingTexture(boolean loading, int position) {
         isLoadingTexture = loading;
-        if (instance.renderImages.size() > 1) {
+
+        Log.i(TAG, "Position: " + position);
+
+        if (isTesting && instance.renderImages.size() > 2) {
+            if (position == 0) {
+                instance.renderImages.get(0).startFinish();
+            }
+            else {
+                instance.renderImages.get(1).startFinish();
+            }
+        }
+        else if (instance.renderImages.size() > MAX_IMAGES) {
+            Log.i(TAG, "Start finish");
             instance.renderImages.get(0).startFinish();
         }
     }
@@ -155,20 +170,18 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 //
 //        }
 
+        try {
+            endTime = System.currentTimeMillis();
+            frameTime = endTime - startTime;
+            if (frameTime < targetFrameTime) {
+                Thread.sleep(targetFrameTime - frameTime);
+            }
+            startTime = System.currentTimeMillis();
+        }
+        catch (InterruptedException e) {
+        }
+
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
-
-            try {
-                endTime = System.currentTimeMillis();
-                frameTime = endTime - startTime;
-                if (frameTime < targetFrameTime) {
-                    Thread.sleep(targetFrameTime - frameTime);
-                }
-                startTime = System.currentTimeMillis();
-            }
-            catch (InterruptedException e) {
-            }
-
 
         for (RenderImage image : renderImages) {
             image.renderImage();
@@ -187,7 +200,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             for (RenderImage image : renderImages) {
                 image.setDimensions(width, height);
             }
-            loadCurrent = true;
         }
 
         if (loadCurrent) {
@@ -228,21 +240,38 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         RenderImage.setupRenderValues();
-        if (renderImages.size() == 0) {
+        if (!isTesting && renderImages.size() == 0) {
             File nextImage = FileHandler.getNextImage();
             if (nextImage != null && nextImage.exists()) {
-                renderImages.add(getNewImage(BitmapFactory.decodeFile(nextImage.getAbsolutePath())));
+                Bitmap bitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath());
+                if (bitmap != null) {
+                    renderImages.add(getNewImage(scaleBitmap(bitmap,
+                            renderScreenWidth,
+                            renderScreenHeight), 0.0f, 1.0f, 0.0f, 1.0f));
+                }
             }
         }
 
         Log.i(TAG, "onSurfaceCreated");
     }
 
-    private RenderImage getNewImage(Bitmap bitmap) {
-        RenderImage image = new RenderImage(bitmap, getNewTextureId(), eventListener);
+    private RenderImage getNewImage(Bitmap bitmap,
+            float minRatioX,
+            float maxRatioX,
+            float minRatioY,
+            float maxRatioY) {
+
+        RenderImage image = new RenderImage(bitmap,
+                getNewTextureId(),
+                eventListener,
+                minRatioX,
+                maxRatioX,
+                minRatioY,
+                maxRatioY);
         image.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
         image.setAnimationModifierX(AppSettings.getAnimationSpeed() / 10f);
         image.setAnimationModifierY(AppSettings.getVerticalAnimationSpeed() / 10f);
+        frameTime = 1000 / AppSettings.getAnimationFrameRate();
         return image;
     }
 
@@ -254,9 +283,20 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public void onSwipe(float xMovement, float yMovement) {
-        for (RenderImage image : renderImages) {
-            image.onSwipe(xMovement, yMovement);
+    public void onSwipe(float xMovement, float yMovement, float positionY) {
+
+        if (isTesting && renderImages.size() > 1) {
+            if (positionY < renderScreenHeight / 2) {
+                renderImages.get(1).onSwipe(xMovement, yMovement);
+            }
+            else {
+                renderImages.get(0).onSwipe(xMovement, yMovement);
+            }
+        }
+        else {
+            for (RenderImage image : renderImages) {
+                image.onSwipe(xMovement, yMovement);
+            }
         }
     }
 
@@ -277,11 +317,13 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     }
 
-    public void loadNext(File nextImage) {
+    public void loadNext(File nextImage, float positionY) {
 
         if (nextImage == null) {
             return;
         }
+
+        Log.i(TAG, "positionY: " + positionY);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         if (!AppSettings.useHighQuality()) {
@@ -295,16 +337,46 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             Bitmap bitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath(), options);
             long finish = System.currentTimeMillis();
 
+            if (bitmap == null) {
+                return;
+            }
+
             Log.d(TAG, "Time to load bitmap: " + (finish - start));
 
-            RenderImage newImage = getNewImage(scaleBitmap(bitmap));
+            RenderImage newImage;
+            if (isTesting) {
+                if (positionY < renderScreenHeight / 2) {
+                    newImage = getNewImage(scaleBitmap(bitmap,
+                            renderScreenWidth / 2,
+                            renderScreenHeight / 2), 0.0f, 1.0f, 0.5f, 1.0f);
+                }
+                else {
+                    newImage = getNewImage(scaleBitmap(bitmap,
+                            renderScreenWidth / 2,
+                            renderScreenHeight / 2), 0.0f, 1.0f, 0.0f, 0.5f);
+                }
+            }
+            else {
+                newImage = getNewImage(scaleBitmap(bitmap,
+                        renderScreenWidth,
+                        renderScreenHeight), 0.0f, 1.0f, 0.0f, 1.0f);
+            }
             newImage.setRawOffsetX(rawOffsetX);
             newImage.setDimensions(renderScreenWidth, renderScreenHeight);
-            while (renderImages.size() > 2) {
+            while (renderImages.size() > MAX_IMAGES) {
                 renderImages.get(0).finishImmediately();
             }
             callback.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-            renderImages.add(newImage);
+
+            if (positionY < renderScreenHeight / 2) {
+                newImage.setPosition(1);
+                renderImages.add(newImage);
+            }
+            else {
+                newImage.setPosition(0);
+                renderImages.add(1, newImage);
+            }
+
             isLoadingTexture = true;
         }
         catch (Exception e) {
@@ -313,22 +385,22 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     }
 
-    public Bitmap scaleBitmap(Bitmap bitmap) {
+    public Bitmap scaleBitmap(Bitmap bitmap, float targetWidth, float targetHeight) {
         int bitWidth = bitmap.getWidth();
         int bitHeight = bitmap.getHeight();
 
         int maxTextureSize = RenderImage.maxTextureSize[0];
 
         if (bitWidth > 0 && bitHeight > 0 && maxTextureSize > 0) {
-            float scaleWidth = renderScreenWidth / bitWidth;
-            float scaleHeight = renderScreenHeight / bitHeight;
+            float scaleWidth = targetWidth / bitWidth;
+            float scaleHeight = targetHeight / bitHeight;
 
             if (bitWidth * scaleWidth > maxTextureSize ||
                     bitWidth * scaleHeight > maxTextureSize ||
                     bitHeight * scaleWidth > maxTextureSize ||
                     bitHeight * scaleHeight > maxTextureSize) {
 
-                float ratio = maxTextureSize / renderScreenHeight;
+                float ratio = maxTextureSize / targetHeight;
 
                 int scaledWidth = Math.round(bitHeight * ratio);
                 if (scaledWidth > bitWidth || scaledWidth == 0) {
@@ -347,8 +419,8 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
                 bitWidth = bitmap.getWidth();
                 bitHeight = bitmap.getHeight();
-                scaleWidth = renderScreenWidth / bitWidth;
-                scaleHeight = renderScreenHeight / bitHeight;
+                scaleWidth = targetWidth / bitWidth;
+                scaleHeight = targetHeight / bitHeight;
             }
 
             Matrix matrix = new Matrix();
@@ -770,9 +842,20 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public void setScaleFactor(float factor) {
-        for (RenderImage image : renderImages) {
-            image.setScaleFactor(factor);
+    public void setScaleFactor(float factor, float positionY) {
+
+        if (isTesting && renderImages.size() > 1) {
+            if (positionY < renderScreenHeight / 2) {
+                renderImages.get(1).setScaleFactor(factor);
+            }
+            else {
+                renderImages.get(0).setScaleFactor(factor);
+            }
+        }
+        else {
+            for (RenderImage image : renderImages) {
+                image.setScaleFactor(factor);
+            }
         }
     }
 

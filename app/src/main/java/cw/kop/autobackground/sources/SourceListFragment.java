@@ -50,17 +50,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.ScaleAnimation;
 import android.view.animation.Transformation;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Cache;
@@ -68,12 +65,10 @@ import com.squareup.picasso.Picasso;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.MainActivity;
-import cw.kop.autobackground.MenuWrapper;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.LocalImageFragment;
@@ -421,24 +416,129 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     /**
      * Shows LocalImageFragment to view images
      *
-     * @param setPath  whether or not to show set directory button
-     * @param viewPath top level path to start file view in
-     * @param position source index with which to save data from fragment
-     * @param use      whether or not source will be active
+     * @param view source card which was selected
+     * @param index position of source in listAdapter
      */
-    private void showImageFragment(boolean setPath, String viewPath, int position, boolean use) {
-        LocalImageFragment localImageFragment = new LocalImageFragment();
+    private void showViewImageFragment(final View view, final int index) {
+        sourceList.setOnItemClickListener(null);
+        sourceList.setEnabled(false);
+
+        listAdapter.saveData();
+        HashMap<String, String> item = listAdapter.getItem(index);
+        String type = item.get("type");
+        String directory;
+        if (type.equals(AppSettings.FOLDER)){
+            directory = AppSettings.getSourceData(index);
+        }
+        else {
+            directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(
+                    index) + " " + AppSettings.getImagePrefix();
+        }
+
+        Log.i(TAG, "Directory: " + directory);
+
+        final RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);
+        final ImageView sourceImage = (ImageView) view.findViewById(R.id.source_image);
+        final View imageOverlay = view.findViewById(R.id.source_image_overlay);
+        final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
+        final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
+        final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
+        final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
+        final LinearLayout sourceExpandContainer = (LinearLayout) view.findViewById(R.id.source_expand_container);
+
+        final float viewStartHeight = sourceContainer.getHeight();
+        final float viewStartY = view.getY();
+        final float overlayStartAlpha = imageOverlay.getAlpha();
+        final float listHeight = sourceList.getHeight();
+        Log.i(TAG, "listHeight: " + listHeight);
+        Log.i(TAG, "viewStartHeight: " + viewStartHeight);
+
+        final LocalImageFragment localImageFragment = new LocalImageFragment();
         Bundle arguments = new Bundle();
-        arguments.putBoolean("set_path", setPath);
-        arguments.putString("view_path", viewPath);
-        arguments.putInt("position", position);
-        arguments.putBoolean("use", use);
+        arguments.putString("view_path", directory);
         localImageFragment.setArguments(arguments);
 
-        getFragmentManager().beginTransaction()
-                .add(R.id.content_frame, localImageFragment, "image_fragment")
-                .addToBackStack(null)
-                .commit();
+        Animation animation = new Animation() {
+
+            private boolean needsFragment = true;
+
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+
+                if (needsFragment && interpolatedTime >= 1) {
+                    needsFragment = false;
+                    getFragmentManager().beginTransaction()
+                            .add(R.id.content_frame, localImageFragment, "image_fragment")
+                            .addToBackStack(null)
+                            .setTransition(FragmentTransaction.TRANSIT_NONE)
+                            .commit();
+                }
+                ViewGroup.LayoutParams params = sourceContainer.getLayoutParams();
+                params.height = (int) (viewStartHeight + (listHeight - viewStartHeight) * interpolatedTime);
+                sourceContainer.setLayoutParams(params);
+                view.setY(viewStartY - interpolatedTime * viewStartY);
+                deleteButton.setAlpha(1.0f - interpolatedTime);
+                viewButton.setAlpha(1.0f - interpolatedTime);
+                editButton.setAlpha(1.0f - interpolatedTime);
+                sourceTitle.setAlpha(1.0f - interpolatedTime);
+                imageOverlay.setAlpha(overlayStartAlpha - overlayStartAlpha * (1.0f - interpolatedTime));
+                sourceExpandContainer.setAlpha(1.0f - interpolatedTime);
+            }
+
+            @Override
+            public boolean willChangeBounds() {
+                return true;
+            }
+        };
+
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                if (needsListReset) {
+                    Parcelable state = sourceList.onSaveInstanceState();
+                    sourceList.setAdapter(null);
+                    sourceList.setAdapter(listAdapter);
+                    sourceList.onRestoreInstanceState(state);
+                    sourceList.setOnItemClickListener(SourceListFragment.this);
+                    sourceList.setEnabled(true);
+                    needsListReset = false;
+                }
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
+        ValueAnimator cardColorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(),
+                AppSettings.getDialogColor(appContext),
+                getResources().getColor(AppSettings.getBackgroundColorResource()));
+        cardColorAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                sourceContainer.setBackgroundColor((Integer) animation.getAnimatedValue());
+            }
+
+        });
+
+        DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(1.5f);
+
+        animation.setDuration(INFO_ANIMATION_TIME);
+        cardColorAnimation.setDuration(INFO_ANIMATION_TIME);
+
+        animation.setInterpolator(decelerateInterpolator);
+        cardColorAnimation.setInterpolator(decelerateInterpolator);
+
+        needsListReset = true;
+        cardColorAnimation.start();
+        view.startAnimation(animation);
+
     }
 
     /**
@@ -521,7 +621,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             boolean preview,
             boolean useTime,
             String time) {
-        if (!listAdapter.addItem(type, title, data, use, num, preview, useTime, time)) {
+        if (!listAdapter.addItem(type, title, data, use, num, preview, useTime, time, true)) {
             sendToast("Error: Title in use.\nPlease use a different title.");
         }
 
@@ -601,8 +701,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         @Override
                         public void onClickMiddle(View v) {
                             this.dismissDialog();
-                            AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
-                                    new HashSet<String>());
                             listAdapter.removeItem(index);
                             new ImageCountTask().execute();
                         }
@@ -611,8 +709,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         public void onClickRight(View v) {
                             FileHandler.deleteBitmaps(appContext, index);
                             sendToast("Deleting " + AppSettings.getSourceTitle(index) + " images");
-                            AppSettings.setSourceSet(AppSettings.getSourceTitle(index),
-                                    new HashSet<String>());
                             listAdapter.removeItem(index);
                             new ImageCountTask().execute();
                             this.dismissDialog();
@@ -632,22 +728,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             }
 
             @Override
-            public void onViewImageClick(int index) {
-                listAdapter.saveData();
-                HashMap<String, String> item = listAdapter.getItem(index);
-                String type = item.get("type");
-                String directory;
-                if (type.equals(AppSettings.FOLDER)){
-                    directory = AppSettings.getSourceData(index);
-                }
-                else {
-                    directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(
-                            index) + " " + AppSettings.getImagePrefix();
-                }
-
-                Log.i(TAG, "Directory: " + directory);
-
-                showImageFragment(false, directory, index, false);
+            public void onViewImageClick(View view, int index) {
+                showViewImageFragment(view, index);
             }
 
             @Override
@@ -671,7 +753,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         "" + AppSettings.getSourceNum(i),
                         AppSettings.useSourcePreview(i),
                         AppSettings.useSourceTime(i),
-                        AppSettings.getSourceTime(i));
+                        AppSettings.getSourceTime(i),
+                        false);
                 Log.i("WLF", "Added: " + AppSettings.getSourceTitle(i));
             }
         }
@@ -831,7 +914,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final LinearLayout sourceExpandContainer = (LinearLayout) view.findViewById(R.id.source_expand_container);
 
         final float cardStartShadow = sourceCard.getPaddingLeft();
-        final float viewStartHeight = view.getHeight();
+        final float viewStartHeight = sourceContainer.getHeight();
         final float viewStartY = view.getY();
         final int viewStartPadding = view.getPaddingLeft();
         final float textStartX = sourceTitle.getX();
@@ -855,8 +938,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                                     sourceInfoFragment,
                                     "source_info_fragment")
                             .addToBackStack(null)
-                            .setCustomAnimations(R.animator.slide_from_bottom,
-                                    android.R.animator.fade_out)
                             .setTransition(FragmentTransaction.TRANSIT_NONE)
                             .commit();
                 }
@@ -869,7 +950,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).rightMargin = newShadowPadding;
                 view.setPadding(newPadding, 0, newPadding, 0);
                 view.setY(viewStartY - interpolatedTime * viewStartY);
-                sourceContainer.getLayoutParams().height = (int) (viewStartHeight + screenHeight * interpolatedTime);
+                ViewGroup.LayoutParams params = sourceContainer.getLayoutParams();
+                params.height = (int) (viewStartHeight + (screenHeight - viewStartHeight) * interpolatedTime);
+                sourceContainer.setLayoutParams(params);
                 sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
                 sourceTitle.setX(textStartX + viewStartPadding - newPadding);
                 deleteButton.setAlpha(1.0f - interpolatedTime);

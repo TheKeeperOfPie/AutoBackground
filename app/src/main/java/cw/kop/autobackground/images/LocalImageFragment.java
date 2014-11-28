@@ -16,6 +16,7 @@
 
 package cw.kop.autobackground.images;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
@@ -29,6 +30,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Transformation;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -49,6 +53,7 @@ import cw.kop.autobackground.sources.SourceInfoFragment;
 
 public class LocalImageFragment extends Fragment implements ListView.OnItemClickListener {
 
+    private static final int FADE_IN_TIME = 350;
     private Context appContext;
     private LocalImageAdapter imageAdapter;
     private ListView imageListView;
@@ -70,7 +75,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         setPath = bundle.getBoolean("set_path", false);
         viewPath = bundle.getString("view_path", "");
         position = bundle.getInt("position", -1);
-        use = bundle.getBoolean("use");
+        use = bundle.getBoolean("use", false);
     }
 
     @Override
@@ -263,21 +268,17 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        File dir = new File("/");
-
-        if (!viewPath.equals("")) {
-            dir = new File(viewPath);
-        }
-
         if (imageAdapter == null) {
-            imageAdapter = new LocalImageAdapter(getActivity(), dir);
+            if (viewPath.equals("")) {
+                imageAdapter = new LocalImageAdapter(getActivity(), new File(File.separator), true);
+            }
+            else {
+                imageAdapter = new LocalImageAdapter(getActivity(), new File(viewPath), false);
+            }
         }
 
         imageListView.setAdapter(imageAdapter);
-        if (!viewPath.equals("")) {
-            imageListView.setOnItemClickListener(this);
-        }
-        else {
+        if (viewPath.equals("")) {
             imageListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -291,8 +292,46 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                 }
             });
         }
+        else {
+            imageListView.setOnItemClickListener(this);
+        }
 
         directoryText.setText(imageAdapter.getDirectory().getAbsolutePath());
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        Animation animation = new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                imageListView.setAlpha(interpolatedTime);
+            }
+        };
+
+        if (!viewPath.equals("")) {
+            animation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    imageListView.getChildAt(0).setAlpha(1.0f);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+        }
+
+        animation.setDuration(FADE_IN_TIME);
+        animation.setInterpolator(new DecelerateInterpolator(3.0f));
+//        imageListView.startAnimation(animation);
     }
 
     @Override

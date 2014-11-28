@@ -42,6 +42,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -154,7 +155,9 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourceSuffix = (EditText) headerView.findViewById(R.id.source_data_suffix);
         sourceNum = (EditText) headerView.findViewById(R.id.source_num);
 
-        sourceImage.getLayoutParams().height = (int) ((container.getWidth() -  2f * getResources().getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
+        ViewGroup.LayoutParams params = sourceImage.getLayoutParams();
+        params.height = (int) ((container.getWidth() -  2f * getResources().getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
+        sourceImage.setLayoutParams(params);
 
         cancelButton = (Button) view.findViewById(R.id.cancel_button);
         saveButton = (Button) view.findViewById(R.id.save_button);

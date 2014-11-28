@@ -90,7 +90,7 @@ public class ButtonFragment extends Fragment {
         buttonTitleText.setText("Source actions");
 
         TextView buttonTutorialText = (TextView) view.findViewById(R.id.button_tutorial_text);
-        buttonTutorialText.setText("Delete, view, and edit each source");
+        buttonTutorialText.setText("Delete, view, and edit each source.");
 
         return view;
     }

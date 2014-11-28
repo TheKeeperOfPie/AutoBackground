@@ -27,7 +27,7 @@
         android:id="@+id/history_listview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/clear_history_button"
+        android:layout_above="@+id/button_container"
         />
 
     <RelativeLayout
@@ -59,7 +59,7 @@
             android:paddingTop="6dp"
             android:text="@string/clear_history_button"
             android:textAllCaps="true"
-            android:textColor="@color/ACCENT_OPAQUE"
+            android:textColor="@color/BLUE_OPAQUE"
             />
 
     </RelativeLayout>

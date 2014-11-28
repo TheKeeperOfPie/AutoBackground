@@ -74,6 +74,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     public static final String SET_ANIMATION_Y = "cw.kop.autobackground.LiveWallpaperService.SET_ANIMATION_Y";
     public static final String SET_FRAME_TIME = "cw.kop.autobackground.LiveWallpaperService.SET_FRAME_TIME";
 
+    public static final String STOP_DOWNLOAD = "cw.kop.autobackground.LiveWallpaperService.STOP_DOWNLOAD";
     public static final String UPDATE_NOTIFICATION = "cw.kop.autobackground.LiveWallpaperService.UPDATE_NOTIFICATION";
     public static final String DOWNLOAD_WALLPAPER = "cw.kop.autobackground.LiveWallpaperService.DOWNLOAD_WALLPAPER";
     public static final String LOAD_ALBUM_ART = "cw.kop.autobackground.LiveWallpaperService.LOAD_ALBUM_ART";
@@ -110,6 +111,9 @@ public class LiveWallpaperService extends GLWallpaperService {
             String action = intent.getAction();
 
             switch (action) {
+                case STOP_DOWNLOAD:
+                    FileHandler.cancel(getApplicationContext());
+                    break;
                 case UPDATE_NOTIFICATION:
                     startNotification(intent.getBooleanExtra("use", false));
                     break;
@@ -361,6 +365,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     private IntentFilter getServiceIntentFilter() {
 
         IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(LiveWallpaperService.STOP_DOWNLOAD);
         intentFilter.addAction(LiveWallpaperService.UPDATE_NOTIFICATION);
         intentFilter.addAction(LiveWallpaperService.COPY_IMAGE);
         intentFilter.addAction(LiveWallpaperService.TOAST_LOCATION);
@@ -658,30 +663,38 @@ public class LiveWallpaperService extends GLWallpaperService {
                     coloredImageThree.getIntrinsicHeight());
             coloredImageThree.draw(canvasThree);
 
-            if (AppSettings.useNotificationGame() && setupGameTiles()) {
-                bigView = new RemoteViews(getPackageName(), R.layout.notification_game);
-                tileIds = new int[] {
-                        R.id.notification_game_tile_0,
-                        R.id.notification_game_tile_1,
-                        R.id.notification_game_tile_2,
-                        R.id.notification_game_tile_3,
-                        R.id.notification_game_tile_4,
-                        R.id.notification_game_tile_5,
-                        R.id.notification_game_tile_6,
-                        R.id.notification_game_tile_7,
-                        R.id.notification_game_tile_8,
-                        R.id.notification_game_tile_9
-                };
-                bigView.setOnClickPendingIntent(tileIds[0], pendingTile0);
-                bigView.setOnClickPendingIntent(tileIds[1], pendingTile1);
-                bigView.setOnClickPendingIntent(tileIds[2], pendingTile2);
-                bigView.setOnClickPendingIntent(tileIds[3], pendingTile3);
-                bigView.setOnClickPendingIntent(tileIds[4], pendingTile4);
-                bigView.setOnClickPendingIntent(tileIds[5], pendingTile5);
-                bigView.setOnClickPendingIntent(tileIds[6], pendingTile6);
-                bigView.setOnClickPendingIntent(tileIds[7], pendingTile7);
-                bigView.setOnClickPendingIntent(tileIds[8], pendingTile8);
-                bigView.setOnClickPendingIntent(tileIds[9], pendingTile9);
+            if (AppSettings.useNotificationGame()){
+                if (setupGameTiles()) {
+                    bigView = new RemoteViews(getPackageName(), R.layout.notification_game);
+                    tileIds = new int[] {
+                            R.id.notification_game_tile_0,
+                            R.id.notification_game_tile_1,
+                            R.id.notification_game_tile_2,
+                            R.id.notification_game_tile_3,
+                            R.id.notification_game_tile_4,
+                            R.id.notification_game_tile_5,
+                            R.id.notification_game_tile_6,
+                            R.id.notification_game_tile_7,
+                            R.id.notification_game_tile_8,
+                            R.id.notification_game_tile_9
+                    };
+                    bigView.setOnClickPendingIntent(tileIds[0], pendingTile0);
+                    bigView.setOnClickPendingIntent(tileIds[1], pendingTile1);
+                    bigView.setOnClickPendingIntent(tileIds[2], pendingTile2);
+                    bigView.setOnClickPendingIntent(tileIds[3], pendingTile3);
+                    bigView.setOnClickPendingIntent(tileIds[4], pendingTile4);
+                    bigView.setOnClickPendingIntent(tileIds[5], pendingTile5);
+                    bigView.setOnClickPendingIntent(tileIds[6], pendingTile6);
+                    bigView.setOnClickPendingIntent(tileIds[7], pendingTile7);
+                    bigView.setOnClickPendingIntent(tileIds[8], pendingTile8);
+                    bigView.setOnClickPendingIntent(tileIds[9], pendingTile9);
+                }
+                else {
+                    bigView = new RemoteViews(getPackageName(), R.layout.notification_big_layout);
+                    closeNotificationDrawer(LiveWallpaperService.this);
+                    Toast.makeText(LiveWallpaperService.this, "Not enough images to create game",  Toast.LENGTH_LONG).show();
+                    AppSettings.setUseNotificationGame(false);
+                }
             }
             else {
                 bigView = new RemoteViews(getPackageName(), R.layout.notification_big_layout);
@@ -1056,6 +1069,11 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     }
 
+    private void closeNotificationDrawer(Context context) {
+        Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+        context.sendBroadcast(closeDrawer);
+    }
+
     public Engine onCreateEngine() {
         return new GLWallpaperEngine();
     }
@@ -1111,7 +1129,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                         @Override
                         public boolean onDoubleTap(MotionEvent e) {
-                            loadNextImage();
+                            loadNextImage(e.getY());
                             return true;
                         }
 
@@ -1122,7 +1140,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                                 float distanceY) {
                             if (AppSettings.useDrag() && touchCount == 2) {
                                 renderer.onSwipe(distanceX,
-                                        distanceY);
+                                        distanceY, e1.getY());
                                 render();
                                 return true;
                             }
@@ -1142,7 +1160,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                                 ScaleGestureDetector detector) {
 
                             if (AppSettings.useScale()) {
-                                renderer.setScaleFactor(detector.getScaleFactor());
+                                renderer.setScaleFactor(detector.getScaleFactor(), detector.getFocusY());
 
                                 render();
                                 return true;
@@ -1184,7 +1202,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                         @Override
                         public void loadNext() {
-                            loadNextImage();
+                            loadNextImage(0);
                         }
 
                         @Override
@@ -1199,7 +1217,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     });
             renderer.setTargetFrameTime(1000 / AppSettings.getAnimationFrameRate());
             setRenderer(renderer);
-            setRendererMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
             keyguardManager = (KeyguardManager) LiveWallpaperService.this.getSystemService(Context.KEYGUARD_SERVICE);
 
             if (!isPreview()) {
@@ -1238,11 +1255,6 @@ public class LiveWallpaperService extends GLWallpaperService {
             intentFilter.addAction(LiveWallpaperService.TOGGLE_GAME);
             intentFilter.addAction(LiveWallpaperService.CURRENT_IMAGE);
             return intentFilter;
-        }
-
-        private void closeNotificationDrawer(Context context) {
-            Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-            context.sendBroadcast(closeDrawer);
         }
 
         private void fetchAlbumArt(String artist, String album) {
@@ -1407,8 +1419,6 @@ public class LiveWallpaperService extends GLWallpaperService {
             renderer = null;
             if (!isPreview()) {
                 unregisterReceiver(updateReceiver);
-                LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(
-                        localReceiver);
                 if (downloadOnConnection) {
                     unregisterReceiver(networkReceiver);
                 }
@@ -1438,11 +1448,11 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 if (!keyguardManager.inKeyguardRestrictedInputMode() || AppSettings.changeWhenLocked()) {
                     if (toChange) {
-                        loadNextImage();
+                        loadNextImage(0);
                         toChange = false;
                     }
                     else if (AppSettings.useInterval() && AppSettings.getIntervalDuration() == 0) {
-                        loadNextImage();
+                        loadNextImage(0);
                     }
                 }
             }
@@ -1516,7 +1526,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         public void loadCurrentImage() {
 
             if (FileHandler.getCurrentBitmapFile() == null) {
-                loadNextImage();
+                loadNextImage(0);
                 return;
             }
 
@@ -1532,7 +1542,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         return;
                     }
 
-                    renderer.loadNext(nextImage);
+                    renderer.loadNext(nextImage, 0);
 
                     handler.post(new Runnable() {
                         @Override
@@ -1572,7 +1582,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         return;
                     }
 
-                    renderer.loadNext(nextImage);
+                    renderer.loadNext(nextImage, 0);
 
                     handler.post(new Runnable() {
                         @Override
@@ -1594,7 +1604,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         }
 
-        private void loadNextImage() {
+        private void loadNextImage(final float positionY) {
             if (pinReleaseTime > 0 && pinReleaseTime < System.currentTimeMillis()) {
                 pinned = false;
             }
@@ -1618,7 +1628,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                             return;
                         }
 
-                        renderer.loadNext(nextImage);
+                        renderer.loadNext(nextImage, positionY);
 
                         handler.post(new Runnable() {
                             @Override
@@ -1642,22 +1652,6 @@ public class LiveWallpaperService extends GLWallpaperService {
             }).start();
 
         }
-
-        private final BroadcastReceiver localReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-
-                String action = intent.getAction();
-
-                switch (action) {
-                    case SET_FRAME_TIME:
-                        renderer.setTargetFrameTime(1000 / AppSettings.getAnimationFrameRate());
-                        break;
-
-                }
-
-            }
-        };
 
         private final BroadcastReceiver updateReceiver = new BroadcastReceiver() {
 
@@ -1686,7 +1680,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                                     pendingIntent);
                         }
                         if (isVisible()) {
-                            loadNextImage();
+                            loadNextImage(0);
                         }
                         else {
                             new Thread(new Runnable() {
@@ -1719,7 +1713,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                                     "Deleted image",
                                     Toast.LENGTH_LONG).show();
                         }
-                        loadNextImage();
+                        loadNextImage(0);
                         break;
                     case LiveWallpaperService.OPEN_IMAGE:
                         String location = FileHandler.getBitmapLocation();
@@ -1781,7 +1775,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         break;
                     case LiveWallpaperService.UPDATE_WALLPAPER:
                         if (AppSettings.forceInterval()) {
-                            loadNextImage();
+                            loadNextImage(0);
                         }
                         else {
                             toChange = true;

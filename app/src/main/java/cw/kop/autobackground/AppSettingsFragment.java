@@ -33,8 +33,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.tutorial.TutorialActivity;
+import io.fabric.sdk.android.Fabric;
 
 public class AppSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
@@ -125,7 +128,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
             public boolean onPreferenceClick(Preference preference) {
                 Toast.makeText(appContext, "Showing tutorial...", Toast.LENGTH_SHORT).show();
                 Intent tutorialIntent = new Intent(appContext, TutorialActivity.class);
-                startActivity(tutorialIntent);
+                startActivityForResult(tutorialIntent, TutorialActivity.TUTORIAL_REQUEST);
                 return true;
             }
         });
@@ -139,6 +142,21 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
         return inflater.inflate(R.layout.fragment_list, container, false);
 
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == TutorialActivity.TUTORIAL_REQUEST) {
+            if (AppSettings.useFabric()) {
+                final Fabric fabric = new Fabric.Builder(appContext)
+                        .kits(new Crashlytics())
+                        .build();
+            Fabric.with(fabric);
+            }
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

@@ -33,6 +33,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -58,6 +59,7 @@ public class SourceListAdapter extends BaseAdapter {
     public static final String NO_IMAGES = "NO_IMAGES";
     public static final String OKAY = "OKAY";
 
+    private static final String TAG = SourceListAdapter.class.getCanonicalName();
     private static final float OVERLAY_ALPHA = 0.85f;
 
     private Activity mainActivity;
@@ -106,6 +108,8 @@ public class SourceListAdapter extends BaseAdapter {
         int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
         int lightGrayColor = resources.getColor(R.color.LIGHT_GRAY_OPAQUE);
         int darkGrayColor = resources.getColor(R.color.DARK_GRAY_OPAQUE);
+        boolean use = Boolean.parseBoolean(listItem.get("use"));
+        boolean preview = Boolean.parseBoolean(listItem.get("preview"));
 
         EditText title = (EditText) view.findViewById(R.id.source_title);
         title.setText(listItem.get("title"));
@@ -118,30 +122,11 @@ public class SourceListAdapter extends BaseAdapter {
 
         View imageOverlay = view.findViewById(R.id.source_image_overlay);
 
-        if (Boolean.parseBoolean(listItem.get("use"))) {
+        if (use) {
             imageOverlay.setAlpha(0);
-            title.setTextColor(resources.getColor(R.color.WHITE_OPAQUE));
-            title.setShadowLayer(5f, -1f, -1f, 0xFF000000);
-//            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-//                title.setTextColor(darkGrayColor);
-//                title.setShadowLayer(5.0f, -1f, -1f, lightGrayColor);
-//            }
-//            else {
-//                title.setTextColor(lightGrayColor);
-//                title.setShadowLayer(5.0f, -1f, -1f, darkGrayColor);
-//            }
         }
         else {
-            if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-                imageOverlay.setBackgroundColor(lightGrayColor);
-                title.setTextColor(darkGrayColor);
-                title.setShadowLayer(5.0f, -1f, -1f, lightGrayColor);
-            }
-            else {
-                imageOverlay.setBackgroundColor(darkGrayColor);
-                title.setTextColor(lightGrayColor);
-                title.setShadowLayer(5.0f, -1f, -1f, darkGrayColor);
-            }
+            imageOverlay.setBackgroundColor(resources.getColor(AppSettings.getBackgroundColorResource()));
             imageOverlay.setAlpha(OVERLAY_ALPHA);
         }
 
@@ -170,7 +155,7 @@ public class SourceListAdapter extends BaseAdapter {
         viewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cardClickListener.onViewImageClick(position);
+                cardClickListener.onViewImageClick(view, position);
             }
         });
         editButton.setOnClickListener(new View.OnClickListener() {
@@ -181,12 +166,13 @@ public class SourceListAdapter extends BaseAdapter {
         });
 
         ImageView image = (ImageView) view.findViewById(R.id.source_image);
-        image.getLayoutParams().height = (int) ((parent.getWidth() - 2f * resources.getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
 
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) title.getLayoutParams();
+        ViewGroup.LayoutParams imageParams = image.getLayoutParams();
 
-        if (Boolean.parseBoolean(listItem.get("preview"))) {
-            title.setTextColor(resources.getColor(R.color.WHITE_OPAQUE));
+        RelativeLayout.LayoutParams titleParams = (RelativeLayout.LayoutParams) title.getLayoutParams();
+
+        if (preview) {
+            imageParams.height = (int) ((parent.getWidth() - 2f * resources.getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
             Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_24dp);
             downloadDrawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
                     PorterDuff.Mode.MULTIPLY);
@@ -222,11 +208,24 @@ public class SourceListAdapter extends BaseAdapter {
         }
         else {
             Picasso.with(parent.getContext()).load(android.R.color.transparent).into(image);
-            title.setTextColor(AppSettings.getColorFilterInt(parent.getContext()));
-            image.getLayoutParams().height = title.getHeight();
+            imageParams.height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 28, resources.getDisplayMetrics()) + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, resources.getDisplayMetrics()));
         }
 
-        title.setLayoutParams(params);
+        if (!preview) {
+            title.setTextColor(AppSettings.getColorFilterInt(parent.getContext()));
+            title.setShadowLayer(0f, 0f, 0f, 0x00000000);
+        }
+        else if (use) {
+            title.setTextColor(resources.getColor(R.color.WHITE_OPAQUE));
+            title.setShadowLayer(5.0f, -1f, -1f, 0xFF000000);
+        }
+        else {
+            title.setTextColor(AppSettings.getColorFilterInt(parent.getContext()));
+            title.setShadowLayer(0f, 0f, 0f, 0x00000000);
+        }
+
+        title.setLayoutParams(titleParams);
+        image.setLayoutParams(imageParams);
 
         TextView sourceType = (TextView) view.findViewById(R.id.source_type);
         TextView sourceData = (TextView) view.findViewById(R.id.source_data);
@@ -303,6 +302,7 @@ public class SourceListAdapter extends BaseAdapter {
         listData.set(position, changedItem);
         titles.add(title);
         notifyDataSetChanged();
+        saveData();
         return true;
     }
 
@@ -313,7 +313,8 @@ public class SourceListAdapter extends BaseAdapter {
             String num,
             boolean preview,
             boolean useTime,
-            String time) {
+            String time,
+            boolean save) {
 
         if (titles.contains(title)) {
             return false;
@@ -341,6 +342,10 @@ public class SourceListAdapter extends BaseAdapter {
         listData.add(newItem);
         titles.add(title);
         notifyDataSetChanged();
+
+        if (save) {
+            saveData();
+        }
 
         Log.i("WLA", "listData" + listData.size());
         return true;
@@ -476,7 +481,7 @@ public class SourceListAdapter extends BaseAdapter {
 
         void onDeleteClick(int index);
 
-        void onViewImageClick(int index);
+        void onViewImageClick(View view, int index);
 
         void onEditClick(View view, int index);
 

@@ -283,8 +283,8 @@
     <string name="use_fabric_description">Send usage and crash data (no personal data is collected)</string>
     <string name="clear_pref">Reset Settings</string>
     <string name="clear_pref_description">Set default settings</string>
-    <string name="show_tutorial_source">Reshow Tutorial</string>
-    <string name="show_tutorial_source_description">Click to reshow tutorial</string>
+    <string name="show_tutorial_source">Show Tutorial</string>
+    <string name="show_tutorial_source_description">Click to show tutorial</string>
 
     <string name="notification_instructions">How to Customize</string>
     <string name="notification_instructions_description">Simply click one of the parts of the notification above to view that part\'s settings</string>
@@ -525,7 +525,7 @@
     <string-array name="theme_entry_menu">
         <item>Light</item>
         <item>Dark</item>
-        <item>Transparent</item>
+        <!--<item>Transparent</item>-->
     </string-array>
 
     <string-array name="random_effects_entry_menu">
