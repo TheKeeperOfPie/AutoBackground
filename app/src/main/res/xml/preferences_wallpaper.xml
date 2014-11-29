@@ -30,6 +30,13 @@
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
+            android:key="use_double_image"
+            android:summary="@string/use_double_image_description"
+            android:title="@string/use_double_image"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
             android:defaultValue="true"
             android:key="fill_images"
             android:summary="@string/fill_images_description"

@@ -78,11 +78,9 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     private Callback callback;
     private static WallpaperRenderer instance;
-    private volatile List<RenderImage> renderImages;
-    private static volatile boolean isLoadingTexture = false;
-
-    private static final int MAX_IMAGES = 2;
-    private static boolean isTesting = true;
+    private volatile List<RenderImage> renderImagesTop;
+    private volatile List<RenderImage> renderImagesBottom;
+    private boolean isLastTop = false;
 
     private EffectUpdateListener effectUpdateListener = new EffectUpdateListener() {
         @Override
@@ -102,36 +100,24 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
     private RenderImage.EventListener eventListener = new RenderImage.EventListener() {
         @Override
         public void removeSelf(RenderImage image) {
-            renderImages.remove(image);
+            renderImagesTop.remove(image);
+            renderImagesBottom.remove(image);
             if (!(AppSettings.useAnimation() || AppSettings.useVerticalAnimation())) {
                 callback.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
             }
         }
+
+        @Override
+        public void doneLoading() {
+            if (instance.renderImagesTop.size() > 1) {
+                instance.renderImagesTop.get(0).startFinish();
+            }
+            if (instance.renderImagesBottom.size() > 1) {
+                instance.renderImagesBottom.get(0).startFinish();
+            }
+        }
     };
     private static boolean isPlayingMusic;
-
-    public static boolean isLoadingTexture() {
-        return isLoadingTexture;
-    }
-
-    public static void setIsLoadingTexture(boolean loading, int position) {
-        isLoadingTexture = loading;
-
-        Log.i(TAG, "Position: " + position);
-
-        if (isTesting && instance.renderImages.size() > 2) {
-            if (position == 0) {
-                instance.renderImages.get(0).startFinish();
-            }
-            else {
-                instance.renderImages.get(1).startFinish();
-            }
-        }
-        else if (instance.renderImages.size() > MAX_IMAGES) {
-            Log.i(TAG, "Start finish");
-            instance.renderImages.get(0).startFinish();
-        }
-    }
 
     public static WallpaperRenderer getInstance(Context context, Callback callback) {
         if (instance == null) {
@@ -145,7 +131,8 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         serviceContext = context;
         this.callback = callback;
         startTime = System.currentTimeMillis();
-        renderImages = new CopyOnWriteArrayList<>();
+        renderImagesTop = new CopyOnWriteArrayList<>();
+        renderImagesBottom = new CopyOnWriteArrayList<>();
     }
 
     @Override
@@ -181,10 +168,30 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         catch (InterruptedException e) {
         }
 
+        if (renderImagesTop.size() > 2) {
+            renderImagesTop.get(0).startFinish();
+        }
+        if (renderImagesBottom.size() > 2) {
+            renderImagesBottom.get(0).startFinish();
+        }
+
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-        for (RenderImage image : renderImages) {
-            image.renderImage();
+        if (isLastTop) {
+            for (RenderImage image : renderImagesBottom) {
+                image.renderImage();
+            }
+            for (RenderImage image : renderImagesTop) {
+                image.renderImage();
+            }
+        }
+        else {
+            for (RenderImage image : renderImagesTop) {
+                image.renderImage();
+            }
+            for (RenderImage image : renderImagesBottom) {
+                image.renderImage();
+            }
         }
     }
 
@@ -197,7 +204,10 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             GLES20.glViewport(0, 0, width, height);
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-            for (RenderImage image : renderImages) {
+            for (RenderImage image : renderImagesTop) {
+                image.setDimensions(width, height);
+            }
+            for (RenderImage image : renderImagesBottom) {
                 image.setDimensions(width, height);
             }
         }
@@ -210,7 +220,10 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         renderScreenWidth = width;
         renderScreenHeight = height;
 
-        for (RenderImage image : renderImages) {
+        for (RenderImage image : renderImagesTop) {
+            image.resetMatrices();
+        }
+        for (RenderImage image : renderImagesBottom) {
             image.resetMatrices();
         }
 
@@ -231,6 +244,37 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                 1f,
                 0.0f);
 
+        if (renderImagesTop.size() == 0) {
+            File nextImage = FileHandler.getNextImage();
+            if (nextImage != null && nextImage.exists()) {
+                Bitmap bitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath());
+                if (bitmap != null) {
+                    if (AppSettings.useDoubleImage()) {
+                        renderImagesTop.add(getNewImage(scaleBitmap(bitmap,
+                                renderScreenWidth,
+                                renderScreenHeight), 0.0f, 1.0f, 0.5f, 1.0f));
+                    }
+                    else {
+                        renderImagesTop.add(getNewImage(scaleBitmap(bitmap,
+                                renderScreenWidth,
+                                renderScreenHeight), 0.0f, 1.0f, 0.0f, 1.0f));
+                    }
+                }
+            }
+        }
+
+        if (renderImagesBottom.size() == 0 && AppSettings.useDoubleImage()) {
+            File nextImage = FileHandler.getNextImage();
+            if (nextImage != null && nextImage.exists()) {
+                Bitmap bitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath());
+                if (bitmap != null) {
+                    renderImagesBottom.add(getNewImage(scaleBitmap(bitmap,
+                            renderScreenWidth,
+                            renderScreenHeight), 0.0f, 1.0f, 0.0f, 0.5f));
+                }
+            }
+        }
+
     }
 
     @Override
@@ -240,17 +284,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         RenderImage.setupRenderValues();
-        if (!isTesting && renderImages.size() == 0) {
-            File nextImage = FileHandler.getNextImage();
-            if (nextImage != null && nextImage.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath());
-                if (bitmap != null) {
-                    renderImages.add(getNewImage(scaleBitmap(bitmap,
-                            renderScreenWidth,
-                            renderScreenHeight), 0.0f, 1.0f, 0.0f, 1.0f));
-                }
-            }
-        }
 
         Log.i(TAG, "onSurfaceCreated");
     }
@@ -278,30 +311,49 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
     public void onOffsetsChanged(float xOffset, float yOffset, float xStep, float yStep,
             int xPixels, int yPixels) {
         rawOffsetX = AppSettings.forceParallax() ? 1.0f - xOffset : xOffset;
-        for (RenderImage image : renderImages) {
+        for (RenderImage image : renderImagesTop) {
+            image.onOffsetsChanged(xOffset, yOffset, xStep, yStep, xPixels, yPixels);
+        }
+        for (RenderImage image : renderImagesBottom) {
             image.onOffsetsChanged(xOffset, yOffset, xStep, yStep, xPixels, yPixels);
         }
     }
 
     public void onSwipe(float xMovement, float yMovement, float positionY) {
 
-        if (isTesting && renderImages.size() > 1) {
-            if (positionY < renderScreenHeight / 2) {
-                renderImages.get(1).onSwipe(xMovement, yMovement);
-            }
-            else {
-                renderImages.get(0).onSwipe(xMovement, yMovement);
+        if (positionY > renderScreenHeight / 2 && renderImagesBottom.size() > 0) {
+            for (RenderImage image : renderImagesBottom) {
+                image.onSwipe(xMovement, yMovement);
             }
         }
-        else {
-            for (RenderImage image : renderImages) {
+        else if (renderImagesTop.size() > 0) {
+            for (RenderImage image : renderImagesTop) {
                 image.onSwipe(xMovement, yMovement);
             }
         }
     }
 
+    public void setScaleFactor(float factor, float positionY) {
+
+        if (positionY > renderScreenHeight / 2 && renderImagesBottom.size() > 0) {
+            for (RenderImage image : renderImagesBottom) {
+                image.setScaleFactor(factor);
+            }
+        }
+        else if (renderImagesTop.size() > 0) {
+            for (RenderImage image : renderImagesTop) {
+                image.setScaleFactor(factor);
+            }
+        }
+    }
+
     public void resetPosition() {
-        for (RenderImage image : renderImages) {
+        for (RenderImage image : renderImagesTop) {
+            image.setScaleFactor(1.0f);
+            image.setRawOffsetX(rawOffsetX);
+            image.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
+        }
+        for (RenderImage image : renderImagesBottom) {
             image.setScaleFactor(1.0f);
             image.setRawOffsetX(rawOffsetX);
             image.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
@@ -315,6 +367,15 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         GLES20.glGenTextures(1, tempIntArray, 0);
         return tempIntArray[0];
 
+    }
+
+    public void loadNext(File nextImage) {
+        if (isLastTop) {
+            loadNext(nextImage, 0);
+        }
+        else {
+            loadNext(nextImage, renderScreenHeight);
+        }
     }
 
     public void loadNext(File nextImage, float positionY) {
@@ -344,7 +405,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             Log.d(TAG, "Time to load bitmap: " + (finish - start));
 
             RenderImage newImage;
-            if (isTesting) {
+            if (AppSettings.useDoubleImage()) {
                 if (positionY < renderScreenHeight / 2) {
                     newImage = getNewImage(scaleBitmap(bitmap,
                             renderScreenWidth / 2,
@@ -363,21 +424,25 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             }
             newImage.setRawOffsetX(rawOffsetX);
             newImage.setDimensions(renderScreenWidth, renderScreenHeight);
-            while (renderImages.size() > MAX_IMAGES) {
-                renderImages.get(0).finishImmediately();
-            }
+
             callback.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
-            if (positionY < renderScreenHeight / 2) {
-                newImage.setPosition(1);
-                renderImages.add(newImage);
+            if (AppSettings.useDoubleImage() && positionY > renderScreenHeight / 2) {
+                newImage.setPosition(0);
+                renderImagesBottom.add(newImage);
+                isLastTop = false;
             }
             else {
-                newImage.setPosition(0);
-                renderImages.add(1, newImage);
+                newImage.setPosition(1);
+                renderImagesTop.add(newImage);
+                isLastTop = true;
+                if (!AppSettings.useDoubleImage()) {
+                    if (renderImagesBottom.size() > 0) {
+                        renderImagesBottom.get(0).startFinish();
+                    }
+                }
             }
 
-            isLoadingTexture = true;
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -841,24 +906,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             }
         }
     }
-
-    public void setScaleFactor(float factor, float positionY) {
-
-        if (isTesting && renderImages.size() > 1) {
-            if (positionY < renderScreenHeight / 2) {
-                renderImages.get(1).setScaleFactor(factor);
-            }
-            else {
-                renderImages.get(0).setScaleFactor(factor);
-            }
-        }
-        else {
-            for (RenderImage image : renderImages) {
-                image.setScaleFactor(factor);
-            }
-        }
-    }
-
 
     private void toastEffect(final String effectName, final String effectValue) {
         if (AppSettings.useToast() && AppSettings.useToastEffects()) {

@@ -55,6 +55,8 @@
 
     <string name="preserve_context">Preserve Context</string>
     <string name="preserve_context_description">Hold image texture in RAM to prevent reloading on return</string>
+    <string name="use_double_image">Double Image</string>
+    <string name="use_double_image_description">Spilt screen into two separate images</string>
     <string name="fill_images">Fill Images</string>
     <string name="fill_images_description">Fill screen with image</string>
     <string name="shuffle_images">Shuffle Images</string>

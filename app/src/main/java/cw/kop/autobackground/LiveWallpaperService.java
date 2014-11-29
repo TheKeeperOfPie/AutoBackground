@@ -1542,7 +1542,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         return;
                     }
 
-                    renderer.loadNext(nextImage, 0);
+                    renderer.loadNext(nextImage);
 
                     handler.post(new Runnable() {
                         @Override
@@ -1582,7 +1582,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         return;
                     }
 
-                    renderer.loadNext(nextImage, 0);
+                    renderer.loadNext(nextImage);
 
                     handler.post(new Runnable() {
                         @Override

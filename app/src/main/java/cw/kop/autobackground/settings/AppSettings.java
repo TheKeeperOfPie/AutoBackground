@@ -527,6 +527,10 @@ public class AppSettings {
         return prefs.getBoolean("force_multi_pane", false);
     }
 
+    public static boolean useDoubleImage() {
+        return prefs.getBoolean("use_double_image", false);
+    }
+
     public static boolean useAnimation() {
         return prefs.getBoolean("use_animation", true);
     }

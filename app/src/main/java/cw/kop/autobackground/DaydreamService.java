@@ -55,7 +55,7 @@ public class DaydreamService extends DreamService {
 
                     @Override
                     public boolean onDoubleTap(MotionEvent e) {
-                        renderer.loadNext(FileHandler.getNextImage(), 0);
+                        renderer.loadNext(FileHandler.getNextImage());
                         return super.onDoubleTap(e);
                     }
 
@@ -144,7 +144,7 @@ public class DaydreamService extends DreamService {
         glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
         setContentView(glSurfaceView);
-        renderer.loadNext(FileHandler.getNextImage(), 0);
+        renderer.loadNext(FileHandler.getNextImage());
         setInteractive(true);
     }
 
