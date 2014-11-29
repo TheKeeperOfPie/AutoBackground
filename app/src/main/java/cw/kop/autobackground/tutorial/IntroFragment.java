@@ -18,19 +18,12 @@ package cw.kop.autobackground.tutorial;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import cw.kop.autobackground.R;
@@ -62,10 +55,14 @@ public class IntroFragment extends Fragment {
             @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.tutorial_intro_fragment, container, false);
+        int colorFilterInt = AppSettings.getColorFilterInt(appContext);
+
         TextView titleText = (TextView) view.findViewById(R.id.title_text);
+        titleText.setTextColor(colorFilterInt);
         titleText.setText("Welcome to AutoBackground");
 
         TextView tutorialText = (TextView) view.findViewById(R.id.tutorial_text);
+        tutorialText.setTextColor(colorFilterInt);
         tutorialText.setText("Customize your device's wallpaper to exactly " +
                 "the way you want it.");
 

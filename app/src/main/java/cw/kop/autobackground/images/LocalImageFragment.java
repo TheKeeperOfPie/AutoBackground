@@ -16,7 +16,6 @@
 
 package cw.kop.autobackground.images;
 
-import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;

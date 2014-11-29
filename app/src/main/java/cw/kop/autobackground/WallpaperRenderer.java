@@ -27,18 +27,10 @@ import android.media.effect.EffectFactory;
 import android.media.effect.EffectUpdateListener;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.opengl.GLUtils;
 import android.util.Log;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.OvershootInterpolator;
 import android.widget.Toast;
 
 import java.io.File;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,29 +51,6 @@ import cw.kop.autobackground.settings.AppSettings;
 class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     private static final String TAG = "Renderer";
-    private float[] matrixView = new float[16];
-    private float renderScreenWidth = 1;
-    private float renderScreenHeight = 1;
-    private long startTime;
-    private long endTime;
-    private long frameTime;
-    private long targetFrameTime;
-
-    private Context serviceContext;
-    private float rawOffsetX = 0f;
-
-    private boolean toEffect = false;
-    private boolean contextInitialized = false;
-    private boolean loadCurrent = false;
-    private EffectContext effectContext;
-    private EffectFactory effectFactory;
-
-    private Callback callback;
-    private static WallpaperRenderer instance;
-    private volatile List<RenderImage> renderImagesTop;
-    private volatile List<RenderImage> renderImagesBottom;
-    private boolean isLastTop = false;
-
     private EffectUpdateListener effectUpdateListener = new EffectUpdateListener() {
         @Override
         public void onEffectUpdated(Effect effect, Object info) {
@@ -96,7 +65,26 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
         }
     };
-
+    private static WallpaperRenderer instance;
+    private static boolean isPlayingMusic;
+    private float[] matrixView = new float[16];
+    private float renderScreenWidth = 1;
+    private float renderScreenHeight = 1;
+    private long startTime;
+    private long endTime;
+    private long frameTime;
+    private long targetFrameTime;
+    private Context serviceContext;
+    private float rawOffsetX = 0f;
+    private boolean toEffect = false;
+    private boolean contextInitialized = false;
+    private boolean loadCurrent = false;
+    private EffectContext effectContext;
+    private EffectFactory effectFactory;
+    private Callback callback;
+    private volatile List<RenderImage> renderImagesTop;
+    private volatile List<RenderImage> renderImagesBottom;
+    private boolean isLastTop = false;
     private RenderImage.EventListener eventListener = new RenderImage.EventListener() {
         @Override
         public void removeSelf(RenderImage image) {
@@ -111,21 +99,14 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         public void doneLoading() {
             if (instance.renderImagesTop.size() > 1) {
                 instance.renderImagesTop.get(0).startFinish();
+                Log.i(TAG, "Start finish top");
             }
             if (instance.renderImagesBottom.size() > 1) {
                 instance.renderImagesBottom.get(0).startFinish();
+                Log.i(TAG, "Start finish bottom");
             }
         }
     };
-    private static boolean isPlayingMusic;
-
-    public static WallpaperRenderer getInstance(Context context, Callback callback) {
-        if (instance == null) {
-            instance = new WallpaperRenderer(context.getApplicationContext(), callback);
-        }
-
-        return instance;
-    }
 
     private WallpaperRenderer(Context context, Callback callback) {
         serviceContext = context;
@@ -133,6 +114,14 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         startTime = System.currentTimeMillis();
         renderImagesTop = new CopyOnWriteArrayList<>();
         renderImagesBottom = new CopyOnWriteArrayList<>();
+    }
+
+    public static WallpaperRenderer getInstance(Context context, Callback callback) {
+        if (instance == null) {
+            instance = new WallpaperRenderer(context.getApplicationContext(), callback);
+        }
+
+        return instance;
     }
 
     @Override
@@ -169,10 +158,10 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         }
 
         if (renderImagesTop.size() > 2) {
-            renderImagesTop.get(0).startFinish();
+            renderImagesTop.get(0).finishImmediately();
         }
         if (renderImagesBottom.size() > 2) {
-            renderImagesBottom.get(0).startFinish();
+            renderImagesBottom.get(0).finishImmediately();
         }
 
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
@@ -408,13 +397,13 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             if (AppSettings.useDoubleImage()) {
                 if (positionY < renderScreenHeight / 2) {
                     newImage = getNewImage(scaleBitmap(bitmap,
-                            renderScreenWidth / 2,
-                            renderScreenHeight / 2), 0.0f, 1.0f, 0.5f, 1.0f);
+                            renderScreenWidth,
+                            renderScreenHeight), 0.0f, 1.0f, 0.5f, 1.0f);
                 }
                 else {
                     newImage = getNewImage(scaleBitmap(bitmap,
-                            renderScreenWidth / 2,
-                            renderScreenHeight / 2), 0.0f, 1.0f, 0.0f, 0.5f);
+                            renderScreenWidth,
+                            renderScreenHeight), 0.0f, 1.0f, 0.0f, 0.5f);
                 }
             }
             else {
@@ -428,12 +417,10 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             callback.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
             if (AppSettings.useDoubleImage() && positionY > renderScreenHeight / 2) {
-                newImage.setPosition(0);
                 renderImagesBottom.add(newImage);
                 isLastTop = false;
             }
             else {
-                newImage.setPosition(1);
                 renderImagesTop.add(newImage);
                 isLastTop = true;
                 if (!AppSettings.useDoubleImage()) {
@@ -938,11 +925,17 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
     public interface Callback {
 
         void setRenderMode(int mode);
+
         void setPreserveContext(boolean preserveContext);
+
         void loadCurrent();
+
         void loadPrevious();
+
         void loadNext();
+
         void loadMusic();
+
         void requestRender();
 
     }

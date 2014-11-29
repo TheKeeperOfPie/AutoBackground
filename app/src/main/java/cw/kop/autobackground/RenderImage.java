@@ -42,14 +42,14 @@ public class RenderImage {
     private static int mtrxhandle;
     private static int mAlphaHandle;
     private static int program;
-    private float renderScreenWidth;
-    private float renderScreenHeight;
     public float vertices[];
     public short indices[];
     public float uvs[];
     public FloatBuffer vertexBuffer;
     public ShortBuffer drawListBuffer;
     public FloatBuffer uvBuffer;
+    private float renderScreenWidth;
+    private float renderScreenHeight;
     private float[] matrixProjection = new float[16];
     private float[] matrixView = new float[16];
     private float[] matrixProjectionAndView = new float[16];
@@ -75,15 +75,20 @@ public class RenderImage {
     private float animationModifierY = 0f;
     private float angle = 0f;
     private float alpha = 0f;
-    private boolean inStartTransition = true;
-    private boolean inEndTransition = false;
+    private volatile boolean inStartTransition = true;
+    private volatile boolean inEndTransition = false;
     private long transitionEndtime = 0;
     private boolean finished = false;
 
     private EventListener eventListener;
-    private int position = 0;
 
-    public RenderImage(Bitmap bitmap, int textureName, EventListener eventListener, float minRatioX, float maxRatioX, float minRatioY, float maxRatioY) {
+    public RenderImage(Bitmap bitmap,
+            int textureName,
+            EventListener eventListener,
+            float minRatioX,
+            float maxRatioX,
+            float minRatioY,
+            float maxRatioY) {
         this.minRatioX = minRatioX;
         this.maxRatioX = maxRatioX;
         this.minRatioY = minRatioY;
@@ -133,7 +138,7 @@ public class RenderImage {
     public void setDimensions(float width, float height) {
         renderScreenWidth = width;
         renderScreenHeight = height;
-        setScaleFactor(1.0f);
+        setScaleFactor(0.0f);
     }
 
     public void resetMatrices() {
@@ -218,10 +223,6 @@ public class RenderImage {
 //                offsetY += yMovement;
 //            }
 //        }
-    }
-
-    public void setPosition(int position) {
-        this.position = position;
     }
 
     public void loadTexture() {
@@ -341,7 +342,7 @@ public class RenderImage {
             }
         }
 
-        if (offsetY < (maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight) ) {
+        if (offsetY < (maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight)) {
             animationModifierY = Math.abs(animationModifierY);
             offsetY = maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight;
         }
@@ -397,10 +398,8 @@ public class RenderImage {
         }
         else if (inEndTransition) {
             applyEndTransition();
-            Log.i(TAG, "Applying end transition");
         }
 
-//        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         android.opengl.Matrix.orthoM(matrixProjection,
                 0,
@@ -418,7 +417,6 @@ public class RenderImage {
                 renderScreenHeight / scaleFactor / 2,
                 0);
         android.opengl.Matrix.rotateM(transMatrix, 0, angle, 0.0f, 0.0f, 1.0f);
-//        android.opengl.Matrix.scaleM(transMatrix, 0, scaleFactor, scaleFactor, 1.0f);
         android.opengl.Matrix.translateM(transMatrix,
                 0,
                 -renderScreenWidth / scaleFactor / 2,
@@ -512,19 +510,23 @@ public class RenderImage {
         }
 
         if (AppSettings.useOvershoot()) {
-            OvershootInterpolator horizontalOvershootInterpolator = new OvershootInterpolator(AppSettings.getOvershootIntensity() / 10f);
+            OvershootInterpolator horizontalOvershootInterpolator = new OvershootInterpolator(
+                    AppSettings.getOvershootIntensity() / 10f);
             if (AppSettings.reverseOvershoot()) {
-                offsetX = rawOffsetX * (scaledRenderWidth - bitmapWidth) + scaledRenderWidth - scaledRenderWidth * horizontalOvershootInterpolator.getInterpolation(1.0f - timeRatio);
+                offsetX = rawOffsetX * (scaledRenderWidth - bitmapWidth) + scaledRenderWidth - scaledRenderWidth * horizontalOvershootInterpolator.getInterpolation(
+                        1.0f - timeRatio);
                 animationModifierX = Math.abs(animationModifierX);
             }
             else {
-                offsetX = rawOffsetX * (scaledRenderWidth - bitmapWidth) - scaledRenderWidth + scaledRenderWidth * horizontalOvershootInterpolator.getInterpolation(1.0f - timeRatio);
+                offsetX = rawOffsetX * (scaledRenderWidth - bitmapWidth) - scaledRenderWidth + scaledRenderWidth * horizontalOvershootInterpolator.getInterpolation(
+                        1.0f - timeRatio);
                 animationModifierX = -Math.abs(animationModifierX);
             }
         }
 
         if (AppSettings.useVerticalOvershoot()) {
-            OvershootInterpolator verticalOvershootInterpolator = new OvershootInterpolator(AppSettings.getVerticalOvershootIntensity() / 10f);
+            OvershootInterpolator verticalOvershootInterpolator = new OvershootInterpolator(
+                    AppSettings.getVerticalOvershootIntensity() / 10f);
             offsetY = (AppSettings.reverseVerticalOvershoot() ?
                     scaledRenderHeight * minRatioY + scaledRenderHeight * ratio - (scaledRenderHeight * ratio * verticalOvershootInterpolator.getInterpolation(
                             1.0f - timeRatio)) :
@@ -548,6 +550,7 @@ public class RenderImage {
 
     public void startFinish() {
         inEndTransition = true;
+        Log.i(TAG, "inEndTransition: " + inEndTransition);
     }
 
     public void finishImmediately() {
@@ -608,6 +611,7 @@ public class RenderImage {
     public interface EventListener {
 
         public void removeSelf(RenderImage image);
+
         public void doneLoading();
 
     }

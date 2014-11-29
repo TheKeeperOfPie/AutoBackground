@@ -18,19 +18,14 @@ package cw.kop.autobackground.tutorial;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import cw.kop.autobackground.R;
@@ -39,9 +34,9 @@ import cw.kop.autobackground.settings.AppSettings;
 /**
  * Created by TheKeeperOfPie on 11/23/2014.
  */
-public class FinishFragment extends Fragment {
+public class ImageFragment extends Fragment {
 
-    private static final String TAG = FinishFragment.class.getCanonicalName();
+    private static final String TAG = ImageFragment.class.getCanonicalName();
     private Context appContext;
 
     @Override
@@ -61,40 +56,47 @@ public class FinishFragment extends Fragment {
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.tutorial_finish_fragment, container, false);
+        View view = inflater.inflate(R.layout.tutorial_image_fragment, container, false);
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
         TextView titleText = (TextView) view.findViewById(R.id.title_text);
         titleText.setTextColor(colorFilterInt);
-        titleText.setText("That's it.");
+        titleText.setText("Wallpaper layout");
 
         TextView tutorialText = (TextView) view.findViewById(R.id.tutorial_text);
         tutorialText.setTextColor(colorFilterInt);
-        tutorialText.setText(
-                "Now you're ready to use AutoBackground. I'd suggest adding a new source first " +
-                        "and then hitting download." +
-                        "\n" +
-                        "\n" +
-                        "If you have any questions, concerns, suggestions, or whatever else, feel free to " +
-                        "email me at ");
-        SpannableString emailString = new SpannableString("chiuwinson@gmail.com");
-        ClickableSpan clickableSpan = new ClickableSpan() {
+        tutorialText.setText("Would you like to use a single image or double image layout?");
+
+        final ImageView deviceImage = (ImageView) view.findViewById(R.id.device_image);
+        deviceImage.setVisibility(AppSettings.useDoubleImage() ? View.INVISIBLE : View.VISIBLE);
+
+        final ImageView deviceDoubleImage = (ImageView) view.findViewById(R.id.device_double_image);
+        deviceDoubleImage.setVisibility(AppSettings.useDoubleImage() ?
+                View.VISIBLE :
+                View.INVISIBLE);
+
+
+        Button singleButton = (Button) view.findViewById(R.id.single_button);
+        singleButton.setText("Single");
+        singleButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View widget) {
-                Log.i(TAG, "Clicked");
-                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts(
-                        "mailto", "chiuwinson@gmail.com", null));
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "AutoBackground Feedback");
-                startActivity(Intent.createChooser(emailIntent, "Send email"));
+            public void onClick(View v) {
+                AppSettings.setUseDoubleImage(false);
+                deviceImage.setVisibility(View.VISIBLE);
+                deviceDoubleImage.setVisibility(View.INVISIBLE);
             }
-        };
-        emailString.setSpan(clickableSpan,
-                0,
-                emailString.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        tutorialText.append(emailString);
-        tutorialText.append(".");
-        tutorialText.setMovementMethod(LinkMovementMethod.getInstance());
+        });
+
+        Button doubleButton = (Button) view.findViewById(R.id.double_button);
+        doubleButton.setText("Double");
+        doubleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AppSettings.setUseDoubleImage(true);
+                deviceDoubleImage.setVisibility(View.VISIBLE);
+                deviceImage.setVisibility(View.INVISIBLE);
+            }
+        });
 
         return view;
     }

@@ -26,7 +26,6 @@ import android.support.v4.app.Fragment;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,8 +33,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-
-import org.w3c.dom.Text;
 
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
@@ -127,21 +124,14 @@ public class CardFragment extends Fragment implements View.OnClickListener {
         Picasso.with(appContext).load(R.drawable.preview_image_0).fit().centerCrop().into(image);
 
         TextView titleText = (TextView) view.findViewById(R.id.title_text);
+        titleText.setTextColor(colorFilterInt);
         titleText.setText("Sources");
 
         TextView tutorialText = (TextView) view.findViewById(R.id.tutorial_text);
+        tutorialText.setTextColor(colorFilterInt);
         tutorialText.setText("These are the parts that make up your wallpaper. " +
                 "Each represents an image source like an album from Imgur or " +
                 "a subreddit.");
-
-//        cardText.setText("These are the different parts of the wallpaper, which are represented by " +
-//                "a card like the one below." +
-//                "\n" +
-//                "Sources are entries which represent a source of images to use for your device's wallpaper, " +
-//                "such as an Album from Imgur or a Subreddit." +
-//                "\n" +
-//                "Each source card contains a preview image, the title, and buttons corresponding to " +
-//                "delete, view, and edit actions. Also, clicking on a card will expand it and show additional information.");
 
         return view;
     }

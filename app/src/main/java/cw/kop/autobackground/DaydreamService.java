@@ -103,43 +103,44 @@ public class DaydreamService extends DreamService {
 
 
         glSurfaceView.setEGLContextClientVersion(2);
-        renderer = WallpaperRenderer.getInstance(getApplicationContext(), new WallpaperRenderer.Callback() {
+        renderer = WallpaperRenderer.getInstance(getApplicationContext(),
+                new WallpaperRenderer.Callback() {
 
-            @Override
-            public void setRenderMode(int mode) {
-                glSurfaceView.setRenderMode(mode);
-            }
+                    @Override
+                    public void setRenderMode(int mode) {
+                        glSurfaceView.setRenderMode(mode);
+                    }
 
-            @Override
-            public void setPreserveContext(boolean preserveContext) {
-                glSurfaceView.setPreserveEGLContextOnPause(preserveContext);
-            }
+                    @Override
+                    public void setPreserveContext(boolean preserveContext) {
+                        glSurfaceView.setPreserveEGLContextOnPause(preserveContext);
+                    }
 
-            @Override
-            public void loadCurrent() {
+                    @Override
+                    public void loadCurrent() {
 
-            }
+                    }
 
-            @Override
-            public void loadPrevious() {
+                    @Override
+                    public void loadPrevious() {
 
-            }
+                    }
 
-            @Override
-            public void loadNext() {
+                    @Override
+                    public void loadNext() {
 
-            }
+                    }
 
-            @Override
-            public void loadMusic() {
+                    @Override
+                    public void loadMusic() {
 
-            }
+                    }
 
-            @Override
-            public void requestRender() {
-                glSurfaceView.requestRender();
-            }
-        });
+                    @Override
+                    public void requestRender() {
+                        glSurfaceView.requestRender();
+                    }
+                });
         glSurfaceView.setRenderer(renderer);
         glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 

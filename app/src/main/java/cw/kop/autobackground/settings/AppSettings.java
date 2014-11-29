@@ -16,7 +16,6 @@
 
 package cw.kop.autobackground.settings;
 
-import android.annotation.SuppressLint;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -40,7 +39,7 @@ public class AppSettings {
 
     public static final String WEBSITE = "Website";
     public static final String FOLDER = "Folder";
-//    public static final String IMGUR = "imgur";
+    //    public static final String IMGUR = "imgur";
     public static final String IMGUR_SUBREDDIT = "Imgur Subreddit";
     public static final String IMGUR_ALBUM = "Imgur Album";
     public static final String GOOGLE_ALBUM = "Google+ Album";
@@ -68,27 +67,22 @@ public class AppSettings {
         return prefs.getBoolean("first_run", true);
     }
 
-    public static void setTutorial(boolean use, String name) {
-        prefs.edit().putBoolean("tutorial_" + name, use).apply();
-    }
-
     public static boolean useFabric() {
-        return prefs.getBoolean("use_fabric", true);
+        return prefs.getBoolean("use_fabric", false);
     }
 
     public static void setUseFabric(boolean use) {
         prefs.edit().putBoolean("use_fabric", use).commit();
     }
 
-    public static boolean useSourceTutorial() {
-        return prefs.getBoolean("tutorial_source", true);
+    public static boolean useTutorial() {
+        return prefs.getBoolean("use_tutorial", true);
     }
 
-    public static boolean useNotificationTutorial() {
-        return prefs.getBoolean("tutorial_notification", true);
+    public static void setUseTutorial(boolean use) {
+        prefs.edit().putBoolean("use_tutorial", use).commit();
     }
 
-    @SuppressLint("CommitPrefEdits")
     public static void initPrefs(SharedPreferences preferences, Context context) {
         prefs = preferences;
         if (isFirstRun()) {
@@ -109,8 +103,6 @@ public class AppSettings {
             setNotificationOptionDrawable(0, R.drawable.ic_content_copy_white_24dp);
             setNotificationOptionDrawable(1, R.drawable.ic_refresh_white_24dp);
             setNotificationOptionDrawable(2, R.drawable.ic_delete_white_24dp);
-            setTutorial(true, "source");
-            setTutorial(true, "notification");
             prefs.edit().putBoolean("use_timer", true).commit();
             setTimerDuration(172800000);
             prefs.edit().putBoolean("first_run", false).commit();
@@ -232,7 +224,8 @@ public class AppSettings {
 
                 if (getSourceData(i).contains("Tumblr Tag:")) {
 
-                    prefs.edit().putString("source_data_" + i, getSourceData(i).substring(12));
+                    prefs.edit().putString("source_data_" + i,
+                            getSourceData(i).substring(12)).commit();
 
                 }
 
@@ -531,6 +524,10 @@ public class AppSettings {
         return prefs.getBoolean("use_double_image", false);
     }
 
+    public static void setUseDoubleImage(boolean use) {
+        prefs.edit().putBoolean("use_double_image", use).commit();
+    }
+
     public static boolean useAnimation() {
         return prefs.getBoolean("use_animation", true);
     }
@@ -556,20 +553,20 @@ public class AppSettings {
         prefs.edit().putString("animation_safety_adv", buffer).commit();
     }
 
-    public static void setAnimationSpeed(int speed) {
-        prefs.edit().putInt("animation_speed", speed).commit();
-    }
-
     public static int getAnimationSpeed() {
         return prefs.getInt("animation_speed", 5);
     }
 
-    public static void setVerticalAnimationSpeed(int speed) {
-        prefs.edit().putInt("animation_speed_vertical", speed).commit();
+    public static void setAnimationSpeed(int speed) {
+        prefs.edit().putInt("animation_speed", speed).commit();
     }
 
     public static int getVerticalAnimationSpeed() {
         return prefs.getInt("animation_speed_vertical", 5);
+    }
+
+    public static void setVerticalAnimationSpeed(int speed) {
+        prefs.edit().putInt("animation_speed_vertical", speed).commit();
     }
 
     public static boolean scaleAnimationSpeed() {
@@ -593,12 +590,12 @@ public class AppSettings {
         prefs.edit().putString("animation_frame_rate", rate).commit();
     }
 
-    public static void setTransitionSpeed(int speed) {
-        prefs.edit().putInt("transition_speed", speed).commit();
-    }
-
     public static int getTransitionSpeed() {
         return prefs.getInt("transition_speed", 20);
+    }
+
+    public static void setTransitionSpeed(int speed) {
+        prefs.edit().putInt("transition_speed", speed).commit();
     }
 
     public static boolean useFade() {
@@ -613,14 +610,13 @@ public class AppSettings {
         return prefs.getBoolean("reverse_overshoot", false);
     }
 
-    public static void setOvershootIntensity(int intensity) {
-        prefs.edit().putInt("overshoot_intensity", intensity).commit();
-    }
-
     public static int getOvershootIntensity() {
         return prefs.getInt("overshoot_intensity", 10);
     }
 
+    public static void setOvershootIntensity(int intensity) {
+        prefs.edit().putInt("overshoot_intensity", intensity).commit();
+    }
 
     public static boolean useVerticalOvershoot() {
         return prefs.getBoolean("use_overshoot_vertical", false);
@@ -630,12 +626,12 @@ public class AppSettings {
         return prefs.getBoolean("reverse_overshoot_vertical", false);
     }
 
-    public static void setVerticalOvershootIntensity(int intensity) {
-        prefs.edit().putInt("overshoot_intensity_vertical", intensity).commit();
-    }
-
     public static int getVerticalOvershootIntensity() {
         return prefs.getInt("overshoot_intensity_vertical", 10);
+    }
+
+    public static void setVerticalOvershootIntensity(int intensity) {
+        prefs.edit().putInt("overshoot_intensity_vertical", intensity).commit();
     }
 
     public static boolean useZoomIn() {
@@ -654,12 +650,12 @@ public class AppSettings {
         return prefs.getBoolean("reverse_spin_in", false);
     }
 
-    public static void setSpinInAngle(int angle) {
-        prefs.edit().putInt("spin_in_angle", angle).commit();
-    }
-
     public static int getSpinInAngle() {
         return prefs.getInt("spin_in_angle", 2700);
+    }
+
+    public static void setSpinInAngle(int angle) {
+        prefs.edit().putInt("spin_in_angle", angle).commit();
     }
 
     public static boolean useSpinOut() {
@@ -670,12 +666,12 @@ public class AppSettings {
         return prefs.getBoolean("reverse_spin_out", false);
     }
 
-    public static void setSpinOutAngle(int angle) {
-        prefs.edit().putInt("spin_out_angle", angle).commit();
-    }
-
     public static int getSpinOutAngle() {
         return prefs.getInt("spin_out_angle", 2700);
+    }
+
+    public static void setSpinOutAngle(int angle) {
+        prefs.edit().putInt("spin_out_angle", angle).commit();
     }
 
     public static boolean useAdvanced() {

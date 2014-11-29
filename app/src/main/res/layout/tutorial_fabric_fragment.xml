@@ -15,18 +15,18 @@
   ~ limitations under the License.
   -->
 
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
 
     <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fadeScrollbars="false"
-        android:layout_centerInParent="true">
+        android:layout_gravity="bottom">
 
         <LinearLayout
             android:orientation="vertical"
@@ -34,33 +34,6 @@
             android:layout_height="wrap_content"
             android:padding="@dimen/side_margin"
             >
-
-            <TextView
-                android:id="@+id/title_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:layout_marginStart="@dimen/side_margin"
-                android:layout_marginLeft="@dimen/side_margin"
-                android:layout_marginEnd="@dimen/side_margin"
-                android:layout_marginRight="@dimen/side_margin"
-                android:layout_marginBottom="8dp"
-                android:textSize="24sp"
-                />
-
-            <TextView
-                android:id="@+id/tutorial_text"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxHeight="240dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginStart="@dimen/side_margin"
-                android:layout_marginLeft="@dimen/side_margin"
-                android:layout_marginEnd="@dimen/side_margin"
-                android:layout_marginRight="@dimen/side_margin"
-                android:layout_marginBottom="8dp"
-                android:textSize="16sp"
-                />
 
             <TextView
                 android:id="@+id/fabric_text"
@@ -89,8 +62,35 @@
                 android:layout_gravity="center_horizontal"
                 />
 
+            <TextView
+                android:id="@+id/title_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="@dimen/side_margin"
+                android:layout_marginLeft="@dimen/side_margin"
+                android:layout_marginEnd="@dimen/side_margin"
+                android:layout_marginRight="@dimen/side_margin"
+                android:layout_marginBottom="8dp"
+                android:textSize="24sp"
+                />
+
+            <TextView
+                android:id="@+id/tutorial_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxHeight="240dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="@dimen/side_margin"
+                android:layout_marginLeft="@dimen/side_margin"
+                android:layout_marginEnd="@dimen/side_margin"
+                android:layout_marginRight="@dimen/side_margin"
+                android:layout_marginBottom="8dp"
+                android:textSize="16sp"
+                />
+
         </LinearLayout>
 
     </ScrollView>
 
-</RelativeLayout>
+</LinearLayout>

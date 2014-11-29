@@ -40,7 +40,6 @@ import android.graphics.drawable.LayerDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
@@ -308,7 +307,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         Log.i(TAG, "onCreateService");
     }
-
 
 
     private void setIntents() {
@@ -663,7 +661,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     coloredImageThree.getIntrinsicHeight());
             coloredImageThree.draw(canvasThree);
 
-            if (AppSettings.useNotificationGame()){
+            if (AppSettings.useNotificationGame()) {
                 if (setupGameTiles()) {
                     bigView = new RemoteViews(getPackageName(), R.layout.notification_game);
                     tileIds = new int[] {
@@ -692,7 +690,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                 else {
                     bigView = new RemoteViews(getPackageName(), R.layout.notification_big_layout);
                     closeNotificationDrawer(LiveWallpaperService.this);
-                    Toast.makeText(LiveWallpaperService.this, "Not enough images to create game",  Toast.LENGTH_LONG).show();
+                    Toast.makeText(LiveWallpaperService.this,
+                            "Not enough images to create game",
+                            Toast.LENGTH_LONG).show();
                     AppSettings.setUseNotificationGame(false);
                 }
             }
@@ -1160,7 +1160,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                                 ScaleGestureDetector detector) {
 
                             if (AppSettings.useScale()) {
-                                renderer.setScaleFactor(detector.getScaleFactor(), detector.getFocusY());
+                                renderer.setScaleFactor(detector.getScaleFactor(),
+                                        detector.getFocusY());
 
                                 render();
                                 return true;

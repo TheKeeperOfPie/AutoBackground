@@ -20,7 +20,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -135,7 +134,7 @@ public class LocalImageAdapter extends BaseAdapter {
                 fileSummary.setText("" + (file.length() / BYTE_TO_MEBIBYTE) + " MiB");
             }
 
-            if (position == 0 &&  hideFirst) {
+            if (position == 0 && hideFirst) {
                 view.setAlpha(1.0f);
             }
 

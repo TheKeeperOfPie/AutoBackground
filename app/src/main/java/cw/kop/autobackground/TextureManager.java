@@ -16,14 +16,6 @@
 
 package cw.kop.autobackground;
 
-import android.graphics.Bitmap;
-import android.opengl.GLES20;
-import android.opengl.GLSurfaceView;
-import android.opengl.GLUtils;
-import android.util.Log;
-
-import cw.kop.autobackground.settings.AppSettings;
-
 /**
  * Created by TheKeeperOfPie on 11/14/2014.
  */

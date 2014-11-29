@@ -42,7 +42,6 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -156,7 +155,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourceNum = (EditText) headerView.findViewById(R.id.source_num);
 
         ViewGroup.LayoutParams params = sourceImage.getLayoutParams();
-        params.height = (int) ((container.getWidth() -  2f * getResources().getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
+        params.height = (int) ((container.getWidth() - 2f * getResources().getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
         sourceImage.setLayoutParams(params);
 
         cancelButton = (Button) view.findViewById(R.id.cancel_button);
@@ -168,7 +167,10 @@ public class SourceInfoFragment extends PreferenceFragment {
         saveButton.setTextColor(colorFilterInt);
 
         // Adjust alpha to get faded hint color from regular text color
-        int hintColor = Color.argb(0x88, Color.red(colorFilterInt), Color.green(colorFilterInt), Color.blue(colorFilterInt));
+        int hintColor = Color.argb(0x88,
+                Color.red(colorFilterInt),
+                Color.green(colorFilterInt),
+                Color.blue(colorFilterInt));
 
         sourceTitle.setHintTextColor(hintColor);
         sourceData.setHintTextColor(hintColor);

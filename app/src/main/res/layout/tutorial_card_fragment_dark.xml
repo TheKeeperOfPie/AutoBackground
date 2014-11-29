@@ -35,7 +35,7 @@
             >
 
             <include
-                layout="@layout/source_list_card"
+                layout="@layout/source_list_card_dark"
                 android:id="@+id/tutorial_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

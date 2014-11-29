@@ -53,7 +53,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.amlcurran.showcaseview.ShowcaseView;
-import com.github.amlcurran.showcaseview.targets.ViewTarget;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -92,7 +91,6 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     private ImageView optionOneHighlight;
     private ImageView optionTwoHighlight;
     private ImageView optionThreeHighlight;
-    private ShowcaseView previewTutorial;
 
     public NotificationSettingsFragment() {
     }
@@ -209,30 +207,6 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             }
         });
 
-        Preference tutorialPref = findPreference("show_tutorial_notification");
-        tutorialPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                previewTutorial = new ShowcaseView.Builder(getActivity())
-                        .setContentTitle("Notification Customization")
-                        .setContentText("This is where you can change \n" +
-                                "how the persistent notification looks. \n" +
-                                "To customize a part, simply click on it \n" +
-                                "inside this preview.")
-                        .setStyle(R.style.ShowcaseStyle)
-                        .setTarget(new ViewTarget(notificationPreview))
-                        .setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                hide(previewTutorial);
-                                AppSettings.setTutorial(false, "notification");
-                            }
-                        })
-                        .build();
-                return true;
-            }
-        });
-
         Log.i("NSF", "Options shown");
 
 
@@ -335,45 +309,6 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     public void onResume() {
         super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-        if (AppSettings.useNotificationTutorial()) {
-
-            DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
-                @Override
-                public void onClickRight(View v) {
-                    previewTutorial = new ShowcaseView.Builder(getActivity())
-                            .setContentTitle("Notification Customization")
-                            .setContentText("This is where you can change \n" +
-                                    "how the persistent notification looks. \n" +
-                                    "To customize a part, simply click on it \n" +
-                                    "inside this preview.")
-                            .setStyle(R.style.ShowcaseStyle)
-                            .setTarget(new ViewTarget(notificationPreview))
-                            .setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    hide(previewTutorial);
-                                }
-                            })
-                            .build();
-                    this.dismissDialog();
-                }
-
-                @Override
-                public void onDismiss() {
-                    AppSettings.setTutorial(false, "notification");
-                }
-            };
-
-            DialogFactory.showActionDialog(appContext,
-                    "",
-                    "Show Notification Tutorial?",
-                    clickListener,
-                    -1,
-                    R.string.cancel_button,
-                    R.string.ok_button);
-
-        }
-
     }
 
     @Override
@@ -388,10 +323,6 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     @Override
     public void onClick(View v) {
-
-        if (previewTutorial != null) {
-            previewTutorial.hide();
-        }
 
         if (v.getId() == R.id.notification_option_one) {
             clearHighlights();

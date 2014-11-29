@@ -61,8 +61,10 @@ public class FabricFragment extends Fragment {
             @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.tutorial_fabric_fragment, container, false);
+        int colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
         fabricText = (TextView) view.findViewById(R.id.fabric_text);
+        fabricText.setTextColor(colorFilterInt);
         resetFabricText(AppSettings.useFabric());
 
         CheckBox fabricCheckBox = (CheckBox) view.findViewById(R.id.fabric_check_box);
@@ -76,11 +78,14 @@ public class FabricFragment extends Fragment {
         });
 
         TextView titleText = (TextView) view.findViewById(R.id.title_text);
+        titleText.setTextColor(colorFilterInt);
         titleText.setText("Crash reporting");
 
         TextView tutorialText = (TextView) view.findViewById(R.id.tutorial_text);
-        tutorialText.setText("Would you like to help the developer and report usage and crash data? " +
-                "No personal data is collected.");
+        tutorialText.setTextColor(colorFilterInt);
+        tutorialText.setText(
+                "Would you like to help the developer and report usage and crash data? " +
+                        "No personal data is collected.");
 
         return view;
     }
@@ -90,7 +95,9 @@ public class FabricFragment extends Fragment {
         SpannableString text;
         if (use) {
             text = new SpannableString("Thanks!");
-            text.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.BLUE_OPAQUE)), 0, text.length(),
+            text.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.BLUE_OPAQUE)),
+                    0,
+                    text.length(),
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         else {

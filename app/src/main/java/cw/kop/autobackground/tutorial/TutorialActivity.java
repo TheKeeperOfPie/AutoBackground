@@ -22,11 +22,8 @@ import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.widget.Button;
 
-import com.crashlytics.android.Crashlytics;
-
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
-import io.fabric.sdk.android.Fabric;
 
 /**
  * Created by TheKeeperOfPie on 10/30/2014.
@@ -41,6 +38,16 @@ public class TutorialActivity extends FragmentActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        switch (AppSettings.getTheme()) {
+
+            case AppSettings.APP_LIGHT_THEME:
+                setTheme(R.style.AppLightTheme);
+                break;
+            case AppSettings.APP_DARK_THEME:
+                setTheme(R.style.AppDarkTheme);
+                break;
+        }
 
         super.onCreate(savedInstanceState);
 
@@ -58,7 +65,7 @@ public class TutorialActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 finish();
-                AppSettings.setTutorial(false, "source");
+                AppSettings.setUseTutorial(false);
             }
         });
 
@@ -74,9 +81,11 @@ public class TutorialActivity extends FragmentActivity {
                 }
                 else {
                     finish();
-                    AppSettings.setTutorial(false, "source");
+                    AppSettings.setUseTutorial(false);
                 }
             }
         });
+
+        viewPager.setCurrentItem(getIntent().getIntExtra("position", 0));
     }
 }

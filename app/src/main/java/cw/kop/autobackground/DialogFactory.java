@@ -553,7 +553,6 @@ public class DialogFactory {
     }
 
 
-
     public abstract static class DialogClickListener {
 
         private Dialog dialog;
@@ -633,12 +632,12 @@ public class DialogFactory {
             this.valueText = valueText;
         }
 
-        public void setValueText(String text) {
-            valueText.setText(text);
-        }
-
         public String getValueText() {
             return valueText.getText().toString();
+        }
+
+        public void setValueText(String text) {
+            valueText.setText(text);
         }
 
         public void setSeekBar(SeekBar seekBar) {

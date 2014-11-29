@@ -20,22 +20,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.lang.reflect.Field;
-
-import cw.kop.autobackground.MenuWrapper;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -83,9 +77,11 @@ public class ActionBarFragment extends Fragment {
         menu.getItem(2).setIcon(storageIcon);
 
         TextView buttonTitleText = (TextView) view.findViewById(R.id.button_title_text);
+        buttonTitleText.setTextColor(colorFilterInt);
         buttonTitleText.setText("ActionBar buttons");
 
         TextView buttonTutorialText = (TextView) view.findViewById(R.id.button_tutorial_text);
+        buttonTutorialText.setTextColor(colorFilterInt);
         buttonTutorialText.setText("Cycle wallpaper, download new images, and sort sources. " +
                 "Hit download after adding some sources to fetch the images.");
 
@@ -95,9 +91,11 @@ public class ActionBarFragment extends Fragment {
         settingToolbar.setNavigationIcon(navIcon);
 
         TextView settingTitleText = (TextView) view.findViewById(R.id.setting_title_text);
+        settingTitleText.setTextColor(colorFilterInt);
         settingTitleText.setText("More settings");
 
         TextView settingTutorialText = (TextView) view.findViewById(R.id.setting_tutorial_text);
+        settingTutorialText.setTextColor(colorFilterInt);
         settingTutorialText.setText("Open the drawer to access additional settings.");
 
         return view;

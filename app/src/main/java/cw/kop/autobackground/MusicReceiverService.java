@@ -18,7 +18,6 @@ package cw.kop.autobackground;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -28,16 +27,12 @@ import android.media.MediaMetadataRetriever;
 import android.media.RemoteControlClient;
 import android.media.RemoteController;
 import android.media.session.MediaController;
-import android.media.session.MediaSession;
-import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
 import android.os.Build;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.widget.Toast;
-
-import java.util.List;
 
 import cw.kop.autobackground.files.FileHandler;
 
@@ -56,7 +51,9 @@ public class MusicReceiverService extends NotificationListenerService implements
     private MediaController.Callback callback = new MediaController.Callback() {
         @Override
         public void onPlaybackStateChanged(PlaybackState state) {
-            Toast.makeText(getApplicationContext(), "PlaybackState: " + state, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),
+                    "PlaybackState: " + state,
+                    Toast.LENGTH_SHORT).show();
             super.onPlaybackStateChanged(state);
         }
 
@@ -96,7 +93,6 @@ public class MusicReceiverService extends NotificationListenerService implements
     public int onStartCommand(Intent intent, int flags, int startId) {
 
 
-
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -106,9 +102,12 @@ public class MusicReceiverService extends NotificationListenerService implements
 
         audioRemoteController = new RemoteController(getApplicationContext(), this);
         audioRemoteController.setArtworkConfiguration(4096, 4096);
-        boolean registered = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).registerRemoteController(audioRemoteController);
+        boolean registered = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).registerRemoteController(
+                audioRemoteController);
         Log.i(TAG, "Audio registered: " + registered);
-        Toast.makeText(MusicReceiverService.this, "Audio registered: " + registered, Toast.LENGTH_SHORT).show();
+        Toast.makeText(MusicReceiverService.this,
+                "Audio registered: " + registered,
+                Toast.LENGTH_SHORT).show();
 
 //        MediaSession mediaSession = new MediaSession(getApplicationContext(), "autobackground");
 //

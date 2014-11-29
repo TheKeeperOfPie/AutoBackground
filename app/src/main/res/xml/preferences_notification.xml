@@ -67,12 +67,6 @@
             android:title="@string/high_resolution_notification_icon"
             />
 
-        <Preference
-            android:key="show_tutorial_notification"
-            android:summary="@string/show_tutorial_notification_description"
-            android:title="@string/show_tutorial_notification"
-            />
-
     </PreferenceCategory>
 
 </PreferenceScreen>

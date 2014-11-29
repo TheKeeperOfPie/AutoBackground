@@ -81,15 +81,19 @@ public class ButtonFragment extends Fragment {
         editButton.setOnClickListener(null);
 
         TextView addTitleText = (TextView) view.findViewById(R.id.add_title_text);
+        addTitleText.setTextColor(colorFilterInt);
         addTitleText.setText("Adding new sources");
 
         TextView addTutorialText = (TextView) view.findViewById(R.id.add_tutorial_text);
+        addTutorialText.setTextColor(colorFilterInt);
         addTutorialText.setText("Easily add a new source from a variety of different places.");
 
         TextView buttonTitleText = (TextView) view.findViewById(R.id.button_title_text);
+        buttonTitleText.setTextColor(colorFilterInt);
         buttonTitleText.setText("Source actions");
 
         TextView buttonTutorialText = (TextView) view.findViewById(R.id.button_tutorial_text);
+        buttonTutorialText.setTextColor(colorFilterInt);
         buttonTutorialText.setText("Delete, view, and edit each source.");
 
         return view;

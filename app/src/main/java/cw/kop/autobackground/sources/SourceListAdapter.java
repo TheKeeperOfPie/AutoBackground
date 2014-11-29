@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -33,7 +32,6 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -173,7 +171,7 @@ public class SourceListAdapter extends BaseAdapter {
 
         if (preview) {
             imageParams.height = (int) ((parent.getWidth() - 2f * resources.getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
-            Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_24dp);
+            Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_48dp);
             downloadDrawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
                     PorterDuff.Mode.MULTIPLY);
             image.setImageDrawable(downloadDrawable);
@@ -208,7 +206,11 @@ public class SourceListAdapter extends BaseAdapter {
         }
         else {
             Picasso.with(parent.getContext()).load(android.R.color.transparent).into(image);
-            imageParams.height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 28, resources.getDisplayMetrics()) + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, resources.getDisplayMetrics()));
+            imageParams.height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
+                    28,
+                    resources.getDisplayMetrics()) + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                    24,
+                    resources.getDisplayMetrics()));
         }
 
         if (!preview) {

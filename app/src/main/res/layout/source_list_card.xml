@@ -53,7 +53,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="160dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_file_download_white_24dp"
+                android:src="@drawable/ic_file_download_white_48dp"
                 />
 
             <View

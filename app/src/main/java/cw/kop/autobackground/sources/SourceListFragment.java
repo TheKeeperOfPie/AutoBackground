@@ -41,7 +41,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.CardView;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -416,7 +415,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     /**
      * Shows LocalImageFragment to view images
      *
-     * @param view source card which was selected
+     * @param view  source card which was selected
      * @param index position of source in listAdapter
      */
     private void showViewImageFragment(final View view, final int index) {
@@ -427,7 +426,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         HashMap<String, String> item = listAdapter.getItem(index);
         String type = item.get("type");
         String directory;
-        if (type.equals(AppSettings.FOLDER)){
+        if (type.equals(AppSettings.FOLDER)) {
             directory = AppSettings.getSourceData(index);
         }
         else {
@@ -667,7 +666,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
                 listAdapter.saveData();
                 if (FileHandler.isDownloading) {
-                    Toast.makeText(appContext, "Cannot delete while downloading", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(appContext,
+                            "Cannot delete while downloading",
+                            Toast.LENGTH_SHORT).show();
                     return;
                 }
 

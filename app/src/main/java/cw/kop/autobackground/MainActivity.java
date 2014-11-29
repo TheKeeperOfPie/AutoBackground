@@ -130,9 +130,6 @@ public class MainActivity extends ActionBarActivity {
             case AppSettings.APP_DARK_THEME:
                 setTheme(R.style.AppDarkTheme);
                 break;
-            case AppSettings.APP_TRANSPARENT_THEME:
-                setTheme(R.style.AppTransparentTheme);
-                break;
         }
 
         super.onCreate(savedInstanceState);
@@ -283,7 +280,7 @@ public class MainActivity extends ActionBarActivity {
             drawerToggle.syncState();
         }
 
-        if (AppSettings.useSourceTutorial()) {
+        if (AppSettings.useTutorial()) {
             Intent tutorialIntent = new Intent(this, TutorialActivity.class);
             startActivityForResult(tutorialIntent, TutorialActivity.TUTORIAL_REQUEST);
         }

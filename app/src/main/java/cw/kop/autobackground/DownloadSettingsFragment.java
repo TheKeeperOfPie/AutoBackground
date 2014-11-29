@@ -37,7 +37,6 @@ import android.widget.AdapterView;
 import android.widget.Toast;
 
 import java.util.Calendar;
-import java.util.HashSet;
 
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.LocalImageFragment;

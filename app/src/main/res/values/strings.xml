@@ -304,8 +304,6 @@
     <string name="history_size_description">Number of images to store in previous buffer</string>
     <string name="high_resolution_notification_icon">Force high resolution icon</string>
     <string name="high_resolution_notification_icon_description">Loads higher resolution icon, not recommended as this will cause lag</string>
-    <string name="show_tutorial_notification">Reshow Notification Tutorial</string>
-    <string name="show_tutorial_notification_description">Click to reshow notification tutorial screen</string>
 
     <string name="about_libraries">Used Libraries</string>
     <string name="about_libraries_description">The following libraries were used in the creation of this application. Click on their entries to check them out.</string>

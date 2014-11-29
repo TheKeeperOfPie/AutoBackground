@@ -54,7 +54,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -106,7 +105,9 @@ public class DownloadThread extends Thread {
 
             if (Build.VERSION.SDK_INT >= 16) {
                 notifyProgress.setPriority(Notification.PRIORITY_MIN);
-                notifyProgress.addAction(R.drawable.ic_cancel_white_24dp, "Stop Download", pendingStopIntent);
+                notifyProgress.addAction(R.drawable.ic_cancel_white_24dp,
+                        "Stop Download",
+                        pendingStopIntent);
             }
 
             updateNotification(0);
@@ -298,9 +299,12 @@ public class DownloadThread extends Thread {
         totalDownloaded += numDownloaded;
     }
 
-    private void renameAndReorder(String dir, String title, int targetNum, Set<File> downloadedFiles) {
+    private void renameAndReorder(String dir,
+            String title,
+            int targetNum,
+            Set<File> downloadedFiles) {
 
-        File mainDir = new File(dir + "/" + title + " " +  AppSettings.getImagePrefix());
+        File mainDir = new File(dir + "/" + title + " " + AppSettings.getImagePrefix());
 
         FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
 
@@ -563,7 +567,8 @@ public class DownloadThread extends Thread {
 
         try {
             HttpGet httpGet = new HttpGet(apiUrl);
-            httpGet.setHeader("User-Agent", "AutoBackground/" + BuildConfig.VERSION_NAME + " by TheKeeperOfPie");
+            httpGet.setHeader("User-Agent",
+                    "AutoBackground/" + BuildConfig.VERSION_NAME + " by TheKeeperOfPie");
 
             String response = getResponse(httpGet);
             if (response == null) {
@@ -748,7 +753,11 @@ public class DownloadThread extends Thread {
         image.recycle();
     }
 
-    private void writeToFileWithThumbnail(Bitmap image, String saveData, String dir, File file, long time) {
+    private void writeToFileWithThumbnail(Bitmap image,
+            String saveData,
+            String dir,
+            File file,
+            long time) {
 
         if (file.isFile()) {
             file.delete();
