@@ -112,27 +112,7 @@ public class DaydreamService extends DreamService {
                     }
 
                     @Override
-                    public void setPreserveContext(boolean preserveContext) {
-                        glSurfaceView.setPreserveEGLContextOnPause(preserveContext);
-                    }
-
-                    @Override
                     public void loadCurrent() {
-
-                    }
-
-                    @Override
-                    public void loadPrevious() {
-
-                    }
-
-                    @Override
-                    public void loadNext() {
-
-                    }
-
-                    @Override
-                    public void loadMusic() {
 
                     }
 

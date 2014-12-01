@@ -62,7 +62,9 @@ public class CardFragment extends Fragment implements View.OnClickListener {
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
 
-        final View view = inflater.inflate(R.layout.tutorial_card_fragment, container, false);
+        final View view = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
+                inflater.inflate(R.layout.tutorial_card_fragment, container, false) :
+                inflater.inflate(R.layout.tutorial_card_fragment_dark, container, false);
         View sourceCard = view.findViewById(R.id.source_card);
         sourceCard.setOnClickListener(this);
 

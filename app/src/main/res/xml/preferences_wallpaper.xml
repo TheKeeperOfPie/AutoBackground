@@ -57,14 +57,6 @@
             android:title="@string/scale_images"
             />
 
-
-        <cw.kop.autobackground.CustomSwitchPreference
-            android:defaultValue="false"
-            android:key="show_album_art"
-            android:summary="@string/show_album_art_description"
-            android:title="@string/show_album_art"
-            />
-
     </PreferenceCategory>
 
     <PreferenceCategory

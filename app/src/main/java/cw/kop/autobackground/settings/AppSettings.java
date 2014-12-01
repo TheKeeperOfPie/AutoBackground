@@ -91,7 +91,7 @@ public class AppSettings {
             prefs.edit().putString("user_height",
                     "" + (WallpaperManager.getInstance(context).getDesiredMinimumHeight() / 2)).commit();
             prefs.edit().putInt("num_sources", 1).commit();
-            prefs.edit().putString("source_type_0", "website").commit();
+            prefs.edit().putString("source_type_0", WEBSITE).commit();
             prefs.edit().putString("source_title_0", "Kai Lehnberg Photography").commit();
             prefs.edit().putString("source_data_0",
                     "http://www.reddit.com/user/Ziphius/submitted/?sort=top").commit();
@@ -1189,8 +1189,7 @@ public class AppSettings {
     }
 
     public static boolean useEffects() {
-        return false;
-//        return prefs.getBoolean("use_effects", false);
+        return prefs.getBoolean("use_effects", false);
     }
 
     public static boolean useToastEffects() {

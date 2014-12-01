@@ -447,7 +447,7 @@
         <item>Wallpaper</item>
         <item>Downloader</item>
         <item>Accounts</item>
-        <!--<item>Effects</item>-->
+        <item>Effects</item>
         <item>Notification</item>
         <item>Application</item>
         <item>History</item>
@@ -459,7 +459,7 @@
         <item>Change settings for wallpaper</item>
         <item>Change settings for downloading</item>
         <item>Connect accounts</item>
-        <!--<item>Change image effects</item>-->
+        <item>Change image effects</item>
         <item>Change notification look</item>
         <item>Various settings for app</item>
         <item>Various information</item>

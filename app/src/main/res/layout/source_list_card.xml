@@ -75,8 +75,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignBottom="@id/source_image"
-                android:layout_toLeftOf="@+id/source_delete_button"
-                android:layout_toStartOf="@+id/source_delete_button"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentLeft="true"
                 android:layout_marginEnd="8dp"

@@ -377,7 +377,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
             wallpaperPreferences.removePreference(findPreference("fill_images"));
             wallpaperPreferences.removePreference(findPreference("preserve_context"));
             wallpaperPreferences.removePreference(findPreference("scale_images"));
-            wallpaperPreferences.removePreference(findPreference("show_album_art"));
 
             PreferenceCategory intervalPreferences = (PreferenceCategory) findPreference(
                     "title_interval_settings");
@@ -580,19 +579,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                     setIntervalAlarm();
                 }
                 Log.i("WSF", "Interval Set: " + AppSettings.useInterval());
-            }
-
-            if (key.equals("show_album_art")) {
-                Intent musicReceiverIntent = new Intent(appContext, MusicReceiverService.class);
-
-                if (AppSettings.showAlbumArt()) {
-                    appContext.startService(musicReceiverIntent);
-                    Log.i(TAG, "Starting MusicReceiverService");
-                }
-                else {
-                    appContext.stopService(musicReceiverIntent);
-                    Log.i(TAG, "Stopping MusicReceiverService");
-                }
             }
         }
     }

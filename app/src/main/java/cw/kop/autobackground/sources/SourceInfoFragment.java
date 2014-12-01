@@ -103,6 +103,7 @@ public class SourceInfoFragment extends PreferenceFragment {
     private Button saveButton;
 
     private int sourcePosition;
+    private String oldTitle;
     private String type;
     private String hint;
     private String prefix;
@@ -489,6 +490,10 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         }
         else {
+
+            if (!getArguments().getString("title").equals(title)) {
+                FileHandler.renameFolder(getArguments().getString("title"), title);
+            }
 
             if (FileHandler.isDownloading) {
                 Toast.makeText(appContext,

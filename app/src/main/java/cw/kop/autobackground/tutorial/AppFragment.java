@@ -22,11 +22,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import cw.kop.autobackground.R;
@@ -35,10 +39,11 @@ import cw.kop.autobackground.settings.AppSettings;
 /**
  * Created by TheKeeperOfPie on 11/23/2014.
  */
-public class ThemeFragment extends Fragment {
+public class AppFragment extends Fragment {
 
-    private static final String TAG = ThemeFragment.class.getCanonicalName();
+    private static final String TAG = AppFragment.class.getCanonicalName();
     private Context appContext;
+    private TextView fabricText;
 
     @Override
     public void onAttach(Activity activity) {
@@ -57,16 +62,16 @@ public class ThemeFragment extends Fragment {
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.tutorial_theme_fragment, container, false);
+        View view = inflater.inflate(R.layout.tutorial_app_fragment, container, false);
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
-        TextView titleText = (TextView) view.findViewById(R.id.title_text);
-        titleText.setTextColor(colorFilterInt);
-        titleText.setText("App theme");
+        TextView themeTitleText = (TextView) view.findViewById(R.id.theme_title_text);
+        themeTitleText.setTextColor(colorFilterInt);
+        themeTitleText.setText("App theme");
 
-        TextView tutorialText = (TextView) view.findViewById(R.id.tutorial_text);
-        tutorialText.setTextColor(colorFilterInt);
-        tutorialText.setText("Which device theme would you like to use?");
+        TextView themeTutorialText = (TextView) view.findViewById(R.id.theme_tutorial_text);
+        themeTutorialText.setTextColor(colorFilterInt);
+        themeTutorialText.setText("Which device theme would you like to use?");
 
         Button lightButton = (Button) view.findViewById(R.id.light_button);
         lightButton.setTextColor(colorFilterInt);
@@ -100,6 +105,49 @@ public class ThemeFragment extends Fragment {
             }
         });
 
+        fabricText = (TextView) view.findViewById(R.id.fabric_text);
+        fabricText.setTextColor(colorFilterInt);
+        resetFabricText(AppSettings.useFabric());
+
+        CheckBox fabricCheckBox = (CheckBox) view.findViewById(R.id.fabric_check_box);
+        fabricCheckBox.setChecked(AppSettings.useFabric());
+        fabricCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                AppSettings.setUseFabric(isChecked);
+                resetFabricText(isChecked);
+            }
+        });
+
+        TextView titleText = (TextView) view.findViewById(R.id.title_text);
+        titleText.setTextColor(colorFilterInt);
+        titleText.setText("Crash reporting");
+
+        TextView tutorialText = (TextView) view.findViewById(R.id.tutorial_text);
+        tutorialText.setTextColor(colorFilterInt);
+        tutorialText.setText(
+                "Would you like to help the developer and report usage and crash data? " +
+                        "No personal data is collected.");
+
         return view;
     }
+
+    private void resetFabricText(boolean use) {
+
+        SpannableString text;
+        if (use) {
+            text = new SpannableString("Thanks!");
+            text.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.BLUE_OPAQUE)),
+                    0,
+                    text.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        else {
+            text = new SpannableString("Send reports?");
+        }
+        fabricText.setText(text);
+        fabricText.invalidate();
+
+    }
+
 }

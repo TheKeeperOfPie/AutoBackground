@@ -27,6 +27,7 @@ import android.media.effect.EffectFactory;
 import android.media.effect.EffectUpdateListener;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -76,15 +77,12 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
     private long targetFrameTime;
     private Context serviceContext;
     private float rawOffsetX = 0f;
-    private boolean toEffect = false;
-    private boolean contextInitialized = false;
     private boolean loadCurrent = false;
-    private EffectContext effectContext;
-    private EffectFactory effectFactory;
     private Callback callback;
     private volatile List<RenderImage> renderImagesTop;
     private volatile List<RenderImage> renderImagesBottom;
     private boolean isLastTop = false;
+    private Handler handler;
     private RenderImage.EventListener eventListener = new RenderImage.EventListener() {
         @Override
         public void removeSelf(RenderImage image) {
@@ -106,6 +104,27 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                 Log.i(TAG, "Start finish bottom");
             }
         }
+
+        public Context getContext() {
+            return serviceContext;
+        }
+
+        @Override
+        public void toastEffect(final String effectName, final String effectValue) {
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(serviceContext,
+                            "Effect applied: " + effectName + " " + effectValue,
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        @Override
+        public void requestRender() {
+            callback.requestRender();
+        }
     };
 
     private WallpaperRenderer(Context context, Callback callback) {
@@ -114,6 +133,7 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         startTime = System.currentTimeMillis();
         renderImagesTop = new CopyOnWriteArrayList<>();
         renderImagesBottom = new CopyOnWriteArrayList<>();
+        handler = new Handler(serviceContext.getMainLooper());
     }
 
     public static WallpaperRenderer getInstance(Context context, Callback callback) {
@@ -126,25 +146,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-
-//        if (!contextInitialized) {
-//            effectContext = EffectContext.createWithCurrentGlContext();
-//            contextInitialized = true;
-//        }
-//
-//        if (toEffect && effectContext != null) {
-//            toEffect = false;
-//
-//            try {
-//                initEffects(0);
-//            }
-//            catch (RuntimeException e) {
-//                e.printStackTrace();
-//            }
-//            GLES20.glDeleteTextures(1, textureNames, 2);
-//            Log.i(TAG, "Deleted texture: " + textureNames[2]);
-//
-//        }
 
         try {
             endTime = System.currentTimeMillis();
@@ -360,10 +361,10 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     public void loadNext(File nextImage) {
         if (isLastTop) {
-            loadNext(nextImage, 0);
+            loadNext(nextImage, renderScreenHeight);
         }
         else {
-            loadNext(nextImage, renderScreenHeight);
+            loadNext(nextImage, 0);
         }
     }
 
@@ -372,8 +373,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         if (nextImage == null) {
             return;
         }
-
-        Log.i(TAG, "positionY: " + positionY);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         if (!AppSettings.useHighQuality()) {
@@ -398,12 +397,12 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                 if (positionY < renderScreenHeight / 2) {
                     newImage = getNewImage(scaleBitmap(bitmap,
                             renderScreenWidth,
-                            renderScreenHeight), 0.0f, 1.0f, 0.5f, 1.0f);
+                            renderScreenHeight / 2), 0.0f, 1.0f, 0.5f, 1.0f);
                 }
                 else {
                     newImage = getNewImage(scaleBitmap(bitmap,
                             renderScreenWidth,
-                            renderScreenHeight), 0.0f, 1.0f, 0.0f, 0.5f);
+                            renderScreenHeight / 2), 0.0f, 1.0f, 0.0f, 0.5f);
                 }
             }
             else {
@@ -438,6 +437,11 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
     }
 
     public Bitmap scaleBitmap(Bitmap bitmap, float targetWidth, float targetHeight) {
+        if (!AppSettings.scaleImages()) {
+            Log.i(TAG, "Not scaled");
+            return bitmap;
+        }
+
         int bitWidth = bitmap.getWidth();
         int bitHeight = bitmap.getHeight();
 
@@ -476,22 +480,11 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             }
 
             Matrix matrix = new Matrix();
-
-            if (AppSettings.fillImages()) {
-                if (scaleWidth > scaleHeight) {
-                    matrix.postScale(scaleWidth, scaleWidth);
-                }
-                else {
-                    matrix.postScale(scaleHeight, scaleHeight);
-                }
+            if (scaleWidth > scaleHeight) {
+                matrix.postScale(scaleHeight, scaleHeight);
             }
             else {
-                if (scaleWidth > scaleHeight) {
-                    matrix.postScale(scaleHeight, scaleHeight);
-                }
-                else {
-                    matrix.postScale(scaleWidth, scaleWidth);
-                }
+                matrix.postScale(scaleWidth, scaleWidth);
             }
 
             bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitWidth, bitHeight, matrix, false);
@@ -515,393 +508,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         return bitmap;
     }
 
-    private void initEffects(int texture) {
-
-        Random random = new Random();
-
-        if (effectFactory == null) {
-            effectFactory = effectContext.getFactory();
-        }
-
-        boolean randomApplied = false;
-
-        if (random.nextDouble() <= AppSettings.getRandomEffectsFrequency()) {
-            if (AppSettings.useRandomEffects()) {
-                applyRandomEffects(AppSettings.getRandomEffect(), texture);
-                randomApplied = true;
-                if (AppSettings.useEffectsOverride()) {
-                    applyManualEffects(texture);
-                }
-            }
-        }
-
-        if (random.nextDouble() > AppSettings.getEffectsFrequency()) {
-            toastEffect("Not applied", "");
-        }
-        else if (!randomApplied) {
-            applyManualEffects(texture);
-        }
-    }
-
-    private void applyEffect(Effect setEffect, int texture, String name,
-            String description) {
-/*
-        setEffect.setUpdateListener(effectUpdateListener);
-
-        GLES20.glDeleteTextures(1, textureNames, texture);
-        setEffect.apply(textureNames[2],
-                Math.round(renderScreenWidth),
-                Math.round(renderScreenHeight),
-                textureNames[texture]);
-        setEffect.release();
-
-        GLES20.glDeleteTextures(1, textureNames, 2);
-        Effect resetEffect = effectFactory.createEffect(EffectFactory.EFFECT_TEMPERATURE);
-        resetEffect.setParameter("scale", 0.5f);
-        resetEffect.apply(textureNames[texture],
-                Math.round(renderScreenWidth),
-                Math.round(renderScreenHeight),
-                textureNames[2]);
-        resetEffect.release();
-
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[texture]);
-
-        toastEffect(name, description);
-        Log.i(TAG, "Effect applied: " + name + "\n" + description);*/
-
-    }
-
-    private void applyManualEffects(int texture) {
-
-        Effect effect;
-
-        if (AppSettings.getAutoFixEffect() > 0.0f && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_AUTOFIX)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_AUTOFIX);
-            effect.setParameter("scale", AppSettings.getAutoFixEffect());
-            applyEffect(effect,
-                    texture,
-                    "Auto Fix",
-                    "Value:" + AppSettings.getAutoFixEffect());
-        }
-
-        if (AppSettings.getBrightnessEffect() != 1.0f && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_BRIGHTNESS)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_BRIGHTNESS);
-            effect.setParameter("brightness", AppSettings.getBrightnessEffect());
-            applyEffect(effect,
-                    texture,
-                    "Brightness",
-                    "Value:" + AppSettings.getBrightnessEffect());
-        }
-
-        if (AppSettings.getContrastEffect() != 1.0f && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_CONTRAST)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_CONTRAST);
-            effect.setParameter("contrast", AppSettings.getContrastEffect());
-            applyEffect(effect,
-                    texture,
-                    "Contrast",
-                    "Value:" + AppSettings.getContrastEffect());
-        }
-
-        if (AppSettings.getCrossProcessEffect() && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_CROSSPROCESS)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_CROSSPROCESS);
-            applyEffect(effect, texture, "Cross Process", "");
-        }
-
-        if (AppSettings.getDocumentaryEffect() && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_DOCUMENTARY)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_DOCUMENTARY);
-            applyEffect(effect, texture, "Documentary", "");
-        }
-
-        if (AppSettings.getDuotoneEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_DUOTONE)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
-            effect.setParameter("first_color", AppSettings.getDuotoneColor(1));
-            effect.setParameter("second_color", AppSettings.getDuotoneColor(2));
-            applyEffect(effect,
-                    texture,
-                    "Dual Tone",
-                    "\nColor 1: " + AppSettings.getDuotoneColor(1) + "\nColor 2: " + AppSettings.getDuotoneColor(
-                            2));
-        }
-
-        if (AppSettings.getFillLightEffect() > 0.0f && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_FILLLIGHT)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_FILLLIGHT);
-            effect.setParameter("strength", AppSettings.getFillLightEffect());
-            applyEffect(effect,
-                    texture,
-                    "Fill Light",
-                    "Value:" + AppSettings.getFillLightEffect());
-        }
-
-        if (AppSettings.getFisheyeEffect() > 0.0f && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_FISHEYE)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_FISHEYE);
-            effect.setParameter("scale", AppSettings.getFisheyeEffect());
-            applyEffect(effect,
-                    texture,
-                    "Fisheye",
-                    "Value:" + AppSettings.getFisheyeEffect());
-        }
-
-        if (AppSettings.getGrainEffect() > 0.0f && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_GRAIN)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAIN);
-            effect.setParameter("strength", AppSettings.getGrainEffect());
-            applyEffect(effect, texture, "Grain", "Value:" + AppSettings.getGrainEffect());
-        }
-
-        if (AppSettings.getGrayscaleEffect() && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_GRAYSCALE)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAYSCALE);
-            applyEffect(effect, texture, "Grayscale", "");
-        }
-
-        if (AppSettings.getLomoishEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_LOMOISH)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_LOMOISH);
-            applyEffect(effect, texture, "Lomoish", "");
-        }
-
-        if (AppSettings.getNegativeEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_NEGATIVE)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_NEGATIVE);
-            applyEffect(effect, texture, "Negaative", "");
-        }
-
-        if (AppSettings.getPosterizeEffect() && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_POSTERIZE)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_POSTERIZE);
-            applyEffect(effect, texture, "Posterize", "");
-        }
-
-        if (AppSettings.getSaturateEffect() != 0.0f && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_SATURATE)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_SATURATE);
-            effect.setParameter("scale", AppSettings.getSaturateEffect());
-            applyEffect(effect,
-                    texture,
-                    "Saturate",
-                    "Value:" + AppSettings.getSaturateEffect());
-        }
-
-        if (AppSettings.getSepiaEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_SEPIA)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_SEPIA);
-            applyEffect(effect, texture, "Sepia", "Value:");
-        }
-
-        if (AppSettings.getSharpenEffect() > 0.0f && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_SHARPEN)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_SHARPEN);
-            effect.setParameter("scale", AppSettings.getSharpenEffect());
-            applyEffect(effect,
-                    texture,
-                    "Sharpen",
-                    "Value:" + AppSettings.getSharpenEffect());
-        }
-
-        if (AppSettings.getTemperatureEffect() != 0.5f && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_TEMPERATURE)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_TEMPERATURE);
-            effect.setParameter("scale", AppSettings.getTemperatureEffect());
-            applyEffect(effect,
-                    texture,
-                    "Temperature",
-                    "Value:" + AppSettings.getTemperatureEffect());
-        }
-
-        if (AppSettings.getVignetteEffect() > 0.0f && EffectFactory.isEffectSupported(
-                EffectFactory.EFFECT_VIGNETTE)) {
-            effect = effectFactory.createEffect(EffectFactory.EFFECT_VIGNETTE);
-            effect.setParameter("scale", AppSettings.getVignetteEffect());
-            applyEffect(effect,
-                    texture,
-                    "Vignette",
-                    "Value:" + AppSettings.getVignetteEffect());
-        }
-    }
-
-    private void applyRandomEffects(String randomEffect, int texture) {
-
-        Random random = new Random();
-        Effect effect;
-
-        switch (randomEffect) {
-            case "Completely Random": {
-                String[] allEffectsList = serviceContext.getResources().getStringArray(
-                        R.array.effects_list);
-                String[] allEffectParameters = serviceContext.getResources().getStringArray(
-                        R.array.effects_list_parameters);
-
-                ArrayList<String> usableEffectsList = new ArrayList<>();
-                ArrayList<String> usableEffectsParameters = new ArrayList<>();
-
-                for (int i = 0; i < allEffectsList.length; i++) {
-                    if (EffectFactory.isEffectSupported(allEffectsList[i])) {
-                        usableEffectsList.add(allEffectsList[i]);
-                        usableEffectsParameters.add(allEffectParameters[i]);
-                    }
-                }
-
-                int index = random.nextInt(usableEffectsList.size());
-                String effectName = usableEffectsList.get(index);
-                String parameter = usableEffectsParameters.get(index);
-                float value = 0.0f;
-
-                effect = effectFactory.createEffect(effectName);
-                if (usableEffectsList.get(index).equals(
-                        "android.media.effect.effects.SaturateEffect")) {
-                    value = (random.nextFloat() * 0.6f) - 0.3f;
-                }
-                else if (usableEffectsList.get(index).equals(
-                        "android.media.effect.effects.ColorTemperatureEffect")) {
-                    value = random.nextFloat();
-                }
-                else if (parameter.equals("brightness") || parameter.equals("contrast")) {
-                    value = (random.nextFloat() * 0.4f) + 0.8f;
-                }
-                else if (!usableEffectsParameters.get(index).equals("none")) {
-                    value = (random.nextFloat() * 0.3f) + 0.3f;
-                }
-
-                if (EffectFactory.isEffectSupported(effectName)) {
-                    if (value != 0.0f) {
-                        effect.setParameter(parameter, value);
-                    }
-                    applyEffect(effect,
-                            texture,
-                            effectName.substring(effectName.indexOf("effects.") + 8),
-                            ((value != 0.0f) ? "Value:" + value : ""));
-                }
-                break;
-            }
-            case "Filter Effects": {
-                String[] filtersList = serviceContext.getResources().getStringArray(
-                        R.array.effects_filters_list);
-
-                int index = random.nextInt(filtersList.length);
-
-                effect = effectFactory.createEffect(filtersList[index]);
-                applyEffect(effect,
-                        texture,
-                        filtersList[index].substring(filtersList[index].indexOf(
-                                "effects.") + 8),
-                        "");
-                break;
-            }
-            case "Dual Tone Random": {
-
-                int firstColor = Color.argb(255,
-                        random.nextInt(80),
-                        random.nextInt(80),
-                        random.nextInt(80));
-                int secondColor = Color.argb(255,
-                        random.nextInt(100) + 75,
-                        random.nextInt(100) + 75,
-                        random.nextInt(100) + 75);
-
-                effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
-                effect.setParameter("first_color", firstColor);
-                effect.setParameter("second_color", secondColor);
-                applyEffect(effect,
-                        texture,
-                        randomEffect,
-                        "\n" + firstColor + "\n" + secondColor);
-
-                break;
-            }
-            case "Dual Tone Rainbow": {
-
-                ArrayList<String> colorsList = (ArrayList<String>) Arrays.asList(
-                        serviceContext.getResources().getStringArray(R.array.effects_color_list));
-
-                Collections.shuffle(colorsList);
-
-                int firstColor = Color.parseColor(colorsList.get(0));
-                int secondColor = Color.parseColor(colorsList.get(1));
-
-                if (AppSettings.useDuotoneGray()) {
-                    firstColor = Color.parseColor("gray");
-                    Log.i(TAG, "Duotone gray");
-                }
-
-                effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
-                effect.setParameter("first_color", firstColor);
-                effect.setParameter("second_color", secondColor);
-                applyEffect(effect,
-                        texture,
-                        randomEffect,
-                        "\n" + firstColor + "\n" + secondColor);
-
-                break;
-            }
-            case "Dual Tone Warm": {
-
-                int firstColor = Color.argb(255,
-                        random.nextInt(40) + 40,
-                        random.nextInt(40),
-                        random.nextInt(40));
-                int secondColor = Color.argb(255,
-                        random.nextInt(80) + 150,
-                        random.nextInt(80) + 125,
-                        random.nextInt(80) + 125);
-
-                if (AppSettings.useDuotoneGray()) {
-                    int grayValue = random.nextInt(50);
-                    firstColor = Color.argb(255, grayValue, grayValue, grayValue);
-                    Log.i(TAG, "Duotone gray");
-                }
-
-                effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
-                effect.setParameter("first_color", firstColor);
-                effect.setParameter("second_color", secondColor);
-                applyEffect(effect,
-                        texture,
-                        randomEffect,
-                        "\n" + firstColor + "\n" + secondColor);
-
-                break;
-            }
-            case "Dual Tone Cool": {
-
-                int firstColor = Color.argb(255,
-                        random.nextInt(40),
-                        random.nextInt(40) + 40,
-                        random.nextInt(40) + 40);
-                int secondColor = Color.argb(255,
-                        random.nextInt(80) + 125,
-                        random.nextInt(80) + 150,
-                        random.nextInt(80) + 150);
-
-                if (AppSettings.useDuotoneGray()) {
-                    int grayValue = random.nextInt(50);
-                    firstColor = Color.argb(255, grayValue, grayValue, grayValue);
-                    Log.i(TAG, "Duotone gray");
-                }
-
-                effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
-                effect.setParameter("first_color", firstColor);
-                effect.setParameter("second_color", secondColor);
-                applyEffect(effect,
-                        texture,
-                        randomEffect,
-                        "\n" + firstColor + "\n" + secondColor);
-
-                break;
-            }
-        }
-    }
-
-    private void toastEffect(final String effectName, final String effectValue) {
-        if (AppSettings.useToast() && AppSettings.useToastEffects()) {
-            Toast.makeText(serviceContext,
-                    "Effect applied: " + effectName + " " + effectValue,
-                    Toast.LENGTH_SHORT).show();
-        }
-    }
-
     public void setLoadCurrent(boolean load) {
         loadCurrent = load;
     }
@@ -918,23 +524,11 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         isPlayingMusic = playingMusic;
     }
 
-    public void setContextInitialized(boolean contextInitialized) {
-        this.contextInitialized = contextInitialized;
-    }
-
     public interface Callback {
 
         void setRenderMode(int mode);
 
-        void setPreserveContext(boolean preserveContext);
-
         void loadCurrent();
-
-        void loadPrevious();
-
-        void loadNext();
-
-        void loadMusic();
 
         void requestRender();
 

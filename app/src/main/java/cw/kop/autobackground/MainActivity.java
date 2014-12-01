@@ -58,8 +58,9 @@ import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends ActionBarActivity {
 
-    public static final String LOAD_NAV_PICTURE = "cw.kop.autobackground.LOAD_NAV_PICTURE";
-    private BroadcastReceiver entryReceiver = new BroadcastReceiver() {
+    public static final String LOAD_NAV_PICTURE = "cw.kop.autobackground.MainActivity.LOAD_NAV_PICTURE";
+    private static final String TAG = MainActivity.class.getCanonicalName();
+    private BroadcastReceiver activityReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
@@ -282,6 +283,7 @@ public class MainActivity extends ActionBarActivity {
 
         if (AppSettings.useTutorial()) {
             Intent tutorialIntent = new Intent(this, TutorialActivity.class);
+            tutorialIntent.putExtra("position", getIntent().getIntExtra("position", 0));
             startActivityForResult(tutorialIntent, TutorialActivity.TUTORIAL_REQUEST);
         }
     }
@@ -290,12 +292,9 @@ public class MainActivity extends ActionBarActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (requestCode == TutorialActivity.TUTORIAL_REQUEST) {
-            if (AppSettings.useFabric()) {
-                final Fabric fabric = new Fabric.Builder(this)
-                        .kits(new Crashlytics())
-                        .build();
-                Fabric.with(fabric);
-            }
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+            finish();
         }
 
         super.onActivityResult(requestCode, resultCode, data);
@@ -370,22 +369,22 @@ public class MainActivity extends ActionBarActivity {
                 fragmentTransaction.replace(R.id.content_frame,
                         new AccountSettingsFragment()).commit();
                 break;
-//            case 4:
-//                fragmentTransaction.replace(R.id.content_frame,
-//                        new EffectsSettingsFragment()).commit();
-//                break;
             case 4:
+                fragmentTransaction.replace(R.id.content_frame,
+                        new EffectsSettingsFragment()).commit();
+                break;
+            case 5:
                 fragmentTransaction.replace(R.id.content_frame,
                         new NotificationSettingsFragment()).commit();
                 break;
-            case 5:
+            case 6:
                 fragmentTransaction.replace(R.id.content_frame, new AppSettingsFragment()).commit();
                 break;
-            case 6:
+            case 7:
                 fragmentTransaction.replace(R.id.content_frame,
                         new ImageHistoryFragment()).commit();
                 break;
-            case 7:
+            case 8:
                 fragmentTransaction.replace(R.id.content_frame, new AboutFragment()).commit();
                 break;
             default:
@@ -440,14 +439,14 @@ public class MainActivity extends ActionBarActivity {
     protected void onResume() {
         super.onResume();
         loadNavPicture();
-        LocalBroadcastManager.getInstance(this).registerReceiver(entryReceiver, entryFilter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(activityReceiver, entryFilter);
 
     }
 
     @Override
     protected void onPause() {
 
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(entryReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(activityReceiver);
 
         super.onPause();
     }

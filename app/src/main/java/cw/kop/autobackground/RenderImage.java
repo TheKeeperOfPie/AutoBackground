@@ -16,16 +16,27 @@
 
 package cw.kop.autobackground;
 
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.media.effect.Effect;
+import android.media.effect.EffectContext;
+import android.media.effect.EffectFactory;
 import android.opengl.GLES20;
+import android.opengl.GLES30;
 import android.opengl.GLUtils;
 import android.util.Log;
 import android.view.animation.OvershootInterpolator;
+import android.widget.Toast;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Random;
 
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -78,7 +89,7 @@ public class RenderImage {
     private volatile boolean inStartTransition = true;
     private volatile boolean inEndTransition = false;
     private long transitionEndtime = 0;
-    private boolean finished = false;
+    private EffectFactory effectFactory;
 
     private EventListener eventListener;
 
@@ -95,7 +106,7 @@ public class RenderImage {
         this.maxRatioY = maxRatioY;
         this.eventListener = eventListener;
         setBitmap(bitmap);
-        textureNames = new int[] {textureName};
+        textureNames = new int[] {textureName, 0};
         uvs = new float[] {
                 0.0f, 0.0f,
                 0.0f, 1.0f,
@@ -235,7 +246,7 @@ public class RenderImage {
             Log.i(TAG,
                     "imageBitmap width: " + imageBitmap.getWidth() + " imageBitmap height: " + imageBitmap.getHeight());
 
-            GLES20.glGenTextures(1, textureNames, 0);
+            GLES20.glGenTextures(2, textureNames, 0);
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureNames[0]);
 
@@ -253,6 +264,11 @@ public class RenderImage {
                     GLES20.GL_CLAMP_TO_EDGE);
 
             GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, imageBitmap, 0);
+
+            if (AppSettings.useEffects()) {
+                effectFactory = EffectContext.createWithCurrentGlContext().getFactory();
+                initEffects();
+            }
 
             if (rawOffsetX > -1) {
                 offsetX = rawOffsetX * (renderScreenWidth - bitmapWidth);
@@ -291,6 +307,365 @@ public class RenderImage {
         }
     }
 
+
+    private void initEffects() {
+
+        Random random = new Random();
+
+        boolean randomApplied = false;
+
+        if (random.nextDouble() <= AppSettings.getRandomEffectsFrequency()) {
+            if (AppSettings.useRandomEffects()) {
+                applyRandomEffects(AppSettings.getRandomEffect());
+                randomApplied = true;
+                if (AppSettings.useEffectsOverride()) {
+                    applyManualEffects();
+                }
+            }
+        }
+
+        if (random.nextDouble() > AppSettings.getEffectsFrequency()) {
+            eventListener.toastEffect("Not applied", "");
+        }
+        else if (!randomApplied) {
+            applyManualEffects();
+        }
+    }
+
+    private void applyEffect(Effect setEffect, String name,
+            String description) {
+
+        GLES20.glGenTextures(1, textureNames, 1);
+        setEffect.apply(textureNames[0],
+                Math.round(renderScreenWidth),
+                Math.round(renderScreenHeight),
+                textureNames[1]);
+        setEffect.release();
+        GLES20.glDeleteTextures(1, textureNames, 0);
+        textureNames[0] = textureNames[1];
+
+        if (AppSettings.useToast() && AppSettings.useToastEffects()) {
+            eventListener.toastEffect(name, description);
+        }
+        Log.i(TAG, "Effect applied: " + name + "\n" + description);
+
+    }
+
+    private void applyManualEffects() {
+
+        Effect effect;
+
+        if (AppSettings.getAutoFixEffect() > 0.0f && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_AUTOFIX)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_AUTOFIX);
+            effect.setParameter("scale", AppSettings.getAutoFixEffect());
+            applyEffect(effect,
+                    "Auto Fix",
+                    "Value:" + AppSettings.getAutoFixEffect());
+        }
+
+        if (AppSettings.getBrightnessEffect() != 1.0f && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_BRIGHTNESS)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_BRIGHTNESS);
+            effect.setParameter("brightness", AppSettings.getBrightnessEffect());
+            applyEffect(effect,
+                    "Brightness",
+                    "Value:" + AppSettings.getBrightnessEffect());
+        }
+
+        if (AppSettings.getContrastEffect() != 1.0f && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_CONTRAST)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_CONTRAST);
+            effect.setParameter("contrast", AppSettings.getContrastEffect());
+            applyEffect(effect,
+                    "Contrast",
+                    "Value:" + AppSettings.getContrastEffect());
+        }
+
+        if (AppSettings.getCrossProcessEffect() && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_CROSSPROCESS)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_CROSSPROCESS);
+            applyEffect(effect, "Cross Process", "");
+        }
+
+        if (AppSettings.getDocumentaryEffect() && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_DOCUMENTARY)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_DOCUMENTARY);
+            applyEffect(effect, "Documentary", "");
+        }
+
+        if (AppSettings.getDuotoneEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_DUOTONE)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+            effect.setParameter("first_color", AppSettings.getDuotoneColor(1));
+            effect.setParameter("second_color", AppSettings.getDuotoneColor(2));
+            applyEffect(effect,
+                    "Dual Tone",
+                    "\nColor 1: " + AppSettings.getDuotoneColor(1) + "\nColor 2: " + AppSettings.getDuotoneColor(
+                            2));
+        }
+
+        if (AppSettings.getFillLightEffect() > 0.0f && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_FILLLIGHT)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_FILLLIGHT);
+            effect.setParameter("strength", AppSettings.getFillLightEffect());
+            applyEffect(effect,
+                    "Fill Light",
+                    "Value:" + AppSettings.getFillLightEffect());
+        }
+
+        if (AppSettings.getFisheyeEffect() > 0.0f && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_FISHEYE)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_FISHEYE);
+            effect.setParameter("scale", AppSettings.getFisheyeEffect());
+            applyEffect(effect,
+                    "Fisheye",
+                    "Value:" + AppSettings.getFisheyeEffect());
+        }
+
+        if (AppSettings.getGrainEffect() > 0.0f && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_GRAIN)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAIN);
+            effect.setParameter("strength", AppSettings.getGrainEffect());
+            applyEffect(effect, "Grain", "Value:" + AppSettings.getGrainEffect());
+        }
+
+        if (AppSettings.getGrayscaleEffect() && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_GRAYSCALE)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_GRAYSCALE);
+            applyEffect(effect, "Grayscale", "");
+        }
+
+        if (AppSettings.getLomoishEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_LOMOISH)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_LOMOISH);
+            applyEffect(effect, "Lomoish", "");
+        }
+
+        if (AppSettings.getNegativeEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_NEGATIVE)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_NEGATIVE);
+            applyEffect(effect, "Negaative", "");
+        }
+
+        if (AppSettings.getPosterizeEffect() && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_POSTERIZE)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_POSTERIZE);
+            applyEffect(effect, "Posterize", "");
+        }
+
+        if (AppSettings.getSaturateEffect() != 0.0f && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_SATURATE)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_SATURATE);
+            effect.setParameter("scale", AppSettings.getSaturateEffect());
+            applyEffect(effect,
+                    "Saturate",
+                    "Value:" + AppSettings.getSaturateEffect());
+        }
+
+        if (AppSettings.getSepiaEffect() && EffectFactory.isEffectSupported(EffectFactory.EFFECT_SEPIA)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_SEPIA);
+            applyEffect(effect, "Sepia", "Value:");
+        }
+
+        if (AppSettings.getSharpenEffect() > 0.0f && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_SHARPEN)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_SHARPEN);
+            effect.setParameter("scale", AppSettings.getSharpenEffect());
+            applyEffect(effect,
+                    "Sharpen",
+                    "Value:" + AppSettings.getSharpenEffect());
+        }
+
+        if (AppSettings.getTemperatureEffect() != 0.5f && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_TEMPERATURE)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_TEMPERATURE);
+            effect.setParameter("scale", AppSettings.getTemperatureEffect());
+            applyEffect(effect,
+                    "Temperature",
+                    "Value:" + AppSettings.getTemperatureEffect());
+        }
+
+        if (AppSettings.getVignetteEffect() > 0.0f && EffectFactory.isEffectSupported(
+                EffectFactory.EFFECT_VIGNETTE)) {
+            effect = effectFactory.createEffect(EffectFactory.EFFECT_VIGNETTE);
+            effect.setParameter("scale", AppSettings.getVignetteEffect());
+            applyEffect(effect,
+                    "Vignette",
+                    "Value:" + AppSettings.getVignetteEffect());
+        }
+    }
+
+    private void applyRandomEffects(String randomEffect) {
+
+        Random random = new Random();
+        Effect effect;
+
+        switch (randomEffect) {
+            case "Completely Random": {
+                String[] allEffectsList = eventListener.getContext().getResources().getStringArray(
+                        R.array.effects_list);
+                String[] allEffectParameters = eventListener.getContext().getResources().getStringArray(
+                        R.array.effects_list_parameters);
+
+                ArrayList<String> usableEffectsList = new ArrayList<>();
+                ArrayList<String> usableEffectsParameters = new ArrayList<>();
+
+                for (int i = 0; i < allEffectsList.length; i++) {
+                    if (EffectFactory.isEffectSupported(allEffectsList[i])) {
+                        usableEffectsList.add(allEffectsList[i]);
+                        usableEffectsParameters.add(allEffectParameters[i]);
+                    }
+                }
+
+                int index = random.nextInt(usableEffectsList.size());
+                String effectName = usableEffectsList.get(index);
+                String parameter = usableEffectsParameters.get(index);
+                float value = 0.0f;
+
+                effect = effectFactory.createEffect(effectName);
+                if (usableEffectsList.get(index).equals(
+                        "android.media.effect.effects.SaturateEffect")) {
+                    value = (random.nextFloat() * 0.6f) - 0.3f;
+                }
+                else if (usableEffectsList.get(index).equals(
+                        "android.media.effect.effects.ColorTemperatureEffect")) {
+                    value = random.nextFloat();
+                }
+                else if (parameter.equals("brightness") || parameter.equals("contrast")) {
+                    value = (random.nextFloat() * 0.4f) + 0.8f;
+                }
+                else if (!usableEffectsParameters.get(index).equals("none")) {
+                    value = (random.nextFloat() * 0.3f) + 0.3f;
+                }
+
+                if (EffectFactory.isEffectSupported(effectName)) {
+                    if (value != 0.0f) {
+                        effect.setParameter(parameter, value);
+                    }
+                    applyEffect(effect,
+                            effectName.substring(effectName.indexOf("effects.") + 8),
+                            ((value != 0.0f) ? "Value:" + value : ""));
+                }
+                break;
+            }
+            case "Filter Effects": {
+                String[] filtersList = eventListener.getContext().getResources().getStringArray(
+                        R.array.effects_filters_list);
+
+                int index = random.nextInt(filtersList.length);
+
+                effect = effectFactory.createEffect(filtersList[index]);
+                applyEffect(effect,
+                        filtersList[index].substring(filtersList[index].indexOf(
+                                "effects.") + 8),
+                        "");
+                break;
+            }
+            case "Dual Tone Random": {
+
+                int firstColor = Color.argb(255,
+                        random.nextInt(80),
+                        random.nextInt(80),
+                        random.nextInt(80));
+                int secondColor = Color.argb(255,
+                        random.nextInt(100) + 75,
+                        random.nextInt(100) + 75,
+                        random.nextInt(100) + 75);
+
+                effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                effect.setParameter("first_color", firstColor);
+                effect.setParameter("second_color", secondColor);
+                applyEffect(effect,
+                        randomEffect,
+                        "\n" + firstColor + "\n" + secondColor);
+
+                break;
+            }
+            case "Dual Tone Rainbow": {
+
+                ArrayList<String> colorsList = (ArrayList<String>) Arrays.asList(
+                        eventListener.getContext().getResources().getStringArray(R.array.effects_color_list));
+
+                Collections.shuffle(colorsList);
+
+                int firstColor = Color.parseColor(colorsList.get(0));
+                int secondColor = Color.parseColor(colorsList.get(1));
+
+                if (AppSettings.useDuotoneGray()) {
+                    firstColor = Color.parseColor("gray");
+                    Log.i(TAG, "Duotone gray");
+                }
+
+                effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                effect.setParameter("first_color", firstColor);
+                effect.setParameter("second_color", secondColor);
+                applyEffect(effect,
+                        randomEffect,
+                        "\n" + firstColor + "\n" + secondColor);
+
+                break;
+            }
+            case "Dual Tone Warm": {
+
+                int firstColor = Color.argb(255,
+                        random.nextInt(40) + 40,
+                        random.nextInt(40),
+                        random.nextInt(40));
+                int secondColor = Color.argb(255,
+                        random.nextInt(80) + 150,
+                        random.nextInt(80) + 125,
+                        random.nextInt(80) + 125);
+
+                if (AppSettings.useDuotoneGray()) {
+                    int grayValue = random.nextInt(50);
+                    firstColor = Color.argb(255, grayValue, grayValue, grayValue);
+                    Log.i(TAG, "Duotone gray");
+                }
+
+                effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                effect.setParameter("first_color", firstColor);
+                effect.setParameter("second_color", secondColor);
+                applyEffect(effect,
+                        randomEffect,
+                        "\n" + firstColor + "\n" + secondColor);
+
+                break;
+            }
+            case "Dual Tone Cool": {
+
+                int firstColor = Color.argb(255,
+                        random.nextInt(40),
+                        random.nextInt(40) + 40,
+                        random.nextInt(40) + 40);
+                int secondColor = Color.argb(255,
+                        random.nextInt(80) + 125,
+                        random.nextInt(80) + 150,
+                        random.nextInt(80) + 150);
+
+                if (AppSettings.useDuotoneGray()) {
+                    int grayValue = random.nextInt(50);
+                    firstColor = Color.argb(255, grayValue, grayValue, grayValue);
+                    Log.i(TAG, "Duotone gray");
+                }
+
+                effect = effectFactory.createEffect(EffectFactory.EFFECT_DUOTONE);
+                effect.setParameter("first_color", firstColor);
+                effect.setParameter("second_color", secondColor);
+                applyEffect(effect,
+                        randomEffect,
+                        "\n" + firstColor + "\n" + secondColor);
+
+                break;
+            }
+        }
+    }
+
+//    private void toastEffect(final String effectName, final String effectValue) {
+//        if (AppSettings.useToast() && AppSettings.useToastEffects()) {
+//            Toast.makeText(eventListener.getContext(),
+//                    "Effect applied: " + effectName + " " + effectValue,
+//                    Toast.LENGTH_SHORT).show();
+//        }
+//    }
+
     public void setScaleFactor(float factor) {
         scaleFactor *= factor;
 
@@ -299,11 +674,12 @@ public class RenderImage {
 
         if (AppSettings.extendScale() || !AppSettings.fillImages()) {
 
-            minScaleFactor = (bitmapWidth > bitmapHeight) ^ (renderScreenWidth < renderScreenHeight)
-                    ?
-                    renderScreenWidth / bitmapWidth
-                    :
-                    renderScreenHeight * (maxRatioY - minRatioY) / bitmapHeight;
+            if (renderScreenWidth / bitmapWidth > scaledRenderHeight / bitmapHeight) {
+                minScaleFactor = scaledRenderHeight / bitmapHeight;
+            }
+            else {
+                minScaleFactor = renderScreenWidth / bitmapWidth;
+            }
         }
         else {
 
@@ -330,7 +706,8 @@ public class RenderImage {
 
     private void calculateBounds() {
 
-        if (bitmapWidth * scaleFactor >= renderScreenWidth) {
+        if (AppSettings.fillImages()) {
+
             if (offsetX < (-bitmapWidth + renderScreenWidth / scaleFactor)) {
                 animationModifierX = Math.abs(animationModifierX);
                 offsetX = -bitmapWidth + renderScreenWidth / scaleFactor;
@@ -340,15 +717,36 @@ public class RenderImage {
                 animationModifierX = -Math.abs(animationModifierX);
                 offsetX = 0f;
             }
-        }
 
-        if (offsetY < (maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight)) {
-            animationModifierY = Math.abs(animationModifierY);
-            offsetY = maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight;
+            if (offsetY < (maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight)) {
+                animationModifierY = Math.abs(animationModifierY);
+                offsetY = maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight;
+            }
+            else if (offsetY > minRatioY * renderScreenHeight / scaleFactor) {
+                animationModifierY = -Math.abs(animationModifierY);
+                offsetY = minRatioY * renderScreenHeight / scaleFactor;
+            }
         }
-        else if (offsetY > minRatioY * renderScreenHeight / scaleFactor) {
-            animationModifierY = -Math.abs(animationModifierY);
-            offsetY = minRatioY * renderScreenHeight / scaleFactor;
+        else {
+
+            if (offsetX > (-bitmapWidth + renderScreenWidth / scaleFactor)) {
+                animationModifierX = Math.abs(animationModifierX);
+                offsetX = -bitmapWidth + renderScreenWidth / scaleFactor;
+
+            }
+            else if (offsetX < 0f) {
+                animationModifierX = -Math.abs(animationModifierX);
+                offsetX = 0f;
+            }
+
+            if (offsetY > (maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight)) {
+                animationModifierY = Math.abs(animationModifierY);
+                offsetY = maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight;
+            }
+            else if (offsetY < minRatioY * renderScreenHeight / scaleFactor) {
+                animationModifierY = -Math.abs(animationModifierY);
+                offsetY = minRatioY * renderScreenHeight / scaleFactor;
+            }
         }
     }
 
@@ -399,7 +797,6 @@ public class RenderImage {
         else if (inEndTransition) {
             applyEndTransition();
         }
-
 
         android.opengl.Matrix.orthoM(matrixProjection,
                 0,
@@ -480,13 +877,13 @@ public class RenderImage {
         if (transitionEndtime == 0) {
             transitionEndtime = time + AppSettings.getTransitionSpeed() * 100;
         }
-
-        if (transitionEndtime < time) {
-            inStartTransition = false;
+        else if (transitionEndtime < time) {
             transitionEndtime = 0;
             angle = 0.0f;
             alpha = 1.0f;
             setScaleFactor(1.0f);
+            eventListener.requestRender();
+            inStartTransition = false;
             return;
         }
 
@@ -546,6 +943,9 @@ public class RenderImage {
         if (AppSettings.useFade()) {
             alpha = 1.0f - timeRatio;
         }
+        else {
+            alpha = 1.0f;
+        }
     }
 
     public void startFinish() {
@@ -567,18 +967,16 @@ public class RenderImage {
         if (transitionEndtime == 0) {
             transitionEndtime = time + AppSettings.getTransitionSpeed() * 100;
         }
+        else if (transitionEndtime < time) {
+            GLES20.glDeleteTextures(1, textureNames, 0);
+            eventListener.removeSelf(this);
+            return;
+        }
 
         if (saveOffsetX == 0) {
             saveOffsetX = offsetX;
             saveOffsetY = offsetY;
             saveScaleFactor = scaleFactor;
-        }
-
-        if (transitionEndtime < time) {
-            finished = true;
-            GLES20.glDeleteTextures(1, textureNames, 0);
-            eventListener.removeSelf(this);
-            return;
         }
 
         float timeRatio = (float) (transitionEndtime - time) / (AppSettings.getTransitionSpeed() * 100);
@@ -598,10 +996,9 @@ public class RenderImage {
         if (AppSettings.useFade()) {
             alpha = timeRatio;
         }
-    }
-
-    public boolean isFinished() {
-        return finished;
+        else {
+            alpha = 0.0f;
+        }
     }
 
     public void setRawOffsetX(float rawOffsetX) {
@@ -613,6 +1010,12 @@ public class RenderImage {
         public void removeSelf(RenderImage image);
 
         public void doneLoading();
+
+        public Context getContext();
+
+        public void toastEffect(final String effectName, final String effectValue);
+
+        public void requestRender();
 
     }
 

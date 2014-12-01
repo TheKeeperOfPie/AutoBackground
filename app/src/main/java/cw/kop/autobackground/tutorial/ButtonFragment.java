@@ -57,7 +57,9 @@ public class ButtonFragment extends Fragment {
             @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.tutorial_button_fragment, container, false);
+        View view = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
+                inflater.inflate(R.layout.tutorial_button_fragment, container, false) :
+                inflater.inflate(R.layout.tutorial_button_fragment_dark, container, false);
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
         ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);

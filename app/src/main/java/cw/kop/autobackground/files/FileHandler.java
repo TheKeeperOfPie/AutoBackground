@@ -210,42 +210,12 @@ public class FileHandler {
         return currentBitmapFile;
     }
 
-    public static void setCurrentBitmapFile(File file) {
-        currentBitmapFile = file;
-    }
-
-    public static Bitmap getMusicBitmap() {
-        return musicBitmap;
-    }
-
-    public static void setMusicBitmap(Bitmap bitmap) {
-        musicBitmap = bitmap;
-    }
-
-    public static void renameFiles(Context appContext, String previousName, String newName) {
-
-        FilenameFilter filenameFilter = getImageFileNameFilter();
-
-        String previousPrefix = previousName + " " + AppSettings.getImagePrefix();
-        String newPrefix = newName + " " + AppSettings.getImagePrefix();
-        String cacheDir = AppSettings.getDownloadPath();
-        String newFileName = cacheDir + "/" + newPrefix;
-
-        File oldFolder = new File(cacheDir + "/" + previousPrefix);
-        File[] fileList = oldFolder.listFiles(filenameFilter);
-
-        File newFolder = new File(cacheDir + "/" + newPrefix);
-        newFolder.mkdir();
-
-        if (fileList != null && fileList.length > 0) {
-            for (int i = 0; i < fileList.length; i++) {
-                if (fileList[i].getName().contains(previousPrefix)) {
-                    fileList[i].renameTo(new File(newFileName + "/" + newPrefix + i + ".png"));
-                }
-            }
+    public static void renameFolder(String oldtitle, String newTitle) {
+        File folder = new File(AppSettings.getDownloadPath() + "/" + oldtitle + " " + AppSettings.getImagePrefix());
+        File newFolder = new File(AppSettings.getDownloadPath() + "/" + newTitle + " " + AppSettings.getImagePrefix());
+        if (folder.exists()) {
+            folder.renameTo(newFolder);
         }
-        oldFolder.delete();
-
     }
 
     public static void deleteCurrentBitmap() {

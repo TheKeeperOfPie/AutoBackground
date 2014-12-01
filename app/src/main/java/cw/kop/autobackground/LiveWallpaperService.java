@@ -76,7 +76,6 @@ public class LiveWallpaperService extends GLWallpaperService {
     public static final String STOP_DOWNLOAD = "cw.kop.autobackground.LiveWallpaperService.STOP_DOWNLOAD";
     public static final String UPDATE_NOTIFICATION = "cw.kop.autobackground.LiveWallpaperService.UPDATE_NOTIFICATION";
     public static final String DOWNLOAD_WALLPAPER = "cw.kop.autobackground.LiveWallpaperService.DOWNLOAD_WALLPAPER";
-    public static final String LOAD_ALBUM_ART = "cw.kop.autobackground.LiveWallpaperService.LOAD_ALBUM_ART";
     public static final String UPDATE_WALLPAPER = "cw.kop.autobackground.LiveWallpaperService.UPDATE_WALLPAPER";
     public static final String TOAST_LOCATION = "cw.kop.autobackground.LiveWallpaperService.TOAST_LOCATION";
     public static final String COPY_IMAGE = "cw.kop.autobackground.LiveWallpaperService.COPY_IMAGE";
@@ -1187,28 +1186,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
 
                         @Override
-                        public void setPreserveContext(boolean preserveContext) {
-                            setPreserveEGLContextOnPause(preserveContext);
-                        }
-
-                        @Override
                         public void loadCurrent() {
                             loadCurrentImage();
-                        }
-
-                        @Override
-                        public void loadPrevious() {
-                            loadPreviousImage();
-                        }
-
-                        @Override
-                        public void loadNext() {
-                            loadNextImage(0);
-                        }
-
-                        @Override
-                        public void loadMusic() {
-                            loadMusicBitmap();
                         }
 
                         @Override
@@ -1222,29 +1201,12 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             if (!isPreview()) {
                 registerReceiver(updateReceiver, getEngineIntentFilter());
-
-                IntentFilter localIntentFilter = new IntentFilter();
-                localIntentFilter.addAction(SET_ANIMATED);
-                localIntentFilter.addAction(SET_ANIMATION_X);
-                localIntentFilter.addAction(SET_ANIMATION_Y);
-                localIntentFilter.addAction(SET_FRAME_TIME);
-
-//                LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(localReceiver, localIntentFilter);
-
-                if (Build.VERSION.SDK_INT >= 19 && AppSettings.showAlbumArt()) {
-                    Intent musicReceiverIntent = new Intent(LiveWallpaperService.this,
-                            MusicReceiverService.class);
-                    startService(musicReceiverIntent);
-                    Log.i(TAG, "Starting service, showAlbumArt = true");
-                }
-
                 Log.i(TAG, "Registered");
             }
         }
 
         private IntentFilter getEngineIntentFilter() {
             IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(LiveWallpaperService.LOAD_ALBUM_ART);
             intentFilter.addAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
             intentFilter.addAction(LiveWallpaperService.CYCLE_IMAGE);
             intentFilter.addAction(LiveWallpaperService.UPDATE_WALLPAPER);
@@ -1256,123 +1218,6 @@ public class LiveWallpaperService extends GLWallpaperService {
             intentFilter.addAction(LiveWallpaperService.TOGGLE_GAME);
             intentFilter.addAction(LiveWallpaperService.CURRENT_IMAGE);
             return intentFilter;
-        }
-
-        private void fetchAlbumArt(String artist, String album) {
-
-            String path = null;
-            String finalPath = "";
-
-            //1. Try to get the album art from the MediaStore.Audio.Albums.ALBUM_ART column
-            //Log.i(TAG, "Attempting to retrieve artwork from MediaStore ALBUM_ART column");
-            String[] projection = new String[] {
-                    MediaStore.Audio.Albums._ID,
-                    MediaStore.Audio.Albums.ARTIST,
-                    MediaStore.Audio.Albums.ALBUM,
-                    MediaStore.Audio.Albums.ALBUM_ART};
-
-            Cursor cursor = getApplicationContext().getContentResolver().query(
-                    MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
-                    projection,
-                    MediaStore.Audio.Albums.ALBUM + " ='" + album.replaceAll("'", "''") + "'"
-                            + " AND "
-                            + MediaStore.Audio.Albums.ARTIST + " ='" + artist.replaceAll("'",
-                            "''") + "'",
-                    null, null
-            );
-
-            if (cursor != null && cursor.moveToFirst()) {
-                String artworkPath = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
-                if (artworkPath != null) {
-                    File file = new File(artworkPath);
-                    if (file.exists()) {
-                        finalPath = artworkPath;
-                        cursor.close();
-                    }
-                }
-            }
-
-            if (cursor != null) {
-                cursor.close();
-            }
-
-            //2. Try to find the artwork in the MediaStore based on the trackId instead of the albumId
-            //Log.d(TAG, "Attempting to retrieve artwork from MediaStore _ID column");
-            projection = new String[] {
-                    MediaStore.Audio.Media._ID,
-                    MediaStore.Audio.Media.DATA,
-                    MediaStore.Audio.Media.ARTIST,
-                    MediaStore.Audio.Media.ALBUM};
-
-            cursor = getApplicationContext().getContentResolver().query(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    projection,
-                    MediaStore.Audio.Albums.ALBUM + " ='" + album.replaceAll("'", "''") + "'"
-                            + " AND "
-                            + MediaStore.Audio.Albums.ARTIST + " ='" + artist.replaceAll("'",
-                            "''") + "'",
-                    null, null
-            );
-
-            if (cursor != null && cursor.moveToFirst()) {
-                int songId = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
-                path = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
-                Uri uri = Uri.parse("content://media/external/audio/media/" + songId + "/albumart");
-                ParcelFileDescriptor pfd;
-                try {
-                    pfd = getApplicationContext().getContentResolver().openFileDescriptor(uri, "r");
-                    if (pfd != null) {
-                        finalPath = uri.toString();
-                        cursor.close();
-                    }
-                }
-                catch (Exception ignored) {
-                }
-            }
-            if (cursor != null) {
-                cursor.close();
-            }
-
-            // 3. Try to find the artwork within the folder
-            //Log.d(TAG, "Attempting to retrieve artwork from folder");
-
-            if (path != null) {
-                int lastSlash = path.lastIndexOf('/');
-                if (lastSlash > 0) {
-                    ArrayList<String> paths = new ArrayList<>();
-                    String subString = path.substring(0, lastSlash + 1);
-                    paths.add(subString + "AlbumArt.jpg");
-                    paths.add(subString + "albumart.jpg");
-                    paths.add(subString + "AlbumArt.png");
-                    paths.add(subString + "albumart.png");
-                    paths.add(subString + "Folder.jpg");
-                    paths.add(subString + "folder.jpg");
-                    paths.add(subString + "Folder.png");
-                    paths.add(subString + "folder.png");
-                    paths.add(subString + "Cover.jpg");
-                    paths.add(subString + "cover.jpg");
-                    paths.add(subString + "Cover.png");
-                    paths.add(subString + "cover.png");
-                    paths.add(subString + "Album.jpg");
-                    paths.add(subString + "album.jpg");
-                    paths.add(subString + "Album.png");
-                    paths.add(subString + "album.png");
-
-                    for (String artworkPath : paths) {
-                        File file = new File(artworkPath);
-                        if (file.exists()) {
-                            finalPath = artworkPath;
-                        }
-                    }
-                }
-            }
-
-            Log.i(TAG, "Final path: " + finalPath);
-
-            Toast.makeText(LiveWallpaperService.this,
-                    "Final path: " + finalPath,
-                    Toast.LENGTH_SHORT).show();
-
         }
 
         @Override
@@ -1420,14 +1265,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             renderer = null;
             if (!isPreview()) {
                 unregisterReceiver(updateReceiver);
-                if (downloadOnConnection) {
-                    unregisterReceiver(networkReceiver);
-                }
-                if (Build.VERSION.SDK_INT >= 19) {
-                    Intent musicReceiverIntent = new Intent(LiveWallpaperService.this,
-                            MusicReceiverService.class);
-                    stopService(musicReceiverIntent);
-                }
+                unregisterReceiver(networkReceiver);
             }
             super.onDestroy();
         }
@@ -1442,18 +1280,17 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
                 else {
                     setPreserveEGLContextOnPause(false);
-                    renderer.setContextInitialized(false);
                     renderer.setLoadCurrent(true);
                 }
 
 
                 if (!keyguardManager.inKeyguardRestrictedInputMode() || AppSettings.changeWhenLocked()) {
                     if (toChange) {
-                        loadNextImage(0);
+                        loadNextImage();
                         toChange = false;
                     }
                     else if (AppSettings.useInterval() && AppSettings.getIntervalDuration() == 0) {
-                        loadNextImage(0);
+                        loadNextImage();
                     }
                 }
             }
@@ -1478,56 +1315,10 @@ public class LiveWallpaperService extends GLWallpaperService {
             Log.i(TAG, "onSurfaceChanged Wallpaper");
         }
 
-        private void loadMusicBitmap() {
-
-            // TODO: Finish album art support in renderer
-//            resetRenderMode();
-//
-//            if (FileHandler.getMusicBitmap() == null) {
-//                return;
-//            }
-//
-//            new Thread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    try {
-//                        final Bitmap bitmap = FileHandler.getMusicBitmap();
-//
-//                        if (bitmap != null) {
-//
-//                            addEvent(new Runnable() {
-//
-//                                @Override
-//                                public void run() {
-//                                    renderer.setBitmap(bitmap);
-//                                }
-//                            });
-//
-//                            if (AppSettings.useNotification()) {
-//                                handler.post(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        notifyChangeImage();
-//                                    }
-//                                });
-//                            }
-//                        }
-//                    }
-//                    catch (OutOfMemoryError e) {
-//                        if (AppSettings.useToast()) {
-//                            Toast.makeText(LiveWallpaperService.this,
-//                                    "Out of memory error",
-//                                    Toast.LENGTH_SHORT).show();
-//                        }
-//                    }
-//                }
-//            }).start();
-        }
-
         public void loadCurrentImage() {
 
             if (FileHandler.getCurrentBitmapFile() == null) {
-                loadNextImage(0);
+                loadNextImage();
                 return;
             }
 
@@ -1600,6 +1391,55 @@ public class LiveWallpaperService extends GLWallpaperService {
                     Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
                     LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
                             loadNavPictureIntent);
+                }
+            }).start();
+
+        }
+
+        private void loadNextImage() {
+            if (pinReleaseTime > 0 && pinReleaseTime < System.currentTimeMillis()) {
+                pinned = false;
+            }
+
+            if (pinned) {
+                return;
+            }
+
+            previousBitmaps.add(0, FileHandler.getCurrentBitmapFile());
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (renderer == null) {
+                            return;
+                        }
+
+                        File nextImage = FileHandler.getNextImage();
+                        if (nextImage == null) {
+                            return;
+                        }
+
+                        renderer.loadNext(nextImage);
+
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                notifyChangeImage();
+                            }
+                        });
+
+                        Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
+                        LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
+                                loadNavPictureIntent);
+                    }
+                    catch (OutOfMemoryError e) {
+                        if (AppSettings.useToast()) {
+                            Toast.makeText(LiveWallpaperService.this,
+                                    "Out of memory error",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
                 }
             }).start();
 
@@ -1681,7 +1521,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                                     pendingIntent);
                         }
                         if (isVisible()) {
-                            loadNextImage(0);
+                            loadNextImage();
                         }
                         else {
                             new Thread(new Runnable() {
@@ -1714,7 +1554,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                                     "Deleted image",
                                     Toast.LENGTH_LONG).show();
                         }
-                        loadNextImage(0);
+                        loadNextImage();
                         break;
                     case LiveWallpaperService.OPEN_IMAGE:
                         String location = FileHandler.getBitmapLocation();
@@ -1776,20 +1616,10 @@ public class LiveWallpaperService extends GLWallpaperService {
                         break;
                     case LiveWallpaperService.UPDATE_WALLPAPER:
                         if (AppSettings.forceInterval()) {
-                            loadNextImage(0);
+                            loadNextImage();
                         }
                         else {
                             toChange = true;
-                        }
-                        break;
-                    case LiveWallpaperService.LOAD_ALBUM_ART:
-                        toChange = false;
-                        renderer.setLoadCurrent(true);
-                        if (isVisible()) {
-                            loadMusicBitmap();
-                        }
-                        else {
-                            renderer.setPlayingMusic(true);
                         }
                         break;
                     case LiveWallpaperService.CURRENT_IMAGE:
