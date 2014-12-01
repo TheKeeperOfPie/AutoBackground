@@ -41,8 +41,8 @@ public class FileHandler {
     public static final String DOWNLOAD_TERMINATED = "cw.kop.autobackground.files.FileHandler.DOWNLOAD_TERMINATED";
     private static final String TAG = "FileHandler";
     public static volatile boolean isDownloading = false;
-    private static Bitmap musicBitmap = null;
     private static File currentBitmapFile = null;
+    private static File previousBitmapFile = null;
     private static int randIndex = 0;
     private static DownloadThread downloadThread;
 
@@ -255,24 +255,10 @@ public class FileHandler {
     public static File getNextImage() {
 
         List<File> images = getBitmapList();
-
-        Log.i("FileHandler", "Getting next image");
-
-        if (!AppSettings.shuffleImages()) {
-            randIndex++;
-        }
-        else if (images.size() > 1) {
-            randIndex += new Random().nextInt(images.size() - 1) + 1;
-        }
-
-        if (randIndex >= images.size()) {
-            randIndex -= images.size();
-        }
-
-        if (images.size() > 0 && randIndex < images.size()) {
-            currentBitmapFile = images.get(randIndex);
-        }
-
+        images.remove(previousBitmapFile);
+        images.remove(currentBitmapFile);
+        previousBitmapFile = currentBitmapFile;
+        currentBitmapFile = images.get(new Random().nextInt(images.size()));
         return currentBitmapFile;
     }
 

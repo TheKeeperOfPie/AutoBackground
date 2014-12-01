@@ -481,10 +481,10 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
             Matrix matrix = new Matrix();
             if (scaleWidth > scaleHeight) {
-                matrix.postScale(scaleHeight, scaleHeight);
+                matrix.postScale(scaleWidth, scaleWidth);
             }
             else {
-                matrix.postScale(scaleWidth, scaleWidth);
+                matrix.postScale(scaleHeight, scaleHeight);
             }
 
             bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitWidth, bitHeight, matrix, false);

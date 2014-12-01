@@ -432,7 +432,12 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     @Override
     public void onDestroy() {
-        unregisterReceiver(serviceReceiver);
+        try {
+            unregisterReceiver(serviceReceiver);
+        }
+        catch (IllegalArgumentException e) {
+
+        }
         notificationManager.cancel(NOTIFICATION_ID);
         alarmManager.cancel(pendingDownloadIntent);
         alarmManager.cancel(pendingIntervalIntent);
@@ -1102,11 +1107,21 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                     if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI && AppSettings.useWifi()) {
                         FileHandler.download(LiveWallpaperService.this);
-                        unregisterReceiver(networkReceiver);
+                        try {
+                            unregisterReceiver(networkReceiver);
+                        }
+                        catch (IllegalArgumentException e) {
+
+                        }
                     }
                     else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE && AppSettings.useMobile()) {
                         FileHandler.download(LiveWallpaperService.this);
-                        unregisterReceiver(networkReceiver);
+                        try {
+                            unregisterReceiver(networkReceiver);
+                        }
+                        catch (IllegalArgumentException e) {
+
+                        }
                     }
 
                 }
@@ -1305,13 +1320,22 @@ public class LiveWallpaperService extends GLWallpaperService {
             if (wifi != null && wifi.isConnected() && AppSettings.useWifi()) {
                 FileHandler.download(getApplicationContext());
                 if (downloadOnConnection) {
-                    unregisterReceiver(networkReceiver);
+                    try {
+                        unregisterReceiver(networkReceiver);
+                    }
+                    catch (IllegalArgumentException e) {
+                    }
                 }
             }
             else if (mobile != null && mobile.isConnected() && AppSettings.useMobile()) {
                 FileHandler.download(getApplicationContext());
                 if (downloadOnConnection) {
-                    unregisterReceiver(networkReceiver);
+                    try {
+                        unregisterReceiver(networkReceiver);
+                    }
+                    catch (IllegalArgumentException e) {
+
+                    }
                 }
             }
             else if ((AppSettings.useWifi() || AppSettings.useMobile()) && AppSettings.useDownloadOnConnection()) {
@@ -1332,8 +1356,13 @@ public class LiveWallpaperService extends GLWallpaperService {
             }
             renderer = null;
             if (!isPreview()) {
-                unregisterReceiver(updateReceiver);
-                unregisterReceiver(networkReceiver);
+                try {
+                    unregisterReceiver(updateReceiver);
+                    unregisterReceiver(networkReceiver);
+                }
+                catch (IllegalArgumentException e) {
+
+                }
             }
             super.onDestroy();
         }
