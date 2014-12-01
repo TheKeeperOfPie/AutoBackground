@@ -29,6 +29,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -59,9 +61,15 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.Asset;
+import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.Wearable;
 import com.squareup.picasso.Cache;
 import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
@@ -100,6 +108,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     private int screenHeight;
     private int screenWidth;
 
+    private GoogleApiClient googleApiClient;
+
     /**
      * Receives DOWNLOAD_TERMINATED intent to reset download button icon and recount available images
      */
@@ -133,6 +143,29 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         AppSettings.resetVer1_30();
         AppSettings.resetVer1_40();
         AppSettings.resetVer2_00();
+
+        googleApiClient = new GoogleApiClient.Builder(appContext)
+                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                    @Override
+                    public void onConnected(Bundle connectionHint) {
+                        Log.d(TAG, "onConnected: " + connectionHint);
+                        // Now you can use the Data Layer API
+                    }
+                    @Override
+                    public void onConnectionSuspended(int cause) {
+                        Log.d(TAG, "onConnectionSuspended: " + cause);
+                    }
+                })
+                .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(ConnectionResult result) {
+                        Log.d(TAG, "onConnectionFailed: " + result);
+                    }
+                })
+                        // Request access only to the Wearable API
+                .addApi(Wearable.API)
+                .build();
+        googleApiClient.connect();
     }
 
     @Override

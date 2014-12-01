@@ -41,6 +41,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceManager;
@@ -54,13 +55,23 @@ import android.view.SurfaceHolder;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.Asset;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.Wearable;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import cw.kop.autobackground.files.FileHandler;
@@ -1111,9 +1122,33 @@ public class LiveWallpaperService extends GLWallpaperService {
         private long pinReleaseTime;
         private boolean downloadOnConnection = false;
         private KeyguardManager keyguardManager;
+        private GoogleApiClient googleApiClient;
 
         public GLWallpaperEngine() {
             super();
+
+            googleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                    .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                        @Override
+                        public void onConnected(Bundle connectionHint) {
+                            Log.d(TAG, "onConnected: " + connectionHint);
+                            // Now you can use the Data Layer API
+                        }
+                        @Override
+                        public void onConnectionSuspended(int cause) {
+                            Log.d(TAG, "onConnectionSuspended: " + cause);
+                        }
+                    })
+                    .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+                        @Override
+                        public void onConnectionFailed(ConnectionResult result) {
+                            Log.d(TAG, "onConnectionFailed: " + result);
+                        }
+                    })
+                            // Request access only to the Wearable API
+                    .addApi(Wearable.API)
+                    .build();
+            googleApiClient.connect();
 
             gestureDetector = new GestureDetector(getApplicationContext(),
                     new GestureDetector.SimpleOnGestureListener() {
@@ -1129,6 +1164,39 @@ public class LiveWallpaperService extends GLWallpaperService {
                         @Override
                         public boolean onDoubleTap(MotionEvent e) {
                             loadNextImage(e.getY());
+
+//                            new Thread(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    NodeApi.GetConnectedNodesResult nodes =
+//                                            Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
+//                                    for (Node node : nodes.getNodes()) {
+//                                        MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+//                                                googleApiClient, node.getId(), "TEST MESSAGE", null).await();
+//                                        if (!result.getStatus().isSuccess()) {
+//                                            Log.e(TAG,
+//                                                    "ERROR: failed to send Message: " + result.getStatus());
+//                                        }
+//                                    }
+//                                }
+//                            }).start();
+//
+//                            Toast.makeText(LiveWallpaperService.this,
+//                                    "Sent",
+//                                    Toast.LENGTH_SHORT).show();
+
+//                            BitmapFactory.Options options = new BitmapFactory.Options();
+//                            options.inSampleSize = 10;
+//                            Bitmap bitmap = BitmapFactory.decodeFile(FileHandler.getNextImage().getAbsolutePath(), options);
+//                            final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+//                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+//                            Asset asset = Asset.createFromBytes(byteStream.toByteArray());
+//                            PutDataRequest request = PutDataRequest.create("/image");
+//                            request.putAsset("profileImage", asset);
+//                            Wearable.DataApi.putDataItem(googleApiClient, request);
+
+//                            Log.i(TAG, "Sent");
+
                             return true;
                         }
 
