@@ -30,4 +30,18 @@
         android:src="@drawable/app_icon"
         />
 
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_margin="16dp"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:shadowDx="-1"
+        android:shadowDy="-1"
+        android:shadowRadius="5"
+        android:shadowColor="@color/black"
+        android:textColor="@color/white"
+        />
+
 </RelativeLayout>

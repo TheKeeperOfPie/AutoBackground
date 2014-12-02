@@ -101,9 +101,10 @@ public class DaydreamService extends DreamService {
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
 
-
+        setInteractive(true);
+        setFullscreen(true);
         glSurfaceView.setEGLContextClientVersion(2);
-        renderer = WallpaperRenderer.getInstance(getApplicationContext(),
+        renderer = new WallpaperRenderer(getApplicationContext(),
                 new WallpaperRenderer.Callback() {
 
                     @Override
@@ -126,21 +127,24 @@ public class DaydreamService extends DreamService {
 
         setContentView(glSurfaceView);
         renderer.loadNext(FileHandler.getNextImage());
-        setInteractive(true);
     }
 
     @Override
     public void onDreamingStarted() {
         super.onDreamingStarted();
+        glSurfaceView.onResume();
     }
 
     @Override
     public void onDreamingStopped() {
+        glSurfaceView.onPause();
         super.onDreamingStopped();
     }
 
     @Override
     public void onDetachedFromWindow() {
+        renderer.release();
+
         super.onDetachedFromWindow();
     }
 

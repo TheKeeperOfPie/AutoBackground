@@ -16,12 +16,10 @@
 
 package cw.kop.autobackground;
 
-import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -42,9 +40,14 @@ public class EventListenerService extends WearableListenerService {
 
     private static final String TAG = EventListenerService.class.getCanonicalName();
     private static final int TIMEOUT_MS = 2000;
+    private static Bitmap currentBitmap = null;
     private GoogleApiClient googleApiClient;
 
     public EventListenerService() {
+    }
+
+    public static Bitmap getBitmap() {
+        return currentBitmap;
     }
 
     @Override
@@ -58,6 +61,7 @@ public class EventListenerService extends WearableListenerService {
                         Log.d(TAG, "onConnected: " + connectionHint);
                         // Now you can use the Data Layer API
                     }
+
                     @Override
                     public void onConnectionSuspended(int cause) {
                         Log.d(TAG, "onConnectionSuspended: " + cause);
@@ -91,13 +95,14 @@ public class EventListenerService extends WearableListenerService {
             if (event.getType() == DataEvent.TYPE_CHANGED &&
                     event.getDataItem().getUri().getPath().equals("/image")) {
                 DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
-                Asset profileAsset = dataMapItem.getDataMap().getAsset("profileImage");
-                Bitmap bitmap = loadBitmapFromAsset(profileAsset);
-                // Do something with the bitmap
+                Asset profileAsset = dataMapItem.getDataMap().getAsset("faceImage");
+                currentBitmap = loadBitmapFromAsset(profileAsset);
 
-                Intent intent = new Intent(MainActivity.LOAD_IMAGE);
-                LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
-                Log.i(TAG, "Bitmap received");
+                if (currentBitmap != null) {
+                    Intent intent = new Intent(WatchFace.LOAD_IMAGE);
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+                    Log.i(TAG, "Bitmap received");
+                }
             }
         }
 

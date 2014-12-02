@@ -30,14 +30,13 @@
         <activity
             android:name="cw.kop.autobackground.WatchFace"
             android:allowEmbedded="true"
-            android:label="@string/hello_round" >
+            android:label="@string/app_name" >
             <meta-data
                 android:name="com.google.android.clockwork.home.preview"
                 android:resource="@drawable/app_icon" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="com.google.android.clockwork.home.category.HOME_BACKGROUND" />
             </intent-filter>
         </activity>
@@ -45,8 +44,12 @@
         <service
             android:name="cw.kop.autobackground.EventListenerService"
             android:enabled="true"
-            android:exported="false" >
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+            </intent-filter>
         </service>
+
     </application>
 
 </manifest>

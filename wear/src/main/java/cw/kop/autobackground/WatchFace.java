@@ -15,85 +15,125 @@
  */
 
 package cw.kop.autobackground;
+
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.os.BatteryManager;
+import android.hardware.display.DisplayManager;
 import android.os.Bundle;
-import android.view.Gravity;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
+import android.view.Display;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.Date;
 
-public class WatchFace extends WatchFaceActivity {
+public class WatchFace extends Activity implements DisplayManager.DisplayListener {
 
-//    private final static IntentFilter intentFilter;
-    private boolean isDimmed = false;
+    public static final String LOAD_IMAGE = "cw.kop.autobackground.WatchFace.LOAD_IMAGE";
+    private static final String TAG = WatchFace.class.getCanonicalName();
+    private DisplayManager displayManager;
     private ImageView faceImage;
-    private boolean test = false;
+    private TextView timeText;
+    private DateFormat timeFormat;
 
-//    static {
-//        intentFilter = new IntentFilter();
-//        intentFilter.addAction(Intent.ACTION_TIME_TICK);
-//        intentFilter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
-//        intentFilter.addAction(Intent.ACTION_TIME_CHANGED);
-//    }
-
-    TextView time, battery;
-    private final String TIME_FORMAT_DISPLAYED = "KK:mm a";
+    private BroadcastReceiver timeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context arg0, Intent intent) {
+            timeText.setText(timeFormat.format(new Date()));
+        }
+    };
+    private BroadcastReceiver imageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context arg0, Intent intent) {
+            faceImage.setImageBitmap(EventListenerService.getBitmap());
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        displayManager = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
+        displayManager.registerDisplayListener(this, null);
+
         setContentView(R.layout.round_activity_main);
 
+        timeText = (TextView) findViewById(R.id.time);
         faceImage = (ImageView) findViewById(R.id.face_image);
-        faceImage.setImageDrawable(new ColorDrawable(0xFF000000));
 
-        Intent service = new Intent(this, EventListenerService.class);
-        startService(service);
+        timeFormat = android.text.format.DateFormat.getTimeFormat(getApplicationContext());
 
-//        registerReceiver(mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-//        mTimeInfoReceiver.onReceive(this, registerReceiver(null, intentFilter));
-//        registerReceiver(mTimeInfoReceiver, intentFilter);
+        IntentFilter imageFilter = new IntentFilter();
+        imageFilter.addAction(LOAD_IMAGE);
+        LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(imageReceiver,
+                imageFilter);
 
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_TIME_TICK);
+        intentFilter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
+        intentFilter.addAction(Intent.ACTION_TIME_CHANGED);
+
+        registerReceiver(timeReceiver, intentFilter);
+
+        timeText.setText(timeFormat.format(new Date()));
     }
 
-//    private BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver(){
-//        @Override
-//        public void onReceive(Context arg0, Intent intent) {
-//            battery.setText(String.valueOf(intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0) + "%"));
-//        }
-//    };
-//
-//    private BroadcastReceiver mTimeInfoReceiver = new BroadcastReceiver(){
-//        @Override
-//        public void onReceive(Context arg0, Intent intent) {
-//            Date date = new Date();
-//            time.setText(new SimpleDateFormat(TIME_FORMAT_DISPLAYED).format(date));
-//            setColorOfText();
-//        }
-//    };
-//
-//    private void setColorOfText(){
-//        time.setTextColor(isDimmed ? Color.GRAY : Color.RED);
-//        battery.setTextColor(isDimmed ? Color.GRAY : Color.RED);
-//    }
+    @Override
+    protected void onDestroy() {
+        try {
+            LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(
+                    imageReceiver);
+            unregisterReceiver(timeReceiver);
+        }
+        catch (IllegalArgumentException e) {
+
+        }
+        displayManager.unregisterDisplayListener(this);
+        super.onDestroy();
+    }
 
     @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        Log.i(TAG, "Touched");
+
+        return super.onTouchEvent(event);
+    }
+
     public void onScreenDim() {
-        isDimmed = true;
+        faceImage.setVisibility(View.INVISIBLE);
+    }
+
+    public void onScreenAwake() {
+        faceImage.setVisibility(View.VISIBLE);
     }
 
     @Override
-    public void onScreenAwake() {
-        isDimmed = false;
+    public void onDisplayAdded(int displayId) {
+
     }
 
+    @Override
+    public void onDisplayRemoved(int displayId) {
+
+    }
+
+    @Override
+    public void onDisplayChanged(int displayId) {
+        switch (displayManager.getDisplay(displayId).getState()) {
+            case Display.STATE_DOZE:
+                onScreenDim();
+                break;
+            default:
+                onScreenAwake();
+                break;
+        }
+    }
 }

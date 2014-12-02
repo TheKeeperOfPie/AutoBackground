@@ -258,7 +258,12 @@ public class FileHandler {
         images.remove(previousBitmapFile);
         images.remove(currentBitmapFile);
         previousBitmapFile = currentBitmapFile;
-        currentBitmapFile = images.get(new Random().nextInt(images.size()));
+        if (images.size() > 0) {
+            currentBitmapFile = images.get(new Random().nextInt(images.size()));
+        }
+        else {
+            currentBitmapFile = null;
+        }
         return currentBitmapFile;
     }
 

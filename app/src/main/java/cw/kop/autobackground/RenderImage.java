@@ -954,10 +954,8 @@ public class RenderImage {
     }
 
     public void finishImmediately() {
-
         GLES20.glDeleteTextures(1, textureNames, 0);
         eventListener.removeSelf(this);
-
     }
 
     private void applyEndTransition() {

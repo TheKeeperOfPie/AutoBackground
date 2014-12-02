@@ -383,7 +383,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
 
             intervalPreferences.removePreference(findPreference("reset_on_manual_cycle"));
-            intervalPreferences.removePreference(findPreference("force_interval"));
             intervalPreferences.removePreference(findPreference("when_locked"));
 
             PreferenceCategory transitionPreferences = (PreferenceCategory) findPreference(

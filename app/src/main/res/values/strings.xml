@@ -68,7 +68,7 @@
     <string name="use_interval">Update Interval</string>
     <string name="use_interval_description">Change image after certain period</string>
     <string name="force_interval">Force Interval</string>
-    <string name="force_interval_description">Force change on interval</string>
+    <string name="force_interval_description">Force change on interval, rather than waiting for visibility change</string>
     <string name="reset_on_manual_cycle">Reset On Cycle</string>
     <string name="reset_on_manual_cycle_description">Reset timer on manual cycle</string>
     <string name="on_return">Change on Return</string>

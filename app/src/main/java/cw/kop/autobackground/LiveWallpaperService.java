@@ -37,6 +37,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.media.ThumbnailUtils;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -57,10 +58,14 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.wearable.Asset;
+import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.squareup.picasso.Picasso;
@@ -69,8 +74,10 @@ import com.squareup.picasso.Target;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -88,6 +95,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     public static final String UPDATE_NOTIFICATION = "cw.kop.autobackground.LiveWallpaperService.UPDATE_NOTIFICATION";
     public static final String DOWNLOAD_WALLPAPER = "cw.kop.autobackground.LiveWallpaperService.DOWNLOAD_WALLPAPER";
     public static final String UPDATE_WALLPAPER = "cw.kop.autobackground.LiveWallpaperService.UPDATE_WALLPAPER";
+    public static final String CONNECT_WEAR = "cw.kop.autobackground.LiveWallpaperService.CONNECT_WEAR";
     public static final String TOAST_LOCATION = "cw.kop.autobackground.LiveWallpaperService.TOAST_LOCATION";
     public static final String COPY_IMAGE = "cw.kop.autobackground.LiveWallpaperService.COPY_IMAGE";
     public static final String CYCLE_IMAGE = "cw.kop.autobackground.LiveWallpaperService.CYCLE_IMAGE";
@@ -125,6 +133,11 @@ public class LiveWallpaperService extends GLWallpaperService {
                     break;
                 case UPDATE_NOTIFICATION:
                     startNotification(intent.getBooleanExtra("use", false));
+                    break;
+                case CONNECT_WEAR:
+                    if (googleApiClient != null && !googleApiClient.isConnected()) {
+                        googleApiClient.connect();
+                    }
                     break;
                 case COPY_IMAGE:
                     ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -286,6 +299,10 @@ public class LiveWallpaperService extends GLWallpaperService {
     private PendingIntent pendingIntervalIntent;
     private PendingIntent pendingAppIntent;
     private boolean pinned;
+    private GLWallpaperEngine wallpaperEngine;
+
+    private GoogleApiClient googleApiClient;
+    private boolean isWearConnected = false;
 
     public LiveWallpaperService() {
         super();
@@ -314,6 +331,31 @@ public class LiveWallpaperService extends GLWallpaperService {
         if (AppSettings.useNotification()) {
             startNotification(true);
         }
+
+        googleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                    @Override
+                    public void onConnected(Bundle connectionHint) {
+                        isWearConnected = true;
+                        if (AppSettings.useToast()) {
+                            Toast.makeText(LiveWallpaperService.this, "Connected to Wear device", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                    @Override
+                    public void onConnectionSuspended(int cause) {
+                        isWearConnected = false;
+                    }
+                })
+                .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(ConnectionResult result) {
+                        Toast.makeText(LiveWallpaperService.this, "Connection to Wear device failed", Toast.LENGTH_LONG).show();
+                    }
+                })
+                        // Request access only to the Wearable API
+                .addApi(Wearable.API)
+                .build();
+        googleApiClient.connect();
 
         Log.i(TAG, "onCreateService");
     }
@@ -373,20 +415,21 @@ public class LiveWallpaperService extends GLWallpaperService {
     private IntentFilter getServiceIntentFilter() {
 
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(LiveWallpaperService.STOP_DOWNLOAD);
-        intentFilter.addAction(LiveWallpaperService.UPDATE_NOTIFICATION);
-        intentFilter.addAction(LiveWallpaperService.COPY_IMAGE);
-        intentFilter.addAction(LiveWallpaperService.TOAST_LOCATION);
-        intentFilter.addAction(LiveWallpaperService.GAME_TILE0);
-        intentFilter.addAction(LiveWallpaperService.GAME_TILE1);
-        intentFilter.addAction(LiveWallpaperService.GAME_TILE2);
-        intentFilter.addAction(LiveWallpaperService.GAME_TILE3);
-        intentFilter.addAction(LiveWallpaperService.GAME_TILE4);
-        intentFilter.addAction(LiveWallpaperService.GAME_TILE5);
-        intentFilter.addAction(LiveWallpaperService.GAME_TILE6);
-        intentFilter.addAction(LiveWallpaperService.GAME_TILE7);
-        intentFilter.addAction(LiveWallpaperService.GAME_TILE8);
-        intentFilter.addAction(LiveWallpaperService.GAME_TILE9);
+        intentFilter.addAction(STOP_DOWNLOAD);
+        intentFilter.addAction(UPDATE_NOTIFICATION);
+        intentFilter.addAction(CONNECT_WEAR);
+        intentFilter.addAction(COPY_IMAGE);
+        intentFilter.addAction(TOAST_LOCATION);
+        intentFilter.addAction(GAME_TILE0);
+        intentFilter.addAction(GAME_TILE1);
+        intentFilter.addAction(GAME_TILE2);
+        intentFilter.addAction(GAME_TILE3);
+        intentFilter.addAction(GAME_TILE4);
+        intentFilter.addAction(GAME_TILE5);
+        intentFilter.addAction(GAME_TILE6);
+        intentFilter.addAction(GAME_TILE7);
+        intentFilter.addAction(GAME_TILE8);
+        intentFilter.addAction(GAME_TILE9);
 
         return intentFilter;
     }
@@ -434,13 +477,14 @@ public class LiveWallpaperService extends GLWallpaperService {
     public void onDestroy() {
         try {
             unregisterReceiver(serviceReceiver);
+            googleApiClient.disconnect();
+            notificationManager.cancel(NOTIFICATION_ID);
+            alarmManager.cancel(pendingDownloadIntent);
+            alarmManager.cancel(pendingIntervalIntent);
         }
         catch (IllegalArgumentException e) {
 
         }
-        notificationManager.cancel(NOTIFICATION_ID);
-        alarmManager.cancel(pendingDownloadIntent);
-        alarmManager.cancel(pendingIntervalIntent);
         super.onDestroy();
     }
 
@@ -1090,7 +1134,8 @@ public class LiveWallpaperService extends GLWallpaperService {
     }
 
     public Engine onCreateEngine() {
-        return new GLWallpaperEngine();
+        wallpaperEngine = new GLWallpaperEngine();
+        return wallpaperEngine;
     }
 
     class GLWallpaperEngine extends GLEngine {
@@ -1137,33 +1182,9 @@ public class LiveWallpaperService extends GLWallpaperService {
         private long pinReleaseTime;
         private boolean downloadOnConnection = false;
         private KeyguardManager keyguardManager;
-        private GoogleApiClient googleApiClient;
 
         public GLWallpaperEngine() {
             super();
-
-            googleApiClient = new GoogleApiClient.Builder(getApplicationContext())
-                    .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
-                        @Override
-                        public void onConnected(Bundle connectionHint) {
-                            Log.d(TAG, "onConnected: " + connectionHint);
-                            // Now you can use the Data Layer API
-                        }
-                        @Override
-                        public void onConnectionSuspended(int cause) {
-                            Log.d(TAG, "onConnectionSuspended: " + cause);
-                        }
-                    })
-                    .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
-                        @Override
-                        public void onConnectionFailed(ConnectionResult result) {
-                            Log.d(TAG, "onConnectionFailed: " + result);
-                        }
-                    })
-                            // Request access only to the Wearable API
-                    .addApi(Wearable.API)
-                    .build();
-            googleApiClient.connect();
 
             gestureDetector = new GestureDetector(getApplicationContext(),
                     new GestureDetector.SimpleOnGestureListener() {
@@ -1179,39 +1200,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                         @Override
                         public boolean onDoubleTap(MotionEvent e) {
                             loadNextImage(e.getY());
-
-//                            new Thread(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    NodeApi.GetConnectedNodesResult nodes =
-//                                            Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
-//                                    for (Node node : nodes.getNodes()) {
-//                                        MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
-//                                                googleApiClient, node.getId(), "TEST MESSAGE", null).await();
-//                                        if (!result.getStatus().isSuccess()) {
-//                                            Log.e(TAG,
-//                                                    "ERROR: failed to send Message: " + result.getStatus());
-//                                        }
-//                                    }
-//                                }
-//                            }).start();
-//
-//                            Toast.makeText(LiveWallpaperService.this,
-//                                    "Sent",
-//                                    Toast.LENGTH_SHORT).show();
-
-//                            BitmapFactory.Options options = new BitmapFactory.Options();
-//                            options.inSampleSize = 10;
-//                            Bitmap bitmap = BitmapFactory.decodeFile(FileHandler.getNextImage().getAbsolutePath(), options);
-//                            final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-//                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
-//                            Asset asset = Asset.createFromBytes(byteStream.toByteArray());
-//                            PutDataRequest request = PutDataRequest.create("/image");
-//                            request.putAsset("profileImage", asset);
-//                            Wearable.DataApi.putDataItem(googleApiClient, request);
-
-//                            Log.i(TAG, "Sent");
-
                             return true;
                         }
 
@@ -1260,7 +1248,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             super.onCreate(surfaceHolder);
             setEGLContextClientVersion(2);
 
-            renderer = WallpaperRenderer.getInstance(LiveWallpaperService.this,
+            renderer = new WallpaperRenderer(LiveWallpaperService.this,
                     new WallpaperRenderer.Callback() {
 
                         @Override
@@ -1290,16 +1278,16 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         private IntentFilter getEngineIntentFilter() {
             IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
-            intentFilter.addAction(LiveWallpaperService.CYCLE_IMAGE);
-            intentFilter.addAction(LiveWallpaperService.UPDATE_WALLPAPER);
-            intentFilter.addAction(LiveWallpaperService.DELETE_IMAGE);
-            intentFilter.addAction(LiveWallpaperService.OPEN_IMAGE);
-            intentFilter.addAction(LiveWallpaperService.PREVIOUS_IMAGE);
-            intentFilter.addAction(LiveWallpaperService.PIN_IMAGE);
-            intentFilter.addAction(LiveWallpaperService.SHARE_IMAGE);
-            intentFilter.addAction(LiveWallpaperService.TOGGLE_GAME);
-            intentFilter.addAction(LiveWallpaperService.CURRENT_IMAGE);
+            intentFilter.addAction(DOWNLOAD_WALLPAPER);
+            intentFilter.addAction(CYCLE_IMAGE);
+            intentFilter.addAction(UPDATE_WALLPAPER);
+            intentFilter.addAction(DELETE_IMAGE);
+            intentFilter.addAction(OPEN_IMAGE);
+            intentFilter.addAction(PREVIOUS_IMAGE);
+            intentFilter.addAction(PIN_IMAGE);
+            intentFilter.addAction(SHARE_IMAGE);
+            intentFilter.addAction(TOGGLE_GAME);
+            intentFilter.addAction(CURRENT_IMAGE);
             return intentFilter;
         }
 
@@ -1432,6 +1420,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     renderer.loadNext(nextImage);
+                    loadWearImage();
 
                     handler.post(new Runnable() {
                         @Override
@@ -1472,6 +1461,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     renderer.loadNext(nextImage);
+                    loadWearImage();
 
                     handler.post(new Runnable() {
                         @Override
@@ -1518,6 +1508,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
 
                         renderer.loadNext(nextImage);
+                        loadWearImage();
 
                         handler.post(new Runnable() {
                             @Override
@@ -1567,7 +1558,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
 
                         renderer.loadNext(nextImage, positionY);
-
+                        loadWearImage();
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -1589,6 +1580,42 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
             }).start();
 
+        }
+
+        private void loadWearImage() {
+            if (isWearConnected) {
+
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inPreferredConfig = Bitmap.Config.RGB_565;
+                options.inJustDecodeBounds = true;
+
+                BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(), options);
+
+                int bitWidth = options.outWidth;
+                int bitHeight = options.outHeight;
+                int sampleSize = 1;
+
+                if (bitWidth > 280 || bitHeight > 280) {
+
+                    final int halfHeight = bitHeight / 2;
+                    final int halfWidth = bitWidth / 2;
+                    while ((halfHeight / sampleSize) > 280 && (halfWidth / sampleSize) > 280) {
+                        sampleSize *= 2;
+                    }
+                }
+
+                options.inJustDecodeBounds = false;
+                Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(),
+                        options), 280, 280);
+
+                final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
+                Asset asset = Asset.createFromBytes(byteStream.toByteArray());
+                PutDataMapRequest dataMap = PutDataMapRequest.create("/image");
+                dataMap.getDataMap().putAsset("faceImage", asset);
+                dataMap.getDataMap().putLong("time", new Date().getTime());
+                Wearable.DataApi.putDataItem(googleApiClient, dataMap.asPutDataRequest());
+            }
         }
 
         private final BroadcastReceiver updateReceiver = new BroadcastReceiver() {

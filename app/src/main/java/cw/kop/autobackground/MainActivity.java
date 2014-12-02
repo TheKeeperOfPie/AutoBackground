@@ -301,7 +301,9 @@ public class MainActivity extends ActionBarActivity {
     }
 
     protected void onStart() {
-        super.onStart();
+        super.onStart();Intent intent = new Intent();
+        intent.setAction(LiveWallpaperService.CONNECT_WEAR);
+        sendBroadcast(intent);
     }
 
     protected void onStop() {

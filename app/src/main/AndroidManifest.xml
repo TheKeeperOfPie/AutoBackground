@@ -38,8 +38,12 @@
 
     <uses-feature
         android:name="android.software.live_wallpaper"
-        android:required="true">
-    </uses-feature>
+        android:required="true"
+        />
+
+    <uses-feature android:name="android.hardware.type.watch"
+        android:required="false"
+        />
 
     <application
         android:allowBackup="true"
@@ -76,6 +80,10 @@
                 <action android:name="android.service.dreams.DreamService" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            <meta-data
+                android:name="android.service.dreams.DreamService"
+                android:resource="@xml/dream">
+            </meta-data>
         </service>
 
 

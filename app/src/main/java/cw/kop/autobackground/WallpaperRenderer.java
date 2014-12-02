@@ -29,6 +29,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -52,22 +53,6 @@ import cw.kop.autobackground.settings.AppSettings;
 class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     private static final String TAG = "Renderer";
-    private EffectUpdateListener effectUpdateListener = new EffectUpdateListener() {
-        @Override
-        public void onEffectUpdated(Effect effect, Object info) {
-
-            Log.i(TAG, "Effect info: " + info.toString());
-
-            if (AppSettings.useToast()) {
-                Toast.makeText(serviceContext,
-                        "Effect info: " + info.toString(),
-                        Toast.LENGTH_SHORT).show();
-            }
-
-        }
-    };
-    private static WallpaperRenderer instance;
-    private static boolean isPlayingMusic;
     private float[] matrixView = new float[16];
     private float renderScreenWidth = 1;
     private float renderScreenHeight = 1;
@@ -95,13 +80,11 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
         @Override
         public void doneLoading() {
-            if (instance.renderImagesTop.size() > 1) {
-                instance.renderImagesTop.get(0).startFinish();
-                Log.i(TAG, "Start finish top");
+            if (renderImagesTop.size() > 1) {
+                renderImagesTop.get(0).startFinish();
             }
-            if (instance.renderImagesBottom.size() > 1) {
-                instance.renderImagesBottom.get(0).startFinish();
-                Log.i(TAG, "Start finish bottom");
+            if (renderImagesBottom.size() > 1) {
+                renderImagesBottom.get(0).startFinish();
             }
         }
 
@@ -127,21 +110,13 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         }
     };
 
-    private WallpaperRenderer(Context context, Callback callback) {
+    public WallpaperRenderer(Context context, Callback callback) {
         serviceContext = context;
         this.callback = callback;
         startTime = System.currentTimeMillis();
         renderImagesTop = new CopyOnWriteArrayList<>();
         renderImagesBottom = new CopyOnWriteArrayList<>();
         handler = new Handler(serviceContext.getMainLooper());
-    }
-
-    public static WallpaperRenderer getInstance(Context context, Callback callback) {
-        if (instance == null) {
-            instance = new WallpaperRenderer(context.getApplicationContext(), callback);
-        }
-
-        return instance;
     }
 
     @Override
@@ -187,8 +162,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-
-        Log.i(TAG, "Renderer onSurfaceChanged");
 
         if (width != renderScreenWidth) {
             GLES20.glViewport(0, 0, width, height);
@@ -237,31 +210,14 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         if (renderImagesTop.size() == 0) {
             File nextImage = FileHandler.getNextImage();
             if (nextImage != null && nextImage.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath());
-                if (bitmap != null) {
-                    if (AppSettings.useDoubleImage()) {
-                        renderImagesTop.add(getNewImage(scaleBitmap(bitmap,
-                                renderScreenWidth,
-                                renderScreenHeight), 0.0f, 1.0f, 0.5f, 1.0f));
-                    }
-                    else {
-                        renderImagesTop.add(getNewImage(scaleBitmap(bitmap,
-                                renderScreenWidth,
-                                renderScreenHeight), 0.0f, 1.0f, 0.0f, 1.0f));
-                    }
-                }
+                loadNext(nextImage);
             }
         }
 
         if (renderImagesBottom.size() == 0 && AppSettings.useDoubleImage()) {
             File nextImage = FileHandler.getNextImage();
             if (nextImage != null && nextImage.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath());
-                if (bitmap != null) {
-                    renderImagesBottom.add(getNewImage(scaleBitmap(bitmap,
-                            renderScreenWidth,
-                            renderScreenHeight), 0.0f, 1.0f, 0.0f, 0.5f));
-                }
+                loadNext(nextImage);
             }
         }
 
@@ -274,8 +230,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
         RenderImage.setupRenderValues();
-
-        Log.i(TAG, "onSurfaceCreated");
     }
 
     private RenderImage getNewImage(Bitmap bitmap,
@@ -518,10 +472,12 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
     public void release() {
         Log.i(TAG, "release");
-    }
-
-    public void setPlayingMusic(boolean playingMusic) {
-        isPlayingMusic = playingMusic;
+        for (RenderImage image : renderImagesTop) {
+            image.finishImmediately();
+        }
+        for (RenderImage image : renderImagesBottom) {
+            image.finishImmediately();
+        }
     }
 
     public interface Callback {

@@ -34,8 +34,8 @@ android {
         applicationId "cw.kop.autobackground"
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 55
-        versionName "1.51.00"
+        versionCode 56
+        versionName "1.52.00"
     }
 
     compileOptions {
@@ -84,5 +84,5 @@ dependencies {
     compile('com.crashlytics.sdk.android:crashlytics:2.1.0@aar') {
         transitive = true;
     }
-//    wearApp project(':wear')
+    wearApp project(':wear')
 }
