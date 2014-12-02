@@ -1743,6 +1743,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                             loadNextImage();
                         }
                         else {
+                            if (isWearConnected && FileHandler.getNextImage() != null) {
+                                loadWearImage();
+                            }
                             toChange = true;
                         }
                         break;
