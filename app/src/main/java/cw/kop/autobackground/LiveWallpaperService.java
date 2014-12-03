@@ -83,13 +83,9 @@ import java.util.List;
 
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.shared.MessagePath;
 
 public class LiveWallpaperService extends GLWallpaperService {
-
-    public static final String SET_ANIMATED = "cw.kop.autobackground.LiveWallpaperService.SET_ANIMATED";
-    public static final String SET_ANIMATION_X = "cw.kop.autobackground.LiveWallpaperService.SET_ANIMATION_X";
-    public static final String SET_ANIMATION_Y = "cw.kop.autobackground.LiveWallpaperService.SET_ANIMATION_Y";
-    public static final String SET_FRAME_TIME = "cw.kop.autobackground.LiveWallpaperService.SET_FRAME_TIME";
 
     public static final String STOP_DOWNLOAD = "cw.kop.autobackground.LiveWallpaperService.STOP_DOWNLOAD";
     public static final String UPDATE_NOTIFICATION = "cw.kop.autobackground.LiveWallpaperService.UPDATE_NOTIFICATION";
@@ -350,6 +346,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     @Override
                     public void onConnectionFailed(ConnectionResult result) {
                         Toast.makeText(LiveWallpaperService.this, "Connection to Wear device failed", Toast.LENGTH_LONG).show();
+                        isWearConnected = false;
                     }
                 })
                         // Request access only to the Wearable API
@@ -360,6 +357,30 @@ public class LiveWallpaperService extends GLWallpaperService {
         Log.i(TAG, "onCreateService");
     }
 
+    private void sendMessage(final String messagePath, final String data) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
+
+                for (Node node : nodes.getNodes()) {
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+                            googleApiClient,
+                            node.getId(),
+                            messagePath,
+                            data.getBytes()).await();
+                    if (!result.getStatus().isSuccess()) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(LiveWallpaperService.this, "Error syncing to Wear", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }
+            }
+        }).start();
+    }
 
     private void setIntents() {
         Intent downloadIntent = new Intent(LiveWallpaperService.DOWNLOAD_WALLPAPER);

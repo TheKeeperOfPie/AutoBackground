@@ -42,6 +42,7 @@
     <string name="title_download_settings">Download Settings</string>
     <string name="title_account_settings">Account Settings</string>
     <string name="title_notification_settings">Notification Settings</string>
+    <string name="title_wear_settings">Wear Settings</string>
     <string name="title_app_settings">Application Settings</string>
     <string name="title_transition_settings">Transition Settings</string>
     <string name="title_animation_settings">Animation Settings</string>
@@ -302,8 +303,21 @@
     <string name="use_pin_indicator_description">Show a pin overlay in the notification when image is pinned</string>
     <string name="history_size">Previous History Size</string>
     <string name="history_size_description">Number of images to store in previous buffer</string>
-    <string name="high_resolution_notification_icon">Force high resolution icon</string>
+    <string name="high_resolution_notification_icon">High Resolution Icon</string>
     <string name="high_resolution_notification_icon_description">Loads higher resolution icon, not recommended as this will cause lag</string>
+
+    <string name="wear_time_type">Time Type</string>
+    <string name="wear_time_type_description">Digital or analog display</string>
+    <string name="wear_time_size">Time Size</string>
+    <string name="wear_time_size_description">Time text size</string>
+    <string name="wear_time_color">Time Color</string>
+    <string name="wear_time_color_description">Color of time display</string>
+    <string name="wear_date_type">Date Type</string>
+    <string name="wear_date_type_description">Data display type</string>
+    <string name="wear_date_size">Date Size</string>
+    <string name="wear_date_size_description">Date text size</string>
+    <string name="wear_date_color">Date Color</string>
+    <string name="wear_date_color_description">Date text color</string>
 
     <string name="about_libraries">Used Libraries</string>
     <string name="about_libraries_description">The following libraries were used in the creation of this application. Click on their entries to check them out.</string>
@@ -449,6 +463,7 @@
         <item>Accounts</item>
         <item>Effects</item>
         <item>Notification</item>
+        <item>Wear</item>
         <item>Application</item>
         <item>History</item>
         <item>About</item>
@@ -461,6 +476,7 @@
         <item>Connect accounts</item>
         <item>Change image effects</item>
         <item>Change notification look</item>
+        <item>Android Wear settings</item>
         <item>Various settings for app</item>
         <item>Various information</item>
         <item>Image history</item>

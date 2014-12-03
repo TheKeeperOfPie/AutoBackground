@@ -43,6 +43,7 @@ public class NavListAdapter extends BaseAdapter {
             R.drawable.ic_account_circle_white_24dp,
             R.drawable.ic_filter_white_24dp,
             R.drawable.ic_notifications_white_24dp,
+            R.drawable.ic_watch_white_24dp,
             R.drawable.ic_settings_white_24dp,
             R.drawable.ic_history_white_24dp,
             R.drawable.ic_info_white_24dp};

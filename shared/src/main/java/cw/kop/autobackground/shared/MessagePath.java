@@ -14,5 +14,19 @@
  * limitations under the License.
  */
 
-include ':app', ':wear', ':shared'
-include ':libraries:colorpickerpreference'
+package cw.kop.autobackground.shared;
+
+/**
+ * Created by TheKeeperOfPie on 12/3/2014.
+ */
+public class MessagePath {
+
+    public static final String TIME_COLOR ="/options/time/color";
+    public static final String TIME_SIZE ="/options/time/size";
+    public static final String TIME_TYPE ="/options/time/type";
+    public static final String DATE_COLOR ="/options/date/color";
+    public static final String DATE_SIZE ="/options/date/size";
+    public static final String DATE_TYPE ="/options/date/type";
+    public static final String DISPLAY_TYPE ="/options/display/type";
+
+}

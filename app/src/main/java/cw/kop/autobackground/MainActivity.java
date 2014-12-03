@@ -380,13 +380,17 @@ public class MainActivity extends ActionBarActivity {
                         new NotificationSettingsFragment()).commit();
                 break;
             case 6:
-                fragmentTransaction.replace(R.id.content_frame, new AppSettingsFragment()).commit();
+                fragmentTransaction.replace(R.id.content_frame,
+                        new WearSettingsFragment()).commit();
                 break;
             case 7:
+                fragmentTransaction.replace(R.id.content_frame, new AppSettingsFragment()).commit();
+                break;
+            case 8:
                 fragmentTransaction.replace(R.id.content_frame,
                         new ImageHistoryFragment()).commit();
                 break;
-            case 8:
+            case 9:
                 fragmentTransaction.replace(R.id.content_frame, new AboutFragment()).commit();
                 break;
             default:
