@@ -54,6 +54,8 @@ public class AppSettings {
     public static final String APP_DARK_THEME = "Dark Theme";
     public static final String APP_TRANSPARENT_THEME = "Transparent Theme";
 
+    private static final long DEFAULT_INTERVAL = 1800000;
+
     private static SharedPreferences prefs = LiveWallpaperService.prefs;
 
     public AppSettings() {
@@ -433,11 +435,11 @@ public class AppSettings {
     }
 
     public static boolean useInterval() {
-        return prefs.getBoolean("use_interval", false);
+        return prefs.getBoolean("use_interval", true);
     }
 
     public static long getIntervalDuration() {
-        return prefs.getLong("interval_duration", 0);
+        return prefs.getLong("interval_duration", DEFAULT_INTERVAL);
     }
 
     public static void setIntervalDuration(long interval) {

@@ -253,7 +253,12 @@ public class SourceListAdapter extends BaseAdapter {
         sourceData.setText(dataPrefix);
         sourceData.append(listItem.get("data"));
         sourceNum.setText(numPrefix);
-        sourceNum.append(listItem.get("numStored") + " / " + listItem.get("num"));
+        if (listItem.get("type").equals(AppSettings.FOLDER)) {
+            sourceNum.append(listItem.get("num"));
+        }
+        else {
+            sourceNum.append(listItem.get("numStored") + " / " + listItem.get("num"));
+        }
         sourceTime.setText(timePrefix);
 
         if (listItem.get("use_time").equals("true")) {

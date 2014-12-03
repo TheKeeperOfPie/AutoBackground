@@ -275,11 +275,22 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
             @Override
             public void onClickRight(View v) {
-                if (getEditTextString().equals("")) {
+
+                String value = getEditTextString();
+
+                if (value.equals("") || Long.parseLong(value) < 0) {
                     timerPref.setChecked(false);
+                    dismissDialog();
                     return;
                 }
-                AppSettings.setTimerDuration(Integer.parseInt(getEditTextString()) * CONVERT_MILLES_TO_MIN);
+
+                long inputValue = Long.parseLong(value);
+
+                if (inputValue < 30000L) {
+                    inputValue = 30000L;
+                }
+
+                AppSettings.setTimerDuration(inputValue * CONVERT_MILLES_TO_MIN);
                 setDownloadAlarm();
                 timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
                 dismissDialog();

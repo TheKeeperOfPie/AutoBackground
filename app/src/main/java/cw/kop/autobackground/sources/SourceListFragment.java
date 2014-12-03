@@ -460,7 +460,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         String type = item.get("type");
         String directory;
         if (type.equals(AppSettings.FOLDER)) {
-            directory = AppSettings.getSourceData(index);
+            directory = AppSettings.getSourceData(index).split(AppSettings.DATA_SPLITTER)[0];
         }
         else {
             directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(

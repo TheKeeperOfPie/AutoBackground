@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -240,14 +241,14 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         File[] fileList = dir.listFiles();
 
         if (fileList != null) {
+            if (dir.listFiles(FileHandler.getImageFileNameFilter()).length > 0) {
+                directoryList.add(dir.getAbsolutePath());
+            }
+
             for (File folder : fileList) {
                 if (folder.isDirectory()) {
                     directoryList.addAll(getAllDirectories(folder));
                 }
-            }
-
-            if (dir.listFiles(FileHandler.getImageFileNameFilter()).length > 0) {
-                directoryList.add(dir.getAbsolutePath());
             }
         }
 
@@ -290,6 +291,10 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                     }
                 }
             });
+            File externalStorageDirectory = Environment.getExternalStorageDirectory();
+            if (externalStorageDirectory.exists()) {
+                imageAdapter.setDirectory(externalStorageDirectory);
+            }
         }
         else {
             imageListView.setOnItemClickListener(this);

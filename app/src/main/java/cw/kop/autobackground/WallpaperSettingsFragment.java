@@ -41,7 +41,7 @@ import cw.kop.autobackground.settings.AppSettings;
 public class WallpaperSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
     private static final String TAG = WallpaperSettingsFragment.class.getName();
-    private static final long CONVERT_MILLES_TO_MIN = 60000;
+    private static final long CONVERT_MINUTES_TO_MILLES = 60000;
     private SwitchPreference intervalPref;
     private Preference frameRatePref;
     private Context appContext;
@@ -413,7 +413,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         if (AppSettings.useInterval()) {
             if (AppSettings.getIntervalDuration() > 0) {
-                intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MILLES_TO_MIN) + " minutes");
+                intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MINUTES_TO_MILLES) + " minutes");
             }
             else {
                 intervalPref.setSummary("Change on return");
@@ -443,13 +443,13 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                         AppSettings.setIntervalDuration(0);
                         break;
                     case 1:
-                        AppSettings.setIntervalDuration(5 * CONVERT_MILLES_TO_MIN);
+                        AppSettings.setIntervalDuration(5 * CONVERT_MINUTES_TO_MILLES);
                         break;
                     case 2:
-                        AppSettings.setIntervalDuration(15 * CONVERT_MILLES_TO_MIN);
+                        AppSettings.setIntervalDuration(15 * CONVERT_MINUTES_TO_MILLES);
                         break;
                     case 3:
-                        AppSettings.setIntervalDuration(30 * CONVERT_MILLES_TO_MIN);
+                        AppSettings.setIntervalDuration(30 * CONVERT_MINUTES_TO_MILLES);
                         break;
                     case 4:
                         AppSettings.setIntervalDuration(AlarmManager.INTERVAL_HOUR);
@@ -467,7 +467,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 }
 
                 if (AppSettings.getIntervalDuration() > 0) {
-                    intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MILLES_TO_MIN) + " minutes");
+                    intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MINUTES_TO_MILLES) + " minutes");
                 }
                 else {
                     intervalPref.setSummary("Change on return");
@@ -507,12 +507,15 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
             @Override
             public void onClickRight(View v) {
                 String value = getEditTextString();
-                long inputValue = Long.parseLong(value);
 
-                if (value.equals("") || inputValue < 0) {
+                if (value.equals("") || Long.parseLong(value) < 0) {
                     intervalPref.setChecked(false);
+                    dismissDialog();
                     return;
                 }
+
+                long inputValue = Long.parseLong(value);
+
                 if (inputValue < 3000L && inputValue > 0) {
                     inputValue = 3000L;
                 }
@@ -523,7 +526,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                     intervalPref.setSummary("Change on return");
                 }
                 else {
-                    intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MILLES_TO_MIN) + " minutes");
+                    intervalPref.setSummary("Change every " + (AppSettings.getIntervalDuration() / (float) CONVERT_MINUTES_TO_MILLES) + " minutes");
                 }
                 dismissDialog();
             }
