@@ -894,11 +894,11 @@ public class RenderImage {
 
         if (AppSettings.useZoomIn()) {
             float minScaleFactor;
-            if (renderScreenWidth / bitmapWidth > renderScreenHeight * (maxRatioY - minRatioY) / bitmapHeight) {
+            if (renderScreenWidth / bitmapWidth > scaledRenderHeight / bitmapHeight) {
                 minScaleFactor = renderScreenWidth / bitmapWidth;
             }
             else {
-                minScaleFactor = renderScreenHeight * (maxRatioY - minRatioY) / bitmapHeight;
+                minScaleFactor = scaledRenderHeight / bitmapHeight;
             }
 
             scaleFactor = minScaleFactor * (1.0f - timeRatio);

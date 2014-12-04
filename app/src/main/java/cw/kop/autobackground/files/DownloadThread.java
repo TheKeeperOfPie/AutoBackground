@@ -54,6 +54,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -285,7 +286,7 @@ public class DownloadThread extends Thread {
             }
         }
 
-        renameAndReorder(dir, title, targetNum, downloadedFiles);
+        removeExtras(dir, title, targetNum, downloadedFiles);
         imageDetails += title + ": " + numDownloaded + " images" + AppSettings.DATA_SPLITTER;
         if (numDownloaded == 0) {
             sendToast("No images downloaded from " + title);
@@ -299,21 +300,24 @@ public class DownloadThread extends Thread {
         totalDownloaded += numDownloaded;
     }
 
-    private void renameAndReorder(String dir,
+    private void removeExtras(String dir,
             String title,
             int targetNum,
             Set<File> downloadedFiles) {
 
         File mainDir = new File(dir + "/" + title + " " + AppSettings.getImagePrefix());
-
         FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
 
+        List<File> files = Arrays.asList(mainDir.listFiles(filenameFilter));
+        files.removeAll(downloadedFiles);
+
         if (!AppSettings.keepImages()) {
-            for (File file : mainDir.listFiles(filenameFilter)) {
-                if (!downloadedFiles.contains(file) && mainDir.list(filenameFilter).length > targetNum) {
-                    AppSettings.clearUrl(file.getName());
-                    file.delete();
-                }
+            int extra = mainDir.list(filenameFilter).length - targetNum;
+            while (extra > 0 && files.size() > 0) {
+                File file = files.get(0);
+                AppSettings.clearUrl(file.getName());
+                file.delete();
+                files.remove(file);
             }
         }
     }
