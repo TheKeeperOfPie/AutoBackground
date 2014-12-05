@@ -27,6 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:adjustViewBounds="true"
+        android:src="@drawable/app_icon"
         />
 
     <TextView
@@ -39,6 +40,8 @@
         android:shadowDx="-1"
         android:shadowDy="-1"
         android:shadowRadius="5"
+        android:shadowColor="@color/BLACK_OPAQUE"
+        android:textColor="@color/WHITE_OPAQUE"
         />
 
 </RelativeLayout>

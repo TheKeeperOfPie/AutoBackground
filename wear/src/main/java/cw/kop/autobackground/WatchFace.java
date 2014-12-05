@@ -21,8 +21,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.hardware.display.DisplayManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Display;
@@ -58,6 +60,8 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        WearSettings.initPrefs(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+
         super.onCreate(savedInstanceState);
 
         displayManager = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
@@ -79,7 +83,6 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
         intentFilter.addAction(Intent.ACTION_TIME_TICK);
         intentFilter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
         intentFilter.addAction(Intent.ACTION_TIME_CHANGED);
-
         registerReceiver(timeReceiver, intentFilter);
 
         timeText.setText(timeFormat.format(new Date()));

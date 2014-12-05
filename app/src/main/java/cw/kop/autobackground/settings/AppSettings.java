@@ -56,14 +56,7 @@ public class AppSettings {
 
     private static final long DEFAULT_INTERVAL = 1800000;
 
-    private static SharedPreferences prefs = LiveWallpaperService.prefs;
-
-    public AppSettings() {
-    }
-
-    public static void setPrefs(SharedPreferences preferences) {
-        prefs = preferences;
-    }
+    private static SharedPreferences prefs;
 
     private static boolean isFirstRun() {
         return prefs.getBoolean("first_run", true);

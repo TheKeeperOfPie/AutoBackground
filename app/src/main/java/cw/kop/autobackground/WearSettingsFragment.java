@@ -23,18 +23,29 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.text.InputType;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.SeekBar;
+import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
 
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -42,11 +53,15 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
     private static final String TAG = WearSettingsFragment.class.getName();
     private Context appContext;
+    private GoogleApiClient googleApiClient;
+    private boolean isWearConnected = false;
+    private Handler handler;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_wear);
+        handler = new Handler(appContext.getMainLooper());
     }
 
     @Override
@@ -62,8 +77,60 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        googleApiClient = new GoogleApiClient.Builder(appContext)
+                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                    @Override
+                    public void onConnected(Bundle connectionHint) {
+                        isWearConnected = true;
+                    }
+                    @Override
+                    public void onConnectionSuspended(int cause) {
+                        isWearConnected = false;
+                    }
+                })
+                .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(ConnectionResult result) {
+                        isWearConnected = false;
+                    }
+                })
+                        // Request access only to the Wearable API
+                .addApi(Wearable.API)
+                .build();
+        googleApiClient.connect();
+    }
+
+    @Override
+    public void onStop() {
+        googleApiClient.disconnect();
+        super.onStop();
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
+
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+
+        View view;
+
+        if (displayMetrics.widthPixels > displayMetrics.heightPixels) {
+            view = inflater.inflate(R.layout.wear_settings_layout_landscape, container, false);
+            View watchFace = view.findViewById(R.id.watch_face);
+            watchFace.getLayoutParams().width = displayMetrics.heightPixels;
+        }
+        else {
+            view = inflater.inflate(R.layout.wear_settings_layout, container, false);
+            View watchFace = view.findViewById(R.id.watch_face);
+            watchFace.getLayoutParams().height = displayMetrics.widthPixels;
+        }
 
         if (!AppSettings.useAdvanced()) {
             PreferenceCategory wearPreferences = (PreferenceCategory) findPreference(
@@ -71,7 +138,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
         }
 
-        return inflater.inflate(R.layout.fragment_list, container, false);
+        return view;
     }
 
     @Override
@@ -93,5 +160,30 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         if (!((Activity) appContext).isFinishing()) {
 
         }
+    }
+
+    private void sendMessage(final String messagePath, final String data) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
+
+                for (Node node : nodes.getNodes()) {
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+                            googleApiClient,
+                            node.getId(),
+                            messagePath,
+                            data.getBytes()).await();
+                    if (!result.getStatus().isSuccess()) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(appContext, "Error syncing to Wear", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }
+            }
+        }).start();
     }
 }

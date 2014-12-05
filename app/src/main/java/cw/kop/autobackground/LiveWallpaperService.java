@@ -310,7 +310,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         handler = new Handler();
         prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        AppSettings.setPrefs(prefs);
+        AppSettings.initPrefs(prefs, getApplicationContext());
 
         AppSettings.resetVer1_30();
         AppSettings.resetVer1_40();
@@ -355,31 +355,6 @@ public class LiveWallpaperService extends GLWallpaperService {
         googleApiClient.connect();
 
         Log.i(TAG, "onCreateService");
-    }
-
-    private void sendMessage(final String messagePath, final String data) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
-
-                for (Node node : nodes.getNodes()) {
-                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
-                            googleApiClient,
-                            node.getId(),
-                            messagePath,
-                            data.getBytes()).await();
-                    if (!result.getStatus().isSuccess()) {
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(LiveWallpaperService.this, "Error syncing to Wear", Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-                }
-            }
-        }).start();
     }
 
     private void setIntents() {
