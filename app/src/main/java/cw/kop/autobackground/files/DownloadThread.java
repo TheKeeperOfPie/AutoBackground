@@ -51,6 +51,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -308,7 +309,7 @@ public class DownloadThread extends Thread {
         File mainDir = new File(dir + "/" + title + " " + AppSettings.getImagePrefix());
         FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
 
-        List<File> files = Arrays.asList(mainDir.listFiles(filenameFilter));
+        List<File> files = new ArrayList<>(Arrays.asList(mainDir.listFiles(filenameFilter)));
         files.removeAll(downloadedFiles);
 
         if (!AppSettings.keepImages()) {
@@ -318,6 +319,7 @@ public class DownloadThread extends Thread {
                 AppSettings.clearUrl(file.getName());
                 file.delete();
                 files.remove(file);
+                extra--;
             }
         }
     }
@@ -718,6 +720,10 @@ public class DownloadThread extends Thread {
                 }
                 return bitmap;
 
+            }
+            catch (InterruptedIOException e) {
+                interrupt();
+                Log.i(TAG, "Interrupted");
             }
             catch (OutOfMemoryError | IOException e) {
                 e.printStackTrace();

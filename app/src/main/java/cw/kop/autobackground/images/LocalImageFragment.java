@@ -367,7 +367,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
                         File file = imageAdapter.getItem(index);
 
                         if (file.exists() && file.isFile()) {
-                            if (file.getAbsolutePath().equals(FileHandler.getCurrentBitmapFile().getAbsolutePath())) {
+                            if (FileHandler.getCurrentBitmapFile() != null && file.getAbsolutePath().equals(FileHandler.getCurrentBitmapFile().getAbsolutePath())) {
                                 Intent intent = new Intent();
                                 intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
                                 intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);

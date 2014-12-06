@@ -36,6 +36,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -50,6 +51,9 @@ import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 import com.squareup.picasso.Picasso;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -60,9 +64,12 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
     private GoogleApiClient googleApiClient;
     private boolean isWearConnected = false;
     private Handler handler;
-    private TextView time;
-    private TextView date;
+    private DateFormat timeFormat;
+    private TextView timeText;
+    private TextView dateText;
     private ImageView image;
+    private View watchFace;
+    private ImageView watchContainer;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -118,7 +125,8 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Picasso.with(appContext).load(FileHandler.getCurrentBitmapFile()).fit().centerCrop().into(image);
+        Picasso.with(appContext).load(FileHandler.getCurrentBitmapFile()).fit().centerCrop().into(
+                image);
     }
 
     @Override
@@ -131,30 +139,89 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
         if (displayMetrics.widthPixels > displayMetrics.heightPixels) {
             view = inflater.inflate(R.layout.wear_settings_layout_landscape, container, false);
-            View watchFace = view.findViewById(R.id.watch_face);
-            watchFace.getLayoutParams().width = displayMetrics.heightPixels;
+            watchFace = view.findViewById(R.id.watch_face);
+            watchContainer = (ImageView) view.findViewById(R.id.watch_face_container);
+            watchContainer.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if (getView() == null) {
+                        return;
+                    }
+                    ViewGroup.LayoutParams watchContainerParams= watchContainer.getLayoutParams();
+                    watchContainerParams.width = watchContainer.getHeight();
+                    watchContainer.setLayoutParams(watchContainerParams);
+                    watchContainer.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                }
+            });
+            watchFace.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+
+                    int height = watchContainer.getHeight();
+                    watchFace.setPadding(Math.round(height * 0.278f),
+                            Math.round(height * 0.23f),
+                            Math.round(height * 0.278f),
+                            Math.round(height * 0.33f));
+                    ViewGroup.LayoutParams watchFaceParams = watchFace.getLayoutParams();
+                    watchFaceParams.height = height;
+                    watchFaceParams.width = height;
+                    watchFace.setLayoutParams(watchFaceParams);
+                    watchFace.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                }
+            });
         }
         else {
             view = inflater.inflate(R.layout.wear_settings_layout, container, false);
-            View watchFace = view.findViewById(R.id.watch_face);
-            watchFace.getLayoutParams().height = displayMetrics.widthPixels;
+            watchFace = view.findViewById(R.id.watch_face);
+            watchContainer = (ImageView) view.findViewById(R.id.watch_face_container);
+            watchContainer.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if (getView() == null) {
+                        return;
+                    }
+                    ViewGroup.LayoutParams watchContainerParams= watchContainer.getLayoutParams();
+                    watchContainerParams.height = watchContainer.getWidth();
+                    watchContainer.setLayoutParams(watchContainerParams);
+                    watchContainer.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                }
+            });
+            watchContainer.setPadding(0, 0, 0, 0);
+            watchFace.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    int width = watchContainer.getWidth();
+                    ViewGroup.LayoutParams watchFaceParams = watchFace.getLayoutParams();
+                    watchFaceParams.height = 500;
+                    watchFaceParams.width = 500;
+                    watchFace.setLayoutParams(watchFaceParams);
+                    watchFace.setPadding(0, 0, 0, 0);
+//                    watchFace.setPadding(Math.round(width * 0.278f),
+//                            Math.round(width * 0.23f),
+//                            Math.round(width * 0.278f),
+//                            Math.round(width * 0.33f));
+                    watchFace.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                }
+            });
         }
 
-        image = (ImageView) view.findViewById(R.id.watch_face);
+        image = (ImageView) view.findViewById(R.id.face_image);
 
-        // TODO: Set padding for wear view bounds
-
-
-
+        timeFormat = android.text.format.DateFormat.getTimeFormat(appContext);
+        timeText = (TextView) view.findViewById(R.id.time);
+        timeText.setText(timeFormat.format(new Date()));
 
         return view;
     }
+
+
 
     @Override
     public void onResume() {
         super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-
+        Log.i(TAG, "watchFace width: " + watchFace.getWidth());
+        Log.i(TAG, "watchFace height: " + watchFace.getHeight());
     }
 
     @Override
