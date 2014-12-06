@@ -20,12 +20,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ImageView
+        android:id="@+id/watch_face_container"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_alignParentTop="true"
+        />
+
     <include
         layout="@layout/round_activity_main"
         android:id="@+id/watch_face"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_alignTop="@id/watch_face_container"
+        android:layout_alignBottom="@id/watch_face_container"
+        android:layout_alignStart="@id/watch_face_container"
+        android:layout_alignLeft="@id/watch_face_container"
+        android:layout_alignEnd="@id/watch_face_container"
+        android:layout_alignRight="@id/watch_face_container"
         />
 
     <ListView

@@ -37,7 +37,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -46,7 +48,9 @@ import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
+import com.squareup.picasso.Picasso;
 
+import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 
 public class WearSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
@@ -56,6 +60,9 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
     private GoogleApiClient googleApiClient;
     private boolean isWearConnected = false;
     private Handler handler;
+    private TextView time;
+    private TextView date;
+    private ImageView image;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -111,6 +118,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        Picasso.with(appContext).load(FileHandler.getCurrentBitmapFile()).fit().centerCrop().into(image);
     }
 
     @Override
@@ -132,11 +140,12 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
             watchFace.getLayoutParams().height = displayMetrics.widthPixels;
         }
 
-        if (!AppSettings.useAdvanced()) {
-            PreferenceCategory wearPreferences = (PreferenceCategory) findPreference(
-                    "title_wear_settings");
+        image = (ImageView) view.findViewById(R.id.watch_face);
 
-        }
+        // TODO: Set padding for wear view bounds
+
+
+
 
         return view;
     }
