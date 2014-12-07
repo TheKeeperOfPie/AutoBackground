@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground.notification;
+package cw.kop.autobackground;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -59,9 +59,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import afzkl.development.colorpickerview.view.ColorPickerView;
-import cw.kop.autobackground.DialogFactory;
-import cw.kop.autobackground.LiveWallpaperService;
-import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -162,7 +159,6 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         optionThree.setOnClickListener(this);
 
         recyclerView.setHasFixedSize(true);
-
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
@@ -313,12 +309,12 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     @Override
     public void onPause() {
-        super.onPause();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         Intent intent = new Intent();
         intent.setAction(LiveWallpaperService.UPDATE_NOTIFICATION);
         intent.putExtra("use", AppSettings.useNotification());
         appContext.sendBroadcast(intent);
+        super.onPause();
     }
 
     @Override
@@ -367,62 +363,18 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private void showBackgroundColorDialog() {
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
-                new Dialog(
-                        appContext,
-                        R.style.LightDialogTheme) :
-                new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.color_picker_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        dialogTitle.setText("Enter background color:");
-
-        final ColorPickerView colorPickerView = (ColorPickerView) dialogView.findViewById(R.id.dialog_color_picker);
-        colorPickerView.setAlphaSliderVisible(true);
-        colorPickerView.setColor(AppSettings.getNotificationOptionPreviousColor());
-
-        Button positiveButton = (Button) dialogView.findViewById(R.id.dialog_positive_button);
-        positiveButton.setVisibility(View.VISIBLE);
-        positiveButton.setOnClickListener(new View.OnClickListener() {
+        DialogFactory.ColorDialogListener listener = new DialogFactory.ColorDialogListener() {
             @Override
-            public void onClick(View v) {
-                AppSettings.setNotificationColor(colorPickerView.getColor());
-                notificationPreview.setBackgroundColor(AppSettings.getNotificationColor());
+            public void onClickRight(View v) {
+                AppSettings.setNotificationColor(getColorPickerView().getColor());
+                notificationPreview.setBackgroundColor(getColorPickerView().getColor());
                 clearHighlights();
                 recyclerView.setAdapter(null);
-                dialog.dismiss();
+                this.dismissDialog();
             }
-        });
+        };
 
-        Button negativeButton = (Button) dialogView.findViewById(R.id.dialog_negative_button);
-        negativeButton.setVisibility(View.VISIBLE);
-        negativeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-        }
-        else {
-            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-        }
-
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                clearHighlights();
-                recyclerView.setAdapter(null);
-            }
-        });
-
-        dialog.show();
+        DialogFactory.showColorPickerDialog(appContext, "Enter background color:", listener, -1, R.string.cancel_button, R.string.ok_button, AppSettings.getNotificationColor());
 
     }
 
@@ -444,10 +396,10 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         String[] iconSummaries = appContext.getResources().getStringArray(R.array.notification_icon_descriptions);
         TypedArray iconIcons = appContext.getResources().obtainTypedArray(R.array.notification_icon_icons);
 
-        ArrayList<NotificationOptionData> optionsList = new ArrayList<>();
+        ArrayList<OptionData> optionsList = new ArrayList<>();
 
         for (int index = 0; index < iconTitles.length; index++) {
-            optionsList.add(new NotificationOptionData(iconTitles[index],
+            optionsList.add(new OptionData(iconTitles[index],
                     iconSummaries[index],
                     iconIcons.getResourceId(index,
                             R.color.TRANSPARENT_BACKGROUND)));
@@ -492,7 +444,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             }
         };
 
-        NotificationListAdapter titlesAdapter = new NotificationListAdapter(appContext,
+        OptionsListAdapter titlesAdapter = new OptionsListAdapter(appContext,
                 optionsList,
                 -1,
                 listener);
@@ -539,16 +491,16 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     }
 
-    private void showTitlesList(int position) {
+    private void showTitlesList(final int optionIndex) {
 
         String[] titleTitles = appContext.getResources().getStringArray(R.array.notification_titles);
         String[] titleSummaries = appContext.getResources().getStringArray(R.array.notification_titles_descriptions);
         TypedArray titlesIcons = appContext.getResources().obtainTypedArray(R.array.notification_titles_icons);
 
-        ArrayList<NotificationOptionData> optionsList = new ArrayList<>();
+        ArrayList<OptionData> optionsList = new ArrayList<>();
 
         for (int index = 0; index < titleTitles.length; index++) {
-            optionsList.add(new NotificationOptionData(titleTitles[index],
+            optionsList.add(new OptionData(titleTitles[index],
                     titleSummaries[index],
                     titlesIcons.getResourceId(index,
                             R.color.TRANSPARENT_BACKGROUND)));
@@ -561,7 +513,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 if (title.equals("None")) {
                     clearHighlights();
                     recyclerView.setAdapter(null);
-                    switch (position) {
+                    switch (optionIndex) {
                         case 4:
                             AppSettings.setNotificationTitle("");
                             notificationTitle.setText("");
@@ -573,17 +525,17 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                     }
                 }
                 else if (title.equals("Custom")) {
-                    showDialogForText(position, drawable);
+                    showDialogForText(optionIndex, drawable);
                 }
                 else {
-                    showTitleColorDialog(position, title, drawable);
+                    showTitleColorDialog(optionIndex, title, drawable);
                 }
             }
         };
 
-        NotificationListAdapter titlesAdapter = new NotificationListAdapter(appContext,
+        OptionsListAdapter titlesAdapter = new OptionsListAdapter(appContext,
                 optionsList,
-                position,
+                optionIndex,
                 listener);
 
         recyclerView.setAdapter(titlesAdapter);
@@ -592,13 +544,13 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     }
 
-    private void showOptionList(int position) {
+    private void showOptionList(final int optionIndex) {
 
         String[] optionsTitles = appContext.getResources().getStringArray(R.array.notification_options);
         String[] optionsSummaries = appContext.getResources().getStringArray(R.array.notification_options_descriptions);
         TypedArray optionsIcons = appContext.getResources().obtainTypedArray(R.array.notification_options_icons);
 
-        ArrayList<NotificationOptionData> optionsList = new ArrayList<>();
+        ArrayList<OptionData> optionsList = new ArrayList<>();
 
         for (int index = 0; index < optionsTitles.length; index++) {
 
@@ -606,7 +558,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 continue;
             }
 
-            optionsList.add(new NotificationOptionData(optionsTitles[index],
+            optionsList.add(new OptionData(optionsTitles[index],
                     optionsSummaries[index],
                     optionsIcons.getResourceId(index,
                             R.color.TRANSPARENT_BACKGROUND)));
@@ -621,11 +573,11 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                     drawable = R.color.TRANSPARENT_BACKGROUND;
 
                     clearHighlights();
-                    AppSettings.setNotificationOptionTitle(position, title);
-                    AppSettings.setNotificationOptionDrawable(position, drawable);
+                    AppSettings.setNotificationOptionTitle(optionIndex, title);
+                    AppSettings.setNotificationOptionDrawable(optionIndex, drawable);
                     recyclerView.setAdapter(null);
 
-                    switch (position) {
+                    switch (optionIndex) {
                         case 0:
                             optionOneText.setText(title);
                             optionOneImage.setImageResource(drawable);
@@ -641,17 +593,17 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                     }
                 }
                 else if (title.equals("Pin")) {
-                    showDialogForPin(position, title, drawable);
+                    showDialogForPin(optionIndex, title, drawable);
                 }
                 else {
-                    showOptionColorDialog(position, title, drawable);
+                    showOptionColorDialog(optionIndex, title, drawable);
                 }
             }
         };
 
-        NotificationListAdapter optionsAdapter = new NotificationListAdapter(appContext,
+        OptionsListAdapter optionsAdapter = new OptionsListAdapter(appContext,
                 optionsList,
-                position,
+                optionIndex,
                 listener);
 
         recyclerView.setAdapter(optionsAdapter);
@@ -662,37 +614,15 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
     private void showTitleColorDialog(final int index, final String title, final int drawable) {
 
-        final Dialog dialog = DialogFactory.getDialog(appContext);
+        DialogFactory.ColorDialogListener listener = new DialogFactory.ColorDialogListener() {
 
-        View dialogView = View.inflate(appContext, R.layout.color_picker_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        dialogTitle.setText("Enter text color:");
-
-        final ColorPickerView colorPickerView = (ColorPickerView) dialogView.findViewById(R.id.dialog_color_picker);
-        colorPickerView.setAlphaSliderVisible(true);
-        colorPickerView.setColor(AppSettings.getNotificationOptionPreviousColor());
-
-        Button negativeButton = (Button) dialogView.findViewById(R.id.dialog_negative_button);
-        negativeButton.setVisibility(View.VISIBLE);
-        negativeButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        Button positiveButton = (Button) dialogView.findViewById(R.id.dialog_positive_button);
-        positiveButton.setVisibility(View.VISIBLE);
-        positiveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            public void onClickRight(View v) {
                 clearHighlights();
                 recyclerView.setAdapter(null);
                 switch (index) {
                     case 4:
-                        AppSettings.setNotificationTitleColor(colorPickerView.getColor());
+                        AppSettings.setNotificationTitleColor(getColorPickerView().getColor());
                         if (title.equals("Application")) {
                             AppSettings.setNotificationTitle("AutoBackground");
                             notificationTitle.setText("AutoBackground");
@@ -717,7 +647,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                         notificationTitle.setTextColor(AppSettings.getNotificationTitleColor());
                         break;
                     case 5:
-                        AppSettings.setNotificationSummaryColor(colorPickerView.getColor());
+                        AppSettings.setNotificationSummaryColor(getColorPickerView().getColor());
                         if (title.equals("Application")) {
                             AppSettings.setNotificationTitle("AutoBackground");
                             notificationSummary.setText("AutoBackground");
@@ -733,49 +663,22 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                         notificationSummary.setTextColor(AppSettings.getNotificationSummaryColor());
                         break;
                 }
-                dialog.dismiss();
+                this.dismissDialog();
             }
-        });
+        };
 
-        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-        }
-        else {
-            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-        }
-
-        dialog.show();
+        DialogFactory.showColorPickerDialog(appContext, "Enter text color:", listener, -1, R.string.cancel_button, R.string.ok_button, index == 4 ? AppSettings.getNotificationTitleColor() : AppSettings.getNotificationSummaryColor());
     }
 
     private void showOptionColorDialog(final int index, final String title, final int drawable) {
 
-        final Dialog dialog = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
-                new Dialog(
-                        appContext,
-                        R.style.LightDialogTheme) :
-                new Dialog(appContext, R.style.DarkDialogTheme);
-
-        View dialogView = View.inflate(appContext, R.layout.color_picker_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-        dialogTitle.setText("Enter icon and text color:");
-
-        final ColorPickerView colorPickerView = (ColorPickerView) dialogView.findViewById(R.id.dialog_color_picker);
-        colorPickerView.setAlphaSliderVisible(true);
-        colorPickerView.setColor(AppSettings.getNotificationOptionPreviousColor());
-
-        Button positiveButton = (Button) dialogView.findViewById(R.id.dialog_positive_button);
-        positiveButton.setVisibility(View.VISIBLE);
-        positiveButton.setOnClickListener(new View.OnClickListener() {
+        DialogFactory.ColorDialogListener listener = new DialogFactory.ColorDialogListener() {
             @Override
-            public void onClick(View v) {
+            public void onClickRight(View v) {
                 clearHighlights();
                 AppSettings.setNotificationOptionTitle(index, title);
                 AppSettings.setNotificationOptionDrawable(index, drawable);
-                AppSettings.setNotificationOptionColor(index, colorPickerView.getColor());
+                AppSettings.setNotificationOptionColor(index, getColorPickerView().getColor());
                 recyclerView.setAdapter(null);
 
                 switch (index) {
@@ -807,29 +710,11 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                         optionThreeImage.setImageDrawable(coloredDrawableThree);
                         break;
                 }
-                dialog.dismiss();
+                this.dismissDialog();
             }
-        });
+        };
 
-        Button negativeButton = (Button) dialogView.findViewById(R.id.dialog_negative_button);
-        negativeButton.setVisibility(View.VISIBLE);
-        negativeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
-
-        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            negativeButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-        }
-        else {
-            negativeButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-            positiveButton.setTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-        }
-
-        dialog.show();
+        DialogFactory.showColorPickerDialog(appContext, "Enter icon and text color:", listener, -1, R.string.cancel_button, R.string.ok_button, AppSettings.getNotificationOptionPreviousColor());
 
     }
 

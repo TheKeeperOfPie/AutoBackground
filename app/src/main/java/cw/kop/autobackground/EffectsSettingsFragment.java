@@ -207,8 +207,8 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
     @Override
     public void onPause() {
-        super.onPause();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
     }
 
     private void resetEffects() {

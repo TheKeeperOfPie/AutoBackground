@@ -231,8 +231,8 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     @Override
     public void onPause() {
-        super.onPause();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
     }
 
     @Override
@@ -263,7 +263,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     private void restartActivity() {
         Intent intent = new Intent(appContext, MainActivity.class);
-        intent.putExtra("fragment", 6);
+        intent.putExtra("fragment", 7);
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         appContext.startActivity(intent);
         getActivity().finish();

@@ -43,4 +43,10 @@
         <item>@drawable/ic_check_box_outline_blank_white_24dp</item>
     </array>
 
+    <array name="wear_time_options_icons">
+        <item>@drawable/ic_folder_white_24dp</item>
+        <item>@drawable/ic_folder_white_24dp</item>
+        <item>@drawable/ic_settings_white_24dp</item>
+    </array>
+
 </resources>

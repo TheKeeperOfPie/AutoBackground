@@ -127,7 +127,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 };
 
                 DialogFactory.showSeekBarDialog(appContext,
-                        "Horizontal Speed",
+                        "Horizontal speed",
                         "pixels per frame",
                         listener,
                         50,
@@ -160,7 +160,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                 };
 
                 DialogFactory.showSeekBarDialog(appContext,
-                        "Vertical Speed",
+                        "Vertical speed",
                         "pixels per frame",
                         listener,
                         50,
@@ -559,8 +559,8 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
     @Override
     public void onPause() {
-        super.onPause();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
     }
 
     @Override

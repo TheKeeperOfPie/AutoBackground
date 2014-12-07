@@ -33,7 +33,7 @@
         <item name="colorAccent">@color/ACCENT_OPAQUE</item>
         <!--<item name="android:statusBarColor">@color/DARK_BLUE_OPAQUE</item>-->
         <!--<item name="navigationBarColor">@color/DARK_BLUE_OPAQUE</item>-->
-        <item name="android:listSeparatorTextViewStyle">@style/ListSeparator</item>
+        <item name="android:listSeparatorTextViewStyle">@style/ListSeparator</item>"
         <item name="android:titleTextStyle">@style/ToolbarTitle</item>
         <item name="toolbarStyle">@style/ToolbarTitle</item>
 

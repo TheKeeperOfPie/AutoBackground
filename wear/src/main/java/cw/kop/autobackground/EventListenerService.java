@@ -28,6 +28,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
@@ -41,6 +43,7 @@ public class EventListenerService extends WearableListenerService {
     private static final String TAG = EventListenerService.class.getCanonicalName();
     private static final int TIMEOUT_MS = 2000;
     private static Bitmap currentBitmap = null;
+    private static Bitmap lastBitmap = null;
     private GoogleApiClient googleApiClient;
 
     public EventListenerService() {
@@ -92,23 +95,48 @@ public class EventListenerService extends WearableListenerService {
     @Override
     public void onDataChanged(DataEventBuffer dataEvents) {
         for (DataEvent event : dataEvents) {
-            if (event.getType() == DataEvent.TYPE_CHANGED &&
-                    event.getDataItem().getUri().getPath().equals("/image")) {
-                DataMapItem dataMapItem = DataMapItem.fromDataItem(event.getDataItem());
-                Asset profileAsset = dataMapItem.getDataMap().getAsset("faceImage");
-                currentBitmap = loadBitmapFromAsset(profileAsset);
+            DataItem dataItem = event.getDataItem();
+            DataMap dataMap = DataMapItem.fromDataItem(dataItem).getDataMap();
+            if (event.getType() == DataEvent.TYPE_CHANGED) {
+                switch (dataItem.getUri().getPath()) {
+                    case "/image":
+                        Asset profileAsset = dataMap.getAsset("faceImage");
+                        lastBitmap = currentBitmap;
+                        currentBitmap = loadBitmapFromAsset(profileAsset);
 
-                if (currentBitmap != null) {
-                    Intent intent = new Intent(WatchFace.LOAD_IMAGE);
-                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
-                    Log.i(TAG, "Bitmap received");
+                        if (currentBitmap != null) {
+                            Intent intent = new Intent(WatchFace.LOAD_IMAGE);
+                            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+                                    intent);
+                            Log.i(TAG, "Bitmap received");
+                        }
+                        break;
+                    case "/settings":
+                        WearSettings.setTimeType(dataMap.getString("time_type", WearSettings.DIGITAL));
+                        WearSettings.setTimeColor(dataMap.getInt("time_color", 0xFFFFFFFF));
+                        WearSettings.setTimeSize(dataMap.getFloat("time_size", 24));
+
+                        Intent intent = new Intent(WatchFace.LOAD_SETTINGS);
+                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+                                intent);
+                        Log.i(TAG, "Settings received");
+                        break;
                 }
+
             }
         }
 
         Log.i(TAG, "Data changed");
 
         super.onDataChanged(dataEvents);
+    }
+
+
+    public static void recycleLast() {
+        if (lastBitmap != null) {
+            lastBitmap.recycle();
+            lastBitmap = null;
+        }
     }
 
     public Bitmap loadBitmapFromAsset(Asset asset) {

@@ -49,7 +49,6 @@ import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.AlbumFragment;
 import cw.kop.autobackground.images.ImageHistoryFragment;
 import cw.kop.autobackground.images.LocalImageFragment;
-import cw.kop.autobackground.notification.NotificationSettingsFragment;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.SourceInfoFragment;
 import cw.kop.autobackground.sources.SourceListFragment;
@@ -451,9 +450,7 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     protected void onPause() {
-
         LocalBroadcastManager.getInstance(this).unregisterReceiver(activityReceiver);
-
         super.onPause();
     }
 

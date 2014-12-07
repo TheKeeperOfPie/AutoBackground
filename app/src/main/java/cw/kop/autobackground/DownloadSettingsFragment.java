@@ -424,8 +424,8 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
     @Override
     public void onPause() {
-        super.onPause();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
     }
 
     @Override

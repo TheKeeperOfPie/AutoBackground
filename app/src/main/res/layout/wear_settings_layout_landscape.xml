@@ -21,7 +21,7 @@
     android:layout_height="match_parent">
 
     <include
-        layout="@layout/round_activity_main"
+        layout="@layout/watch_face_digital"
         android:id="@+id/watch_face"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -42,12 +42,37 @@
         android:src="@drawable/watch_face_square"
         />
 
+    <View
+        android:id="@+id/list_border"
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:layout_toEndOf="@id/watch_face"
+        android:layout_toRightOf="@id/watch_face"
+        android:minWidth="1px"
+        android:background="@color/DARK_BLUE_OPAQUE"
+        />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/watch_options_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/list_border"
+        android:layout_toRightOf="@id/list_border"
+        android:visibility="gone"
+        />
+
     <ListView
         android:id="@android:id/list"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_toEndOf="@id/watch_face"
-        android:layout_toRightOf="@id/watch_face"
+        android:layout_alignBottom="@id/watch_options_list"
+        android:layout_alignStart="@id/watch_options_list"
+        android:layout_alignLeft="@id/watch_options_list"
+        android:layout_alignEnd="@id/watch_options_list"
+        android:layout_alignRight="@id/watch_options_list"
+        android:layout_alignTop="@id/watch_options_list"
+        android:layout_toEndOf="@id/list_border"
+        android:layout_toRightOf="@id/list_border"
         />
 
 </cw.kop.autobackground.CustomRelativeLayout>

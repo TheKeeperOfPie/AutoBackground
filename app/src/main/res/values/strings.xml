@@ -452,6 +452,35 @@
         <item>Show nothing</item>
     </string-array>
 
+    <string-array name="wear_time_options">
+        <item>Type</item>
+        <item>Color</item>
+        <item>Size</item>
+    </string-array>
+
+    <string-array name="wear_time_options_descriptions">
+        <item>Digital or analog</item>
+        <item>Color of time display</item>
+        <item>Size of time display</item>
+    </string-array>
+
+    <string-array name="wear_time_types">
+        <item>Digital</item>
+        <item>Analog</item>
+    </string-array>
+
+    <string-array name="wear_date_options">
+        <item>Type</item>
+        <item>Color</item>
+        <item>Size</item>
+    </string-array>
+
+    <string-array name="wear_date_options_descriptions">
+        <item>Date format</item>
+        <item>Color of date display</item>
+        <item>Size of date display</item>
+    </string-array>
+
     <string name="copy">Copy</string>
     <string name="cycle">Cycle</string>
     <string name="delete">Delete</string>

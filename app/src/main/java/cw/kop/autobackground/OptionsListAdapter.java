@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground.notification;
+package cw.kop.autobackground;
 
 import android.content.Context;
 import android.graphics.PorterDuff;
@@ -28,17 +28,16 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 
-public class NotificationListAdapter extends RecyclerView.Adapter<NotificationListAdapter.ViewHolder> {
+public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.ViewHolder> {
 
     private Context appContext;
-    private List<NotificationOptionData> optionsList;
+    private List<OptionData> optionsList;
     private RecyclerViewListClickListener listClickListener;
     private int optionPosition, colorFilterInt;
 
-    public NotificationListAdapter(Context context, List<NotificationOptionData> options,
+    public OptionsListAdapter(Context context, List<OptionData> options,
             int position,
             RecyclerViewListClickListener listener) {
         appContext = context;
@@ -59,13 +58,13 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
 
     }
 
-    public void addItem(NotificationOptionData data) {
+    public void addItem(OptionData data) {
         optionsList.add(data);
         notifyItemInserted(optionsList.size() - 1);
     }
 
     @Override
-    public NotificationListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public OptionsListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         View rowLayout = LayoutInflater.from(parent.getContext()).inflate(R.layout.notification_settings_row,
                 parent,
@@ -75,9 +74,9 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(ViewHolder viewHolder, final int position) {
 
-        final NotificationOptionData optionData = optionsList.get(position);
+        final OptionData optionData = optionsList.get(position);
 
         viewHolder.optionTitle.setText(optionData.getTitle());
         viewHolder.optionSummary.setText(optionData.getSummary());
@@ -90,8 +89,7 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
         viewHolder.rowLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listClickListener.onClick(optionPosition,
-                        optionData.getTitle(),
+                listClickListener.onClick(position, optionData.getTitle(),
                         optionData.getDrawable());
             }
         });

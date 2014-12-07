@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground.notification;
+package cw.kop.autobackground;
 
 public interface RecyclerViewListClickListener {
 

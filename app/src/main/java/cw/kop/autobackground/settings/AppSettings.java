@@ -49,6 +49,9 @@ public class AppSettings {
 
     public static final String DATA_SPLITTER = ", ";
 
+    public static final String DIGITAL = "Digital";
+    public static final String ANALOG = "Analog";
+
     // Themes are user readable to easier set indicator using theme String
     public static final String APP_LIGHT_THEME = "Light Theme";
     public static final String APP_DARK_THEME = "Dark Theme";
@@ -1338,6 +1341,30 @@ public class AppSettings {
 
     public static void setGoogleAccountToken(String token) {
         prefs.edit().putString("google_account_token", token).apply();
+    }
+
+    public static void setWearTimeType(String type) {
+        prefs.edit().putString("wear_time_type", type).apply();
+    }
+
+    public static String getWearTimeType() {
+        return prefs.getString("wear_time_type", DIGITAL);
+    }
+
+    public static void setWearTimeColor(int color) {
+        prefs.edit().putInt("wear_time_color", color).apply();
+    }
+
+    public static int getWearTimeColor() {
+        return prefs.getInt("wear_time_color", -1);
+    }
+
+    public static void setWearTimeSize(int value) {
+        prefs.edit().putFloat("wear_time_size", value).apply();
+    }
+
+    public static float getWearTimeSize() {
+        return prefs.getFloat("wear_time_size", 24f);
     }
 
 }

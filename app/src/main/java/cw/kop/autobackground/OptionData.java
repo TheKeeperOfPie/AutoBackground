@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground.notification;
+package cw.kop.autobackground;
 
-public class NotificationOptionData {
+public class OptionData {
 
     private String title, summary;
     private int drawable;
 
 
-    public NotificationOptionData(String title, String summary, int drawable) {
+    public OptionData(String title, String summary, int drawable) {
         this.title = title;
         this.summary = summary;
         this.drawable = drawable;

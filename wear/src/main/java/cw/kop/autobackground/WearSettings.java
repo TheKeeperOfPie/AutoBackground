@@ -25,6 +25,9 @@ import android.content.SharedPreferences;
  */
 public class WearSettings {
 
+    public static final String DIGITAL = "Digital";
+    public static final String ANALOG = "Analog";
+
     private static SharedPreferences prefs;
 
     public static void initPrefs(SharedPreferences preferences) {
@@ -38,7 +41,28 @@ public class WearSettings {
         return prefs.getBoolean("first_run_wear", true);
     }
 
-    public static String getStringPref(String key) {
-        return prefs.getString(key, "Nope");
+    public static void setTimeType(String type) {
+        prefs.edit().putString("time_type", type).commit();
     }
+
+    public static String getTimeType() {
+        return prefs.getString("time_type", DIGITAL);
+    }
+
+    public static void setTimeColor(int color) {
+        prefs.edit().putInt("time_color", color).commit();
+    }
+
+    public static int getTimeColor() {
+        return prefs.getInt("time_color", 0xFFFFFFFF);
+    }
+
+    public static void setTimeSize(float size) {
+        prefs.edit().putFloat("time_size", size).commit();
+    }
+
+    public static float getTimeSize() {
+        return prefs.getFloat("time_size", 24);
+    }
+
 }

@@ -29,6 +29,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import afzkl.development.colorpickerview.view.ColorPickerView;
+import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 
 /**
@@ -54,7 +56,7 @@ public class DialogFactory {
      * @param context
      * @param title
      * @param summary
-     * @param clickListener
+     * @param listener
      * @param textOneResource
      * @param textTwoResource
      * @param textThreeResource
@@ -62,13 +64,13 @@ public class DialogFactory {
     public static void showActionDialog(Context context,
             String title,
             String summary,
-            final ActionDialogListener clickListener,
+            final ActionDialogListener listener,
             int textOneResource,
             int textTwoResource,
             int textThreeResource) {
 
         Dialog dialog = getDialog(context);
-        clickListener.setDialog(dialog);
+        listener.setDialog(dialog);
 
         View dialogView = View.inflate(context, R.layout.action_dialog, null);
         dialog.setContentView(dialogView);
@@ -98,7 +100,7 @@ public class DialogFactory {
             buttonOne.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    clickListener.onClickLeft(v);
+                    listener.onClickLeft(v);
                 }
             });
         }
@@ -111,7 +113,7 @@ public class DialogFactory {
             buttonTwo.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    clickListener.onClickMiddle(v);
+                    listener.onClickMiddle(v);
                 }
             });
         }
@@ -124,7 +126,7 @@ public class DialogFactory {
             buttonThree.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    clickListener.onClickRight(v);
+                    listener.onClickRight(v);
                 }
             });
         }
@@ -132,7 +134,7 @@ public class DialogFactory {
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialog) {
-                clickListener.onDismiss();
+                listener.onDismiss();
             }
         });
 
@@ -467,6 +469,78 @@ public class DialogFactory {
 
     }
 
+    public static void showColorPickerDialog(Context context,
+            String title,
+            final ColorDialogListener listener,
+            int textOneResource,
+            int textTwoResource,
+            int textThreeResource,
+            int defaultColor) {
+
+        Dialog dialog = getDialog(context);
+        listener.setDialog(dialog);
+
+        View dialogView = View.inflate(context, R.layout.color_picker_dialog, null);
+        dialog.setContentView(dialogView);
+
+        if (title.length() > 0) {
+            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
+            dialogTitle.setVisibility(View.VISIBLE);
+            dialogTitle.setText(title);
+
+            View titleUnderline = dialogView.findViewById(R.id.dialog_underline);
+            titleUnderline.setVisibility(View.VISIBLE);
+        }
+
+        final ColorPickerView colorPickerView = (ColorPickerView) dialogView.findViewById(R.id.dialog_color_picker);
+        colorPickerView.setAlphaSliderVisible(true);
+        colorPickerView.setColor(defaultColor);
+        listener.setColorPickerView(colorPickerView);
+
+        int textColorInt = context.getResources().getColor(R.color.ACCENT_OPAQUE);
+
+        if (textOneResource > 0) {
+            Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);
+            buttonOne.setText(context.getResources().getString(textOneResource));
+            buttonOne.setTextColor(textColorInt);
+            buttonOne.setVisibility(View.VISIBLE);
+            buttonOne.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickLeft(v);
+                }
+            });
+        }
+
+        if (textTwoResource > 0) {
+            Button buttonTwo = (Button) dialogView.findViewById(R.id.action_button_2);
+            buttonTwo.setText(context.getResources().getString(textTwoResource));
+            buttonTwo.setTextColor(textColorInt);
+            buttonTwo.setVisibility(View.VISIBLE);
+            buttonTwo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickMiddle(v);
+                }
+            });
+        }
+
+        if (textThreeResource > 0) {
+            Button buttonThree = (Button) dialogView.findViewById(R.id.action_button_3);
+            buttonThree.setText(context.getResources().getString(textThreeResource));
+            buttonThree.setTextColor(textColorInt);
+            buttonThree.setVisibility(View.VISIBLE);
+            buttonThree.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listener.onClickRight(v);
+                }
+            });
+        }
+
+        dialog.show();
+    }
+
     public static void showTimeIntervalDialog(Context context,
             String title,
             String summary,
@@ -662,6 +736,20 @@ public class DialogFactory {
 
         public void setTimePicker(TimePicker timePicker) {
             this.timePicker = timePicker;
+        }
+
+    }
+
+    public abstract static class ColorDialogListener extends ActionDialogListener {
+
+        private ColorPickerView colorPickerView;
+
+        public ColorPickerView getColorPickerView() {
+            return colorPickerView;
+        }
+
+        public void setColorPickerView(ColorPickerView colorPickerView) {
+            this.colorPickerView = colorPickerView;
         }
 
     }
