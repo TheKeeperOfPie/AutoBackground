@@ -57,6 +57,8 @@ import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends ActionBarActivity {
 
+    public static final String DRAWER_OPENED = "cw.kop.autobackground.MainActivity.DRAWER_OPENED";
+    public static final String DRAWER_CLOSED = "cw.kop.autobackground.MainActivity.DRAWER_CLOSED";
     public static final String LOAD_NAV_PICTURE = "cw.kop.autobackground.MainActivity.LOAD_NAV_PICTURE";
     private static final String TAG = MainActivity.class.getCanonicalName();
     private BroadcastReceiver activityReceiver = new BroadcastReceiver() {
@@ -204,17 +206,22 @@ public class MainActivity extends ActionBarActivity {
                 public void onDrawerClosed(View view) {
                     super.onDrawerClosed(view);
                     selectItem(newPosition, true);
+                    Intent closedIntent = new Intent(MainActivity.DRAWER_CLOSED);
+                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(closedIntent);
                 }
 
                 public void onDrawerOpened(View drawerView) {
                     super.onDrawerOpened(drawerView);
                     getFragmentManager().popBackStack();
+                    Intent openedIntent = new Intent(MainActivity.DRAWER_OPENED);
+                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(openedIntent);
                 }
 
                 @Override
                 public void onDrawerSlide(View drawerView, float slideOffset) {
                     super.onDrawerSlide(drawerView, 0);
                 }
+
             };
 
             drawerLayout.setDrawerListener(drawerToggle);
@@ -398,7 +405,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item) {;
 
         if (getFragmentManager().findFragmentByTag("image_fragment") == null) {
             if (drawerToggle != null) {
@@ -406,13 +413,12 @@ public class MainActivity extends ActionBarActivity {
             }
             else {
                 getFragmentManager().popBackStack();
+                super.onOptionsItemSelected(item);
             }
-            return item.getItemId() != android.R.id.home || super.onOptionsItemSelected(item);
         }
         else if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
             getFragmentManager().popBackStack();
         }
-
         return super.onOptionsItemSelected(item);
     }
 

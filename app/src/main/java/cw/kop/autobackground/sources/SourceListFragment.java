@@ -868,8 +868,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     public void resetActionBarDownload() {
 
-        Log.i("SLF", "resetActionBarDownload");
-
         if (toolbarMenu != null) {
             handler.post(new Runnable() {
                 @Override

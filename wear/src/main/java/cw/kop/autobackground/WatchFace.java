@@ -21,17 +21,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.PointF;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RectShape;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
 import android.hardware.display.DisplayManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.format.Time;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
@@ -44,8 +44,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.DateFormat;
-import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 
 public class WatchFace extends Activity implements DisplayManager.DisplayListener {
 
@@ -59,7 +59,20 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
     private AnalogClock timeAnalog;
     private Canvas canvas;
     private SurfaceView surfaceView;
-    private Calendar calendar;
+    private float centerX;
+    private float centerY;
+    private boolean isAnalog = false;
+    private Handler handler;
+    private boolean isAwake = false;
+    private Random random;
+    private Time time;
+
+    private int hourColor;
+    private int hourShadowColor;
+    private int minuteColor;
+    private int minuteShadowColor;
+    private int secondColor;
+    private int secondShadowColor;
 
     private BroadcastReceiver digitalTimeReceiver = new BroadcastReceiver() {
         @Override
@@ -70,7 +83,7 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
     private BroadcastReceiver analogTimeReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context arg0, Intent intent) {
-
+            onDraw();
         }
     };
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -80,6 +93,7 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
             switch (intent.getAction()) {
                 case LOAD_IMAGE:
                     faceImage.setImageBitmap(EventListenerService.getBitmap());
+                    Log.i(TAG, "faceImage bitmap set");
                     EventListenerService.recycleLast();
                     break;
                 case LOAD_SETTINGS:
@@ -99,6 +113,9 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
         displayManager = (DisplayManager) getSystemService(Context.DISPLAY_SERVICE);
         displayManager.registerDisplayListener(this, null);
 
+        centerX = getResources().getDisplayMetrics().widthPixels / 2;
+        centerY = getResources().getDisplayMetrics().heightPixels / 2;
+
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(LOAD_IMAGE);
         intentFilter.addAction(LOAD_SETTINGS);
@@ -111,15 +128,17 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
         timeIntentFilter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
         timeIntentFilter.addAction(Intent.ACTION_TIME_CHANGED);
 
-        calendar = Calendar.getInstance();
+        random = new Random();
+        handler = new Handler(getMainLooper());
+        time = new Time();
+        setColors();
 
         switch (WearSettings.getTimeType()) {
 
             default:
             case WearSettings.DIGITAL:
                 setContentView(R.layout.watch_face_digital);
-
-                timeText = (TextView) findViewById(R.id.time);
+                timeText = (TextView) findViewById(R.id.time_digital);
                 timeFormat = android.text.format.DateFormat.getTimeFormat(getApplicationContext());
                 timeText.setText(timeFormat.format(new Date()));
                 registerReceiver(digitalTimeReceiver, timeIntentFilter);
@@ -128,49 +147,37 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
                 setContentView(R.layout.watch_face_analog);
 
                 surfaceView = (SurfaceView) findViewById(R.id.surface_view);
+                surfaceView.setZOrderOnTop(true);
                 SurfaceHolder holder = surfaceView.getHolder();
-                holder.addCallback(new SurfaceHolder.Callback() {
-                    @Override
-                    public void surfaceCreated(SurfaceHolder holder) {
-                        onDraw();
-                    }
-
-                    @Override
-                    public void surfaceChanged(SurfaceHolder holder,
-                            int format,
-                            int width,
-                            int height) {
-
-                    }
-
-                    @Override
-                    public void surfaceDestroyed(SurfaceHolder holder) {
-
-                    }
-                });
+                holder.setFormat(PixelFormat.TRANSPARENT);
+                isAnalog = true;
+                registerReceiver(analogTimeReceiver, timeIntentFilter);
                 break;
 
         }
 
         faceImage = (ImageView) findViewById(R.id.face_image);
-
         syncSettings();
     }
+
 
     @Override
     protected void onResume() {
         super.onResume();
-        onScreenAwake();
     }
 
     @Override
     protected void onPause() {
-        onScreenDim();
         super.onPause();
     }
 
     @Override
     protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
         try {
             LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(
                     broadcastReceiver);
@@ -180,22 +187,32 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
 
         }
         displayManager.unregisterDisplayListener(this);
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
         super.onDestroy();
     }
 
     private void syncSettings() {
         if (WearSettings.getTimeType().equals(WearSettings.DIGITAL)) {
             timeText.setTextColor(WearSettings.getTimeColor());
+            timeText.setShadowLayer(5.0f, -1f, -1f, WearSettings.getTimeShadowColor());
             timeText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, WearSettings.getTimeSize());
+        }
+        else {
+            setColors();
         }
     }
 
+    private void setColors() {
+        hourColor = WearSettings.getAnalogHourColor();
+        hourShadowColor = WearSettings.getAnalogHourShadowColor();
+        minuteColor = WearSettings.getAnalogMinuteColor();
+        minuteShadowColor = WearSettings.getAnalogMinuteShadowColor();
+        secondColor = WearSettings.getAnalogSecondColor();
+        secondShadowColor = WearSettings.getAnalogSecondShadowColor();
+    }
+
     private void onDraw() {
+
+        Log.i(TAG, "Drawing...");
 
         canvas = surfaceView.getHolder().lockCanvas();
 
@@ -203,7 +220,63 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
             return;
         }
 
+        time.setToNow();
 
+        float hour = time.hour + time.minute / 60;
+        float minute = time.minute + time.second / 60;
+        float second = time.second;
+
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+
+        Paint paint = new Paint();
+        paint.setFlags(Paint.ANTI_ALIAS_FLAG);
+
+        paint.setColor(hourShadowColor);
+        paint.setStrokeWidth(7.0f);
+        canvas.drawLine(centerX,
+                centerY,
+                (float) (centerX + centerX / 2 * Math.cos(Math.toRadians(hour * 15f - 90f))),
+                (float) (centerY + centerY / 2 * Math.sin(Math.toRadians(hour * 15f - 90f))),
+                paint);
+        paint.setColor(hourColor);
+        paint.setStrokeWidth(5.0f);
+        canvas.drawLine(centerX,
+                centerY,
+                (float) (centerX + centerX / 2 * Math.cos(Math.toRadians(hour * 15f - 90f))),
+                (float) (centerY + centerY / 2 * Math.sin(Math.toRadians(hour * 15f - 90f))),
+                paint);
+
+        paint.setColor(minuteShadowColor);
+        paint.setStrokeWidth(5.0f);
+        canvas.drawLine(centerX,
+                centerY,
+                (float) (centerX + centerX / 1.5 * Math.cos(Math.toRadians(minute * 6f - 90f))),
+                (float) (centerY + centerY / 1.5 * Math.sin(Math.toRadians(minute * 6f - 90f))),
+                paint);
+        paint.setColor(minuteColor);
+        paint.setStrokeWidth(3.0f);
+        canvas.drawLine(centerX,
+                centerY,
+                (float) (centerX + centerX / 1.5 * Math.cos(Math.toRadians(minute * 6f - 90f))),
+                (float) (centerY + centerY / 1.5 * Math.sin(Math.toRadians(minute * 6f - 90f))),
+                paint);
+
+        if (isAwake) {
+            paint.setColor(secondShadowColor);
+            paint.setStrokeWidth(3.0f);
+            canvas.drawLine(centerX,
+                    centerY,
+                    (float) (centerX + centerX * Math.cos(Math.toRadians(second * 6f - 90f))),
+                    (float) (centerY + centerY * Math.sin(Math.toRadians(second * 6f - 90f))),
+                    paint);
+            paint.setColor(secondColor);
+            paint.setStrokeWidth(2.0f);
+            canvas.drawLine(centerX,
+                    centerY,
+                    (float) (centerX + centerX * Math.cos(Math.toRadians(second * 6f - 90f))),
+                    (float) (centerY + centerY * Math.sin(Math.toRadians(second * 6f - 90f))),
+                    paint);
+        }
         surfaceView.getHolder().unlockCanvasAndPost(canvas);
 
     }
@@ -216,12 +289,52 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
         return super.onTouchEvent(event);
     }
 
+    private RefreshTimeRunnable mRefreshTimeRunnable;
+
     public void onScreenDim() {
-        faceImage.setVisibility(View.INVISIBLE);
+        isAwake = false;
+        if (faceImage != null) {
+            faceImage.setVisibility(View.INVISIBLE);
+        }
+        if (mRefreshTimeRunnable != null) {
+            mRefreshTimeRunnable.stopRefresh();
+            mRefreshTimeRunnable = null;
+        }
+        onDraw();
     }
 
     public void onScreenAwake() {
-        faceImage.setVisibility(View.VISIBLE);
+        isAwake = true;
+        if (faceImage != null) {
+            faceImage.setVisibility(View.VISIBLE);
+        }
+        if (isAnalog) {
+            if (mRefreshTimeRunnable != null) {
+                mRefreshTimeRunnable.stopRefresh();
+            }
+            mRefreshTimeRunnable = new RefreshTimeRunnable();
+            runOnUiThread(mRefreshTimeRunnable);
+        }
+    }
+
+    private class RefreshTimeRunnable implements Runnable{
+
+        private boolean stopRefresh = false;
+
+        public void stopRefresh(){
+            stopRefresh = true;
+            Log.i(TAG, "stopRefresh set to true");
+        }
+
+        @Override
+        public void run() {
+            if (!stopRefresh) {
+                onDraw();
+
+                Log.i(TAG, "onDraw called");
+                handler.postDelayed(this, 1000);
+            }
+        }
     }
 
     @Override

@@ -43,10 +43,21 @@
         <item>@drawable/ic_check_box_outline_blank_white_24dp</item>
     </array>
 
-    <array name="wear_time_options_icons">
-        <item>@drawable/ic_folder_white_24dp</item>
-        <item>@drawable/ic_folder_white_24dp</item>
-        <item>@drawable/ic_settings_white_24dp</item>
+    <array name="wear_time_digital_options_icons">
+        <item>@drawable/ic_access_time_white_24dp</item>
+        <item>@drawable/ic_format_color_text_white_24dp</item>
+        <item>@drawable/ic_border_color_white_24dp</item>
+        <item>@drawable/ic_format_size_white_24dp</item>
+    </array>
+
+    <array name="wear_time_analog_options_icons">
+        <item>@drawable/ic_access_time_white_24dp</item>
+        <item>@drawable/time_hour_24dp</item>
+        <item>@drawable/ic_color_lens_white_24dp</item>
+        <item>@drawable/time_minute_24dp</item>
+        <item>@drawable/ic_color_lens_white_24dp</item>
+        <item>@drawable/ic_timer_white_24dp</item>
+        <item>@drawable/ic_color_lens_white_24dp</item>
     </array>
 
 </resources>

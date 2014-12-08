@@ -32,9 +32,7 @@
         android:dividerHeight="0px"
         android:paddingBottom="85dp"
         android:paddingTop="0dp"
-
-        >
-    </ListView>
+        />
 
     <Button
         android:id="@+id/set_button"

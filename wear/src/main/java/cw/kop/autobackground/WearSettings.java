@@ -57,6 +57,14 @@ public class WearSettings {
         return prefs.getInt("time_color", 0xFFFFFFFF);
     }
 
+    public static void setTimeShadowColor(int color) {
+        prefs.edit().putInt("time_shadow_color", color).commit();
+    }
+
+    public static int getTimeShadowColor() {
+        return prefs.getInt("time_shadow_color", 0xFF000000);
+    }
+
     public static void setTimeSize(float size) {
         prefs.edit().putFloat("time_size", size).commit();
     }
@@ -64,5 +72,54 @@ public class WearSettings {
     public static float getTimeSize() {
         return prefs.getFloat("time_size", 24);
     }
+
+    public static void setAnalogHourColor(int color) {
+        prefs.edit().putInt("analog_hour_color", color).commit();
+    }
+
+    public static int getAnalogHourColor() {
+        return prefs.getInt("analog_hour_color", 0xFFFFFFF);
+    }
+
+    public static void setAnalogHourShadowColor(int color) {
+        prefs.edit().putInt("analog_hour_shadow_color", color).commit();
+    }
+
+    public static int getAnalogHourShadowColor() {
+        return prefs.getInt("analog_hour_shadow_color", 0xFF000000);
+    }
+
+    public static void setAnalogMinuteColor(int color) {
+        prefs.edit().putInt("analog_minute_color", color).commit();
+    }
+
+    public static int getAnalogMinuteColor() {
+        return prefs.getInt("analog_minute_color", 0xFFFFFFF);
+    }
+
+    public static void setAnalogMinuteShadowColor(int color) {
+        prefs.edit().putInt("analog_minute_shadow_color", color).commit();
+    }
+
+    public static int getAnalogMinuteShadowColor() {
+        return prefs.getInt("analog_minute_shadow_color", 0xFF000000);
+    }
+
+    public static void setAnalogSecondColor(int color) {
+        prefs.edit().putInt("analog_second_color", color).commit();
+    }
+
+    public static int getAnalogSecondColor() {
+        return prefs.getInt("analog_second_color", 0xFFFFFFF);
+    }
+
+    public static void setAnalogSecondShadowColor(int color) {
+        prefs.edit().putInt("analog_second_shadow_color", color).commit();
+    }
+
+    public static int getAnalogSecondShadowColor() {
+        return prefs.getInt("analog_second_shadow_color", 0xFF000000);
+    }
+
 
 }

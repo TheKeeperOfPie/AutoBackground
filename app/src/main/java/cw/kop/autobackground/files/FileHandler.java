@@ -41,6 +41,7 @@ public class FileHandler {
     public static final String DOWNLOAD_TERMINATED = "cw.kop.autobackground.files.FileHandler.DOWNLOAD_TERMINATED";
     private static final String TAG = "FileHandler";
     public static volatile boolean isDownloading = false;
+    private static File currentWearFile = null;
     private static File currentBitmapFile = null;
     private static File previousBitmapFile = null;
     private static int randIndex = 0;
@@ -208,6 +209,10 @@ public class FileHandler {
 
     public static File getCurrentBitmapFile() {
         return currentBitmapFile;
+    }
+
+    public static File getCurrentWearFile() {
+        return currentWearFile;
     }
 
     public static void renameFolder(String oldtitle, String newTitle) {

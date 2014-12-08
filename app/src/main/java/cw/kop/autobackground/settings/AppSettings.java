@@ -1356,7 +1356,15 @@ public class AppSettings {
     }
 
     public static int getWearTimeColor() {
-        return prefs.getInt("wear_time_color", -1);
+        return prefs.getInt("wear_time_color", 0xFFFFFFFF);
+    }
+
+    public static void setWearTimeShadowColor(int color) {
+        prefs.edit().putInt("wear_time_shadow_color", color).apply();
+    }
+
+    public static int getWearTimeShadowColor() {
+        return prefs.getInt("wear_time_shadow_color", 0xFF000000);
     }
 
     public static void setWearTimeSize(int value) {
@@ -1365,6 +1373,54 @@ public class AppSettings {
 
     public static float getWearTimeSize() {
         return prefs.getFloat("wear_time_size", 24f);
+    }
+
+    public static void setWearAnalogHourColor(int color) {
+        prefs.edit().putInt("wear_analog_hour_color", color).commit();
+    }
+
+    public static int getWearAnalogHourColor() {
+        return prefs.getInt("wear_analog_hour_color", 0xFFFFFFF);
+    }
+
+    public static void setWearAnalogHourShadowColor(int color) {
+        prefs.edit().putInt("wear_analog_hour_shadow_color", color).commit();
+    }
+
+    public static int getWearAnalogHourShadowColor() {
+        return prefs.getInt("wear_analog_hour_shadow_color", 0xFF000000);
+    }
+
+    public static void setWearAnalogMinuteColor(int color) {
+        prefs.edit().putInt("wear_analog_minute_color", color).commit();
+    }
+
+    public static int getWearAnalogMinuteColor() {
+        return prefs.getInt("wear_analog_minute_color", 0xFFFFFFF);
+    }
+
+    public static void setWearAnalogMinuteShadowColor(int color) {
+        prefs.edit().putInt("wear_analog_minute_shadow_color", color).commit();
+    }
+
+    public static int getWearAnalogMinuteShadowColor() {
+        return prefs.getInt("wear_analog_minute_shadow_color", 0xFF000000);
+    }
+
+    public static void setWearAnalogSecondColor(int color) {
+        prefs.edit().putInt("wear_analog_second_color", color).commit();
+    }
+
+    public static int getWearAnalogSecondColor() {
+        return prefs.getInt("wear_analog_second_color", 0xFFFFFFF);
+    }
+
+    public static void setWearAnalogSecondShadowColor(int color) {
+        prefs.edit().putInt("wear_analog_second_shadow_color", color).commit();
+    }
+
+    public static int getWearAnalogSecondShadowColor() {
+        return prefs.getInt("wear_analog_second_shadow_color", 0xFF000000);
     }
 
 }

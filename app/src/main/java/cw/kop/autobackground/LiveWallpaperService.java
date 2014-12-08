@@ -1604,6 +1604,10 @@ public class LiveWallpaperService extends GLWallpaperService {
                 Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(),
                         options), 280, 280);
 
+                if (bitmap == null) {
+                    return;
+                }
+
                 final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream);
                 Asset asset = Asset.createFromBytes(byteStream.toByteArray());
