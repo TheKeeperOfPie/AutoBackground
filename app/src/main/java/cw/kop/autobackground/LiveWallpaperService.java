@@ -1416,7 +1416,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     renderer.loadNext(nextImage);
-                    loadWearImage();
+                    loadWearImage(nextImage);
 
                     handler.post(new Runnable() {
                         @Override
@@ -1457,7 +1457,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     renderer.loadNext(nextImage);
-                    loadWearImage();
+                    loadWearImage(nextImage);
 
                     handler.post(new Runnable() {
                         @Override
@@ -1504,7 +1504,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
 
                         renderer.loadNext(nextImage);
-                        loadWearImage();
+                        loadWearImage(nextImage);
 
                         handler.post(new Runnable() {
                             @Override
@@ -1554,7 +1554,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
 
                         renderer.loadNext(nextImage, positionY);
-                        loadWearImage();
+                        loadWearImage(nextImage);
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
@@ -1578,14 +1578,19 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         }
 
-        private void loadWearImage() {
-            if (isWearConnected) {
+        private void loadWearImage(File file) {
+
+            if (!AppSettings.useSyncWearImage()) {
+                file = FileHandler.getNextWearImage();
+            }
+
+            if (isWearConnected && file != null) {
 
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inPreferredConfig = Bitmap.Config.RGB_565;
                 options.inJustDecodeBounds = true;
 
-                BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(), options);
+                BitmapFactory.decodeFile(file.getAbsolutePath(), options);
 
                 int bitWidth = options.outWidth;
                 int bitHeight = options.outHeight;
@@ -1601,7 +1606,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
 
                 options.inJustDecodeBounds = false;
-                Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(),
+                options.inScaled = true;
+                options.inDither = true;
+                Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(file.getAbsolutePath(),
                         options), 280, 280);
 
                 if (bitmap == null) {
@@ -1743,9 +1750,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                             loadNextImage();
                         }
                         else {
-                            if (isWearConnected && FileHandler.getNextImage() != null) {
-                                loadWearImage();
-                            }
+                            loadWearImage(FileHandler.getNextImage());
                             toChange = true;
                         }
                         break;

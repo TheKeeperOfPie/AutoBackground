@@ -22,40 +22,11 @@
         android:title="@string/title_app_settings"
         >
 
-        <Preference
-            android:key="wear_time_type"
-            android:title="@string/wear_time_type"
-            android:summary="@string/wear_time_type_description"
-            />
-
-        <Preference
-            android:key="wear_time_size"
-            android:title="@string/wear_time_size"
-            android:summary="@string/wear_time_size_description"
-            />
-
-        <Preference
-            android:key="wear_time_color"
-            android:title="@string/wear_time_color"
-            android:summary="@string/wear_time_color_description"
-            />
-
-        <Preference
-            android:key="wear_date_type"
-            android:title="@string/wear_date_type"
-            android:summary="@string/wear_date_type_description"
-            />
-
-        <Preference
-            android:key="wear_date_size"
-            android:title="@string/wear_date_size"
-            android:summary="@string/wear_date_size_description"
-            />
-
-        <Preference
-            android:key="wear_date_color"
-            android:title="@string/wear_date_color"
-            android:summary="@string/wear_date_color_description"
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_sync_wear_image"
+            android:title="@string/use_sync_wear_image"
+            android:summary="@string/use_sync_wear_image_description"
+            android:defaultValue="false"
             />
 
     </PreferenceCategory>

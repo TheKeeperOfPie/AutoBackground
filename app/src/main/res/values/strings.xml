@@ -306,6 +306,8 @@
     <string name="high_resolution_notification_icon">High Resolution Icon</string>
     <string name="high_resolution_notification_icon_description">Loads higher resolution icon, not recommended as this will cause lag</string>
 
+    <string name="use_sync_wear_image">Sync Wear Image</string>
+    <string name="use_sync_wear_image_description">Show same image on phone and watch</string>
     <string name="wear_time_type">Time Type</string>
     <string name="wear_time_type_description">Digital or analog display</string>
     <string name="wear_time_size">Time Size</string>

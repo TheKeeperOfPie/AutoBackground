@@ -57,7 +57,7 @@ public class AppSettings {
     public static final String APP_DARK_THEME = "Dark Theme";
     public static final String APP_TRANSPARENT_THEME = "Transparent Theme";
 
-    private static final long DEFAULT_INTERVAL = 1800000;
+    private static final long DEFAULT_INTERVAL = 0;
 
     private static SharedPreferences prefs;
 
@@ -1421,6 +1421,10 @@ public class AppSettings {
 
     public static int getWearAnalogSecondShadowColor() {
         return prefs.getInt("wear_analog_second_shadow_color", 0xFF000000);
+    }
+
+    public static boolean useSyncWearImage() {
+        return prefs.getBoolean("use_sync_wear_image", false);
     }
 
 }

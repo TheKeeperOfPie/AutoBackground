@@ -64,7 +64,7 @@
         android:title="@string/title_interval_settings">
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:dialogTitle="@string/use_interval"
             android:key="use_interval"
             android:summary="@string/use_interval_description"

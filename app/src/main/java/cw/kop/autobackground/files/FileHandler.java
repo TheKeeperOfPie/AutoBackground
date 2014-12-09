@@ -30,6 +30,9 @@ import java.io.FilenameFilter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -178,14 +181,20 @@ public class FileHandler {
                     for (String folderName : AppSettings.getSourceData(i).split(AppSettings.DATA_SPLITTER)) {
                         File folder = new File(folderName);
                         if (folder.exists() && folder.isDirectory()) {
-                            bitmaps.addAll(Arrays.asList(folder.listFiles(filenameFilter)));
+                            ArrayList<File> images = new ArrayList<>(Arrays.asList(folder.listFiles(
+                                    filenameFilter)));
+                            Collections.sort(images);
+                            bitmaps.addAll(images);
                         }
                     }
                 }
                 else {
                     File folder = new File(cacheDir + "/" + AppSettings.getSourceTitle(i) + " " + AppSettings.getImagePrefix());
                     if (folder.exists() && folder.isDirectory()) {
-                        bitmaps.addAll(Arrays.asList(folder.listFiles(filenameFilter)));
+                        ArrayList<File> images = new ArrayList<>(Arrays.asList(folder.listFiles(
+                                filenameFilter)));
+                        Collections.sort(images);
+                        bitmaps.addAll(images);
                     }
                 }
             }
@@ -270,6 +279,20 @@ public class FileHandler {
             currentBitmapFile = null;
         }
         return currentBitmapFile;
+    }
+
+    public static File getNextWearImage() {
+
+        List<File> images = getBitmapList();
+        images.remove(currentWearFile);
+        images.remove(currentBitmapFile);
+        if (images.size() > 0) {
+            currentWearFile = images.get(new Random().nextInt(images.size()));
+        }
+        else {
+            currentWearFile = null;
+        }
+        return currentWearFile;
     }
 
     public static void decreaseIndex() {
