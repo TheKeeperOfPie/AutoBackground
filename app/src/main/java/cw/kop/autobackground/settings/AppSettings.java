@@ -1351,6 +1351,18 @@ public class AppSettings {
         return prefs.getString("wear_time_type", DIGITAL);
     }
 
+    public static boolean useSyncWearImage() {
+        return prefs.getBoolean("use_sync_wear_image", false);
+    }
+
+    public static void setWearTimeOffset(long offset) {
+        prefs.edit().putLong("wear_time_offset", offset).commit();
+    }
+
+    public static long getWearTimeOffset() {
+        return prefs.getLong("wear_time_offset", 0);
+    }
+
     public static void setWearTimeColor(int color) {
         prefs.edit().putInt("wear_time_color", color).apply();
     }
@@ -1423,8 +1435,51 @@ public class AppSettings {
         return prefs.getInt("wear_analog_second_shadow_color", 0xFF000000);
     }
 
-    public static boolean useSyncWearImage() {
-        return prefs.getBoolean("use_sync_wear_image", false);
+    public static void setWearAnalogHourWidth(float width) {
+        prefs.edit().putFloat("wear_analog_hour_width", width).commit();
     }
 
+    public static float getWearAnalogHourWidth() {
+        return prefs.getFloat("wear_analog_hour_width", 5.0f);
+    }
+
+    public static void setWearAnalogMinuteWidth(float width) {
+        prefs.edit().putFloat("wear_analog_minute_width", width).commit();
+    }
+
+    public static float getWearAnalogMinuteWidth() {
+        return prefs.getFloat("wear_analog_minute_width", 3.0f);
+    }
+
+    public static void setWearAnalogSecondWidth(float width) {
+        prefs.edit().putFloat("wear_analog_second_width", width).commit();
+    }
+
+    public static float getWearAnalogSecondWidth() {
+        return prefs.getFloat("wear_analog_second_width", 2.0f);
+    }
+
+    public static void setWearAnalogHourLength(float length) {
+        prefs.edit().putFloat("wear_analog_hour_length", length).commit();
+    }
+
+    public static float getWearAnalogHourLength() {
+        return prefs.getFloat("wear_analog_hour_length", 50f);
+    }
+
+    public static void setWearAnalogMinuteLength(float length) {
+        prefs.edit().putFloat("wear_analog_minute_length", length).commit();
+    }
+
+    public static float getWearAnalogMinuteLength() {
+        return prefs.getFloat("wear_analog_minute_length", 66f);
+    }
+
+    public static void setWearAnalogSecondLength(float length) {
+        prefs.edit().putFloat("wear_analog_second_length", length).commit();
+    }
+
+    public static float getWearAnalogSecondLength() {
+        return prefs.getFloat("wear_analog_second_length", 100f);
+    }
 }

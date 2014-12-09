@@ -113,6 +113,7 @@ public class EventListenerService extends WearableListenerService {
                         break;
                     case "/settings":
                         WearSettings.setTimeType(dataMap.getString("time_type", WearSettings.DIGITAL));
+                        WearSettings.setTimeOffset(dataMap.getLong("time_offset", 0));
                         WearSettings.setTimeColor(dataMap.getInt("time_color", 0xFFFFFFFF));
                         WearSettings.setTimeShadowColor(dataMap.getInt("time_shadow_color", 0xFF000000));
                         WearSettings.setTimeSize(dataMap.getFloat("time_size", 24));
@@ -123,6 +124,14 @@ public class EventListenerService extends WearableListenerService {
                         WearSettings.setAnalogMinuteShadowColor(dataMap.getInt("analog_minute_shadow_color", 0xFF000000));
                         WearSettings.setAnalogSecondColor(dataMap.getInt("analog_second_color", 0xFFFFFFFF));
                         WearSettings.setAnalogSecondShadowColor(dataMap.getInt("analog_second_shadow_color", 0xFF000000));
+
+                        WearSettings.setAnalogHourLength(dataMap.getFloat("analog_hour_length", 50f));
+                        WearSettings.setAnalogMinuteLength(dataMap.getFloat("analog_minute_length", 66f));
+                        WearSettings.setAnalogSecondLength(dataMap.getFloat("analog_second_length", 100f));
+
+                        WearSettings.setAnalogHourWidth(dataMap.getFloat("analog_hour_width", 5.0f));
+                        WearSettings.setAnalogMinuteWidth(dataMap.getFloat("analog_minute_width", 3.0f));
+                        WearSettings.setAnalogSecondWidth(dataMap.getFloat("analog_second_width", 2.0f));
 
                         Intent intent = new Intent(WatchFace.LOAD_SETTINGS);
                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(

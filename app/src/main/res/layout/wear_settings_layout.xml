@@ -25,7 +25,7 @@
         android:id="@+id/sync_button"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_alignBottom="@+id/watch_face_container"
+        android:layout_alignBottom="@+id/watch_face_background"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="4dp"
@@ -45,33 +45,41 @@
         android:textColor="@color/ACCENT_OPAQUE"
         />
 
-    <include
-        layout="@layout/watch_face_digital"
-        android:id="@+id/watch_face"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignTop="@+id/watch_face_container"
-        android:layout_alignBottom="@+id/watch_face_container"
-        android:layout_alignStart="@+id/watch_face_container"
-        android:layout_alignLeft="@+id/watch_face_container"
-        android:layout_alignEnd="@+id/watch_face_container"
-        android:layout_alignRight="@+id/watch_face_container"
-        />
+    <RelativeLayout
+        android:id="@+id/watch_face_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/watch_face_background"
+        android:layout_alignBottom="@+id/watch_face_background"
+        android:layout_alignStart="@+id/watch_face_background"
+        android:layout_alignLeft="@+id/watch_face_background"
+        android:layout_alignEnd="@+id/watch_face_background"
+        android:layout_alignRight="@+id/watch_face_background"
+        >
 
-    <SurfaceView
-        android:id="@+id/surface_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignTop="@+id/watch_face"
-        android:layout_alignBottom="@+id/watch_face"
-        android:layout_alignStart="@+id/watch_face"
-        android:layout_alignLeft="@+id/watch_face"
-        android:layout_alignEnd="@+id/watch_face"
-        android:layout_alignRight="@+id/watch_face"
-        />
+        <include
+            layout="@layout/watch_face_digital"
+            android:id="@+id/watch_face"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+
+        <SurfaceView
+            android:id="@+id/surface_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignTop="@+id/watch_face"
+            android:layout_alignBottom="@+id/watch_face"
+            android:layout_alignStart="@+id/watch_face"
+            android:layout_alignLeft="@+id/watch_face"
+            android:layout_alignEnd="@+id/watch_face"
+            android:layout_alignRight="@+id/watch_face"
+            />
+
+    </RelativeLayout>
 
     <ImageView
-        android:id="@+id/watch_face_container"
+        android:id="@+id/watch_face_background"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -82,7 +90,7 @@
         android:id="@+id/list_border"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_below="@id/watch_face"
+        android:layout_below="@id/watch_face_background"
         android:minHeight="1px"
         android:background="@color/DARK_BLUE_OPAQUE"
         />

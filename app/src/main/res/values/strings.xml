@@ -309,17 +309,9 @@
     <string name="use_sync_wear_image">Sync Wear Image</string>
     <string name="use_sync_wear_image_description">Show same image on phone and watch</string>
     <string name="wear_time_type">Time Type</string>
-    <string name="wear_time_type_description">Digital or analog display</string>
-    <string name="wear_time_size">Time Size</string>
-    <string name="wear_time_size_description">Time text size</string>
-    <string name="wear_time_color">Time Color</string>
-    <string name="wear_time_color_description">Color of time display</string>
-    <string name="wear_date_type">Date Type</string>
-    <string name="wear_date_type_description">Data display type</string>
-    <string name="wear_date_size">Date Size</string>
-    <string name="wear_date_size_description">Date text size</string>
-    <string name="wear_date_color">Date Color</string>
-    <string name="wear_date_color_description">Date text color</string>
+    <string name="wear_time_type_description">Digital or analog</string>
+    <string name="wear_time_adjust">Time Adjust</string>
+    <string name="wear_time_adjust_description">Set the time displayed on the device</string>
 
     <string name="about_libraries">Used Libraries</string>
     <string name="about_libraries_description">The following libraries were used in the creation of this application. Click on their entries to check them out.</string>

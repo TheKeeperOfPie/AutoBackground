@@ -29,6 +29,18 @@
             android:defaultValue="false"
             />
 
+        <Preference
+            android:key="wear_time_type"
+            android:title="@string/wear_time_type"
+            android:summary="@string/wear_time_type_description"
+            />
+
+        <Preference
+            android:key="wear_time_adjust"
+            android:title="@string/wear_time_adjust"
+            android:summary="@string/wear_time_adjust_description"
+            />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

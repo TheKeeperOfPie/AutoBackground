@@ -399,6 +399,14 @@ public class DialogFactory {
         dialog.setContentView(dialogView);
 
         TimePicker timePicker = (TimePicker) dialogView.findViewById(R.id.dialog_time_picker);
+
+        if (currentHour > 0) {
+            timePicker.setCurrentHour(currentHour);
+        }
+        if (currentMinute > 0) {
+            timePicker.setCurrentMinute(currentMinute);
+        }
+
         listener.setTimePicker(timePicker);
 
         if (title.length() > 0) {

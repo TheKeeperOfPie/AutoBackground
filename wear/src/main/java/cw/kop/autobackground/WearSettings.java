@@ -49,6 +49,15 @@ public class WearSettings {
         return prefs.getString("time_type", DIGITAL);
     }
 
+
+    public static void setTimeOffset(long offset) {
+        prefs.edit().putLong("time_offset", offset).commit();
+    }
+
+    public static long getTimeOffset() {
+        return prefs.getLong("time_offset", 0);
+    }
+
     public static void setTimeColor(int color) {
         prefs.edit().putInt("time_color", color).commit();
     }
@@ -119,6 +128,54 @@ public class WearSettings {
 
     public static int getAnalogSecondShadowColor() {
         return prefs.getInt("analog_second_shadow_color", 0xFF000000);
+    }
+
+    public static void setAnalogHourWidth(float width) {
+        prefs.edit().putFloat("analog_hour_width", width).commit();
+    }
+
+    public static float getAnalogHourWidth() {
+        return prefs.getFloat("analog_hour_width", 5.0f);
+    }
+
+    public static void setAnalogMinuteWidth(float width) {
+        prefs.edit().putFloat("analog_minute_width", width).commit();
+    }
+
+    public static float getAnalogMinuteWidth() {
+        return prefs.getFloat("analog_minute_width", 3.0f);
+    }
+
+    public static void setAnalogSecondWidth(float width) {
+        prefs.edit().putFloat("analog_second_width", width).commit();
+    }
+
+    public static float getAnalogSecondWidth() {
+        return prefs.getFloat("analog_second_width", 2.0f);
+    }
+
+    public static void setAnalogHourLength(float length) {
+        prefs.edit().putFloat("analog_hour_length", length).commit();
+    }
+
+    public static float getAnalogHourLength() {
+        return prefs.getFloat("analog_hour_length", 50f);
+    }
+
+    public static void setAnalogMinuteLength(float length) {
+        prefs.edit().putFloat("analog_minute_length", length).commit();
+    }
+
+    public static float getAnalogMinuteLength() {
+        return prefs.getFloat("analog_minute_length", 66f);
+    }
+
+    public static void setAnalogSecondLength(float length) {
+        prefs.edit().putFloat("analog_second_length", length).commit();
+    }
+
+    public static float getAnalogSecondLength() {
+        return prefs.getFloat("analog_second_length", 100f);
     }
 
 
