@@ -43,6 +43,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.CardView;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -90,6 +91,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     private static final int SCROLL_ANIMATION_TIME = 150;
     private static final int INFO_ANIMATION_TIME = 250;
     private static final int ADD_ANIMATION_TIME = 350;
+    private static final long EXIT_ANIMATION_TIME = 200l;
 
     private ListView sourceList;
     private SourceListAdapter listAdapter;
@@ -233,6 +235,19 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         setButton = (Button) view.findViewById(R.id.set_button);
         setButton.setOnClickListener(this);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            sourceList.setPadding(0, 0, 0,
+                    Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 140, getResources().getDisplayMetrics())));
+
+            int baseMargin = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()));
+            int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+            int navBarMargin = resourceId > 0 ? getResources().getDimensionPixelSize(resourceId) : Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, getResources().getDisplayMetrics()));
+
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) addButtonBackground.getLayoutParams();
+            params.setMargins(baseMargin, baseMargin, baseMargin, baseMargin + navBarMargin);
+            addButtonBackground.setLayoutParams(params);
+        }
 
         return view;
     }
@@ -695,7 +710,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         final SourceListAdapter.CardClickListener listener = new SourceListAdapter.CardClickListener() {
             @Override
-            public void onDeleteClick(final int index) {
+            public void onDeleteClick(final View view, final int index) {
 
                 listAdapter.saveData();
                 if (FileHandler.isDownloading) {

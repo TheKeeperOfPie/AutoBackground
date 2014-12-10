@@ -16,6 +16,7 @@
   -->
 
 <resources>
+
     <style name="AppBaseTheme" parent="@style/Theme.AppCompat.NoActionBar">
         <!--
             Theme customizations available in newer API levels can go in
@@ -23,6 +24,7 @@
             backward-compatibility can go here.
         -->
 
+        <item name="android:windowTranslucentNavigation">false</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:textAppearance">@style/TextAppearance.AppCompat.Title</item>
         <item name="colorPrimary">@color/BLUE_OPAQUE</item>

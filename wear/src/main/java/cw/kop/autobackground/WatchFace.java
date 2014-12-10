@@ -67,26 +67,26 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
     private Random random;
     private Time time;
 
-    private long timeOffset;
-    private int hourColor;
-    private int hourShadowColor;
-    private int minuteColor;
-    private int minuteShadowColor;
-    private int secondColor;
-    private int secondShadowColor;
+    private long timeOffset = 0;
+    private int hourColor = 0xFF000000;
+    private int hourShadowColor = 0xFF000000;
+    private int minuteColor = 0xFF000000;
+    private int minuteShadowColor = 0xFF000000;
+    private int secondColor = 0xFF000000;
+    private int secondShadowColor = 0xFF000000;
 
-    private float hourRadius;
-    private float minuteRadius;
-    private float secondRadius;
-    private float hourWidth;
-    private float minuteWidth;
-    private float secondWidth;
+    private float hourRadius = 0;
+    private float minuteRadius = 0;
+    private float secondRadius = 0;
+    private float hourWidth = 0;
+    private float minuteWidth = 0;
+    private float secondWidth = 0;
 
 
     private BroadcastReceiver digitalTimeReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context arg0, Intent intent) {
-            timeText.setText(timeFormat.format(new Date()));
+            timeText.setText(timeFormat.format(new Date(System.currentTimeMillis() + timeOffset)));
         }
     };
     private BroadcastReceiver analogTimeReceiver = new BroadcastReceiver() {
@@ -290,8 +290,8 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
         paint.setStrokeWidth(hourWidth);
         canvas.drawLine(centerX,
                 centerY,
-                (float) (centerX + (radius * hourRadius / 100 + hourShadowWidth - hourWidth) * Math.cos(Math.toRadians(hour % 12f * 30f - 90f))),
-                (float) (centerY + (radius * hourRadius / 100 + hourShadowWidth - hourWidth) * Math.sin(Math.toRadians(hour % 12f * 30f - 90f))),
+                (float) (centerX + (radius * hourRadius / 100) * Math.cos(Math.toRadians(hour % 12f * 30f - 90f))),
+                (float) (centerY + (radius * hourRadius / 100) * Math.sin(Math.toRadians(hour % 12f * 30f - 90f))),
                 paint);
 
         paint.setColor(minuteShadowColor);
@@ -305,8 +305,8 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
         paint.setStrokeWidth(minuteWidth);
         canvas.drawLine(centerX,
                 centerY,
-                (float) (centerX + (radius * minuteRadius / 100 + minuteShadowWidth - minuteWidth) * Math.cos(Math.toRadians(minute * 6f - 90f))),
-                (float) (centerY + (radius * minuteRadius / 100 + minuteShadowWidth - minuteWidth) * Math.sin(Math.toRadians(minute * 6f - 90f))),
+                (float) (centerX + (radius * minuteRadius / 100) * Math.cos(Math.toRadians(minute * 6f - 90f))),
+                (float) (centerY + (radius * minuteRadius / 100 ) * Math.sin(Math.toRadians(minute * 6f - 90f))),
                 paint);
 
         if (isAwake) {
@@ -321,8 +321,8 @@ public class WatchFace extends Activity implements DisplayManager.DisplayListene
             paint.setStrokeWidth(secondWidth);
             canvas.drawLine(centerX,
                     centerY,
-                    (float) (centerX + (radius * secondRadius / 100 + secondShadowSize - secondWidth) * Math.cos(Math.toRadians(second * 6f - 90f))),
-                    (float) (centerY + (radius * secondRadius / 100 + secondShadowSize - secondWidth) * Math.sin(Math.toRadians(second * 6f - 90f))),
+                    (float) (centerX + (radius * secondRadius / 100) * Math.cos(Math.toRadians(second * 6f - 90f))),
+                    (float) (centerY + (radius * secondRadius / 100) * Math.sin(Math.toRadians(second * 6f - 90f))),
                     paint);
         }
         surfaceView.getHolder().unlockCanvasAndPost(canvas);

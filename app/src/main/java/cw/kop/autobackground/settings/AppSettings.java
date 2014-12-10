@@ -32,9 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
-import cw.kop.autobackground.sources.Source;
 
 public class AppSettings {
 
@@ -48,7 +46,7 @@ public class AppSettings {
     public static final String TUMBLR_TAG = "Tumblr Tag";
     public static final String REDDIT_SUBREDDIT = "Reddit Subreddit";
 
-    public static final String DATA_SPLITTER = ", ";
+    public static final String DATA_SPLITTER = ":::";
 
     public static final String DIGITAL = "Digital";
     public static final String ANALOG = "Analog";
@@ -733,29 +731,6 @@ public class AppSettings {
 
     public static boolean useHighResolutionNotificationIcon() {
         return prefs.getBoolean("high_resolution_notification_icon", false);
-    }
-
-    public static void setSourceObjects(ArrayList<Source> sources) {
-
-        for (int i = 0; i < sources.size(); i++) {
-
-            Source source = sources.get(i);
-
-            String type = source.getType();
-
-            prefs.edit().putString("source_type_" + i, type).commit();
-            prefs.edit().putString("source_title_" + i, source.getTitle()).commit();
-            prefs.edit().putString("source_data_" + i, source.getData()).commit();
-            prefs.edit().putString("source_num_" + i, "" + source.getNum()).commit();
-            prefs.edit().putBoolean("use_source_" + i, source.use()).commit();
-            prefs.edit().putBoolean("source_preview_" + i, source.preview()).commit();
-            prefs.edit().putBoolean("use_source_time_" + i, source.usetime()).commit();
-            prefs.edit().putString("source_time_" + i, source.getTime()).commit();
-
-        }
-
-        prefs.edit().putInt("num_sources", sources.size()).commit();
-
     }
 
     public static void setSources(ArrayList<HashMap<String, String>> listData) {

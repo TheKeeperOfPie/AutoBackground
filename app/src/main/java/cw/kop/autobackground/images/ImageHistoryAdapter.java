@@ -22,6 +22,7 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -45,8 +46,12 @@ import cw.kop.autobackground.settings.AppSettings;
  */
 public class ImageHistoryAdapter extends BaseAdapter {
 
+    private static final long ENTRY_ANIMATION_TIME = 200l;
+    private static final float ENTRY_ANIMATION_Y = 500f;
+
     private LayoutInflater inflater;
     private ArrayList<HistoryItem> historyItems;
+    private int lastPosition = -1;
 
     public ImageHistoryAdapter(Context activity) {
         inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -126,6 +131,19 @@ public class ImageHistoryAdapter extends BaseAdapter {
             fileTitle.setText(DateFormat.getDateTimeInstance().format(new Date(historyItems.get(
                     position).getTime())));
             fileSummary.setText(historyItems.get(position).getUrl());
+
+            if (position > 0 && lastPosition <= position) {
+                float initialTranslation = ENTRY_ANIMATION_Y;
+                lastPosition = position;
+
+                view.setTranslationY(initialTranslation);
+                view.animate()
+                        .setInterpolator(new DecelerateInterpolator(1.0f))
+                        .translationY(0f)
+                        .setDuration(ENTRY_ANIMATION_TIME)
+                        .setListener(null);
+            }
+
             return view;
         }
         return null;

@@ -24,12 +24,14 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -115,6 +117,8 @@ public class SourceInfoFragment extends PreferenceFragment {
     private CustomSwitchPreference timePref;
     private Handler handler;
 
+    private String folderData;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -145,6 +149,12 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         View view = inflater.inflate(R.layout.source_info_fragment, container, false);
         View headerView = inflater.inflate(R.layout.source_info_header, null, false);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+            view.setPadding(0, 0, 0, resourceId > 0 ? getResources().getDimensionPixelSize(resourceId) : Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, getResources().getDisplayMetrics())));
+
+        }
 
         settingsContainer = (RelativeLayout) headerView.findViewById(R.id.source_settings_container);
 
@@ -332,7 +342,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                 }
             });
 
-            String data = arguments.getString("data");
+            folderData = arguments.getString("data");
+            String data = folderData;
 
             hint = AppSettings.getSourceDataHint(type);
             prefix = AppSettings.getSourceDataPrefix(type);
@@ -342,6 +353,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                 case AppSettings.TUMBLR_BLOG:
                     suffix = ".tumblr.com";
                 case AppSettings.FOLDER:
+                    data = Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER));
                 case AppSettings.GOOGLE_ALBUM:
                     sourceTitle.setFocusable(false);
                     sourceData.setFocusable(false);
@@ -449,6 +461,10 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         String title = sourceTitle.getText().toString();
         String data = sourceData.getText().toString();
+
+        if (type.equals(AppSettings.FOLDER)) {
+            data = folderData;
+        }
 
         if (title.equals("")) {
             Toast.makeText(appContext, "Title cannot be empty", Toast.LENGTH_SHORT).show();

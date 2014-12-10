@@ -16,11 +16,16 @@
 
 package cw.kop.autobackground.sources;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -29,9 +34,15 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.LayoutAnimationController;
+import android.view.animation.Transformation;
+import android.view.animation.TranslateAnimation;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -40,6 +51,7 @@ import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -59,13 +71,16 @@ public class SourceListAdapter extends BaseAdapter {
 
     private static final String TAG = SourceListAdapter.class.getCanonicalName();
     private static final float OVERLAY_ALPHA = 0.85f;
+    private static final long ENTRY_ANIMATION_TIME = 300l;
+    private static final float ENTRY_ANIMATION_Y = 500f;
 
     private Activity mainActivity;
     private ArrayList<HashMap<String, String>> listData;
     private HashSet<String> titles;
     private LayoutInflater inflater = null;
     private CardClickListener cardClickListener;
-    private float screenWidth = 0;
+    private int lastPosition = -1;
+    private boolean isRemoving = false;
 
     public SourceListAdapter(Activity activity, CardClickListener listener) {
         mainActivity = activity;
@@ -73,7 +88,6 @@ public class SourceListAdapter extends BaseAdapter {
         titles = new HashSet<>();
         inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         cardClickListener = listener;
-        screenWidth = activity.getResources().getDisplayMetrics().widthPixels;
     }
 
     @Override
@@ -147,7 +161,7 @@ public class SourceListAdapter extends BaseAdapter {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cardClickListener.onDeleteClick(position);
+                cardClickListener.onDeleteClick(view, position);
             }
         });
         viewButton.setOnClickListener(new View.OnClickListener() {
@@ -251,7 +265,12 @@ public class SourceListAdapter extends BaseAdapter {
         sourceType.setText(typePrefix);
         sourceType.append(listItem.get("type"));
         sourceData.setText(dataPrefix);
-        sourceData.append(listItem.get("data"));
+        if (listItem.get("type").equals(AppSettings.FOLDER)) {
+            sourceData.append(Arrays.toString(listItem.get("data").split(AppSettings.DATA_SPLITTER)));
+        }
+        else {
+            sourceData.append(listItem.get("data"));
+        }
         sourceNum.setText(numPrefix);
         if (listItem.get("type").equals(AppSettings.FOLDER)) {
             sourceNum.append(listItem.get("num"));
@@ -266,6 +285,17 @@ public class SourceListAdapter extends BaseAdapter {
         }
         else {
             sourceTime.append("N/A");
+        }
+
+        if (position > 0 && lastPosition <= position && !isRemoving) {
+            float initialTranslation = ENTRY_ANIMATION_Y;
+            lastPosition = position;
+
+            view.setTranslationY(initialTranslation);
+            view.animate()
+                    .setInterpolator(new DecelerateInterpolator(1.0f))
+                    .translationY(0f)
+                    .setDuration(ENTRY_ANIMATION_TIME);
         }
 
         return view;
@@ -333,7 +363,7 @@ public class SourceListAdapter extends BaseAdapter {
             return false;
         }
 
-        HashMap<String, String> newItem = new HashMap<String, String>();
+        HashMap<String, String> newItem = new HashMap<>();
         newItem.put("type", type);
         newItem.put("title", title);
         newItem.put("data", data);
@@ -364,7 +394,8 @@ public class SourceListAdapter extends BaseAdapter {
         return true;
     }
 
-    public void removeItem(int position) {
+    public void removeItem(final int position) {
+
         titles.remove(listData.get(position).get("title"));
         listData.remove(position);
         notifyDataSetChanged();
@@ -492,7 +523,7 @@ public class SourceListAdapter extends BaseAdapter {
 
     public interface CardClickListener {
 
-        void onDeleteClick(int index);
+        void onDeleteClick(View view, int index);
 
         void onViewImageClick(View view, int index);
 
