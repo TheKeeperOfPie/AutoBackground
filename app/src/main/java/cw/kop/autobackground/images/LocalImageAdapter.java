@@ -42,14 +42,12 @@ public class LocalImageAdapter extends BaseAdapter {
 
     private static final String TAG = LocalImageAdapter.class.getCanonicalName();
     private static final int BYTE_TO_MEBIBYTE = 1048576;
-    private static final long ENTRY_ANIMATION_TIME = 200l;
     private File mainDir;
     private File startDir;
     private ArrayList<File> listFiles;
     private LayoutInflater inflater;
     private boolean finish;
     private boolean hideFirst;
-    private int lastPosition = -1;
 
     public LocalImageAdapter(Activity activity, File directory, boolean hideFirst) {
         listFiles = new ArrayList<>();
@@ -139,18 +137,6 @@ public class LocalImageAdapter extends BaseAdapter {
 
             if (position == 0 && hideFirst) {
                 view.setAlpha(1.0f);
-            }
-
-            if (position > 0 && lastPosition <= position) {
-                float initialTranslation = 500f;
-                lastPosition = position;
-
-                view.setTranslationY(initialTranslation);
-                view.animate()
-                        .setInterpolator(new DecelerateInterpolator(1.0f))
-                        .translationY(0f)
-                        .setDuration(ENTRY_ANIMATION_TIME)
-                        .setListener(null);
             }
 
             return view;

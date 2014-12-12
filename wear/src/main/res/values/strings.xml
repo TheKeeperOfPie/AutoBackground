@@ -20,5 +20,7 @@
     <string name="app_name">AutoBackground</string>
     <string name="hello_round">Hello Round World!</string>
     <string name="hello_square">Hello Square World!</string>
+    
+    <string name="wallpaper_description">AutoBackground</string>
 
 </resources>

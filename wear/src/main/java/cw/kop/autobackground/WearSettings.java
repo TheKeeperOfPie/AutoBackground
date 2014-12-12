@@ -16,13 +16,12 @@
 
 package cw.kop.autobackground;
 
-import android.app.WallpaperManager;
-import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
- * Created by TheKeeperOfPie on 12/4/2014.
+ * Created by TheKeeperOfPie on 12/11/2014.
  */
+
 public class WearSettings {
 
     public static final String DIGITAL = "Digital";
@@ -82,12 +81,20 @@ public class WearSettings {
         return prefs.getFloat("time_size", 24);
     }
 
+    public static void setAnalogTickColor(int color) {
+        prefs.edit().putInt("analog_tick_color", color).commit();
+    }
+
+    public static int getAnalogTickColor() {
+        return prefs.getInt("analog_tick_color", 0xFFFFFFFF);
+    }
+
     public static void setAnalogHourColor(int color) {
         prefs.edit().putInt("analog_hour_color", color).commit();
     }
 
     public static int getAnalogHourColor() {
-        return prefs.getInt("analog_hour_color", 0xFFFFFFF);
+        return prefs.getInt("analog_hour_color", 0xFFFFFFFF);
     }
 
     public static void setAnalogHourShadowColor(int color) {
@@ -103,7 +110,7 @@ public class WearSettings {
     }
 
     public static int getAnalogMinuteColor() {
-        return prefs.getInt("analog_minute_color", 0xFFFFFFF);
+        return prefs.getInt("analog_minute_color", 0xFFFFFFFF);
     }
 
     public static void setAnalogMinuteShadowColor(int color) {
@@ -119,7 +126,7 @@ public class WearSettings {
     }
 
     public static int getAnalogSecondColor() {
-        return prefs.getInt("analog_second_color", 0xFFFFFFF);
+        return prefs.getInt("analog_second_color", 0xFFFFFFFF);
     }
 
     public static void setAnalogSecondShadowColor(int color) {
@@ -128,6 +135,14 @@ public class WearSettings {
 
     public static int getAnalogSecondShadowColor() {
         return prefs.getInt("analog_second_shadow_color", 0xFF000000);
+    }
+
+    public static void setAnalogTickWidth(float width) {
+        prefs.edit().putFloat("analog_tick_width", width).commit();
+    }
+
+    public static float getAnalogTickWidth() {
+        return prefs.getFloat("analog_tick_width", 5.0f);
     }
 
     public static void setAnalogHourWidth(float width) {
@@ -152,6 +167,14 @@ public class WearSettings {
 
     public static float getAnalogSecondWidth() {
         return prefs.getFloat("analog_second_width", 2.0f);
+    }
+
+    public static void setAnalogTickLength(float length) {
+        prefs.edit().putFloat("analog_tick_length", length).commit();
+    }
+
+    public static float getAnalogTickLength() {
+        return prefs.getFloat("analog_tick_length", 80f);
     }
 
     public static void setAnalogHourLength(float length) {

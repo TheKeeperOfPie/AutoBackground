@@ -71,15 +71,11 @@ public class SourceListAdapter extends BaseAdapter {
 
     private static final String TAG = SourceListAdapter.class.getCanonicalName();
     private static final float OVERLAY_ALPHA = 0.85f;
-    private static final long ENTRY_ANIMATION_TIME = 300l;
-    private static final float ENTRY_ANIMATION_Y = 500f;
-
     private Activity mainActivity;
     private ArrayList<HashMap<String, String>> listData;
     private HashSet<String> titles;
     private LayoutInflater inflater = null;
     private CardClickListener cardClickListener;
-    private int lastPosition = -1;
     private boolean isRemoving = false;
 
     public SourceListAdapter(Activity activity, CardClickListener listener) {
@@ -285,17 +281,6 @@ public class SourceListAdapter extends BaseAdapter {
         }
         else {
             sourceTime.append("N/A");
-        }
-
-        if (position > 0 && lastPosition <= position && !isRemoving) {
-            float initialTranslation = ENTRY_ANIMATION_Y;
-            lastPosition = position;
-
-            view.setTranslationY(initialTranslation);
-            view.animate()
-                    .setInterpolator(new DecelerateInterpolator(1.0f))
-                    .translationY(0f)
-                    .setDuration(ENTRY_ANIMATION_TIME);
         }
 
         return view;

@@ -403,6 +403,11 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         return view;
     }
 
+    private void drawDigital() {
+
+        timeText.setText(timeFormat.format(new Date()));
+    }
+
     private void drawAnalog() {
 
         if (!AppSettings.getWearTimeType().equals(AppSettings.ANALOG)) {
@@ -626,6 +631,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                                         recyclerView.setAdapter(null);
                                         preferenceList.setVisibility(View.VISIBLE);
                                         recyclerView.setVisibility(View.GONE);
+                                        drawDigital();
                                         break;
                                     case 1:
                                         AppSettings.setWearTimeType(AppSettings.ANALOG);
@@ -653,6 +659,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             public void onClickRight(View v) {
                                 AppSettings.setWearTimeColor(getColorPickerView().getColor());
                                 timeText.setTextColor(getColorPickerView().getColor());
+                                drawDigital();
                                 this.dismissDialog();
                             }
                         };
@@ -675,6 +682,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                                         -1f,
                                         -1f,
                                         getColorPickerView().getColor());
+                                drawDigital();
                                 this.dismissDialog();
                             }
                         };
@@ -695,6 +703,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             public void onClickRight(View v) {
                                 AppSettings.setWearTimeSize(getValue());
                                 timeText.setTextSize(getValue());
+                                drawDigital();
                                 this.dismissDialog();
                             }
 

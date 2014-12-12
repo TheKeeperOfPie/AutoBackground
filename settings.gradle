@@ -14,5 +14,5 @@
  * limitations under the License.
  */
 
-include ':app', ':wear', ':shared'
+include ':app', ':shared', ':wear', 'wear'
 include ':libraries:colorpickerpreference'

@@ -34,13 +34,10 @@ import cw.kop.autobackground.R;
 
 public class AlbumAdapter extends BaseAdapter {
 
-    private static final long ENTRY_ANIMATION_TIME = 200l;
-    private static final float ENTRY_ANIMATION_Y = 500f;
     private ArrayList<String> albumNames;
     private ArrayList<String> albumImages;
     private ArrayList<String> albumLinks;
     private LayoutInflater inflater;
-    private int lastPosition = -1;
 
     public AlbumAdapter(Context context, ArrayList<String> names, ArrayList<String> images,
             ArrayList<String> links) {
@@ -84,18 +81,6 @@ public class AlbumAdapter extends BaseAdapter {
 
             if (Patterns.WEB_URL.matcher(albumImages.get(position)).matches()) {
                 Picasso.with(parent.getContext()).load(albumImages.get(position)).into(icon);
-            }
-
-            if (position > 0 && lastPosition <= position) {
-                float initialTranslation = ENTRY_ANIMATION_Y;
-                lastPosition = position;
-
-                view.setTranslationY(initialTranslation);
-                view.animate()
-                        .setInterpolator(new DecelerateInterpolator(1.0f))
-                        .translationY(0f)
-                        .setDuration(ENTRY_ANIMATION_TIME)
-                        .setListener(null);
             }
 
             return view;
