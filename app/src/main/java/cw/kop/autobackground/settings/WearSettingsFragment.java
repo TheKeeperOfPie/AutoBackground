@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground;
+package cw.kop.autobackground.settings;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -71,8 +71,13 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import cw.kop.autobackground.DialogFactory;
+import cw.kop.autobackground.MainActivity;
+import cw.kop.autobackground.OptionData;
+import cw.kop.autobackground.OptionsListAdapter;
+import cw.kop.autobackground.R;
+import cw.kop.autobackground.RecyclerViewListClickListener;
 import cw.kop.autobackground.files.FileHandler;
-import cw.kop.autobackground.settings.AppSettings;
 
 public class WearSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, View.OnClickListener, View.OnTouchListener {
 
@@ -268,11 +273,13 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
         timeFormat = android.text.format.DateFormat.getTimeFormat(appContext);
         timeText = (TextView) view.findViewById(R.id.time_digital);
-        timeText.setText(timeFormat.format(new Date()));
         timeText.setTextColor(AppSettings.getWearTimeColor());
         timeText.setShadowLayer(5f, -1f, -1f, AppSettings.getWearTimeShadowColor());
         timeText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, AppSettings.getWearTimeSize());
         timeText.setOnClickListener(this);
+        Date date = new Date();
+        date.setTime(System.currentTimeMillis() + AppSettings.getWearTimeOffset());
+        timeText.setText(timeFormat.format(date));
 
         surfaceView = (SurfaceView) view.findViewById(R.id.surface_view);
         surfaceView.setZOrderOnTop(true);
@@ -405,7 +412,9 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
     private void drawDigital() {
 
-        timeText.setText(timeFormat.format(new Date()));
+        Date date = new Date();
+        date.setTime(System.currentTimeMillis() + AppSettings.getWearTimeOffset());
+        timeText.setText(timeFormat.format(date));
     }
 
     private void drawAnalog() {

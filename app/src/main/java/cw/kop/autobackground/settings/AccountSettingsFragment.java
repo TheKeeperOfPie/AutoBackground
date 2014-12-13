@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground;
+package cw.kop.autobackground.settings;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
@@ -37,6 +37,7 @@ import com.google.android.gms.auth.UserRecoverableAuthException;
 
 import java.io.IOException;
 
+import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.settings.AppSettings;
 

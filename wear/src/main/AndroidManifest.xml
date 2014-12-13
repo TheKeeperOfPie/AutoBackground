@@ -30,7 +30,7 @@
         android:theme="@android:style/Theme.DeviceDefault" >
 
         <service
-            android:name=".WatchFace"
+            android:name=".AnalogWatchFace"
             android:label="@string/wallpaper_description"
             android:allowEmbedded="true"
             android:taskAffinity=""

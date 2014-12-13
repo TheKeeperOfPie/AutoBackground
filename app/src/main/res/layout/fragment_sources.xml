@@ -34,12 +34,34 @@
         android:paddingTop="0dp"
         />
 
+    <TextView
+        android:id="@+id/empty_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/set_button"
+        android:layout_alignParentTop="true"
+        android:visibility="gone"
+        android:padding="16dp"
+        android:textAppearance="?android:textAppearanceLarge"
+        />
+
+    <ImageView
+        android:id="@+id/empty_arrow"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="fitEnd"
+        android:layout_above="@+id/floating_button"
+        android:layout_alignEnd="@+id/floating_button"
+        android:layout_alignRight="@+id/floating_button"
+        android:visibility="gone"
+        android:src="@drawable/empty_arrow"
+        />
+
     <Button
         android:id="@+id/set_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@color/DARK_GRAY_OPAQUE"
         android:text="@string/set_wallpaper"
         android:textAllCaps="true"
         android:textColor="@color/BLUE_OPAQUE"
@@ -57,6 +79,7 @@
         android:layout_marginBottom="24dp"
         android:layout_marginEnd="24dp"
         android:layout_marginRight="24dp"
+        android:layout_marginTop="0dp"
         android:background="@drawable/floating_button_circle"
         android:contentDescription="@string/floating_add_button_content_description"
         />

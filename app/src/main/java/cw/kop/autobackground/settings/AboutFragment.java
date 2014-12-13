@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground;
+package cw.kop.autobackground.settings;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -30,6 +30,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
+
+import cw.kop.autobackground.DialogFactory;
+import cw.kop.autobackground.R;
 
 public class AboutFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener {
 

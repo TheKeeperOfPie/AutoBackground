@@ -49,7 +49,15 @@ import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.AlbumFragment;
 import cw.kop.autobackground.images.ImageHistoryFragment;
 import cw.kop.autobackground.images.LocalImageFragment;
+import cw.kop.autobackground.settings.AboutFragment;
+import cw.kop.autobackground.settings.AccountSettingsFragment;
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.settings.AppSettingsFragment;
+import cw.kop.autobackground.settings.DownloadSettingsFragment;
+import cw.kop.autobackground.settings.EffectsSettingsFragment;
+import cw.kop.autobackground.settings.NotificationSettingsFragment;
+import cw.kop.autobackground.settings.WallpaperSettingsFragment;
+import cw.kop.autobackground.settings.WearSettingsFragment;
 import cw.kop.autobackground.sources.SourceInfoFragment;
 import cw.kop.autobackground.sources.SourceListFragment;
 import cw.kop.autobackground.tutorial.TutorialActivity;
@@ -65,29 +73,6 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             switch (intent.getAction()) {
-                case SourceListFragment.ADD_ENTRY:
-                    sourceListFragment.addEntry(
-                            intent.getStringExtra("type"),
-                            intent.getStringExtra("title"),
-                            intent.getStringExtra("data"),
-                            "" + intent.getIntExtra("num", 0),
-                            intent.getBooleanExtra("use", true),
-                            intent.getBooleanExtra("preview", true),
-                            intent.getBooleanExtra("use_time", false),
-                            intent.getStringExtra("time"));
-                    break;
-                case SourceListFragment.SET_ENTRY:
-                    sourceListFragment.setEntry(
-                            intent.getIntExtra("position", -1),
-                            intent.getStringExtra("type"),
-                            intent.getStringExtra("title"),
-                            intent.getStringExtra("data"),
-                            "" + intent.getIntExtra("num", 0),
-                            intent.getBooleanExtra("use", true),
-                            intent.getBooleanExtra("preview", true),
-                            intent.getBooleanExtra("use_time", false),
-                            intent.getStringExtra("time"));
-                    break;
                 case LOAD_NAV_PICTURE:
                     loadNavPicture();
                     break;
@@ -132,11 +117,6 @@ public class MainActivity extends ActionBarActivity {
             case AppSettings.APP_DARK_THEME:
                 setTheme(R.style.AppDarkTheme);
                 break;
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().getDecorView().setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         }
 
         super.onCreate(savedInstanceState);

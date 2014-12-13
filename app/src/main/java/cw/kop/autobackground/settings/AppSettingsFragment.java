@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground;
+package cw.kop.autobackground.settings;
 
 import android.app.Activity;
 import android.content.Context;
@@ -35,6 +35,11 @@ import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 
+import cw.kop.autobackground.CustomSwitchPreference;
+import cw.kop.autobackground.DialogFactory;
+import cw.kop.autobackground.LiveWallpaperService;
+import cw.kop.autobackground.MainActivity;
+import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.tutorial.TutorialActivity;
 import io.fabric.sdk.android.Fabric;

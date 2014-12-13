@@ -24,8 +24,7 @@
             backward-compatibility can go here.
         -->
 
-        <item name="android:windowTranslucentNavigation">false</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/BLUE_OPAQUE</item>
         <item name="android:textAppearance">@style/TextAppearance.AppCompat.Title</item>
         <item name="colorPrimary">@color/BLUE_OPAQUE</item>
         <item name="colorPrimaryDark">@color/DARK_BLUE_OPAQUE</item>

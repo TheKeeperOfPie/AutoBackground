@@ -20,14 +20,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -41,18 +39,16 @@ import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.WindowInsets;
 
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by TheKeeperOfPie on 12/11/2014.
  */
-public class WatchFace extends CanvasWatchFaceService {
+public class DigitalWatchFace extends CanvasWatchFaceService {
 
-    public static final String LOAD_IMAGE = "cw.kop.autobackground.WatchFace.LOAD_IMAGE";
-    public static final String LOAD_SETTINGS = "cw.kop.autobackground.WatchFace.LOAD_SETTINGS";
-    private static final String TAG = WatchFace.class.getCanonicalName();
+    private static final String TAG = DigitalWatchFace.class.getCanonicalName();
 
     @Override
     public void onCreate() {
@@ -70,7 +66,6 @@ public class WatchFace extends CanvasWatchFaceService {
 
         private static final int MSG_UPDATE_TIME = 0;
         private static final long INTERACTIVE_UPDATE_RATE_MS = 1000;
-        private static final int WHITE_COLOR = 0xFFFFFFFF;
 
         /* a time object */
         private Time time;
@@ -142,11 +137,11 @@ public class WatchFace extends CanvasWatchFaceService {
             public void onReceive(Context arg0, Intent intent) {
 
                 switch (intent.getAction()) {
-                    case LOAD_IMAGE:
+                    case EventListenerService.LOAD_IMAGE:
                         tempBackground = EventListenerService.getBitmap();
                         EventListenerService.recycleLast();
                         break;
-                    case LOAD_SETTINGS:
+                    case EventListenerService.LOAD_SETTINGS:
                         syncSettings();
                         break;
                 }
@@ -159,19 +154,19 @@ public class WatchFace extends CanvasWatchFaceService {
 
             super.onCreate(holder);
 
-            setWatchFaceStyle(new WatchFaceStyle.Builder(WatchFace.this)
+            setWatchFaceStyle(new WatchFaceStyle.Builder(DigitalWatchFace.this)
                     .setCardPeekMode(WatchFaceStyle.PEEK_MODE_SHORT)
                     .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
                     .setShowSystemUiTime(false)
                     .build());
 
-            Resources resources = WatchFace.this.getResources();
+            Resources resources = getResources();
             Drawable backgroundDrawable = resources.getDrawable(R.drawable.app_icon);
             tempBackground = ((BitmapDrawable) backgroundDrawable).getBitmap();
 
             localIntentFilter = new IntentFilter();
-            localIntentFilter.addAction(LOAD_IMAGE);
-            localIntentFilter.addAction(LOAD_SETTINGS);
+            localIntentFilter.addAction(EventListenerService.LOAD_IMAGE);
+            localIntentFilter.addAction(EventListenerService.LOAD_SETTINGS);
             timeZoneIntentFilter = new IntentFilter(Intent.ACTION_TIMEZONE_CHANGED);
 
             time = new Time();
@@ -202,6 +197,11 @@ public class WatchFace extends CanvasWatchFaceService {
             secondShadowPaint.setStrokeCap(Paint.Cap.BUTT);
 
             syncSettings();
+        }
+
+        @Override
+        public void onApplyWindowInsets(WindowInsets insets) {
+            super.onApplyWindowInsets(insets);
         }
 
         private void syncSettings() {
@@ -482,7 +482,7 @@ public class WatchFace extends CanvasWatchFaceService {
             LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(
                     localBroadcastReceiver,
                     localIntentFilter);
-            WatchFace.this.registerReceiver(timeZoneReceiver, timeZoneIntentFilter);
+            registerReceiver(timeZoneReceiver, timeZoneIntentFilter);
             registered = true;
         }
 
@@ -492,7 +492,7 @@ public class WatchFace extends CanvasWatchFaceService {
             }
             LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(
                     localBroadcastReceiver);
-            WatchFace.this.unregisterReceiver(timeZoneReceiver);
+            unregisterReceiver(timeZoneReceiver);
             registered = false;
         }
 

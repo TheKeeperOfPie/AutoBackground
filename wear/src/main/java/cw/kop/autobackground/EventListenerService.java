@@ -40,6 +40,8 @@ import java.util.concurrent.TimeUnit;
 
 public class EventListenerService extends WearableListenerService {
 
+    public static final String LOAD_IMAGE = "cw.kop.autobackground.EventListenerService.LOAD_IMAGE";
+    public static final String LOAD_SETTINGS = "cw.kop.autobackground.EventListenerService.LOAD_SETTINGS";
     private static final String TAG = EventListenerService.class.getCanonicalName();
     private static final int TIMEOUT_MS = 2000;
     private static Bitmap currentBitmap = null;
@@ -105,7 +107,7 @@ public class EventListenerService extends WearableListenerService {
                         currentBitmap = loadBitmapFromAsset(profileAsset);
 
                         if (currentBitmap != null) {
-                            Intent intent = new Intent(WatchFace.LOAD_IMAGE);
+                            Intent intent = new Intent(LOAD_IMAGE);
                             LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
                                     intent);
                             Log.i(TAG, "Bitmap received");
@@ -133,7 +135,7 @@ public class EventListenerService extends WearableListenerService {
                         WearSettings.setAnalogMinuteWidth(dataMap.getFloat("analog_minute_width", 3.0f));
                         WearSettings.setAnalogSecondWidth(dataMap.getFloat("analog_second_width", 2.0f));
 
-                        Intent intent = new Intent(WatchFace.LOAD_SETTINGS);
+                        Intent intent = new Intent(LOAD_SETTINGS);
                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
                                 intent);
                         Log.i(TAG, "Settings received");

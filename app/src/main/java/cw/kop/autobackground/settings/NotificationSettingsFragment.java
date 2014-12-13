@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground;
+package cw.kop.autobackground.settings;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -59,6 +59,12 @@ import java.io.File;
 import java.util.ArrayList;
 
 import afzkl.development.colorpickerview.view.ColorPickerView;
+import cw.kop.autobackground.DialogFactory;
+import cw.kop.autobackground.LiveWallpaperService;
+import cw.kop.autobackground.OptionData;
+import cw.kop.autobackground.OptionsListAdapter;
+import cw.kop.autobackground.R;
+import cw.kop.autobackground.RecyclerViewListClickListener;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 

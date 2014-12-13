@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground;
+package cw.kop.autobackground.settings;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -36,7 +36,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.SeekBar;
 
-import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.DialogFactory;
+import cw.kop.autobackground.LiveWallpaperService;
+import cw.kop.autobackground.R;
 
 public class WallpaperSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 

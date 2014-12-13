@@ -60,6 +60,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -121,6 +122,29 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             String action = intent.getAction();
             switch (action) {
+                case SourceListFragment.ADD_ENTRY:
+                    addEntry(
+                            intent.getStringExtra("type"),
+                            intent.getStringExtra("title"),
+                            intent.getStringExtra("data"),
+                            "" + intent.getIntExtra("num", 0),
+                            intent.getBooleanExtra("use", true),
+                            intent.getBooleanExtra("preview", true),
+                            intent.getBooleanExtra("use_time", false),
+                            intent.getStringExtra("time"));
+                    break;
+                case SourceListFragment.SET_ENTRY:
+                    setEntry(
+                            intent.getIntExtra("position", -1),
+                            intent.getStringExtra("type"),
+                            intent.getStringExtra("title"),
+                            intent.getStringExtra("data"),
+                            "" + intent.getIntExtra("num", 0),
+                            intent.getBooleanExtra("use", true),
+                            intent.getBooleanExtra("preview", true),
+                            intent.getBooleanExtra("use_time", false),
+                            intent.getStringExtra("time"));
+                    break;
                 case FileHandler.DOWNLOAD_TERMINATED:
                     new ImageCountTask().execute();
                     break;
@@ -227,7 +251,18 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         View view = inflater.inflate(R.layout.fragment_sources, container, false);
 
+
+        final ImageView emptyArrow = (ImageView) view.findViewById(R.id.empty_arrow);
+        TextView emptyText = (TextView) view.findViewById(R.id.empty_text);
+        emptyText.setText("Try hitting the + and adding some sources");
+        emptyText.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+            @Override
+            public void onSystemUiVisibilityChange(int visibility) {
+                emptyArrow.setVisibility(visibility);
+            }
+        });
         sourceList = (ListView) view.findViewById(R.id.source_list);
+        sourceList.setEmptyView(emptyArrow);
         addButtonBackground = (ImageView) view.findViewById(R.id.floating_button);
         addButton = (ImageView) view.findViewById(R.id.floating_button_icon);
         addButton.setOnClickListener(this);
@@ -236,18 +271,120 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         setButton = (Button) view.findViewById(R.id.set_button);
         setButton.setOnClickListener(this);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            sourceList.setPadding(0, 0, 0,
-                    Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 140, getResources().getDisplayMetrics())));
+        final SourceListAdapter.CardClickListener listener = new SourceListAdapter.CardClickListener() {
+            @Override
+            public void onDeleteClick(final View view, final int index) {
 
-            int baseMargin = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()));
-            int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
-            int navBarMargin = resourceId > 0 ? getResources().getDimensionPixelSize(resourceId) : Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, getResources().getDisplayMetrics()));
+                listAdapter.saveData();
+                if (FileHandler.isDownloading) {
+                    Toast.makeText(appContext,
+                            "Cannot delete while downloading",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) addButtonBackground.getLayoutParams();
-            params.setMargins(baseMargin, baseMargin, baseMargin, baseMargin + navBarMargin);
-            addButtonBackground.setLayoutParams(params);
+                HashMap<String, String> item = listAdapter.getItem(index);
+                String type = item.get("type");
+                if (type.equals(AppSettings.FOLDER)) {
+
+                    DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
+
+                        @Override
+                        public void onClickRight(View v) {
+                            listAdapter.removeItem(index);
+                            new ImageCountTask().execute();
+                            this.dismissDialog();
+                        }
+                    };
+
+                    DialogFactory.showActionDialog(appContext,
+                            "",
+                            "Delete " + item.get("title") + "?",
+                            clickListener,
+                            -1,
+                            R.string.cancel_button,
+                            R.string.ok_button);
+
+
+                }
+                else {
+                    DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
+
+                        @Override
+                        public void onClickMiddle(View v) {
+                            this.dismissDialog();
+                            listAdapter.removeItem(index);
+                            new ImageCountTask().execute();
+                        }
+
+                        @Override
+                        public void onClickRight(View v) {
+                            FileHandler.deleteBitmaps(appContext, index);
+                            sendToast("Deleting " + AppSettings.getSourceTitle(index) + " images");
+                            listAdapter.removeItem(index);
+                            new ImageCountTask().execute();
+                            this.dismissDialog();
+                        }
+
+                    };
+
+                    DialogFactory.showActionDialog(appContext,
+                            "Delete images along with this source?",
+                            "This cannot be undone.",
+                            clickListener,
+                            R.string.cancel_button,
+                            R.string.no_button,
+                            R.string.yes_button);
+                }
+
+            }
+
+            @Override
+            public void onViewImageClick(View view, int index) {
+                showViewImageFragment(view, index);
+            }
+
+            @Override
+            public void onEditClick(View view, int index) {
+                startEditFragment(view, index);
+            }
+
+            @Override
+            public void onExpandClick(View view, int position) {
+                onItemClick(null, view, position, 0);
+            }
+        };
+
+        if (listAdapter == null) {
+            listAdapter = new SourceListAdapter(getActivity(), listener);
+            for (int i = 0; i < AppSettings.getNumSources(); i++) {
+                listAdapter.addItem(AppSettings.getSourceType(i),
+                        AppSettings.getSourceTitle(i),
+                        AppSettings.getSourceData(i),
+                        AppSettings.useSource(i),
+                        "" + AppSettings.getSourceNum(i),
+                        AppSettings.useSourcePreview(i),
+                        AppSettings.useSourceTime(i),
+                        AppSettings.getSourceTime(i),
+                        false);
+                Log.i("WLF", "Added: " + AppSettings.getSourceTitle(i));
+            }
         }
+        sourceList.setAdapter(listAdapter);
+
+        sourceList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position,
+                    long id) {
+                listAdapter.toggleActivated(position);
+                int firstVisiblePosition = sourceList.getFirstVisiblePosition();
+                View childView = sourceList.getChildAt(position - firstVisiblePosition);
+                sourceList.getAdapter().getView(position, childView, sourceList);
+                return true;
+            }
+        });
+
+        sourceList.setOnItemClickListener(this);
 
         return view;
     }
@@ -707,121 +844,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        final SourceListAdapter.CardClickListener listener = new SourceListAdapter.CardClickListener() {
-            @Override
-            public void onDeleteClick(final View view, final int index) {
-
-                listAdapter.saveData();
-                if (FileHandler.isDownloading) {
-                    Toast.makeText(appContext,
-                            "Cannot delete while downloading",
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                HashMap<String, String> item = listAdapter.getItem(index);
-                String type = item.get("type");
-                if (type.equals(AppSettings.FOLDER)) {
-
-                    DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
-
-                        @Override
-                        public void onClickRight(View v) {
-                            listAdapter.removeItem(index);
-                            new ImageCountTask().execute();
-                            this.dismissDialog();
-                        }
-                    };
-
-                    DialogFactory.showActionDialog(appContext,
-                            "",
-                            "Delete " + item.get("title") + "?",
-                            clickListener,
-                            -1,
-                            R.string.cancel_button,
-                            R.string.ok_button);
-
-
-                }
-                else {
-                    DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
-
-                        @Override
-                        public void onClickMiddle(View v) {
-                            this.dismissDialog();
-                            listAdapter.removeItem(index);
-                            new ImageCountTask().execute();
-                        }
-
-                        @Override
-                        public void onClickRight(View v) {
-                            FileHandler.deleteBitmaps(appContext, index);
-                            sendToast("Deleting " + AppSettings.getSourceTitle(index) + " images");
-                            listAdapter.removeItem(index);
-                            new ImageCountTask().execute();
-                            this.dismissDialog();
-                        }
-
-                    };
-
-                    DialogFactory.showActionDialog(appContext,
-                            "Delete images along with this source?",
-                            "This cannot be undone.",
-                            clickListener,
-                            R.string.cancel_button,
-                            R.string.no_button,
-                            R.string.yes_button);
-                }
-
-            }
-
-            @Override
-            public void onViewImageClick(View view, int index) {
-                showViewImageFragment(view, index);
-            }
-
-            @Override
-            public void onEditClick(View view, int index) {
-                startEditFragment(view, index);
-            }
-
-            @Override
-            public void onExpandClick(View view, int position) {
-                onItemClick(null, view, position, 0);
-            }
-        };
-
-        if (listAdapter == null) {
-            listAdapter = new SourceListAdapter(getActivity(), listener);
-            for (int i = 0; i < AppSettings.getNumSources(); i++) {
-                listAdapter.addItem(AppSettings.getSourceType(i),
-                        AppSettings.getSourceTitle(i),
-                        AppSettings.getSourceData(i),
-                        AppSettings.useSource(i),
-                        "" + AppSettings.getSourceNum(i),
-                        AppSettings.useSourcePreview(i),
-                        AppSettings.useSourceTime(i),
-                        AppSettings.getSourceTime(i),
-                        false);
-                Log.i("WLF", "Added: " + AppSettings.getSourceTitle(i));
-            }
-        }
-        sourceList.setAdapter(listAdapter);
-
-        sourceList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position,
-                    long id) {
-                listAdapter.toggleActivated(position);
-                int firstVisiblePosition = sourceList.getFirstVisiblePosition();
-                View childView = sourceList.getChildAt(position - firstVisiblePosition);
-                sourceList.getAdapter().getView(position, childView, sourceList);
-                return true;
-            }
-        });
-
-        sourceList.setOnItemClickListener(this);
     }
 
     protected void setWallpaper() {
@@ -841,6 +863,11 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public void onDestroyView() {
         sourceList.setAdapter(null);
         super.onDestroyView();
@@ -853,8 +880,11 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         sourceList.setOnItemClickListener(this);
         new ImageCountTask().execute();
 
-        LocalBroadcastManager.getInstance(appContext).registerReceiver(sourceListReceiver,
-                new IntentFilter(FileHandler.DOWNLOAD_TERMINATED));
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(FileHandler.DOWNLOAD_TERMINATED);
+        intentFilter.addAction(ADD_ENTRY);
+        intentFilter.addAction(SET_ENTRY);
+        LocalBroadcastManager.getInstance(appContext).registerReceiver(sourceListReceiver, intentFilter);
 
         if (isServiceRunning(LiveWallpaperService.class.getName())) {
             setButton.setVisibility(View.GONE);
@@ -874,25 +904,29 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     public void resetAddButtonIcon() {
 
-        Drawable addDrawable = getResources().getDrawable(R.drawable.ic_add_white_24dp);
-        addDrawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                PorterDuff.Mode.MULTIPLY);
-        addButton.setImageDrawable(addDrawable);
+        if (isAdded()) {
+            Drawable addDrawable = getResources().getDrawable(R.drawable.ic_add_white_24dp);
+            addDrawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                    PorterDuff.Mode.MULTIPLY);
+            addButton.setImageDrawable(addDrawable);
+        }
 
     }
 
     public void resetActionBarDownload() {
 
-        if (toolbarMenu != null) {
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    Drawable drawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
-                    drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                            PorterDuff.Mode.MULTIPLY);
-                    toolbarMenu.getItem(1).setIcon(drawable);
-                }
-            });
+        if (isAdded()) {
+            if (toolbarMenu != null) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Drawable drawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
+                        drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                                PorterDuff.Mode.MULTIPLY);
+                        toolbarMenu.getItem(1).setIcon(drawable);
+                    }
+                });
+            }
         }
     }
 
