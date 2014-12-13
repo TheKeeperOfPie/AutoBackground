@@ -26,6 +26,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
@@ -84,6 +85,10 @@ public class WatchFace extends CanvasWatchFaceService {
         private float hourRadius = 1f;
         private float minuteRadius = 1f;
         private float secondRadius = 1f;
+        private float tickWidth = 5f;
+        private float hourWidth = 5f;
+        private float minuteWidth = 5f;
+        private float secondWidth = 5f;
 
         /* graphic objects */
         private Paint bitmapPaint;
@@ -176,25 +181,25 @@ public class WatchFace extends CanvasWatchFaceService {
             bitmapPaint.setDither(true);
 
             tickPaint = new Paint();
-            tickPaint.setStrokeCap(Paint.Cap.ROUND);
+            tickPaint.setStrokeCap(Paint.Cap.BUTT);
 
             hourPaint = new Paint();
-            hourPaint.setStrokeCap(Paint.Cap.ROUND);
+            hourPaint.setStrokeCap(Paint.Cap.BUTT);
 
             minutePaint = new Paint();
-            minutePaint.setStrokeCap(Paint.Cap.ROUND);
+            minutePaint.setStrokeCap(Paint.Cap.BUTT);
 
             secondPaint = new Paint();
-            secondPaint.setStrokeCap(Paint.Cap.ROUND);
+            secondPaint.setStrokeCap(Paint.Cap.BUTT);
 
             hourShadowPaint = new Paint();
-            hourShadowPaint.setStrokeCap(Paint.Cap.ROUND);
+            hourShadowPaint.setStrokeCap(Paint.Cap.BUTT);
 
             minuteShadowPaint = new Paint();
-            minuteShadowPaint.setStrokeCap(Paint.Cap.ROUND);
+            minuteShadowPaint.setStrokeCap(Paint.Cap.BUTT);
 
             secondShadowPaint = new Paint();
-            secondShadowPaint.setStrokeCap(Paint.Cap.ROUND);
+            secondShadowPaint.setStrokeCap(Paint.Cap.BUTT);
 
             syncSettings();
         }
@@ -226,18 +231,15 @@ public class WatchFace extends CanvasWatchFaceService {
             minuteShadowPaint.setColor(WearSettings.getAnalogMinuteShadowColor());
             secondShadowPaint.setColor(WearSettings.getAnalogSecondShadowColor());
 
-            tickPaint.setStrokeWidth(WearSettings.getAnalogTickWidth());
-            hourPaint.setStrokeWidth(WearSettings.getAnalogHourWidth());
-            minutePaint.setStrokeWidth(WearSettings.getAnalogMinuteWidth());
-            secondPaint.setStrokeWidth(WearSettings.getAnalogSecondWidth());
-            hourShadowPaint.setStrokeWidth(WearSettings.getAnalogHourWidth() + 2.0f);
-            minuteShadowPaint.setStrokeWidth(WearSettings.getAnalogMinuteWidth() + 2.0f);
-            secondShadowPaint.setStrokeWidth(WearSettings.getAnalogSecondWidth() + 2.0f);
-
             tickRadius = WearSettings.getAnalogTickLength();
             hourRadius = WearSettings.getAnalogHourLength();
             minuteRadius = WearSettings.getAnalogMinuteLength();
             secondRadius = WearSettings.getAnalogSecondLength();
+
+            tickWidth = WearSettings.getAnalogTickWidth();
+            hourWidth = WearSettings.getAnalogHourWidth();
+            minuteWidth = WearSettings.getAnalogMinuteWidth();
+            secondWidth = WearSettings.getAnalogSecondWidth();
 
             invalidate();
         }
@@ -304,10 +306,12 @@ public class WatchFace extends CanvasWatchFaceService {
         public void onDraw(Canvas canvas, Rect bounds) {
             /* draw your watch face */
 
+            boolean isAmbient = isInAmbientMode();
+
             time.setToNow();
             time.set(time.toMillis(false) + timeOffset);
 
-            if (isInAmbientMode()) {
+            if (isAmbient) {
                 canvas.drawColor(Color.BLACK);
             }
             else {
@@ -335,44 +339,122 @@ public class WatchFace extends CanvasWatchFaceService {
 
 
             // Draw clock hands
-            canvas.drawLine(centerX,
-                    centerY,
-                    (float) (centerX + (radius * hourRadius / 100 + 1.0f) * Math.cos(Math.toRadians(hour % 12f * 30f - 90f))),
-                    (float) (centerY + (radius * hourRadius / 100 + 1.0f) * Math.sin(Math.toRadians(hour % 12f * 30f - 90f))),
-                    hourShadowPaint);
 
-            canvas.drawLine(centerX,
-                    centerY,
-                    (float) (centerX + (radius * hourRadius / 100) * Math.cos(Math.toRadians(hour % 12f * 30f - 90f))),
-                    (float) (centerY + (radius * hourRadius / 100) * Math.sin(Math.toRadians(hour % 12f * 30f - 90f))),
-                    hourPaint);
+            // Draw shadows first to prevent outline overlapping other hands
+//            canvas.drawLine(centerX,
+//                    centerY,
+//                    (float) (centerX + (radius * hourRadius / 100 + 1.0f) * Math.cos(Math.toRadians(hour % 12f * 30f - 90f))),
+//                    (float) (centerY + (radius * hourRadius / 100 + 1.0f) * Math.sin(Math.toRadians(hour % 12f * 30f - 90f))),
+//                    hourShadowPaint);
 
-            canvas.drawLine(centerX,
-                    centerY,
-                    (float) (centerX + (radius * minuteRadius / 100 + 1.0f) * Math.cos(Math.toRadians(minute * 6f - 90f))),
-                    (float) (centerY + (radius * minuteRadius / 100 + 1.0f) * Math.sin(Math.toRadians(minute * 6f - 90f))),
-                    minuteShadowPaint);
+            Path hourShadowPath = new Path();
+            hourShadowPath.moveTo((float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(hour % 12 * 30f))),
+                    (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(hour % 12 * 30f))));
+            hourShadowPath.quadTo(
+                    (float) (centerX - (hourWidth / 1.5f) * Math.cos(Math.toRadians(hour % 12 * 30f - 90f))),
+                    (float) (centerY - (hourWidth / 1.5f) * Math.sin(Math.toRadians(hour % 12 * 30f - 90f))),
+                    (float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(hour % 12 * 30f + 180f))),
+                    (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(hour % 12 * 30f + 180f))));
+            hourShadowPath.lineTo((float) (centerX + (radius * hourRadius / 100 + 2.0f) * Math.cos(Math.toRadians(
+                            hour % 12 * 30f - 90f))),
+                    (float) (centerY + (radius * hourRadius / 100 + 2.0f) * Math.sin(Math.toRadians(hour % 12 * 30f - 90f))));
+            hourShadowPath.close();
+            canvas.drawPath(hourShadowPath, hourShadowPaint);
 
-            canvas.drawLine(centerX,
-                    centerY,
-                    (float) (centerX + (radius * minuteRadius / 100) * Math.cos(Math.toRadians(minute * 6f - 90f))),
-                    (float) (centerY + (radius * minuteRadius / 100 ) * Math.sin(Math.toRadians(minute * 6f - 90f))),
-                    minutePaint);
+//            canvas.drawLine(centerX,
+//                    centerY,
+//                    (float) (centerX + (radius * minuteRadius / 100 + 1.0f) * Math.cos(Math.toRadians(minute * 6f - 90f))),
+//                    (float) (centerY + (radius * minuteRadius / 100 + 1.0f) * Math.sin(Math.toRadians(minute * 6f - 90f))),
+//                    minuteShadowPaint);
 
-            if (!isInAmbientMode()) {
-                canvas.drawLine(centerX,
-                        centerY,
-                        (float) (centerX + (radius * secondRadius / 100 + 1.0f) * Math.cos(Math.toRadians(second * 6f - 90f))),
-                        (float) (centerY + (radius * secondRadius / 100 + 1.0f) * Math.sin(Math.toRadians(second * 6f - 90f))),
-                        secondShadowPaint);
+            Path minuteShadowPath = new Path();
+            minuteShadowPath.moveTo((float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(minute * 6f))),
+                    (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(minute * 6f))));
+            minuteShadowPath.quadTo(
+                    (float) (centerX - (minuteWidth / 1.5f) * Math.cos(Math.toRadians(minute * 6f - 90f - 90f))),
+                    (float) (centerY - (minuteWidth / 1.5f) * Math.sin(Math.toRadians(minute * 6f - 90f - 90f))),
+                    (float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(minute * 6f - 90f + 180f))),
+                    (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(minute * 6f - 90f + 180f))));
+            minuteShadowPath.lineTo((float) (centerX + (radius * minuteRadius / 100 + 2.0f) * Math.cos(Math.toRadians(
+                            minute * 6f - 90f))),
+                    (float) (centerY + (radius * minuteRadius / 100 + 2.0f) * Math.sin(Math.toRadians(minute * 6f - 90f))));
+            minuteShadowPath.close();
+            canvas.drawPath(minuteShadowPath, minuteShadowPaint);
 
-                canvas.drawLine(centerX,
-                        centerY,
-                        (float) (centerX + (radius * secondRadius / 100) * Math.cos(Math.toRadians(second * 6f - 90f))),
-                        (float) (centerY + (radius * secondRadius / 100) * Math.sin(Math.toRadians(second * 6f - 90f))),
-                        secondPaint);
+            if (!isAmbient) {
+//                canvas.drawLine(centerX,
+//                        centerY,
+//                        (float) (centerX + (radius * secondRadius / 100 + 1.0f) * Math.cos(Math.toRadians(
+//                                second * 6f - 90f))),
+//                        (float) (centerY + (radius * secondRadius / 100 + 1.0f) * Math.sin(Math.toRadians(
+//                                second * 6f - 90f))),
+//                        secondShadowPaint);
+
+                Path secondShadowPath = new Path();
+                secondShadowPath.moveTo((float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(minute * 6f))),
+                        (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(second * 6f))));
+                secondShadowPath.quadTo(
+                        (float) (centerX - (secondWidth / 1.5f) * Math.cos(Math.toRadians(second * 6f - 90f - 90f))),
+                        (float) (centerY - (secondWidth / 1.5f) * Math.sin(Math.toRadians(second * 6f - 90f - 90f))),
+                        (float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(second * 6f - 90f + 180f))),
+                        (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(second * 6f - 90f + 180f))));
+                secondShadowPath.lineTo((float) (centerX + (radius * secondRadius / 100 + 2.0f) * Math.cos(Math.toRadians(
+                                second * 6f - 90f))),
+                        (float) (centerY + (radius * secondRadius / 100 + 2.0f) * Math.sin(Math.toRadians(second * 6f - 90f))));
+                secondShadowPath.close();
+                canvas.drawPath(secondShadowPath, secondShadowPaint);
             }
 
+            // Now draw actual hands
+            Path hourPath = new Path();
+            hourPath.moveTo((float) (centerX + hourWidth / 2f * Math.cos(Math.toRadians(hour % 12 * 30f))),
+                    (float) (centerY + hourWidth / 2f * Math.sin(Math.toRadians(hour % 12 * 30f))));
+            hourPath.quadTo(
+                    (float) (centerX - (hourWidth / 2f) * Math.cos(Math.toRadians(
+                            hour % 12 * 30f - 90f))),
+                    (float) (centerY - (hourWidth / 2f) * Math.sin(Math.toRadians(hour % 12 * 30f - 90f))),
+                    (float) (centerX + hourWidth / 2f * Math.cos(Math.toRadians(hour % 12 * 30f + 180f))),
+                    (float) (centerY + hourWidth / 2f * Math.sin(Math.toRadians(hour % 12 * 30f + 180f))));
+            hourPath.lineTo((float) (centerX + (radius * hourRadius / 100) * Math.cos(Math.toRadians(
+                    hour % 12 * 30f - 90f))),
+                    (float) (centerY + (radius * hourRadius / 100) * Math.sin(Math.toRadians(hour % 12 * 30f - 90f))));
+            hourPath.close();
+            canvas.drawPath(hourPath, hourPaint);
+
+            Path minutePath = new Path();
+            minutePath.moveTo((float) (centerX + minuteWidth / 2f * Math.cos(Math.toRadians(minute * 6f))),
+                    (float) (centerY + minuteWidth / 2f * Math.sin(Math.toRadians(minute * 6f))));
+            minutePath.quadTo(
+                    (float) (centerX - (minuteWidth / 2) * Math.cos(Math.toRadians(
+                            minute * 6f - 90f))),
+                    (float) (centerY + (minuteWidth / 2) * Math.sin(Math.toRadians(
+                            minute * 6f - 90f))),
+                    (float) (centerX + (minuteWidth / 2f) * Math.cos(Math.toRadians(minute * 6f + 180f))),
+                    (float) (centerY + (minuteWidth / 2f) * Math.sin(Math.toRadians(minute * 6f + 180f))));
+            minutePath.lineTo((float) (centerX + (radius * minuteRadius / 100) * Math.cos(Math.toRadians(
+                            minute * 6f - 90f))),
+                    (float) (centerY + (radius * minuteRadius / 100) * Math.sin(Math.toRadians(
+                            minute * 6f - 90f))));
+            minutePath.close();
+            canvas.drawPath(minutePath, minutePaint);
+
+            if (!isAmbient) {
+                Path secondPath = new Path();
+                secondPath.moveTo((float) (centerX + secondWidth / 2f * Math.cos(Math.toRadians(second * 6f))),
+                        (float) (centerY + secondWidth / 2f * Math.sin(Math.toRadians(second * 6f))));
+                secondPath.quadTo(
+                        (float) (centerX - (secondWidth / 2) * Math.cos(Math.toRadians(second * 6f - 90f))),
+                        (float) (centerY - (secondWidth / 2) * Math.sin(Math.toRadians(second * 6f - 90f))),
+                        (float) (centerX + (secondWidth / 2f) * Math.cos(Math.toRadians(second * 6f + 180f))),
+                        (float) (centerY + (secondWidth / 2f) * Math.sin(Math.toRadians(second * 6f + 180f))));
+                secondPath.lineTo(
+                        (float) (centerX + (radius * secondRadius / 100) * Math.cos(Math.toRadians(
+                                second * 6f - 90f))),
+                        (float) (centerY + (radius * secondRadius / 100) * Math.sin(Math.toRadians(
+                                second * 6f - 90f))));
+                secondPath.close();
+                canvas.drawPath(secondPath, secondPaint);
+            }
 
         }
 
@@ -390,9 +472,7 @@ public class WatchFace extends CanvasWatchFaceService {
             } else {
                 unregisterReceivers();
             }
-
             updateTimer();
-
         }
 
         private void registerReceivers() {
