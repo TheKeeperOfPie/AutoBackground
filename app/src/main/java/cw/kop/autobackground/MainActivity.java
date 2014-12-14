@@ -254,8 +254,6 @@ public class MainActivity extends ActionBarActivity {
         loadNavPicture();
 
         entryFilter = new IntentFilter();
-        entryFilter.addAction(SourceListFragment.ADD_ENTRY);
-        entryFilter.addAction(SourceListFragment.SET_ENTRY);
         entryFilter.addAction(MainActivity.LOAD_NAV_PICTURE);
 
     }

@@ -40,6 +40,7 @@ import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 
@@ -238,7 +239,6 @@ public class AnalogWatchFace extends CanvasWatchFaceService {
             hourWidth = WearSettings.getAnalogHourWidth();
             minuteWidth = WearSettings.getAnalogMinuteWidth();
             secondWidth = WearSettings.getAnalogSecondWidth();
-
             invalidate();
         }
 
@@ -306,8 +306,6 @@ public class AnalogWatchFace extends CanvasWatchFaceService {
 
             boolean isAmbient = isInAmbientMode();
 
-            time.setToNow();
-            time.set(time.toMillis(false) + timeOffset);
 
             if (isAmbient) {
                 canvas.drawColor(Color.BLACK);
@@ -316,6 +314,8 @@ public class AnalogWatchFace extends CanvasWatchFaceService {
                 canvas.drawBitmap(tempBackground, 0, 0, bitmapPaint);
             }
 
+            time.setToNow();
+            time.set(time.toMillis(false) + timeOffset);
             float hour = time.hour + time.minute / 60f;
             float minute = time.minute + time.second / 60f;
             float second = time.second;
@@ -328,8 +328,8 @@ public class AnalogWatchFace extends CanvasWatchFaceService {
 
             for (int i = 0; i < 12; i++) {
                 canvas.drawLine(
-                        (float) (centerX + (radius * tickRadius / 100) * Math.cos(Math.toRadians(i * 30f))),
-                        (float) (centerY + (radius * tickRadius / 100) * Math.sin(Math.toRadians(i * 30f))),
+                        (float) (centerX + (radius * tickRadius / 100f) * Math.cos(Math.toRadians(i * 30f))),
+                        (float) (centerY + (radius * tickRadius / 100f) * Math.sin(Math.toRadians(i * 30f))),
                         (float) (centerX + (radius) * Math.cos(Math.toRadians(i * 30f))),
                         (float) (centerY + (radius) * Math.sin(Math.toRadians(i * 30f))),
                         tickPaint);
@@ -353,9 +353,9 @@ public class AnalogWatchFace extends CanvasWatchFaceService {
                     (float) (centerY - (hourWidth / 1.5f) * Math.sin(Math.toRadians(hour % 12 * 30f - 90f))),
                     (float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(hour % 12 * 30f + 180f))),
                     (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(hour % 12 * 30f + 180f))));
-            hourShadowPath.lineTo((float) (centerX + (radius * hourRadius / 100 + 2.0f) * Math.cos(Math.toRadians(
+            hourShadowPath.lineTo((float) (centerX + (radius * hourRadius / 100f + 2.0f) * Math.cos(Math.toRadians(
                             hour % 12 * 30f - 90f))),
-                    (float) (centerY + (radius * hourRadius / 100 + 2.0f) * Math.sin(Math.toRadians(hour % 12 * 30f - 90f))));
+                    (float) (centerY + (radius * hourRadius / 100f + 2.0f) * Math.sin(Math.toRadians(hour % 12 * 30f - 90f))));
             hourShadowPath.close();
             canvas.drawPath(hourShadowPath, hourShadowPaint);
 
@@ -373,9 +373,9 @@ public class AnalogWatchFace extends CanvasWatchFaceService {
                     (float) (centerY - (minuteWidth / 1.5f) * Math.sin(Math.toRadians(minute * 6f - 90f - 90f))),
                     (float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(minute * 6f - 90f + 180f))),
                     (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(minute * 6f - 90f + 180f))));
-            minuteShadowPath.lineTo((float) (centerX + (radius * minuteRadius / 100 + 2.0f) * Math.cos(Math.toRadians(
+            minuteShadowPath.lineTo((float) (centerX + (radius * minuteRadius / 100f + 2.0f) * Math.cos(Math.toRadians(
                             minute * 6f - 90f))),
-                    (float) (centerY + (radius * minuteRadius / 100 + 2.0f) * Math.sin(Math.toRadians(minute * 6f - 90f))));
+                    (float) (centerY + (radius * minuteRadius / 100f + 2.0f) * Math.sin(Math.toRadians(minute * 6f - 90f))));
             minuteShadowPath.close();
             canvas.drawPath(minuteShadowPath, minuteShadowPaint);
 
@@ -389,16 +389,16 @@ public class AnalogWatchFace extends CanvasWatchFaceService {
 //                        secondShadowPaint);
 
                 Path secondShadowPath = new Path();
-                secondShadowPath.moveTo((float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(minute * 6f))),
+                secondShadowPath.moveTo((float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(second * 6f))),
                         (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(second * 6f))));
                 secondShadowPath.quadTo(
                         (float) (centerX - (secondWidth / 1.5f) * Math.cos(Math.toRadians(second * 6f - 90f - 90f))),
                         (float) (centerY - (secondWidth / 1.5f) * Math.sin(Math.toRadians(second * 6f - 90f - 90f))),
                         (float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(second * 6f - 90f + 180f))),
                         (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(second * 6f - 90f + 180f))));
-                secondShadowPath.lineTo((float) (centerX + (radius * secondRadius / 100 + 2.0f) * Math.cos(Math.toRadians(
+                secondShadowPath.lineTo((float) (centerX + (radius * secondRadius / 100f + 2.0f) * Math.cos(Math.toRadians(
                                 second * 6f - 90f))),
-                        (float) (centerY + (radius * secondRadius / 100 + 2.0f) * Math.sin(Math.toRadians(second * 6f - 90f))));
+                        (float) (centerY + (radius * secondRadius / 100f + 2.0f) * Math.sin(Math.toRadians(second * 6f - 90f))));
                 secondShadowPath.close();
                 canvas.drawPath(secondShadowPath, secondShadowPaint);
             }

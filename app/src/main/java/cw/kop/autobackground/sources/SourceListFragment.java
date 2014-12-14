@@ -848,18 +848,19 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     protected void setWallpaper() {
 
-        final Intent i = new Intent();
+        final Intent intent = new Intent();
         if (Build.VERSION.SDK_INT >= 16) {
-            i.setAction(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER);
-            final String p = LiveWallpaperService.class.getPackage().getName();
-            final String c = LiveWallpaperService.class.getCanonicalName();
-            i.putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT, new ComponentName(p, c));
+            intent.setAction(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER);
+            final String packageName = LiveWallpaperService.class.getPackage().getName();
+            final String className = LiveWallpaperService.class.getCanonicalName();
+            intent.putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                    new ComponentName(packageName, className));
         }
         else {
-            i.setAction(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER);
+            intent.setAction(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER);
         }
 
-        startActivityForResult(i, 0);
+        startActivityForResult(intent, 0);
     }
 
     @Override

@@ -27,40 +27,26 @@
         android:id="@+id/history_listview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/button_container"
+        android:paddingBottom="54dp"
+        android:clipToPadding="false"
         />
 
-    <RelativeLayout
-        android:id="@+id/button_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <Button
+        android:id="@+id/clear_history_button"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
         android:layout_alignParentBottom="true"
-        >
-
-        <Button
-            android:id="@+id/clear_history_button"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="8dp"
-            android:layout_marginEnd="4dp"
-            android:layout_marginLeft="4dp"
-            android:layout_marginRight="4dp"
-            android:layout_marginStart="4dp"
-            android:layout_marginTop="8dp"
-            android:minWidth="64dp"
-            android:paddingBottom="6dp"
-            android:paddingEnd="48dp"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:paddingTop="6dp"
-            android:text="@string/clear_history_button"
-            android:textAllCaps="true"
-            android:textColor="@color/BLUE_OPAQUE"
-            />
-
-    </RelativeLayout>
-
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="6dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="6dp"
+        android:minWidth="64dp"
+        android:text="@string/clear_history_button"
+        android:textAllCaps="true"
+        android:textColor="@color/ACCENT_OPAQUE"
+        />
 
 </cw.kop.autobackground.CustomRelativeLayout>

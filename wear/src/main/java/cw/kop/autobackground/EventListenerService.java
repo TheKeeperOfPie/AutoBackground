@@ -120,6 +120,8 @@ public class EventListenerService extends WearableListenerService {
                         WearSettings.setTimeShadowColor(dataMap.getInt("time_shadow_color", 0xFF000000));
                         WearSettings.setTimeSize(dataMap.getFloat("time_size", 24));
 
+                        // Set analog settings
+
                         WearSettings.setAnalogHourColor(dataMap.getInt("analog_hour_color", 0xFFFFFFFF));
                         WearSettings.setAnalogHourShadowColor(dataMap.getInt("analog_hour_shadow_color", 0xFF000000));
                         WearSettings.setAnalogMinuteColor(dataMap.getInt("analog_minute_color", 0xFFFFFFFF));
@@ -134,6 +136,16 @@ public class EventListenerService extends WearableListenerService {
                         WearSettings.setAnalogHourWidth(dataMap.getFloat("analog_hour_width", 5.0f));
                         WearSettings.setAnalogMinuteWidth(dataMap.getFloat("analog_minute_width", 3.0f));
                         WearSettings.setAnalogSecondWidth(dataMap.getFloat("analog_second_width", 2.0f));
+
+                        // Set digital settings
+
+
+                        WearSettings.setDigitalHourColor(dataMap.getInt("digital_hour_color", 0xFFFFFFFF));
+                        WearSettings.setDigitalHourShadowColor(dataMap.getInt("digital_hour_shadow_color", 0xFF000000));
+                        WearSettings.setDigitalMinuteColor(dataMap.getInt("digital_minute_color", 0xFFFFFFFF));
+                        WearSettings.setDigitalMinuteShadowColor(dataMap.getInt("digital_minute_shadow_color", 0xFF000000));
+                        WearSettings.setDigitalSecondColor(dataMap.getInt("digital_second_color", 0xFFFFFFFF));
+                        WearSettings.setDigitalSecondShadowColor(dataMap.getInt("digital_second_shadow_color", 0xFF000000));
 
                         Intent intent = new Intent(LOAD_SETTINGS);
                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(

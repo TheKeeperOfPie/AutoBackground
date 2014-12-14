@@ -84,9 +84,11 @@ public class AlbumFragment extends Fragment implements ListView.OnItemClickListe
         final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.album_list_layout,
                 container,
                 false);
+        view.setBackgroundResource(AppSettings.getBackgroundColorResource());
 
         albumListView = (ListView) view.findViewById(R.id.album_listview);
 
+        view.setBackgroundResource(AppSettings.getBackgroundColorResource());
         TextView emptyText = new TextView(getActivity());
         emptyText.setText("No Albums");
         emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);

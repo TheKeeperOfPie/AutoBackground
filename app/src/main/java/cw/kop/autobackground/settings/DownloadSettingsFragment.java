@@ -34,6 +34,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import java.util.Calendar;
@@ -157,24 +158,21 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 DialogFactory.TimeDialogListener listener = new DialogFactory.TimeDialogListener() {
 
                     @Override
-                    public void onClickRight(View v) {
-                        AppSettings.setTimerHour(getTimePicker().getCurrentHour());
-                        AppSettings.setTimerMinute(getTimePicker().getCurrentMinute());
-                        startTimePref.setSummary("Time to begin download timer: " + AppSettings.getTimerHour() + ":" + String.format(
+                    public void onTimeSet(TimePicker view, int hour, int minute) {
+
+                        AppSettings.setTimerHour(hour);
+                        AppSettings.setTimerMinute(minute);
+                        startTimePref.setSummary("Time to begin download timer: " + hour + ":" + String.format(
                                 "%02d",
-                                AppSettings.getTimerMinute()));
+                                minute));
                         dismissDialog();
                         setDownloadAlarm();
                     }
                 };
 
                 DialogFactory.showTimeDialog(appContext,
-                        "Time to start first download:",
-                        "",
+                        "Time to start download:",
                         listener,
-                        -1,
-                        R.string.cancel_button,
-                        R.string.ok_button,
                         AppSettings.getTimerHour(),
                         AppSettings.getTimerMinute());
 

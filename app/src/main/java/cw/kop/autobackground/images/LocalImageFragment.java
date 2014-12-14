@@ -99,6 +99,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         final ViewGroup view = (ViewGroup) inflater.inflate(R.layout.local_image_layout,
                 container,
                 false);
+        view.setBackgroundResource(AppSettings.getBackgroundColorResource());
 
         imageListView = (ListView) view.findViewById(R.id.image_listview);
 
@@ -170,7 +171,7 @@ public class LocalImageFragment extends Fragment implements ListView.OnItemClick
         if (!viewPath.equals("")) {
             directoryText.setVisibility(View.GONE);
             useDirectoryButton.setVisibility(View.GONE);
-            view.findViewById(R.id.button_container).setVisibility(View.GONE);
+//            view.findViewById(R.id.button_container).setVisibility(View.GONE);
         }
 
         return view;

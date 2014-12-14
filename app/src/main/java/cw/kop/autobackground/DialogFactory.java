@@ -17,8 +17,10 @@
 package cw.kop.autobackground;
 
 import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.text.format.DateFormat;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -28,6 +30,8 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
+
+import java.util.Calendar;
 
 import afzkl.development.colorpickerview.view.ColorPickerView;
 import cw.kop.autobackground.files.FileHandler;
@@ -384,85 +388,27 @@ public class DialogFactory {
 
     public static void showTimeDialog(Context context,
             String title,
-            String summary,
             final TimeDialogListener listener,
-            int textOneResource,
-            int textTwoResource,
-            int textThreeResource,
-            int currentHour,
-            int currentMinute) {
+            int defaultHour,
+            int defaultMinute) {
 
-        Dialog dialog = getDialog(context);
+        Calendar calendar = Calendar.getInstance();
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        TimePickerDialog dialog = new TimePickerDialog(context,
+                new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        listener.onTimeSet(view, hourOfDay, minute);
+                    }
+                },
+                defaultHour >= 0 ? defaultHour : hour,
+                defaultMinute >= 0 ? defaultMinute : minute,
+                DateFormat.is24HourFormat(context));
         listener.setDialog(dialog);
 
-        View dialogView = View.inflate(context, R.layout.time_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TimePicker timePicker = (TimePicker) dialogView.findViewById(R.id.dialog_time_picker);
-
-        if (currentHour > 0) {
-            timePicker.setCurrentHour(currentHour);
-        }
-        if (currentMinute > 0) {
-            timePicker.setCurrentMinute(currentMinute);
-        }
-
-        listener.setTimePicker(timePicker);
-
         if (title.length() > 0) {
-            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-            dialogTitle.setVisibility(View.VISIBLE);
-            dialogTitle.setText(title);
-
-            View titleUnderline = dialogView.findViewById(R.id.dialog_underline);
-            titleUnderline.setVisibility(View.VISIBLE);
-        }
-
-        if (summary.length() > 0) {
-            TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
-            dialogSummary.setText(summary);
-            dialogSummary.setVisibility(View.VISIBLE);
-        }
-
-        int textColorInt = context.getResources().getColor(R.color.ACCENT_OPAQUE);
-
-        if (textOneResource > 0) {
-            Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);
-            buttonOne.setText(context.getResources().getString(textOneResource));
-            buttonOne.setTextColor(textColorInt);
-            buttonOne.setVisibility(View.VISIBLE);
-            buttonOne.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onClickLeft(v);
-                }
-            });
-        }
-
-        if (textTwoResource > 0) {
-            Button buttonTwo = (Button) dialogView.findViewById(R.id.action_button_2);
-            buttonTwo.setText(context.getResources().getString(textTwoResource));
-            buttonTwo.setTextColor(textColorInt);
-            buttonTwo.setVisibility(View.VISIBLE);
-            buttonTwo.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onClickMiddle(v);
-                }
-            });
-        }
-
-        if (textThreeResource > 0) {
-            Button buttonThree = (Button) dialogView.findViewById(R.id.action_button_3);
-            buttonThree.setText(context.getResources().getString(textThreeResource));
-            buttonThree.setTextColor(textColorInt);
-            buttonThree.setVisibility(View.VISIBLE);
-            buttonThree.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onClickRight(v);
-                }
-            });
+            dialog.setTitle(title);
         }
 
         dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
@@ -548,92 +494,6 @@ public class DialogFactory {
 
         dialog.show();
     }
-
-    public static void showTimeIntervalDialog(Context context,
-            String title,
-            String summary,
-            final TimeIntervalDialogListener listener,
-            int textOneResource,
-            int textTwoResource,
-            int textThreeResource) {
-
-        Dialog dialog = getDialog(context);
-        listener.setDialog(dialog);
-
-        View dialogView = View.inflate(context, R.layout.time_interval_dialog, null);
-        dialog.setContentView(dialogView);
-
-        TimePicker timePickerStart = (TimePicker) dialogView.findViewById(R.id.dialog_time_picker_start);
-        TimePicker timePickerEnd = (TimePicker) dialogView.findViewById(R.id.dialog_time_picker_end);
-        listener.setTimePickers(timePickerStart, timePickerEnd);
-
-        if (title.length() > 0) {
-            TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);
-            dialogTitle.setVisibility(View.VISIBLE);
-            dialogTitle.setText(title);
-
-            View titleUnderline = dialogView.findViewById(R.id.dialog_underline);
-            titleUnderline.setVisibility(View.VISIBLE);
-        }
-
-        if (summary.length() > 0) {
-            TextView dialogSummary = (TextView) dialogView.findViewById(R.id.dialog_summary);
-            dialogSummary.setText(summary);
-            dialogSummary.setVisibility(View.VISIBLE);
-        }
-
-        int textColorInt = context.getResources().getColor(R.color.ACCENT_OPAQUE);
-
-        if (textOneResource > 0) {
-            Button buttonOne = (Button) dialogView.findViewById(R.id.action_button_1);
-            buttonOne.setText(context.getResources().getString(textOneResource));
-            buttonOne.setTextColor(textColorInt);
-            buttonOne.setVisibility(View.VISIBLE);
-            buttonOne.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onClickLeft(v);
-                }
-            });
-        }
-
-        if (textTwoResource > 0) {
-            Button buttonTwo = (Button) dialogView.findViewById(R.id.action_button_2);
-            buttonTwo.setText(context.getResources().getString(textTwoResource));
-            buttonTwo.setTextColor(textColorInt);
-            buttonTwo.setVisibility(View.VISIBLE);
-            buttonTwo.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onClickMiddle(v);
-                }
-            });
-        }
-
-        if (textThreeResource > 0) {
-            Button buttonThree = (Button) dialogView.findViewById(R.id.action_button_3);
-            buttonThree.setText(context.getResources().getString(textThreeResource));
-            buttonThree.setTextColor(textColorInt);
-            buttonThree.setVisibility(View.VISIBLE);
-            buttonThree.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listener.onClickRight(v);
-                }
-            });
-        }
-
-        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                listener.onDismiss();
-            }
-        });
-
-        dialog.show();
-
-    }
-
 
     public abstract static class DialogClickListener {
 
@@ -736,15 +596,7 @@ public class DialogFactory {
 
     public abstract static class TimeDialogListener extends ActionDialogListener {
 
-        private TimePicker timePicker;
-
-        public TimePicker getTimePicker() {
-            return timePicker;
-        }
-
-        public void setTimePicker(TimePicker timePicker) {
-            this.timePicker = timePicker;
-        }
+        public abstract void onTimeSet(TimePicker view, int hour, int minute);
 
     }
 
@@ -758,26 +610,6 @@ public class DialogFactory {
 
         public void setColorPickerView(ColorPickerView colorPickerView) {
             this.colorPickerView = colorPickerView;
-        }
-
-    }
-
-    public abstract static class TimeIntervalDialogListener extends ActionDialogListener {
-
-        private TimePicker timePickerStart;
-        private TimePicker timePickerEnd;
-
-        public TimePicker getTimePickerStart() {
-            return timePickerStart;
-        }
-
-        public TimePicker getTimePickerEnd() {
-            return timePickerEnd;
-        }
-
-        public void setTimePickers(TimePicker timePickerStart, TimePicker timePickerEnd) {
-            this.timePickerStart = timePickerStart;
-            this.timePickerEnd = timePickerEnd;
         }
 
     }

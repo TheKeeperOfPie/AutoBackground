@@ -201,5 +201,83 @@ public class WearSettings {
         return prefs.getFloat("analog_second_length", 100f);
     }
 
+    /*
+
+        DIGITAL SETTINGS
+
+     */
+
+
+    public static void setDigitalHourColor(int color) {
+        prefs.edit().putInt("digital_hour_color", color).commit();
+    }
+
+    public static int getDigitalHourColor() {
+        return prefs.getInt("digital_hour_color", 0xFFFFFFFF);
+    }
+
+    public static void setDigitalHourShadowColor(int color) {
+        prefs.edit().putInt("digital_hour_shadow_color", color).commit();
+    }
+
+    public static int getDigitalHourShadowColor() {
+        return prefs.getInt("digital_hour_shadow_color", 0xFF000000);
+    }
+
+    public static void setDigitalMinuteColor(int color) {
+        prefs.edit().putInt("digital_minute_color", color).commit();
+    }
+
+    public static int getDigitalMinuteColor() {
+        return prefs.getInt("digital_minute_color", 0xFFFFFFFF);
+    }
+
+    public static void setDigitalMinuteShadowColor(int color) {
+        prefs.edit().putInt("digital_minute_shadow_color", color).commit();
+    }
+
+    public static int getDigitalMinuteShadowColor() {
+        return prefs.getInt("digital_minute_shadow_color", 0xFF000000);
+    }
+
+    public static void setDigitalSecondColor(int color) {
+        prefs.edit().putInt("digital_second_color", color).commit();
+    }
+
+    public static int getDigitalSecondColor() {
+        return prefs.getInt("digital_second_color", 0xFFFFFFFF);
+    }
+
+    public static void setDigitalSecondShadowColor(int color) {
+        prefs.edit().putInt("digital_second_shadow_color", color).commit();
+    }
+
+    public static int getDigitalSecondShadowColor() {
+        return prefs.getInt("digital_second_shadow_color", 0xFF000000);
+    }
+
+    public static void setDigitalHourSize(float size) {
+        prefs.edit().putFloat("digital_hour_size", size).commit();
+    }
+
+    public static float getDigitalHourSize() {
+        return prefs.getFloat("digital_hour_size", 50f);
+    }
+
+    public static void setDigitalMinuteSize(float size) {
+        prefs.edit().putFloat("digital_minute_size", size).commit();
+    }
+
+    public static float getDigitalMinuteSize() {
+        return prefs.getFloat("digital_minute_size", 66f);
+    }
+
+    public static void setDigitalSecondSize(float size) {
+        prefs.edit().putFloat("digital_second_size", size).commit();
+    }
+
+    public static float getDigitalSecondSize() {
+        return prefs.getFloat("digital_second_size", 100f);
+    }
 
 }

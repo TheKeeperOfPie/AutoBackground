@@ -22,5 +22,7 @@
     <string name="hello_square">Hello Square World!</string>
     
     <string name="wallpaper_description">AutoBackground</string>
+    <string name="analog_description">AutoBackground Analog</string>
+    <string name="digital_description">AutoBackground Digital</string>
 
 </resources>

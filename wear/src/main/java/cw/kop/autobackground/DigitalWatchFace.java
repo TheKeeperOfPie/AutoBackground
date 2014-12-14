@@ -25,7 +25,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -38,6 +37,7 @@ import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.SurfaceHolder;
 import android.view.WindowInsets;
 
@@ -65,7 +65,8 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
     private class Engine extends CanvasWatchFaceService.Engine {
 
         private static final int MSG_UPDATE_TIME = 0;
-        private static final long INTERACTIVE_UPDATE_RATE_MS = 1000;
+        private static final long INTERACTIVE_UPDATE_RATE_MS = 500;
+        private static final String TIME_SEPARATOR = ":";
 
         /* a time object */
         private Time time;
@@ -76,24 +77,17 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
         private boolean burnProtectionMode = false;
         private boolean registered;
 
-        private float tickRadius = 0.80f;
-        private float hourRadius = 1f;
-        private float minuteRadius = 1f;
-        private float secondRadius = 1f;
-        private float tickWidth = 5f;
-        private float hourWidth = 5f;
-        private float minuteWidth = 5f;
-        private float secondWidth = 5f;
-
         /* graphic objects */
         private Paint bitmapPaint;
-        private Paint tickPaint;
+        private Paint separatorPaint;
         private Paint hourPaint;
         private Paint minutePaint;
         private Paint secondPaint;
         private Paint hourShadowPaint;
         private Paint minuteShadowPaint;
         private Paint secondShadowPaint;
+
+        private float separatorWidth = 0f;
 
         private Bitmap tempBackground;
         private IntentFilter localIntentFilter;
@@ -175,26 +169,33 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             bitmapPaint.setAntiAlias(false);
             bitmapPaint.setDither(true);
 
-            tickPaint = new Paint();
-            tickPaint.setStrokeCap(Paint.Cap.BUTT);
+            separatorPaint = new Paint();
+            separatorPaint.setStrokeCap(Paint.Cap.BUTT);
+            separatorPaint.setTextAlign(Paint.Align.LEFT);
 
             hourPaint = new Paint();
             hourPaint.setStrokeCap(Paint.Cap.BUTT);
+            hourPaint.setTextAlign(Paint.Align.LEFT);
 
             minutePaint = new Paint();
             minutePaint.setStrokeCap(Paint.Cap.BUTT);
+            minutePaint.setTextAlign(Paint.Align.LEFT);
 
             secondPaint = new Paint();
             secondPaint.setStrokeCap(Paint.Cap.BUTT);
+            secondPaint.setTextAlign(Paint.Align.LEFT);
 
             hourShadowPaint = new Paint();
             hourShadowPaint.setStrokeCap(Paint.Cap.BUTT);
+            hourShadowPaint.setTextAlign(Paint.Align.LEFT);
 
             minuteShadowPaint = new Paint();
             minuteShadowPaint.setStrokeCap(Paint.Cap.BUTT);
+            minuteShadowPaint.setTextAlign(Paint.Align.LEFT);
 
             secondShadowPaint = new Paint();
             secondShadowPaint.setStrokeCap(Paint.Cap.BUTT);
+            secondShadowPaint.setTextAlign(Paint.Align.LEFT);
 
             syncSettings();
         }
@@ -207,7 +208,7 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
         private void syncSettings() {
             timeOffset = WearSettings.getTimeOffset();
 
-            tickPaint.setAntiAlias(true);
+            separatorPaint.setAntiAlias(true);
             hourPaint.setAntiAlias(true);
             minutePaint.setAntiAlias(true);
             secondPaint.setAntiAlias(true);
@@ -215,7 +216,7 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             minuteShadowPaint.setAntiAlias(true);
             secondShadowPaint.setAntiAlias(true);
 
-            tickPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+            separatorPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             hourPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             minutePaint.setStyle(Paint.Style.FILL_AND_STROKE);
             secondPaint.setStyle(Paint.Style.FILL_AND_STROKE);
@@ -223,25 +224,58 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             minuteShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             secondShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
-            tickPaint.setColor(WearSettings.getAnalogTickColor());
-            hourPaint.setColor(WearSettings.getAnalogHourColor());
-            minutePaint.setColor(WearSettings.getAnalogMinuteColor());
-            secondPaint.setColor(WearSettings.getAnalogSecondColor());
-            hourShadowPaint.setColor(WearSettings.getAnalogHourShadowColor());
-            minuteShadowPaint.setColor(WearSettings.getAnalogMinuteShadowColor());
-            secondShadowPaint.setColor(WearSettings.getAnalogSecondShadowColor());
+            separatorPaint.setColor(WearSettings.getDigitalHourColor());
+            hourPaint.setColor(WearSettings.getDigitalHourColor());
+            minutePaint.setColor(WearSettings.getDigitalMinuteColor());
+            secondPaint.setColor(WearSettings.getDigitalSecondColor());
+            hourShadowPaint.setColor(WearSettings.getDigitalHourShadowColor());
+            minuteShadowPaint.setColor(WearSettings.getDigitalMinuteShadowColor());
+            secondShadowPaint.setColor(WearSettings.getDigitalSecondShadowColor());
 
-            tickRadius = WearSettings.getAnalogTickLength();
-            hourRadius = WearSettings.getAnalogHourLength();
-            minuteRadius = WearSettings.getAnalogMinuteLength();
-            secondRadius = WearSettings.getAnalogSecondLength();
+            separatorPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
+            hourPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
+            minutePaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
+            secondPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
+            hourShadowPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
+            minuteShadowPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
+            secondShadowPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
 
-            tickWidth = WearSettings.getAnalogTickWidth();
-            hourWidth = WearSettings.getAnalogHourWidth();
-            minuteWidth = WearSettings.getAnalogMinuteWidth();
-            secondWidth = WearSettings.getAnalogSecondWidth();
+            separatorWidth = separatorPaint.measureText(TIME_SEPARATOR);
 
             invalidate();
+        }
+
+        /**
+         * Borrowed from code written by Michael Scheper
+         * Sets the text size for a Paint object so a given string of text will be a
+         * given width.
+         *
+         * @param paint
+         *            the Paint to set the text size for
+         * @param desiredWidth
+         *            the desired width
+         * @param text
+         *            the text that should be that width
+         */
+        private void setTextSizeForWidth(Paint paint, float desiredWidth,
+                String text) {
+
+            // Pick a reasonably large value for the test. Larger values produce
+            // more accurate results, but may cause problems with hardware
+            // acceleration. But there are workarounds for that, too; refer to
+            // http://stackoverflow.com/questions/6253528/font-size-too-large-to-fit-in-cache
+            final float testTextSize = 48f;
+
+            // Get the bounds of the text, using our testTextSize.
+            paint.setTextSize(testTextSize);
+            Rect bounds = new Rect();
+            paint.getTextBounds(text, 0, text.length(), bounds);
+
+            // Calculate the desired size as a proportion of our testTextSize.
+            float desiredTextSize = testTextSize * desiredWidth / bounds.width();
+
+            // Set the paint for that size.
+            paint.setTextSize(desiredTextSize);
         }
 
         @Override
@@ -283,19 +317,19 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
         }
 
         private void applyAmbientMode() {
-            tickPaint.setAntiAlias(!lowBitMode);
+            separatorPaint.setAntiAlias(!lowBitMode);
             hourPaint.setAntiAlias(!lowBitMode);
             minutePaint.setAntiAlias(!lowBitMode);
             hourShadowPaint.setAntiAlias(!lowBitMode);
             minuteShadowPaint.setAntiAlias(!lowBitMode);
 
-            tickPaint.setColor(Color.WHITE);
+            separatorPaint.setColor(Color.WHITE);
             hourPaint.setColor(Color.WHITE);
             minutePaint.setColor(Color.WHITE);
             hourShadowPaint.setColor(Color.WHITE);
             minuteShadowPaint.setColor(Color.WHITE);
 
-            tickPaint.setStyle(Paint.Style.STROKE);
+            separatorPaint.setStyle(Paint.Style.STROKE);
             hourPaint.setStyle(Paint.Style.STROKE);
             minutePaint.setStyle(Paint.Style.STROKE);
             hourShadowPaint.setStyle(Paint.Style.STROKE);
@@ -318,142 +352,44 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
                 canvas.drawBitmap(tempBackground, 0, 0, bitmapPaint);
             }
 
-            float hour = time.hour + time.minute / 60f;
-            float minute = time.minute + time.second / 60f;
-            float second = time.second;
-            float radius = bounds.width() < bounds.height() ? bounds.width() / 2 : bounds.height() / 2;
+            // Show colons for the first half of each second so the colons blink on when the time
+            // updates.
+            boolean mShouldDrawColons = (System.currentTimeMillis() % 1000) < 500;
 
-            float centerX = bounds.exactCenterX();
-            float centerY = bounds.exactCenterY();
+            // Draw the hours.
+            float x = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                    15,
+                    getResources().getDisplayMetrics());
+            float yOffset = bounds.height() / 2;
 
-            // Draw tick marks
+            canvas.drawText("" + time.hour, x - 2.0f, yOffset - 2.0f, hourShadowPaint);
+            canvas.drawText("" + time.hour, x, yOffset, hourPaint);
+            x += hourPaint.measureText("" + time.hour);
 
-            for (int i = 0; i < 12; i++) {
-                canvas.drawLine(
-                        (float) (centerX + (radius * tickRadius / 100) * Math.cos(Math.toRadians(i * 30f))),
-                        (float) (centerY + (radius * tickRadius / 100) * Math.sin(Math.toRadians(i * 30f))),
-                        (float) (centerX + (radius) * Math.cos(Math.toRadians(i * 30f))),
-                        (float) (centerY + (radius) * Math.sin(Math.toRadians(i * 30f))),
-                        tickPaint);
+            // In ambient and mute modes, always draw the first colon. Otherwise, draw the
+            // first colon for the first half of each second.
+            if (isInAmbientMode() || mShouldDrawColons) {
+                canvas.drawText(TIME_SEPARATOR, x - 2.0f, yOffset - 2.0f, separatorPaint);
+                canvas.drawText(TIME_SEPARATOR, x, yOffset, separatorPaint);
             }
+            x += separatorWidth;
 
+            // Draw the minutes.
+            canvas.drawText("" + time.minute, x - 2.0f, yOffset - 2.0f, minuteShadowPaint);
+            canvas.drawText("" + time.minute, x, yOffset, minutePaint);
+            x += minutePaint.measureText("" + time.minute);
 
-            // Draw clock hands
-
-            // Draw shadows first to prevent outline overlapping other hands
-//            canvas.drawLine(centerX,
-//                    centerY,
-//                    (float) (centerX + (radius * hourRadius / 100 + 1.0f) * Math.cos(Math.toRadians(hour % 12f * 30f - 90f))),
-//                    (float) (centerY + (radius * hourRadius / 100 + 1.0f) * Math.sin(Math.toRadians(hour % 12f * 30f - 90f))),
-//                    hourShadowPaint);
-
-            Path hourShadowPath = new Path();
-            hourShadowPath.moveTo((float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(hour % 12 * 30f))),
-                    (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(hour % 12 * 30f))));
-            hourShadowPath.quadTo(
-                    (float) (centerX - (hourWidth / 1.5f) * Math.cos(Math.toRadians(hour % 12 * 30f - 90f))),
-                    (float) (centerY - (hourWidth / 1.5f) * Math.sin(Math.toRadians(hour % 12 * 30f - 90f))),
-                    (float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(hour % 12 * 30f + 180f))),
-                    (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(hour % 12 * 30f + 180f))));
-            hourShadowPath.lineTo((float) (centerX + (radius * hourRadius / 100 + 2.0f) * Math.cos(Math.toRadians(
-                            hour % 12 * 30f - 90f))),
-                    (float) (centerY + (radius * hourRadius / 100 + 2.0f) * Math.sin(Math.toRadians(hour % 12 * 30f - 90f))));
-            hourShadowPath.close();
-            canvas.drawPath(hourShadowPath, hourShadowPaint);
-
-//            canvas.drawLine(centerX,
-//                    centerY,
-//                    (float) (centerX + (radius * minuteRadius / 100 + 1.0f) * Math.cos(Math.toRadians(minute * 6f - 90f))),
-//                    (float) (centerY + (radius * minuteRadius / 100 + 1.0f) * Math.sin(Math.toRadians(minute * 6f - 90f))),
-//                    minuteShadowPaint);
-
-            Path minuteShadowPath = new Path();
-            minuteShadowPath.moveTo((float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(minute * 6f))),
-                    (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(minute * 6f))));
-            minuteShadowPath.quadTo(
-                    (float) (centerX - (minuteWidth / 1.5f) * Math.cos(Math.toRadians(minute * 6f - 90f - 90f))),
-                    (float) (centerY - (minuteWidth / 1.5f) * Math.sin(Math.toRadians(minute * 6f - 90f - 90f))),
-                    (float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(minute * 6f - 90f + 180f))),
-                    (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(minute * 6f - 90f + 180f))));
-            minuteShadowPath.lineTo((float) (centerX + (radius * minuteRadius / 100 + 2.0f) * Math.cos(Math.toRadians(
-                            minute * 6f - 90f))),
-                    (float) (centerY + (radius * minuteRadius / 100 + 2.0f) * Math.sin(Math.toRadians(minute * 6f - 90f))));
-            minuteShadowPath.close();
-            canvas.drawPath(minuteShadowPath, minuteShadowPaint);
-
-            if (!isAmbient) {
-//                canvas.drawLine(centerX,
-//                        centerY,
-//                        (float) (centerX + (radius * secondRadius / 100 + 1.0f) * Math.cos(Math.toRadians(
-//                                second * 6f - 90f))),
-//                        (float) (centerY + (radius * secondRadius / 100 + 1.0f) * Math.sin(Math.toRadians(
-//                                second * 6f - 90f))),
-//                        secondShadowPaint);
-
-                Path secondShadowPath = new Path();
-                secondShadowPath.moveTo((float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(minute * 6f))),
-                        (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(second * 6f))));
-                secondShadowPath.quadTo(
-                        (float) (centerX - (secondWidth / 1.5f) * Math.cos(Math.toRadians(second * 6f - 90f - 90f))),
-                        (float) (centerY - (secondWidth / 1.5f) * Math.sin(Math.toRadians(second * 6f - 90f - 90f))),
-                        (float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(second * 6f - 90f + 180f))),
-                        (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(second * 6f - 90f + 180f))));
-                secondShadowPath.lineTo((float) (centerX + (radius * secondRadius / 100 + 2.0f) * Math.cos(Math.toRadians(
-                                second * 6f - 90f))),
-                        (float) (centerY + (radius * secondRadius / 100 + 2.0f) * Math.sin(Math.toRadians(second * 6f - 90f))));
-                secondShadowPath.close();
-                canvas.drawPath(secondShadowPath, secondShadowPaint);
-            }
-
-            // Now draw actual hands
-            Path hourPath = new Path();
-            hourPath.moveTo((float) (centerX + hourWidth / 2f * Math.cos(Math.toRadians(hour % 12 * 30f))),
-                    (float) (centerY + hourWidth / 2f * Math.sin(Math.toRadians(hour % 12 * 30f))));
-            hourPath.quadTo(
-                    (float) (centerX - (hourWidth / 2f) * Math.cos(Math.toRadians(
-                            hour % 12 * 30f - 90f))),
-                    (float) (centerY - (hourWidth / 2f) * Math.sin(Math.toRadians(hour % 12 * 30f - 90f))),
-                    (float) (centerX + hourWidth / 2f * Math.cos(Math.toRadians(hour % 12 * 30f + 180f))),
-                    (float) (centerY + hourWidth / 2f * Math.sin(Math.toRadians(hour % 12 * 30f + 180f))));
-            hourPath.lineTo((float) (centerX + (radius * hourRadius / 100) * Math.cos(Math.toRadians(
-                    hour % 12 * 30f - 90f))),
-                    (float) (centerY + (radius * hourRadius / 100) * Math.sin(Math.toRadians(hour % 12 * 30f - 90f))));
-            hourPath.close();
-            canvas.drawPath(hourPath, hourPaint);
-
-            Path minutePath = new Path();
-            minutePath.moveTo((float) (centerX + minuteWidth / 2f * Math.cos(Math.toRadians(minute * 6f))),
-                    (float) (centerY + minuteWidth / 2f * Math.sin(Math.toRadians(minute * 6f))));
-            minutePath.quadTo(
-                    (float) (centerX - (minuteWidth / 2) * Math.cos(Math.toRadians(
-                            minute * 6f - 90f))),
-                    (float) (centerY + (minuteWidth / 2) * Math.sin(Math.toRadians(
-                            minute * 6f - 90f))),
-                    (float) (centerX + (minuteWidth / 2f) * Math.cos(Math.toRadians(minute * 6f + 180f))),
-                    (float) (centerY + (minuteWidth / 2f) * Math.sin(Math.toRadians(minute * 6f + 180f))));
-            minutePath.lineTo((float) (centerX + (radius * minuteRadius / 100) * Math.cos(Math.toRadians(
-                            minute * 6f - 90f))),
-                    (float) (centerY + (radius * minuteRadius / 100) * Math.sin(Math.toRadians(
-                            minute * 6f - 90f))));
-            minutePath.close();
-            canvas.drawPath(minutePath, minutePaint);
-
-            if (!isAmbient) {
-                Path secondPath = new Path();
-                secondPath.moveTo((float) (centerX + secondWidth / 2f * Math.cos(Math.toRadians(second * 6f))),
-                        (float) (centerY + secondWidth / 2f * Math.sin(Math.toRadians(second * 6f))));
-                secondPath.quadTo(
-                        (float) (centerX - (secondWidth / 2) * Math.cos(Math.toRadians(second * 6f - 90f))),
-                        (float) (centerY - (secondWidth / 2) * Math.sin(Math.toRadians(second * 6f - 90f))),
-                        (float) (centerX + (secondWidth / 2f) * Math.cos(Math.toRadians(second * 6f + 180f))),
-                        (float) (centerY + (secondWidth / 2f) * Math.sin(Math.toRadians(second * 6f + 180f))));
-                secondPath.lineTo(
-                        (float) (centerX + (radius * secondRadius / 100) * Math.cos(Math.toRadians(
-                                second * 6f - 90f))),
-                        (float) (centerY + (radius * secondRadius / 100) * Math.sin(Math.toRadians(
-                                second * 6f - 90f))));
-                secondPath.close();
-                canvas.drawPath(secondPath, secondPaint);
+            // In ambient and mute modes, draw AM/PM. Otherwise, draw a second blinking
+            // colon followed by the seconds.
+            if (!isInAmbientMode()) {
+                if (mShouldDrawColons) {
+                    canvas.drawText(TIME_SEPARATOR, x - 2.0f, yOffset - 2.0f, separatorPaint);
+                    canvas.drawText(TIME_SEPARATOR, x, yOffset, separatorPaint);
+                }
+                x += separatorWidth;
+                canvas.drawText(String.format("%02d", time.second), x - 2.0f, yOffset - 2.0f, secondShadowPaint);
+                canvas.drawText(String.format("%02d", time.second), x, yOffset,
+                        secondPaint);
             }
 
         }

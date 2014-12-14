@@ -75,6 +75,7 @@ public class ImageHistoryFragment extends Fragment {
             Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.image_history_layout, container, false);
+        view.setBackgroundResource(AppSettings.getBackgroundColorResource());
 
         historyListView = (ListView) view.findViewById(R.id.history_listview);
 

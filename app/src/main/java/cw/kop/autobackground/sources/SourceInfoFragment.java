@@ -18,8 +18,12 @@ package cw.kop.autobackground.sources;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.FragmentManager;
+import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -30,6 +34,7 @@ import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -49,6 +54,7 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.GoogleAuthException;
@@ -68,10 +74,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 
 import cw.kop.autobackground.CustomSwitchPreference;
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.TimePickerFragment;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.AlbumFragment;
@@ -116,6 +124,8 @@ public class SourceInfoFragment extends PreferenceFragment {
     private int endMinute;
     private CustomSwitchPreference timePref;
     private Handler handler;
+    private Bundle oldState;
+    private View headerView;
 
     private String folderData;
 
@@ -124,6 +134,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_source);
         handler = new Handler();
+        setRetainInstance(true);
     }
 
     @Override
@@ -148,13 +159,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
         View view = inflater.inflate(R.layout.source_info_fragment, container, false);
-        View headerView = inflater.inflate(R.layout.source_info_header, null, false);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
-            view.setPadding(0, 0, 0, resourceId > 0 ? getResources().getDimensionPixelSize(resourceId) : Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 48, getResources().getDisplayMetrics())));
-
-        }
+        headerView = inflater.inflate(R.layout.source_info_header, null, false);
 
         settingsContainer = (RelativeLayout) headerView.findViewById(R.id.source_settings_container);
 
@@ -187,6 +192,23 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourceData.setHintTextColor(hintColor);
         sourceNum.setHintTextColor(hintColor);
 
+        sourceData.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (type) {
+
+                    case AppSettings.FOLDER:
+                        selectSource(getPositionOfType(AppSettings.FOLDER));
+                        break;
+                    case AppSettings.GOOGLE_ALBUM:
+                        selectSource(getPositionOfType(AppSettings.GOOGLE_ALBUM));
+                        break;
+
+                }
+                Log.i(TAG, "Data launched folder fragment");
+            }
+        });
+
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -214,19 +236,20 @@ public class SourceInfoFragment extends PreferenceFragment {
                     return true;
                 }
 
-                DialogFactory.TimeDialogListener listener = new DialogFactory.TimeDialogListener() {
+                DialogFactory.TimeDialogListener startTimeListener = new DialogFactory.TimeDialogListener() {
+
+
 
                     @Override
-                    public void onClickRight(View v) {
-                        startHour = getTimePicker().getCurrentHour();
-                        startMinute = getTimePicker().getCurrentMinute();
+                    public void onTimeSet(TimePicker view, int hour, int minute) {
+                        startHour = hour;
+                        startMinute = minute;
 
-                        DialogFactory.TimeDialogListener listener = new DialogFactory.TimeDialogListener() {
-
+                        DialogFactory.TimeDialogListener endTimeListener = new DialogFactory.TimeDialogListener() {
                             @Override
-                            public void onClickRight(View v) {
-                                endHour = getTimePicker().getCurrentHour();
-                                endMinute = getTimePicker().getCurrentMinute();
+                            public void onTimeSet(TimePicker view, int hour, int minute) {
+                                endHour = hour;
+                                endMinute = minute;
 
                                 timePref.setSummary(String.format(
                                         "Time active: %02d:%02d - %02d:%02d",
@@ -235,51 +258,21 @@ public class SourceInfoFragment extends PreferenceFragment {
                                         endHour,
                                         endMinute));
 
-                                dismissDialog();
-                            }
-
-                            @Override
-                            public void onDismiss() {
-                                timePref.setSummary(String.format(
-                                        "Time active: %02d:%02d - %02d:%02d",
-                                        startHour,
-                                        startMinute,
-                                        endHour,
-                                        endMinute));
                             }
                         };
 
                         DialogFactory.showTimeDialog(appContext,
                                 "End time?",
-                                "",
-                                listener,
-                                -1,
-                                R.string.cancel_button,
-                                R.string.ok_button,
-                                endHour,
-                                endMinute);
-
-                        dismissDialog();
-                    }
-
-                    @Override
-                    public void onDismiss() {
-                        timePref.setSummary(String.format(
-                                "Time active: %02d:%02d - %02d:%02d",
+                                endTimeListener,
                                 startHour,
-                                startMinute,
-                                endHour,
-                                endMinute));
+                                startMinute);
+
                     }
                 };
 
                 DialogFactory.showTimeDialog(appContext,
                         "Start time?",
-                        "",
-                        listener,
-                        -1,
-                        R.string.cancel_button,
-                        R.string.ok_button,
+                        startTimeListener,
                         startHour,
                         startMinute);
 
@@ -287,6 +280,15 @@ public class SourceInfoFragment extends PreferenceFragment {
                 return true;
             }
         });
+
+        if (savedInstanceState != null) {
+
+            if (sourcePosition == -1) {
+                sourceSpinner.setSelection(getPositionOfType(savedInstanceState.getString("type",
+                        AppSettings.WEBSITE)));
+            }
+
+        }
 
         if (sourcePosition == -1) {
             sourceImage.setVisibility(View.GONE);
@@ -297,6 +299,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                     R.layout.spinner_row,
                     Arrays.asList(getResources().getStringArray(R.array.source_menu)));
             sourceSpinner.setAdapter(adapter);
+            sourceSpinner.setSelection(0);
             sourceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent,
@@ -305,6 +308,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                         long id) {
 
                     selectSource(position);
+                    Log.i(TAG, "Spinner launched folder fragment");
                 }
 
                 @Override
@@ -313,7 +317,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                 }
             });
 
-            sourceSpinner.setSelection(0);
             type = AppSettings.WEBSITE;
             hint = "URL";
             prefix = "";
@@ -330,17 +333,6 @@ public class SourceInfoFragment extends PreferenceFragment {
             sourceSpinner.setVisibility(View.GONE);
 
             type = arguments.getString("type");
-
-            sourceNum.setOnKeyListener(new View.OnKeyListener() {
-                @Override
-                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_ENTER) {
-                        saveSource();
-                        return true;
-                    }
-                    return false;
-                }
-            });
 
             folderData = arguments.getString("data");
             String data = folderData;
@@ -411,12 +403,29 @@ public class SourceInfoFragment extends PreferenceFragment {
         ListView listView = (ListView) view.findViewById(android.R.id.list);
         listView.addHeaderView(headerView);
 
+        if (savedInstanceState != null) {
+            sourceTitle.setText(savedInstanceState.getString("title", ""));
+            sourceData.setText(savedInstanceState.getString("data", ""));
+            sourceNum.setText(savedInstanceState.getString("num", ""));
+        }
+
         return view;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+
+        outState.putString("type", type);
+        outState.putString("title", String.valueOf(sourceTitle.getText()));
+        outState.putString("data", String.valueOf(sourceData.getText()));
+        outState.putString("num", String.valueOf(sourceNum.getText()));
+
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -606,12 +615,13 @@ public class SourceInfoFragment extends PreferenceFragment {
         this.type = type;
         this.prefix = prefix;
         this.suffix = suffix;
+        this.folderData = data;
 
         handler.post(new Runnable() {
             @Override
             public void run() {
                 sourceTitle.setText(title);
-                sourceData.setText(data);
+                sourceData.setText(SourceInfoFragment.this.type.equals(AppSettings.FOLDER) ? Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER)) : data);
                 sourceNum.setText("" + num);
                 setDataWrappers();
             }
@@ -638,6 +648,32 @@ public class SourceInfoFragment extends PreferenceFragment {
 
     }
 
+    private int getPositionOfType(String type) {
+
+        switch (type) {
+
+            default:
+            case AppSettings.WEBSITE:
+                return 0;
+            case AppSettings.FOLDER:
+                return 1;
+            case AppSettings.IMGUR_SUBREDDIT:
+                return 2;
+            case AppSettings.IMGUR_ALBUM:
+                return 3;
+            case AppSettings.GOOGLE_ALBUM:
+                return 4;
+            case AppSettings.TUMBLR_BLOG:
+                return 5;
+            case AppSettings.TUMBLR_TAG:
+                return 6;
+            case AppSettings.REDDIT_SUBREDDIT:
+                return 7;
+
+        }
+
+    }
+
     private void selectSource(int position) {
 
         hint = "";
@@ -645,13 +681,6 @@ public class SourceInfoFragment extends PreferenceFragment {
         suffix = "";
 
         boolean blockData = false;
-
-        if (type.equals(AppSettings.GOOGLE_ALBUM) ||
-                type.equals(AppSettings.FOLDER)) {
-            sourceTitle.setText("");
-            sourceData.setText("");
-            sourceNum.setText("");
-        }
 
         switch (position) {
             case 0:
