@@ -116,9 +116,6 @@ public class EventListenerService extends WearableListenerService {
                     case "/settings":
                         WearSettings.setTimeType(dataMap.getString("time_type", WearSettings.DIGITAL));
                         WearSettings.setTimeOffset(dataMap.getLong("time_offset", 0));
-                        WearSettings.setTimeColor(dataMap.getInt("time_color", 0xFFFFFFFF));
-                        WearSettings.setTimeShadowColor(dataMap.getInt("time_shadow_color", 0xFF000000));
-                        WearSettings.setTimeSize(dataMap.getFloat("time_size", 24));
 
                         // Set analog settings
 
@@ -139,7 +136,9 @@ public class EventListenerService extends WearableListenerService {
 
                         // Set digital settings
 
-
+                        WearSettings.setDigitalSeparatorText(dataMap.getString("digital_separator_text", ":"));
+                        WearSettings.setDigitalSeparatorColor(dataMap.getInt("digital_separator_color", 0xFFFFFFFF));
+                        WearSettings.setDigitalSeparatorShadowColor(dataMap.getInt("digital_separator_shadow_color", 0xFF000000));
                         WearSettings.setDigitalHourColor(dataMap.getInt("digital_hour_color", 0xFFFFFFFF));
                         WearSettings.setDigitalHourShadowColor(dataMap.getInt("digital_hour_shadow_color", 0xFF000000));
                         WearSettings.setDigitalMinuteColor(dataMap.getInt("digital_minute_color", 0xFFFFFFFF));

@@ -894,16 +894,17 @@ public class RenderImage {
 
         if (AppSettings.useZoomIn()) {
             float minScaleFactor;
-            if (renderScreenWidth / bitmapWidth > scaledRenderHeight / bitmapHeight) {
+            float trueRenderHeight = renderScreenHeight * (maxRatioY - minRatioY);
+            if (renderScreenWidth / bitmapWidth > trueRenderHeight / bitmapHeight) {
                 minScaleFactor = renderScreenWidth / bitmapWidth;
             }
             else {
-                minScaleFactor = scaledRenderHeight / bitmapHeight;
+                minScaleFactor = trueRenderHeight / bitmapHeight;
             }
 
             scaleFactor = minScaleFactor * (1.0f - timeRatio);
             offsetX = rawOffsetX * (renderScreenWidth - bitmapWidth) + renderScreenWidth / 2 / scaleFactor * (timeRatio);
-            offsetY = renderScreenHeight / 2 / scaleFactor * (timeRatio);
+            offsetY = renderScreenHeight / 2 / scaleFactor * (timeRatio) + minRatioY * renderScreenHeight;
         }
 
         if (AppSettings.useOvershoot()) {

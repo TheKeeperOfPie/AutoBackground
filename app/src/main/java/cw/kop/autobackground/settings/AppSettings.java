@@ -87,13 +87,6 @@ public class AppSettings {
                     "" + (WallpaperManager.getInstance(context).getDesiredMinimumWidth() / 2)).commit();
             prefs.edit().putString("user_height",
                     "" + (WallpaperManager.getInstance(context).getDesiredMinimumHeight() / 2)).commit();
-            prefs.edit().putInt("num_sources", 1).commit();
-            prefs.edit().putString("source_type_0", WEBSITE).commit();
-            prefs.edit().putString("source_title_0", "Kai Lehnberg Photography").commit();
-            prefs.edit().putString("source_data_0",
-                    "http://www.reddit.com/user/Ziphius/submitted/?sort=top").commit();
-            prefs.edit().putString("source_num_0", "5").commit();
-            prefs.edit().putBoolean("use_source_0", true).commit();
             setNotificationOptionTitle(0, "Copy");
             setNotificationOptionTitle(1, "Cycle");
             setNotificationOptionTitle(2, "Delete");
@@ -165,14 +158,17 @@ public class AppSettings {
                 String newType = getSourceType(i);
                 String data = getSourceData(i);
                 switch (getSourceType(i)) {
+                    case "website":
+                        newType = AppSettings.WEBSITE;
+                        break;
                     case "imgur":
                         if (data.contains("imgur.com/r/")) {
                             newType = AppSettings.IMGUR_SUBREDDIT;
-                            prefs.edit().putString("source_data_" + i, data.substring(12)).commit();
+                            prefs.edit().putString("source_data_" + i, data.substring(data.indexOf("imgur.com/r/") + 12)).commit();
                         }
                         else if (data.contains("imgur.com/a/")) {
                             newType = AppSettings.IMGUR_ALBUM;
-                            prefs.edit().putString("source_data_" + i, data.substring(12)).commit();
+                            prefs.edit().putString("source_data_" + i, data.substring(data.indexOf("imgur.com/a/") + 12)).commit();
                         }
                         break;
                     case "folder":
@@ -219,6 +215,7 @@ public class AppSettings {
 
             if (getSourceType(i).equals(TUMBLR_TAG)) {
 
+
                 if (getSourceData(i).contains("Tumblr Tag:")) {
 
                     prefs.edit().putString("source_data_" + i,
@@ -227,6 +224,19 @@ public class AppSettings {
                 }
 
             }
+            else if (getSourceType(i).equals(TUMBLR_BLOG)) {
+                String data = getSourceData(i);
+
+                if (data.contains(".tumblr.com")) {
+
+                    int startIndex = data.contains("://") ? data.indexOf("://") + 3 : 0;
+
+                    prefs.edit().putString("source_data_" + i,
+                            getSourceData(i).substring(startIndex, data.indexOf(".tumblr.com"))).commit();
+
+                }
+            }
+
 
         }
 
@@ -1343,47 +1353,23 @@ public class AppSettings {
     }
 
     public static void setTimeType(String type) {
-        prefs.edit().putString("wear_time_type", type).apply();
+        prefs.edit().putString("time_type", type).apply();
     }
 
     public static String getTimeType() {
-        return prefs.getString("wear_time_type", DIGITAL);
+        return prefs.getString("time_type", DIGITAL);
     }
 
     public static boolean useSyncWearImage() {
-        return prefs.getBoolean("use_sync_wear_image", false);
+        return prefs.getBoolean("use_sync_image", false);
     }
 
     public static void setTimeOffset(long offset) {
-        prefs.edit().putLong("wear_time_offset", offset).commit();
+        prefs.edit().putLong("time_offset", offset).commit();
     }
 
     public static long getTimeOffset() {
-        return prefs.getLong("wear_time_offset", 0);
-    }
-
-    public static void setTimeColor(int color) {
-        prefs.edit().putInt("wear_time_color", color).apply();
-    }
-
-    public static int getTimeColor() {
-        return prefs.getInt("wear_time_color", 0xFFFFFFFF);
-    }
-
-    public static void setTimeShadowColor(int color) {
-        prefs.edit().putInt("wear_time_shadow_color", color).apply();
-    }
-
-    public static int getTimeShadowColor() {
-        return prefs.getInt("wear_time_shadow_color", 0xFF000000);
-    }
-
-    public static void setTimeSize(int value) {
-        prefs.edit().putFloat("wear_time_size", value).apply();
-    }
-
-    public static float getTimeSize() {
-        return prefs.getFloat("wear_time_size", 24f);
+        return prefs.getLong("time_offset", 0);
     }
 
     public static void setAnalogTickColor(int color) {
@@ -1395,51 +1381,51 @@ public class AppSettings {
     }
 
     public static void setAnalogHourColor(int color) {
-        prefs.edit().putInt("wear_analog_hour_color", color).commit();
+        prefs.edit().putInt("analog_hour_color", color).commit();
     }
 
     public static int getAnalogHourColor() {
-        return prefs.getInt("wear_analog_hour_color", 0xFFFFFFF);
+        return prefs.getInt("analog_hour_color", 0xFFFFFFF);
     }
 
     public static void setAnalogHourShadowColor(int color) {
-        prefs.edit().putInt("wear_analog_hour_shadow_color", color).commit();
+        prefs.edit().putInt("analog_hour_shadow_color", color).commit();
     }
 
     public static int getAnalogHourShadowColor() {
-        return prefs.getInt("wear_analog_hour_shadow_color", 0xFF000000);
+        return prefs.getInt("analog_hour_shadow_color", 0xFF000000);
     }
 
     public static void setAnalogMinuteColor(int color) {
-        prefs.edit().putInt("wear_analog_minute_color", color).commit();
+        prefs.edit().putInt("analog_minute_color", color).commit();
     }
 
     public static int getAnalogMinuteColor() {
-        return prefs.getInt("wear_analog_minute_color", 0xFFFFFFF);
+        return prefs.getInt("analog_minute_color", 0xFFFFFFF);
     }
 
     public static void setAnalogMinuteShadowColor(int color) {
-        prefs.edit().putInt("wear_analog_minute_shadow_color", color).commit();
+        prefs.edit().putInt("analog_minute_shadow_color", color).commit();
     }
 
     public static int getAnalogMinuteShadowColor() {
-        return prefs.getInt("wear_analog_minute_shadow_color", 0xFF000000);
+        return prefs.getInt("analog_minute_shadow_color", 0xFF000000);
     }
 
     public static void setAnalogSecondColor(int color) {
-        prefs.edit().putInt("wear_analog_second_color", color).commit();
+        prefs.edit().putInt("analog_second_color", color).commit();
     }
 
     public static int getAnalogSecondColor() {
-        return prefs.getInt("wear_analog_second_color", 0xFFFFFFF);
+        return prefs.getInt("analog_second_color", 0xFFFFFFF);
     }
 
     public static void setAnalogSecondShadowColor(int color) {
-        prefs.edit().putInt("wear_analog_second_shadow_color", color).commit();
+        prefs.edit().putInt("analog_second_shadow_color", color).commit();
     }
 
     public static int getAnalogSecondShadowColor() {
-        return prefs.getInt("wear_analog_second_shadow_color", 0xFF000000);
+        return prefs.getInt("analog_second_shadow_color", 0xFF000000);
     }
 
     public static void setAnalogTickWidth(float width) {
@@ -1451,27 +1437,27 @@ public class AppSettings {
     }
 
     public static void setAnalogHourWidth(float width) {
-        prefs.edit().putFloat("wear_analog_hour_width", width).commit();
+        prefs.edit().putFloat("analog_hour_width", width).commit();
     }
 
     public static float getAnalogHourWidth() {
-        return prefs.getFloat("wear_analog_hour_width", 5.0f);
+        return prefs.getFloat("analog_hour_width", 5.0f);
     }
 
     public static void setAnalogMinuteWidth(float width) {
-        prefs.edit().putFloat("wear_analog_minute_width", width).commit();
+        prefs.edit().putFloat("analog_minute_width", width).commit();
     }
 
     public static float getAnalogMinuteWidth() {
-        return prefs.getFloat("wear_analog_minute_width", 3.0f);
+        return prefs.getFloat("analog_minute_width", 3.0f);
     }
 
     public static void setAnalogSecondWidth(float width) {
-        prefs.edit().putFloat("wear_analog_second_width", width).commit();
+        prefs.edit().putFloat("analog_second_width", width).commit();
     }
 
     public static float getAnalogSecondWidth() {
-        return prefs.getFloat("wear_analog_second_width", 2.0f);
+        return prefs.getFloat("analog_second_width", 2.0f);
     }
 
     public static void setAnalogTickLength(float length) {
@@ -1483,27 +1469,53 @@ public class AppSettings {
     }
 
     public static void setAnalogHourLength(float length) {
-        prefs.edit().putFloat("wear_analog_hour_length", length).commit();
+        prefs.edit().putFloat("analog_hour_length", length).commit();
     }
 
     public static float getAnalogHourLength() {
-        return prefs.getFloat("wear_analog_hour_length", 50f);
+        return prefs.getFloat("analog_hour_length", 50f);
     }
 
     public static void setAnalogMinuteLength(float length) {
-        prefs.edit().putFloat("wear_analog_minute_length", length).commit();
+        prefs.edit().putFloat("analog_minute_length", length).commit();
     }
 
     public static float getAnalogMinuteLength() {
-        return prefs.getFloat("wear_analog_minute_length", 66f);
+        return prefs.getFloat("analog_minute_length", 66f);
     }
 
     public static void setAnalogSecondLength(float length) {
-        prefs.edit().putFloat("wear_analog_second_length", length).commit();
+        prefs.edit().putFloat("analog_second_length", length).commit();
     }
 
     public static float getAnalogSecondLength() {
-        return prefs.getFloat("wear_analog_second_length", 100f);
+        return prefs.getFloat("analog_second_length", 100f);
+    }
+
+    // DIGITAL TIME SETTINGS
+
+    public static void setDigitalSeparatorText(String text) {
+        prefs.edit().putString("digital_separator_text", text).commit();
+    }
+
+    public static String getDigitalSeparatorText() {
+        return prefs.getString("digital_separator_text", ":");
+    }
+
+    public static void setDigitalSeparatorColor(int color) {
+        prefs.edit().putInt("digital_separator_color", color).commit();
+    }
+
+    public static int getDigitalSeparatorColor() {
+        return prefs.getInt("digital_separator_color", 0xFFFFFFFF);
+    }
+
+    public static void setDigitalSeparatorShadowColor(int color) {
+        prefs.edit().putInt("digital_separator_shadow_color", color).commit();
+    }
+
+    public static int getDigitalSeparatorShadowColor() {
+        return prefs.getInt("digital_separator_shadow_color", 0xFF000000);
     }
 
     public static void setDigitalHourColor(int color) {

@@ -207,6 +207,29 @@ public class WearSettings {
 
      */
 
+    public static void setDigitalSeparatorText(String text) {
+        prefs.edit().putString("digital_separator_text", text).commit();
+    }
+
+    public static String getDigitalSeparatorText() {
+        return prefs.getString("digital_separator_text", ":");
+    }
+
+    public static void setDigitalSeparatorColor(int color) {
+        prefs.edit().putInt("digital_separator_color", color).commit();
+    }
+
+    public static int getDigitalSeparatorColor() {
+        return prefs.getInt("digital_separator_color", 0xFFFFFFFF);
+    }
+
+    public static void setDigitalSeparatorShadowColor(int color) {
+        prefs.edit().putInt("digital_separator_shadow_color", color).commit();
+    }
+
+    public static int getDigitalSeparatorShadowColor() {
+        return prefs.getInt("digital_separator_shadow_color", 0xFF000000);
+    }
 
     public static void setDigitalHourColor(int color) {
         prefs.edit().putInt("digital_hour_color", color).commit();

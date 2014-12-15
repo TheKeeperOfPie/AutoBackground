@@ -56,6 +56,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -340,6 +342,8 @@ public class DownloadThread extends Thread {
         imageLinks.addAll(compileImageLinks(linkDoc, "img", "src"));
         imageList.addAll(imageLinks);
 
+        Log.i(TAG, "imageLinks: " + imageList.toString());
+
         startDownload(imageList, imageList, index);
     }
 
@@ -471,16 +475,14 @@ public class DownloadThread extends Thread {
 
     }
 
-    private void downloadTumblrBlog(String url, int index) {
+    private void downloadTumblrBlog(String data, int index) {
 
         if (isInterrupted()) {
             return;
         }
 
-        String data = url.substring(url.indexOf("://") + 3);
-
         try {
-            HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/blog/" + data + "/posts/photo?api_key=" + ApiKeys.TUMBLR_CLIENT_ID);
+            HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/blog/" + data + ".tumblr.com/posts/photo?api_key=" + ApiKeys.TUMBLR_CLIENT_ID);
 
             String response = getResponse(httpGet);
             if (response == null) {
@@ -722,10 +724,11 @@ public class DownloadThread extends Thread {
 
             }
             catch (InterruptedIOException e) {
-                interrupt();
+                this.interrupt();
                 Log.i(TAG, "Interrupted");
             }
             catch (OutOfMemoryError | IOException e) {
+                interrupt();
                 e.printStackTrace();
             }
         }

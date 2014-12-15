@@ -34,8 +34,8 @@ android {
         applicationId "cw.kop.autobackground"
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 56
-        versionName "1.52.00"
+        versionCode 58
+        versionName "2.00.00"
 
         resConfigs "en"
         resConfigs "nodpi", "hdpi", "xhdpi", "xxhdpi"
@@ -48,7 +48,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles 'proguard-rules.pro'
         }
     }

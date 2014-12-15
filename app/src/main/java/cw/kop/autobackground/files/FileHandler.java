@@ -278,6 +278,7 @@ public class FileHandler {
         else {
             currentBitmapFile = null;
         }
+
         return currentBitmapFile;
     }
 

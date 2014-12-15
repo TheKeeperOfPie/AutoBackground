@@ -41,6 +41,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -84,7 +85,7 @@ import cw.kop.autobackground.R;
 import cw.kop.autobackground.RecyclerViewListClickListener;
 import cw.kop.autobackground.files.FileHandler;
 
-public class WearSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, View.OnTouchListener {
+public class WearSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, View.OnTouchListener, View.OnClickListener {
 
     private static final String TAG = WearSettingsFragment.class.getName();
     private Context appContext;
@@ -105,12 +106,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
             switch (intent.getAction()) {
                 case MainActivity.LOAD_NAV_PICTURE:
                     loadImageFile();
-                    if (AppSettings.getTimeType().equals(AppSettings.DIGITAL)) {
-                        drawDigital();
-                    }
-                    else {
-                        drawAnalog();
-                    }
+                    redraw();
                     break;
                 case MainActivity.DRAWER_OPENED:
                     surfaceView.setVisibility(View.GONE);
@@ -121,8 +117,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
             }
         }
     };
-
-    private String TIME_SEPARATOR = ":";
 
     private Bitmap imageBitmap;
 
@@ -136,12 +130,17 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
     private float minuteWidth = 5f;
     private float secondWidth = 5f;
 
+    private long timeOffset = 0l;
+    private String timeSeparator = ":";
+    private float xOffset;
+
     private Paint bitmapPaint;
     private Paint tickPaint;
     private Paint separatorPaint;
     private Paint hourPaint;
     private Paint minutePaint;
     private Paint secondPaint;
+    private Paint separatorShadowPaint;
     private Paint hourShadowPaint;
     private Paint minuteShadowPaint;
     private Paint secondShadowPaint;
@@ -167,24 +166,35 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
         tickPaint = new Paint();
         tickPaint.setStrokeCap(Paint.Cap.BUTT);
+        tickPaint.setTextAlign(Paint.Align.LEFT);
 
         hourPaint = new Paint();
         hourPaint.setStrokeCap(Paint.Cap.BUTT);
+        hourPaint.setTextAlign(Paint.Align.LEFT);
 
         minutePaint = new Paint();
         minutePaint.setStrokeCap(Paint.Cap.BUTT);
+        minutePaint.setTextAlign(Paint.Align.LEFT);
 
         secondPaint = new Paint();
         secondPaint.setStrokeCap(Paint.Cap.BUTT);
+        secondPaint.setTextAlign(Paint.Align.LEFT);
+
+        separatorShadowPaint = new Paint();
+        separatorShadowPaint.setStrokeCap(Paint.Cap.BUTT);
+        separatorShadowPaint.setTextAlign(Paint.Align.LEFT);
 
         hourShadowPaint = new Paint();
         hourShadowPaint.setStrokeCap(Paint.Cap.BUTT);
+        hourShadowPaint.setTextAlign(Paint.Align.LEFT);
 
         minuteShadowPaint = new Paint();
         minuteShadowPaint.setStrokeCap(Paint.Cap.BUTT);
+        minuteShadowPaint.setTextAlign(Paint.Align.LEFT);
 
         secondShadowPaint = new Paint();
         secondShadowPaint.setStrokeCap(Paint.Cap.BUTT);
+        secondShadowPaint.setTextAlign(Paint.Align.LEFT);
     }
 
     @Override
@@ -263,16 +273,10 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             Math.round(height * 0.278f),
                             Math.round(height * 0.33f));
                     watchContainer.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    redraw();
                 }
             });
-            watchContainer.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    preferenceList.setVisibility(View.VISIBLE);
-                    recyclerView.setAdapter(null);
-                    recyclerView.setVisibility(View.GONE);
-                }
-            });
+            watchContainer.setOnClickListener(this);
             watchBackground = (ImageView) view.findViewById(R.id.watch_face_background);
             watchBackground.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -303,6 +307,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             Math.round(width * 0.278f),
                             Math.round(width * 0.33f));
                     watchContainer.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    redraw();
                 }
             });
             watchContainer.setOnClickListener(new View.OnClickListener() {
@@ -329,22 +334,21 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         }
 
         surfaceView = (SurfaceView) view.findViewById(R.id.surface_view);
+//        surfaceView.setZOrderOnTop(true);
+        surfaceView.setOnClickListener(this);
         surfaceView.setOnTouchListener(this);
         SurfaceHolder holder = surfaceView.getHolder();
         holder.addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                if (AppSettings.getTimeType().equals(AppSettings.DIGITAL)) {
-                    drawDigital();
-                }
-                else {
-                    drawAnalog();
-                }
+                loadImageFile();
+                redraw();
             }
 
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
+                loadImageFile();
+                redraw();
             }
 
             @Override
@@ -370,44 +374,44 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
             }
         });
 
-        findPreference("wear_time_type").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-
-                DialogFactory.ListDialogListener listDialogListener = new DialogFactory.ListDialogListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent,
-                            View view,
-                            int position,
-                            long id) {
-
-                        switch (position) {
-                            case 0:
-                                AppSettings.setTimeType(AppSettings.DIGITAL);
-                                recyclerView.setAdapter(null);
-                                preferenceList.setVisibility(View.VISIBLE);
-                                recyclerView.setVisibility(View.GONE);
-                                drawDigital();
-                                break;
-                            case 1:
-                                AppSettings.setTimeType(AppSettings.ANALOG);
-                                recyclerView.setAdapter(null);
-                                preferenceList.setVisibility(View.VISIBLE);
-                                recyclerView.setVisibility(View.GONE);
-                                drawAnalog();
-                                break;
-                        }
-                        dismissDialog();
-                    }
-                };
-
-                DialogFactory.showListDialog(appContext,
-                        "Watch face",
-                        listDialogListener,
-                        R.array.wear_time_types);
-                return true;
-            }
-        });
+//        findPreference("wear_time_type").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+//            @Override
+//            public boolean onPreferenceClick(Preference preference) {
+//
+//                DialogFactory.ListDialogListener listDialogListener = new DialogFactory.ListDialogListener() {
+//                    @Override
+//                    public void onItemClick(AdapterView<?> parent,
+//                            View view,
+//                            int position,
+//                            long id) {
+//
+//                        switch (position) {
+//                            case 0:
+//                                AppSettings.setTimeType(AppSettings.DIGITAL);
+//                                recyclerView.setAdapter(null);
+//                                preferenceList.setVisibility(View.VISIBLE);
+//                                recyclerView.setVisibility(View.GONE);
+//                                redraw();
+//                                break;
+//                            case 1:
+//                                AppSettings.setTimeType(AppSettings.ANALOG);
+//                                recyclerView.setAdapter(null);
+//                                preferenceList.setVisibility(View.VISIBLE);
+//                                recyclerView.setVisibility(View.GONE);
+//                                redraw();
+//                                break;
+//                        }
+//                        dismissDialog();
+//                    }
+//                };
+//
+//                DialogFactory.showListDialog(appContext,
+//                        "Watch face",
+//                        listDialogListener,
+//                        R.array.wear_time_types);
+//                return true;
+//            }
+//        });
 
         findPreference("wear_time_adjust").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -424,7 +428,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                         Log.i(TAG, "Time offset set: " + offset);
                         AppSettings.setTimeOffset(offset);
                         this.dismissDialog();
-                        drawAnalog();
+                        redraw();
                     }
                 };
 
@@ -442,29 +446,48 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
     }
 
     private void setPaints() {
+        timeOffset = AppSettings.getTimeOffset();
+        timeSeparator = AppSettings.getDigitalSeparatorText();
+
         tickPaint.setAntiAlias(true);
+        separatorPaint.setAntiAlias(true);
         hourPaint.setAntiAlias(true);
         minutePaint.setAntiAlias(true);
         secondPaint.setAntiAlias(true);
+        separatorShadowPaint.setAntiAlias(true);
         hourShadowPaint.setAntiAlias(true);
         minuteShadowPaint.setAntiAlias(true);
         secondShadowPaint.setAntiAlias(true);
 
         tickPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        separatorPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         hourPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         minutePaint.setStyle(Paint.Style.FILL_AND_STROKE);
         secondPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        separatorShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         hourShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         minuteShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         secondShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
-        tickPaint.setColor(AppSettings.getAnalogTickColor());
-        hourPaint.setColor(AppSettings.getAnalogHourColor());
-        minutePaint.setColor(AppSettings.getAnalogMinuteColor());
-        secondPaint.setColor(AppSettings.getAnalogSecondColor());
-        hourShadowPaint.setColor(AppSettings.getAnalogHourShadowColor());
-        minuteShadowPaint.setColor(AppSettings.getAnalogMinuteShadowColor());
-        secondShadowPaint.setColor(AppSettings.getAnalogSecondShadowColor());
+        if (AppSettings.getTimeType().equals(AppSettings.DIGITAL)) {
+            separatorPaint.setColor(AppSettings.getDigitalSeparatorColor());
+            hourPaint.setColor(AppSettings.getDigitalHourColor());
+            minutePaint.setColor(AppSettings.getDigitalMinuteColor());
+            secondPaint.setColor(AppSettings.getDigitalSecondColor());
+            separatorShadowPaint.setColor(AppSettings.getDigitalSeparatorShadowColor());
+            hourShadowPaint.setColor(AppSettings.getDigitalHourShadowColor());
+            minuteShadowPaint.setColor(AppSettings.getDigitalMinuteShadowColor());
+            secondShadowPaint.setColor(AppSettings.getDigitalSecondShadowColor());
+        }
+        else {
+            tickPaint.setColor(AppSettings.getAnalogTickColor());
+            hourPaint.setColor(AppSettings.getAnalogHourColor());
+            minutePaint.setColor(AppSettings.getAnalogMinuteColor());
+            secondPaint.setColor(AppSettings.getAnalogSecondColor());
+            hourShadowPaint.setColor(AppSettings.getAnalogHourShadowColor());
+            minuteShadowPaint.setColor(AppSettings.getAnalogMinuteShadowColor());
+            secondShadowPaint.setColor(AppSettings.getAnalogSecondShadowColor());
+        }
 
         tickRadius = AppSettings.getAnalogTickLength();
         hourRadius = AppSettings.getAnalogHourLength();
@@ -476,35 +499,95 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         minuteWidth = AppSettings.getAnalogMinuteWidth();
         secondWidth = AppSettings.getAnalogSecondWidth();
 
-        separatorPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                45,
-                getResources().getDisplayMetrics()));
-        hourPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
-        minutePaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
-        secondPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
-        hourShadowPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
-        minuteShadowPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
-        secondShadowPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
+        float textSize = surfaceView.getHeight() / 4;
+        float radius = surfaceView.getWidth() / 2;
+        float width = (float) Math.sqrt(Math.pow(radius, 2f) - Math.pow(textSize, 2f)) * 2f;
+        float textScale = 1.0f;
+        xOffset = radius - width / 2f;
 
+        separatorPaint.setTextSize(textSize);
+        hourPaint.setTextSize(textSize);
+        minutePaint.setTextSize(textSize);
+        secondPaint.setTextSize(textSize);
+        separatorShadowPaint.setTextSize(textSize);
+        hourShadowPaint.setTextSize(textSize);
+        minuteShadowPaint.setTextSize(textSize);
+        secondShadowPaint.setTextSize(textSize);
+
+        while (getTimeWidth() > width) {
+            textScale -= 0.05f;
+            separatorPaint.setTextScaleX(textScale);
+            hourPaint.setTextScaleX(textScale);
+            minutePaint.setTextScaleX(textScale);
+            secondPaint.setTextScaleX(textScale);
+            separatorShadowPaint.setTextScaleX(textScale);
+            hourShadowPaint.setTextScaleX(textScale);
+            minuteShadowPaint.setTextScaleX(textScale);
+            secondShadowPaint.setTextScaleX(textScale);
+        }
+
+        separatorWidth = separatorPaint.measureText(timeSeparator);
+    }
+
+    private float getTimeWidth() {
+
+        float width = 0;
+        width += hourPaint.measureText("00");
+        width += minutePaint.measureText("00");
+        width += secondPaint.measureText("00");
+        width += separatorPaint.measureText(timeSeparator);
+        width += separatorPaint.measureText(timeSeparator);
+
+        return width;
 
     }
 
     private void loadImageFile() {
-
         new Thread(new Runnable() {
             @Override
             public void run() {
-                float sideLength = watchBackground.getWidth() * 0.444f;
+                float sideLength = surfaceView.getWidth();
                 Log.i(TAG, "sideLength: " + sideLength);
                 if (sideLength > 0) {
-                imageBitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath()),
-                        Math.round(sideLength),
-                        Math.round(sideLength));
+                    if (imageBitmap  != null) {
+                        try {
+                            imageBitmap.recycle();
+                        }
+                        catch (Exception e) {
+
+                        }
+                    }
+
+                    if (FileHandler.getCurrentBitmapFile() != null) {
+
+                        final Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath()),
+                                Math.round(sideLength),
+                                Math.round(sideLength));
+
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                imageBitmap = bitmap;
+                                redraw();
+                            }
+                        });
+
+                    }
                 }
             }
         }).start();
     }
 
+    private void redraw() {
+
+        if (AppSettings.getTimeType().equals(AppSettings.DIGITAL)) {
+            drawDigital();
+        }
+        else {
+            drawAnalog();
+        }
+
+    }
 
     private void drawDigital() {
 
@@ -514,47 +597,39 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
             return;
         }
 
-        Toast.makeText(appContext, "Drawing digital...", Toast.LENGTH_SHORT).show();
-
         setPaints();
 
         Time time = new Time();
         time.setToNow();
-        time.set(time.toMillis(false) + AppSettings.getTimeOffset());
+        time.set(time.toMillis(false) + timeOffset);
 
         float centerX = watchContainer.getWidth() * 0.222f;
         float centerY = watchContainer.getHeight() * 0.222f;
-        float x = centerX * 0.15f;
 
-        if (imageBitmap != null) {
-            try {
-                imageBitmap.recycle();
-            }
-            catch (Exception e) {
-
-            }
-        }
-
-        imageBitmap = BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath());
         if (imageBitmap != null) {
             canvas.drawBitmap(imageBitmap, 0, 0, bitmapPaint);
         }
+
+        float x = xOffset + (time.hour < 10 ?  hourPaint.measureText("0") : 0);
+        float hourWidth = hourPaint.measureText("" + time.hour);
+        float minuteWidth = minutePaint.measureText(String.format("%02d", time.minute));
 
         canvas.drawText("" + time.hour, x - 2.0f, centerY - 2.0f, hourShadowPaint);
         canvas.drawText("" + time.hour, x, centerY, hourPaint);
         x += hourPaint.measureText("" + time.hour);
 
-        canvas.drawText(TIME_SEPARATOR, x - 2.0f, centerY - 2.0f, separatorPaint);
-        canvas.drawText(TIME_SEPARATOR, x, centerY, separatorPaint);
+        canvas.drawText(timeSeparator, x - 2.0f, centerY - 2.0f, separatorShadowPaint);
+        canvas.drawText(timeSeparator, x, centerY, separatorPaint);
         x += separatorWidth;
 
-        canvas.drawText("" + time.minute, x - 2.0f, centerY - 2.0f, minuteShadowPaint);
-        canvas.drawText("" + time.minute, x, centerY, minutePaint);
-        x += minutePaint.measureText("" + time.minute);
+        canvas.drawText(String.format("%02d", time.minute), x - 2.0f, centerY - 2.0f, minuteShadowPaint);
+        canvas.drawText(String.format("%02d", time.minute), x, centerY, minutePaint);
+        x += minutePaint.measureText(String.format("%02d", time.minute));
 
-        canvas.drawText(TIME_SEPARATOR, x - 2.0f, centerY - 2.0f, separatorPaint);
-        canvas.drawText(TIME_SEPARATOR, x, centerY, separatorPaint);
+        canvas.drawText(timeSeparator, x - 2.0f, centerY - 2.0f, separatorShadowPaint);
+        canvas.drawText(timeSeparator, x, centerY, separatorPaint);
         x += separatorWidth;
+
         canvas.drawText(String.format("%02d", time.second), x - 2.0f, centerY - 2.0f, secondShadowPaint);
         canvas.drawText(String.format("%02d", time.second), x, centerY,
                 secondPaint);
@@ -575,16 +650,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
         setPaints();
 
-        if (imageBitmap != null) {
-            try {
-                imageBitmap.recycle();
-            }
-            catch (Exception e) {
-
-            }
-        }
-
-        imageBitmap = BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath());
         if (imageBitmap != null) {
             canvas.drawBitmap(imageBitmap, 0, 0, bitmapPaint);
         }
@@ -615,84 +680,86 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         // Draw shadows first to prevent outline overlapping other hands
 
         Path hourShadowPath = new Path();
-        hourShadowPath.moveTo((float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(0f))),
-                (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(0f))));
+        hourShadowPath.moveTo((float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(90f))),
+                (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(90f))));
         hourShadowPath.quadTo(
-                (float) (centerX - (hourWidth / 1.5f) * Math.cos(Math.toRadians(-90f))),
-                (float) (centerY - (hourWidth / 1.5f) * Math.sin(Math.toRadians(-90f))),
-                (float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(180f))),
-                (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(180f))));
-        hourShadowPath.lineTo((float) (centerX + (radius * hourRadius / 100f + 2.0f) * Math.cos(Math.toRadians(-90f))),
-                (float) (centerY + (radius * hourRadius / 100f + 2.0f) * Math.sin(Math.toRadians(-90f))));
+                (float) (centerX - (hourWidth / 1.5f) * Math.cos(Math.toRadians(0f))),
+                (float) (centerY - (hourWidth / 1.5f) * Math.sin(Math.toRadians(0f))),
+                (float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(270f))),
+                (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(270f))));
+        hourShadowPath.lineTo((float) (centerX + (radius * hourRadius / 100f + 2.0f) * Math.cos(Math.toRadians(0f))),
+                (float) (centerY + (radius * hourRadius / 100f + 2.0f) * Math.sin(Math.toRadians(0f))));
         hourShadowPath.close();
         canvas.drawPath(hourShadowPath, hourShadowPaint);
 
         Path minuteShadowPath = new Path();
-        minuteShadowPath.moveTo((float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(-90f))),
-                (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(-90f))));
-        minuteShadowPath.quadTo(
-                (float) (centerX - (minuteWidth / 1.5f) * Math.cos(Math.toRadians(-270f))),
-                (float) (centerY - (minuteWidth / 1.5f) * Math.sin(Math.toRadians(-270f))),
-                (float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(0f))),
+        minuteShadowPath.moveTo((float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(0f))),
                 (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(0f))));
-        minuteShadowPath.lineTo((float) (centerX + (radius * minuteRadius / 100f + 2.0f) * Math.cos(Math.toRadians(-180f))),
-                (float) (centerY + (radius * minuteRadius / 100f + 2.0f) * Math.sin(Math.toRadians(-180f))));
+        minuteShadowPath.quadTo(
+                (float) (centerX - (minuteWidth / 1.5f) * Math.cos(Math.toRadians(-180f))),
+                (float) (centerY - (minuteWidth / 1.5f) * Math.sin(Math.toRadians(-180f))),
+                (float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(90f))),
+                (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(90f))));
+        minuteShadowPath.lineTo((float) (centerX + (radius * minuteRadius / 100f + 2.0f) * Math.cos(Math.toRadians(-90f))),
+                (float) (centerY + (radius * minuteRadius / 100f + 2.0f) * Math.sin(Math.toRadians(-90f))));
         minuteShadowPath.close();
         canvas.drawPath(minuteShadowPath, minuteShadowPaint);
 
         Path secondShadowPath = new Path();
-        secondShadowPath.moveTo((float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(135f))),
-                (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(135f))));
-        secondShadowPath.quadTo(
-                (float) (centerX - (secondWidth / 1.5f) * Math.cos(Math.toRadians(-45f))),
-                (float) (centerY - (secondWidth / 1.5f) * Math.sin(Math.toRadians(-45f))),
-                (float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(225f))),
+        secondShadowPath.moveTo((float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(225f))),
                 (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(225f))));
+        secondShadowPath.quadTo(
+                (float) (centerX - (secondWidth / 1.5f) * Math.cos(Math.toRadians(45f))),
+                (float) (centerY - (secondWidth / 1.5f) * Math.sin(Math.toRadians(45f))),
+                (float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(315f))),
+                (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(315f))));
         secondShadowPath.lineTo((float) (centerX + (radius * secondRadius / 100f + 2f) * Math.cos(Math.toRadians(
-                        45f))),
+                        135f))),
                 (float) (centerY + (radius * secondRadius / 100f + 2.0f) * Math.sin(Math.toRadians(
-                        45f))));
+                        135f))));
         secondShadowPath.close();
         canvas.drawPath(secondShadowPath, secondShadowPaint);
 
         // Now draw actual hands
+
         Path hourPath = new Path();
-        hourPath.moveTo((float) (centerX + hourWidth / 2f * Math.cos(Math.toRadians(0f))),
-                (float) (centerY + hourWidth / 2f * Math.sin(Math.toRadians(0f))));
+        hourPath.moveTo((float) (centerX + hourWidth / 2f * Math.cos(Math.toRadians(90f))),
+                (float) (centerY + hourWidth / 2f * Math.sin(Math.toRadians(90f))));
         hourPath.quadTo(
-                (float) (centerX - (hourWidth / 2f) * Math.cos(Math.toRadians(-90f))),
-                (float) (centerY - (hourWidth / 2f) * Math.sin(Math.toRadians(-90f))),
-                (float) (centerX + hourWidth / 2f * Math.cos(Math.toRadians(180f))),
-                (float) (centerY + hourWidth / 2f * Math.sin(Math.toRadians(180f))));
-        hourPath.lineTo((float) (centerX + (radius * hourRadius / 100) * Math.cos(Math.toRadians(-90f))),
-                (float) (centerY + (radius * hourRadius / 100) * Math.sin(Math.toRadians(-90f))));
+                (float) (centerX - (hourWidth / 2f) * Math.cos(Math.toRadians(0f))),
+                (float) (centerY - (hourWidth / 2f) * Math.sin(Math.toRadians(0f))),
+                (float) (centerX + hourWidth / 2f * Math.cos(Math.toRadians(270f))),
+                (float) (centerY + hourWidth / 2f * Math.sin(Math.toRadians(270f))));
+        hourPath.lineTo((float) (centerX + (radius * hourRadius / 100f) * Math.cos(Math.toRadians(0f))),
+                (float) (centerY + (radius * hourRadius / 100f) * Math.sin(Math.toRadians(0f))));
         hourPath.close();
         canvas.drawPath(hourPath, hourPaint);
 
         Path minutePath = new Path();
-        minutePath.moveTo((float) (centerX + minuteWidth / 2f * Math.cos(Math.toRadians(-90f))),
-                (float) (centerY + minuteWidth / 2f * Math.sin(Math.toRadians(-90f))));
+        minutePath.moveTo((float) (centerX + minuteWidth / 2f * Math.cos(Math.toRadians(0f))),
+                (float) (centerY + minuteWidth / 2f * Math.sin(Math.toRadians(0f))));
         minutePath.quadTo(
-                (float) (centerX - (minuteWidth / 2) * Math.cos(Math.toRadians(-270f))),
-                (float) (centerY + (minuteWidth / 2) * Math.sin(Math.toRadians(-270f))),
-                (float) (centerX + (minuteWidth / 2f) * Math.cos(Math.toRadians(0f))),
-                (float) (centerY + (minuteWidth / 2f) * Math.sin(Math.toRadians(0f))));
-        minutePath.lineTo((float) (centerX + (radius * minuteRadius / 100) * Math.cos(Math.toRadians(-180f))),
-                (float) (centerY + (radius * minuteRadius / 100) * Math.sin(Math.toRadians(-180f))));
+                (float) (centerX - (minuteWidth / 2f) * Math.cos(Math.toRadians(-180f))),
+                (float) (centerY - (minuteWidth / 2f) * Math.sin(Math.toRadians(-180f))),
+                (float) (centerX + minuteWidth / 2f * Math.cos(Math.toRadians(90f))),
+                (float) (centerY + minuteWidth / 2f * Math.sin(Math.toRadians(90f))));
+        minutePath.lineTo((float) (centerX + (radius * minuteRadius / 100f) * Math.cos(Math.toRadians(-90f))),
+                (float) (centerY + (radius * minuteRadius / 100f) * Math.sin(Math.toRadians(-90f))));
         minutePath.close();
         canvas.drawPath(minutePath, minutePaint);
 
         Path secondPath = new Path();
-        secondPath.moveTo((float) (centerX + secondWidth / 2f * Math.cos(Math.toRadians(135f))),
-                (float) (centerY + secondWidth / 2f * Math.sin(Math.toRadians(135f))));
+        secondPath.moveTo((float) (centerX + secondWidth / 2f * Math.cos(Math.toRadians(225f))),
+                (float) (centerY + secondWidth / 2f * Math.sin(Math.toRadians(225f))));
         secondPath.quadTo(
-                (float) (centerX - (secondWidth / 2) * Math.cos(Math.toRadians(-45.0f))),
-                (float) (centerY - (secondWidth / 2) * Math.sin(Math.toRadians(-45.0f))),
-                (float) (centerX + (secondWidth / 2f) * Math.cos(Math.toRadians(225f))),
-                (float) (centerY + (secondWidth / 2f) * Math.sin(Math.toRadians(225f))));
-        secondPath.lineTo(
-                (float) (centerX + (radius * secondRadius / 100) * Math.cos(Math.toRadians(45f))),
-                (float) (centerY + (radius * secondRadius / 100) * Math.sin(Math.toRadians(45f))));
+                (float) (centerX - (secondWidth / 2f) * Math.cos(Math.toRadians(45f))),
+                (float) (centerY - (secondWidth / 2f) * Math.sin(Math.toRadians(45f))),
+                (float) (centerX + secondWidth / 2f * Math.cos(Math.toRadians(315f))),
+                (float) (centerY + secondWidth / 2f * Math.sin(Math.toRadians(315f))));
+        secondPath.lineTo((float) (centerX + (radius * secondRadius / 100f) * Math.cos(Math.toRadians(
+                        135f))),
+                (float) (centerY + (radius * secondRadius / 100f) * Math.sin(Math.toRadians(
+                        135f))));
         secondPath.close();
         canvas.drawPath(secondPath, secondPaint);
 
@@ -707,10 +774,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 PutDataMapRequest dataMap = PutDataMapRequest.create("/settings");
                 dataMap.getDataMap().putString("time_type", AppSettings.getTimeType());
                 dataMap.getDataMap().putLong("time_offset", AppSettings.getTimeOffset());
-                dataMap.getDataMap().putInt("time_color", AppSettings.getTimeColor());
-                dataMap.getDataMap().putInt("time_shadow_color",
-                        AppSettings.getTimeShadowColor());
-                dataMap.getDataMap().putFloat("time_size", AppSettings.getTimeSize());
                 dataMap.getDataMap().putLong("time", new Date().getTime());
                 dataMap.getDataMap().putInt("analog_hour_color",
                         AppSettings.getAnalogHourColor());
@@ -730,6 +793,27 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 dataMap.getDataMap().putFloat("analog_hour_width", AppSettings.getAnalogHourWidth());
                 dataMap.getDataMap().putFloat("analog_minute_width", AppSettings.getAnalogMinuteWidth());
                 dataMap.getDataMap().putFloat("analog_second_width", AppSettings.getAnalogSecondWidth());
+
+
+                dataMap.getDataMap().putString("digital_separator_text",
+                        AppSettings.getDigitalSeparatorText());
+                dataMap.getDataMap().putInt("digital_separator_color",
+                        AppSettings.getDigitalSeparatorColor());
+                dataMap.getDataMap().putInt("digital_separator_shadow_color",
+                        AppSettings.getDigitalSeparatorShadowColor());
+                dataMap.getDataMap().putInt("digital_hour_color",
+                        AppSettings.getDigitalHourColor());
+                dataMap.getDataMap().putInt("digital_hour_shadow_color",
+                        AppSettings.getDigitalHourShadowColor());
+                dataMap.getDataMap().putInt("digital_minute_color",
+                        AppSettings.getDigitalMinuteColor());
+                dataMap.getDataMap().putInt("digital_minute_shadow_color",
+                        AppSettings.getDigitalMinuteShadowColor());
+                dataMap.getDataMap().putInt("digital_second_color",
+                        AppSettings.getDigitalSecondColor());
+                dataMap.getDataMap().putInt("digital_second_shadow_color",
+                        AppSettings.getDigitalSecondShadowColor());
+
                 Wearable.DataApi.putDataItem(googleApiClient, dataMap.asPutDataRequest());
                 Log.i(TAG, "syncSettings");
             }
@@ -740,24 +824,35 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            float sideLength = watchBackground.getWidth() * 0.444f;
+            float sideLength = surfaceView.getWidth();
             float x = event.getX();
             float y = event.getY();
-
-            Toast.makeText(appContext, "onTouch", Toast.LENGTH_SHORT).show();
 
             Log.i(TAG, "X touch: " + x);
             Log.i(TAG, "Y touch: " + y);
 
             if (AppSettings.getTimeType().equals(AppSettings.DIGITAL)) {
-                if (x < sideLength * 0.33f) {
+
+                float hourWidth = hourPaint.measureText("00");
+                float minuteWidth = minutePaint.measureText("00");
+
+                Log.i(TAG, "hourWidth: " + hourWidth);
+                Log.i(TAG, "minuteWidth: " + minuteWidth);
+
+                if (y > sideLength / 2) {
+                    showDigitalSeparatorOptions();
+                }
+                else if (xOffset < x && x < xOffset + hourWidth) {
                     showDigitalHourOptions();
                 }
-                else if (x < sideLength * 0.66f) {
+                else if (xOffset + hourWidth + separatorWidth < x & x < xOffset + hourWidth + separatorWidth + minuteWidth) {
                     showDigitalMinuteOptions();
                 }
-                else {
+                else if (xOffset + hourWidth + separatorWidth + minuteWidth + separatorWidth< x) {
                     showDigitalSecondOptions();
+                }
+                else {
+                    showDigitalSeparatorOptions();
                 }
             }
             else {
@@ -772,136 +867,81 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 }
             }
 
+            recyclerView.setVisibility(View.VISIBLE);
+            preferenceList.setVisibility(View.GONE);
+
         }
 
         return false;
     }
 
-    private void clearHighLights() {
-        preferenceList.setVisibility(View.VISIBLE);
-        recyclerView.setVisibility(View.GONE);
-    }
-
-    private void showDigitalOptions() {
-
-        String[] titles = appContext.getResources().getStringArray(R.array.wear_time_digital_options);
-        String[] summaries = appContext.getResources().getStringArray(R.array.wear_time_digital_options_descriptions);
-        TypedArray icons = appContext.getResources().obtainTypedArray(R.array.wear_time_digital_options_icons);
-
+    private void showDigitalSeparatorOptions() {
+        String[] titles = new String[] {"Separator", "Separator Color",
+                "Separator Shadow Color"};
+        String[] summaries = new String[] {"Text to separate time sections", "Color of separator", "Color of separator shadow"};
+        int[] icons = new int[] {R.drawable.ic_text_format_white_24dp, R.drawable.ic_color_lens_white_24dp,
+                R.drawable.ic_color_lens_white_24dp};
         ArrayList<OptionData> optionsList = new ArrayList<>();
 
         for (int index = 0; index < titles.length; index++) {
             optionsList.add(new OptionData(titles[index],
                     summaries[index],
-                    icons.getResourceId(index,
-                            R.color.TRANSPARENT_BACKGROUND)));
+                    icons[index]));
         }
 
-        RecyclerViewListClickListener listener = new RecyclerViewListClickListener() {
+        final RecyclerViewListClickListener listener = new RecyclerViewListClickListener() {
             @Override
             public void onClick(int position, String title, int drawable) {
 
                 switch (position) {
                     case 0:
-                        DialogFactory.ListDialogListener listDialogListener = new DialogFactory.ListDialogListener() {
+                        DialogFactory.InputDialogListener separatorTextDialogListener = new DialogFactory.InputDialogListener() {
                             @Override
-                            public void onItemClick(AdapterView<?> parent,
-                                    View view,
-                                    int position,
-                                    long id) {
-
-                                switch (position) {
-                                    case 0:
-                                        AppSettings.setTimeType(AppSettings.DIGITAL);
-                                        recyclerView.setAdapter(null);
-                                        preferenceList.setVisibility(View.VISIBLE);
-                                        recyclerView.setVisibility(View.GONE);
-                                        drawDigital();
-                                        break;
-                                    case 1:
-                                        AppSettings.setTimeType(AppSettings.ANALOG);
-                                        recyclerView.setAdapter(null);
-                                        preferenceList.setVisibility(View.VISIBLE);
-                                        recyclerView.setVisibility(View.GONE);
-                                        drawAnalog();
-                                        break;
-                                }
-                                dismissDialog();
+                            public void onClickRight(View v) {
+                                AppSettings.setDigitalSeparatorText(getEditTextString());
+                                redraw();
+                                this.dismissDialog();
                             }
                         };
 
-                        DialogFactory.showListDialog(appContext,
-                                "Watch face",
-                                listDialogListener,
-                                R.array.wear_time_types);
+                        DialogFactory.showInputDialog(appContext, "Enter separator text", "", AppSettings.getDigitalSeparatorText(), separatorTextDialogListener, -1, R.string.cancel_button, R.string.ok_button,
+                                InputType.TYPE_CLASS_TEXT);
                         break;
                     case 1:
-
-                        DialogFactory.ColorDialogListener colorDialogListener = new DialogFactory.ColorDialogListener() {
+                        DialogFactory.ColorDialogListener separatorColorDialogListener = new DialogFactory.ColorDialogListener() {
                             @Override
                             public void onClickRight(View v) {
-                                AppSettings.setTimeColor(getColorPickerView().getColor());
-                                drawDigital();
+                                AppSettings.setDigitalSeparatorColor(getColorPickerView().getColor());
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
 
                         DialogFactory.showColorPickerDialog(appContext,
-                                "Enter time color:",
-                                colorDialogListener,
+                                "Enter separator color:",
+                                separatorColorDialogListener,
                                 -1,
                                 R.string.cancel_button,
                                 R.string.ok_button,
-                                AppSettings.getTimeColor());
-
+                                AppSettings.getDigitalSeparatorColor());
                         break;
                     case 2:
-                        DialogFactory.ColorDialogListener shadowColorDialogListener = new DialogFactory.ColorDialogListener() {
+                        DialogFactory.ColorDialogListener separatorShadowColorDialogListener = new DialogFactory.ColorDialogListener() {
                             @Override
                             public void onClickRight(View v) {
-                                AppSettings.setTimeShadowColor(getColorPickerView().getColor());
-                                drawDigital();
+                                AppSettings.setDigitalSeparatorShadowColor(getColorPickerView().getColor());
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
 
                         DialogFactory.showColorPickerDialog(appContext,
-                                "Enter shadow color:",
-                                shadowColorDialogListener,
+                                "Enter separator shadow color:",
+                                separatorShadowColorDialogListener,
                                 -1,
                                 R.string.cancel_button,
                                 R.string.ok_button,
-                                AppSettings.getTimeShadowColor());
-                        break;
-                    case 3:
-
-                        DialogFactory.SeekBarDialogListener listener = new DialogFactory.SeekBarDialogListener() {
-
-                            @Override
-                            public void onClickRight(View v) {
-                                AppSettings.setTimeSize(getValue());
-                                drawDigital();
-                                this.dismissDialog();
-                            }
-
-                            @Override
-                            public void onValueChanged(SeekBar seekBar,
-                                    int progress,
-                                    boolean fromUser) {
-                                setValueText("" + progress);
-                            }
-                        };
-
-                        DialogFactory.showSeekBarDialog(appContext,
-                                "Time text size",
-                                "",
-                                listener,
-                                50,
-                                (int) AppSettings.getTimeSize(),
-                                -1,
-                                R.string.cancel_button,
-                                R.string.ok_button);
-
+                                AppSettings.getDigitalSeparatorShadowColor());
                         break;
                 }
 
@@ -914,9 +954,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 listener);
 
         recyclerView.setAdapter(titlesAdapter);
-
-        icons.recycle();
-
     }
 
     private void showDigitalHourOptions() {
@@ -944,7 +981,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setDigitalHourColor(getColorPickerView().getColor());
-                                drawDigital();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -962,7 +999,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setDigitalHourShadowColor(getColorPickerView().getColor());
-                                drawDigital();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1014,7 +1051,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setDigitalMinuteColor(getColorPickerView().getColor());
-                                drawDigital();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1032,7 +1069,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setDigitalMinuteShadowColor(getColorPickerView().getColor());
-                                drawDigital();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1162,7 +1199,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setAnalogMinuteColor(getColorPickerView().getColor());
-                                drawAnalog();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1180,7 +1217,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setAnalogMinuteShadowColor(getColorPickerView().getColor());
-                                drawAnalog();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1205,7 +1242,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setAnalogMinuteLength(getValue() / 10f);
-                                drawAnalog();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1224,7 +1261,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setAnalogMinuteWidth(getValue() / 10f);
-                                drawAnalog();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1277,7 +1314,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setAnalogHourColor(getColorPickerView().getColor());
-                                drawAnalog();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1295,7 +1332,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setAnalogHourShadowColor(getColorPickerView().getColor());
-                                drawAnalog();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1320,7 +1357,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setAnalogHourLength(getValue() / 10f);
-                                drawAnalog();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1339,7 +1376,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setAnalogHourWidth(getValue() / 10f);
-                                drawAnalog();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1392,7 +1429,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setAnalogSecondColor(getColorPickerView().getColor());
-                                drawAnalog();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1410,7 +1447,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setAnalogSecondShadowColor(getColorPickerView().getColor());
-                                drawAnalog();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1435,7 +1472,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setAnalogSecondLength(getValue() / 10f);
-                                drawAnalog();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1454,7 +1491,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             @Override
                             public void onClickRight(View v) {
                                 AppSettings.setAnalogSecondWidth(getValue() / 10f);
-                                drawAnalog();
+                                redraw();
                                 this.dismissDialog();
                             }
                         };
@@ -1481,6 +1518,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 intentFilter);
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         loadImageFile();
+        redraw();
     }
 
     @Override
@@ -1524,5 +1562,19 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 }
             }
         }).start();
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+            case R.id.watch_face_container:
+                preferenceList.setVisibility(View.VISIBLE);
+                recyclerView.setAdapter(null);
+                recyclerView.setVisibility(View.GONE);
+                break;
+
+        }
+
     }
 }

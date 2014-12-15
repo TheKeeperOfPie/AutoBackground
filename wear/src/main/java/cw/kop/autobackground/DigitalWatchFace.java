@@ -36,6 +36,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.SurfaceHolder;
@@ -66,7 +67,6 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
 
         private static final int MSG_UPDATE_TIME = 0;
         private static final long INTERACTIVE_UPDATE_RATE_MS = 500;
-        private static final String TIME_SEPARATOR = ":";
 
         /* a time object */
         private Time time;
@@ -83,13 +83,16 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
         private Paint hourPaint;
         private Paint minutePaint;
         private Paint secondPaint;
+        private Paint separatorShadowPaint;
         private Paint hourShadowPaint;
         private Paint minuteShadowPaint;
         private Paint secondShadowPaint;
 
+        private String timeSeparator = ":";
         private float separatorWidth = 0f;
+        private float xOffset = 0f;
 
-        private Bitmap tempBackground;
+        private Bitmap backgroundImage;
         private IntentFilter localIntentFilter;
         private IntentFilter timeZoneIntentFilter;
 
@@ -132,7 +135,7 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
 
                 switch (intent.getAction()) {
                     case EventListenerService.LOAD_IMAGE:
-                        tempBackground = EventListenerService.getBitmap();
+                        backgroundImage = EventListenerService.getBitmap();
                         EventListenerService.recycleLast();
                         break;
                     case EventListenerService.LOAD_SETTINGS:
@@ -153,10 +156,6 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
                     .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
                     .setShowSystemUiTime(false)
                     .build());
-
-            Resources resources = getResources();
-            Drawable backgroundDrawable = resources.getDrawable(R.drawable.app_icon);
-            tempBackground = ((BitmapDrawable) backgroundDrawable).getBitmap();
 
             localIntentFilter = new IntentFilter();
             localIntentFilter.addAction(EventListenerService.LOAD_IMAGE);
@@ -185,6 +184,10 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             secondPaint.setStrokeCap(Paint.Cap.BUTT);
             secondPaint.setTextAlign(Paint.Align.LEFT);
 
+            separatorShadowPaint = new Paint();
+            separatorShadowPaint.setStrokeCap(Paint.Cap.BUTT);
+            separatorShadowPaint.setTextAlign(Paint.Align.LEFT);
+
             hourShadowPaint = new Paint();
             hourShadowPaint.setStrokeCap(Paint.Cap.BUTT);
             hourShadowPaint.setTextAlign(Paint.Align.LEFT);
@@ -207,11 +210,13 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
 
         private void syncSettings() {
             timeOffset = WearSettings.getTimeOffset();
+            timeSeparator = WearSettings.getDigitalSeparatorText();
 
             separatorPaint.setAntiAlias(true);
             hourPaint.setAntiAlias(true);
             minutePaint.setAntiAlias(true);
             secondPaint.setAntiAlias(true);
+            separatorShadowPaint.setAntiAlias(true);
             hourShadowPaint.setAntiAlias(true);
             minuteShadowPaint.setAntiAlias(true);
             secondShadowPaint.setAntiAlias(true);
@@ -220,67 +225,75 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             hourPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             minutePaint.setStyle(Paint.Style.FILL_AND_STROKE);
             secondPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+            separatorShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             hourShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             minuteShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
             secondShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
-            separatorPaint.setColor(WearSettings.getDigitalHourColor());
+            separatorPaint.setColor(WearSettings.getDigitalSeparatorColor());
             hourPaint.setColor(WearSettings.getDigitalHourColor());
             minutePaint.setColor(WearSettings.getDigitalMinuteColor());
             secondPaint.setColor(WearSettings.getDigitalSecondColor());
+            separatorShadowPaint.setColor(WearSettings.getDigitalSeparatorShadowColor());
             hourShadowPaint.setColor(WearSettings.getDigitalHourShadowColor());
             minuteShadowPaint.setColor(WearSettings.getDigitalMinuteShadowColor());
             secondShadowPaint.setColor(WearSettings.getDigitalSecondShadowColor());
 
-            separatorPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
-            hourPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
-            minutePaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
-            secondPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
-            hourShadowPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
-            minuteShadowPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
-            secondShadowPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 45, getResources().getDisplayMetrics()));
+            DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+            float textSize = displayMetrics.heightPixels / 4;
+            float radius = displayMetrics.widthPixels / 2;
+            float width = (float) Math.sqrt(Math.pow(radius, 2f) - Math.pow(textSize, 2f)) * 2f;
+            float textScale = 1.0f;
+            xOffset = radius - width / 2f;
 
-            separatorWidth = separatorPaint.measureText(TIME_SEPARATOR);
+            Log.i(TAG, "textSize: " + textSize);
+            Log.i(TAG, "radius: " + radius);
+            Log.i(TAG, "width: " + width);
+
+            separatorPaint.setTextSize(textSize);
+            hourPaint.setTextSize(textSize);
+            minutePaint.setTextSize(textSize);
+            secondPaint.setTextSize(textSize);
+            separatorShadowPaint.setTextSize(textSize);
+            hourShadowPaint.setTextSize(textSize);
+            minuteShadowPaint.setTextSize(textSize);
+            secondShadowPaint.setTextSize(textSize);
+
+            while (getTimeWidth() > width) {
+                textScale -= 0.05f;
+                separatorPaint.setTextScaleX(textScale);
+                hourPaint.setTextScaleX(textScale);
+                minutePaint.setTextScaleX(textScale);
+                secondPaint.setTextScaleX(textScale);
+                separatorShadowPaint.setTextScaleX(textScale);
+                hourShadowPaint.setTextScaleX(textScale);
+                minuteShadowPaint.setTextScaleX(textScale);
+                secondShadowPaint.setTextScaleX(textScale);
+                Log.i(TAG, "Time width: " + getTimeWidth());
+            }
+
+            separatorWidth = separatorPaint.measureText(timeSeparator);
 
             invalidate();
         }
 
-        /**
-         * Borrowed from code written by Michael Scheper
-         * Sets the text size for a Paint object so a given string of text will be a
-         * given width.
-         *
-         * @param paint
-         *            the Paint to set the text size for
-         * @param desiredWidth
-         *            the desired width
-         * @param text
-         *            the text that should be that width
-         */
-        private void setTextSizeForWidth(Paint paint, float desiredWidth,
-                String text) {
+        private float getTimeWidth() {
 
-            // Pick a reasonably large value for the test. Larger values produce
-            // more accurate results, but may cause problems with hardware
-            // acceleration. But there are workarounds for that, too; refer to
-            // http://stackoverflow.com/questions/6253528/font-size-too-large-to-fit-in-cache
-            final float testTextSize = 48f;
+            float width = 0;
+            width += hourPaint.measureText("00");
+            width += minutePaint.measureText("00");
+            width += secondPaint.measureText("00");
+            width += separatorPaint.measureText(timeSeparator);
+            width += separatorPaint.measureText(timeSeparator);
 
-            // Get the bounds of the text, using our testTextSize.
-            paint.setTextSize(testTextSize);
-            Rect bounds = new Rect();
-            paint.getTextBounds(text, 0, text.length(), bounds);
+            return width;
 
-            // Calculate the desired size as a proportion of our testTextSize.
-            float desiredTextSize = testTextSize * desiredWidth / bounds.width();
-
-            // Set the paint for that size.
-            paint.setTextSize(desiredTextSize);
         }
 
         @Override
         public void onDestroy() {
             timeHandler.removeMessages(MSG_UPDATE_TIME);
+            unregisterReceivers();
             super.onDestroy();
         }
 
@@ -307,9 +320,6 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
                 if (isInAmbientMode()) {
                     applyAmbientMode();
                 }
-                else {
-                    syncSettings();
-                }
             }
 
             invalidate();
@@ -320,20 +330,14 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             separatorPaint.setAntiAlias(!lowBitMode);
             hourPaint.setAntiAlias(!lowBitMode);
             minutePaint.setAntiAlias(!lowBitMode);
-            hourShadowPaint.setAntiAlias(!lowBitMode);
-            minuteShadowPaint.setAntiAlias(!lowBitMode);
 
             separatorPaint.setColor(Color.WHITE);
             hourPaint.setColor(Color.WHITE);
             minutePaint.setColor(Color.WHITE);
-            hourShadowPaint.setColor(Color.WHITE);
-            minuteShadowPaint.setColor(Color.WHITE);
 
             separatorPaint.setStyle(Paint.Style.STROKE);
             hourPaint.setStyle(Paint.Style.STROKE);
             minutePaint.setStyle(Paint.Style.STROKE);
-            hourShadowPaint.setStyle(Paint.Style.STROKE);
-            minuteShadowPaint.setStyle(Paint.Style.STROKE);
         }
 
         @Override
@@ -345,52 +349,58 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             time.setToNow();
             time.set(time.toMillis(false) + timeOffset);
 
-            if (isAmbient) {
+            if (isAmbient || backgroundImage == null) {
                 canvas.drawColor(Color.BLACK);
             }
             else {
-                canvas.drawBitmap(tempBackground, 0, 0, bitmapPaint);
+                canvas.drawBitmap(backgroundImage, 0, 0, bitmapPaint);
             }
 
             // Show colons for the first half of each second so the colons blink on when the time
             // updates.
-            boolean mShouldDrawColons = (System.currentTimeMillis() % 1000) < 500;
+            boolean drawSeparator = isAmbient || (System.currentTimeMillis() % 1000) < 500;
 
             // Draw the hours.
-            float x = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    15,
-                    getResources().getDisplayMetrics());
+            float x = xOffset + (time.hour < 10 ?  hourPaint.measureText("0") : 0);
+            float hourWidth = hourPaint.measureText("" + time.hour);
+            float minuteWidth = minutePaint.measureText(String.format("%02d", time.minute));
             float yOffset = bounds.height() / 2;
 
-            canvas.drawText("" + time.hour, x - 2.0f, yOffset - 2.0f, hourShadowPaint);
-            canvas.drawText("" + time.hour, x, yOffset, hourPaint);
-            x += hourPaint.measureText("" + time.hour);
 
-            // In ambient and mute modes, always draw the first colon. Otherwise, draw the
-            // first colon for the first half of each second.
-            if (isInAmbientMode() || mShouldDrawColons) {
-                canvas.drawText(TIME_SEPARATOR, x - 2.0f, yOffset - 2.0f, separatorPaint);
-                canvas.drawText(TIME_SEPARATOR, x, yOffset, separatorPaint);
-            }
-            x += separatorWidth;
-
-            // Draw the minutes.
-            canvas.drawText("" + time.minute, x - 2.0f, yOffset - 2.0f, minuteShadowPaint);
-            canvas.drawText("" + time.minute, x, yOffset, minutePaint);
-            x += minutePaint.measureText("" + time.minute);
-
-            // In ambient and mute modes, draw AM/PM. Otherwise, draw a second blinking
-            // colon followed by the seconds.
-            if (!isInAmbientMode()) {
-                if (mShouldDrawColons) {
-                    canvas.drawText(TIME_SEPARATOR, x - 2.0f, yOffset - 2.0f, separatorPaint);
-                    canvas.drawText(TIME_SEPARATOR, x, yOffset, separatorPaint);
+            if (!isAmbient) {
+                canvas.drawText("" + time.hour, x - 2.0f, yOffset - 2.0f, hourShadowPaint);
+                x += hourWidth;
+                if (drawSeparator) {
+                    canvas.drawText(timeSeparator, x - 2.0f, yOffset - 2.0f, separatorShadowPaint);
+                }
+                x += separatorWidth;
+                canvas.drawText(String.format("%02d", time.minute), x - 2.0f, yOffset - 2.0f, minuteShadowPaint);
+                x += minuteWidth;
+                if (drawSeparator) {
+                    canvas.drawText(timeSeparator, x - 2.0f, yOffset - 2.0f, separatorShadowPaint);
                 }
                 x += separatorWidth;
                 canvas.drawText(String.format("%02d", time.second), x - 2.0f, yOffset - 2.0f, secondShadowPaint);
                 canvas.drawText(String.format("%02d", time.second), x, yOffset,
                         secondPaint);
             }
+
+            if (drawSeparator) {
+                x = xOffset + (time.hour < 10 ?  hourPaint.measureText("0") : 0);
+                x += hourWidth;
+                canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
+                if (!isAmbient) {
+                    x += separatorWidth;
+                    x += minuteWidth;
+                    canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
+                }
+            }
+
+            x = xOffset + (time.hour < 10 ?  hourPaint.measureText("0") : 0);
+            canvas.drawText("" + time.hour, x, yOffset, hourPaint);
+            x += hourWidth;
+            x += separatorWidth;
+            canvas.drawText(String.format("%02d", time.minute), x, yOffset, minutePaint);
 
         }
 

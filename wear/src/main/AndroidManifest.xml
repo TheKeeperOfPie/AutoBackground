@@ -25,33 +25,33 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/app_icon"
         android:label="@string/app_name"
         android:theme="@android:style/Theme.DeviceDefault" >
 
-        <service
-            android:name=".AnalogWatchFace"
-            android:label="@string/analog_description"
-            android:allowEmbedded="true"
-            android:taskAffinity=""
-            android:permission="android.permission.BIND_WALLPAPER" >
-            <meta-data
-                android:name="android.service.wallpaper"
-                android:resource="@xml/watch_face" />
-            <meta-data
-                android:name="com.google.android.wearable.watchface.preview"
-                android:resource="@drawable/app_icon" />
-            <intent-filter>
-                <action android:name="android.service.wallpaper.WallpaperService" />
-                <category
-                    android:name=
-                        "com.google.android.wearable.watchface.category.WATCH_FACE" />
-            </intent-filter>
-        </service>
+        <!--<service-->
+            <!--android:name=".AnalogWatchFace"-->
+            <!--android:label="@string/analog_description"-->
+            <!--android:allowEmbedded="true"-->
+            <!--android:taskAffinity=""-->
+            <!--android:permission="android.permission.BIND_WALLPAPER" >-->
+            <!--<meta-data-->
+                <!--android:name="android.service.wallpaper"-->
+                <!--android:resource="@xml/watch_face" />-->
+            <!--<meta-data-->
+                <!--android:name="com.google.android.wearable.watchface.preview"-->
+                <!--android:resource="@drawable/app_icon" />-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.service.wallpaper.WallpaperService" />-->
+                <!--<category-->
+                    <!--android:name=-->
+                        <!--"com.google.android.wearable.watchface.category.WATCH_FACE" />-->
+            <!--</intent-filter>-->
+        <!--</service>-->
 
         <service
             android:name=".DigitalWatchFace"
-            android:label="@string/digital_description"
+            android:label="@string/wallpaper_description"
             android:allowEmbedded="true"
             android:taskAffinity=""
             android:permission="android.permission.BIND_WALLPAPER" >

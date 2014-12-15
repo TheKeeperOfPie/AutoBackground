@@ -57,13 +57,6 @@
         android:layout_alignRight="@+id/watch_face_background"
         >
 
-        <include
-            layout="@layout/watch_face_digital"
-            android:id="@+id/watch_face"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
-
         <SurfaceView
             android:id="@+id/surface_view"
             android:layout_width="match_parent"

@@ -342,14 +342,16 @@ public class SourceInfoFragment extends PreferenceFragment {
             suffix = "";
 
             switch (type) {
-                case AppSettings.TUMBLR_BLOG:
-                    suffix = ".tumblr.com";
-                case AppSettings.FOLDER:
-                    data = Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER));
                 case AppSettings.GOOGLE_ALBUM:
                     sourceTitle.setFocusable(false);
                     sourceData.setFocusable(false);
                     sourceNum.setFocusable(false);
+                case AppSettings.FOLDER:
+                    data = Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER));
+                    break;
+                case AppSettings.TUMBLR_BLOG:
+                    suffix = ".tumblr.com";
+                    break;
 
             }
 
@@ -415,6 +417,12 @@ public class SourceInfoFragment extends PreferenceFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        if (sourcePosition == -1) {
+            Toast.makeText(appContext,
+                    "Please remember not all websites or entries will work",
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
@@ -926,33 +934,23 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         @Override
         protected Void doInBackground(Void... params) {
-            publishProgress("Loading albums...");
-            String authToken = null;
-            try {
-                authToken = GoogleAuthUtil.getToken(appContext,
-                        AppSettings.getGoogleAccountName(),
-                        "oauth2:https://picasaweb.google.com/data/");
-            }
-            catch (IOException e) {
-                publishProgress("Error loading albums");
-                return null;
-            }
-            catch (GoogleAuthException e) {
-                publishProgress("Error loading albums");
-                return null;
-            }
-            AppSettings.setGoogleAccountToken(authToken);
-
-            HttpClient httpClient = new DefaultHttpClient();
-            HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/user/" + AppSettings.getGoogleAccountName());
-            httpGet.setHeader("Authorization", "OAuth " + authToken);
-            httpGet.setHeader("X-GData-Client", ApiKeys.PICASA_CLIENT_ID);
-            httpGet.setHeader("GData-Version", "2");
 
             InputStream inputStream = null;
             BufferedReader reader = null;
             String result = null;
             try {
+                publishProgress("Loading albums...");
+                String authToken = null;
+                authToken = GoogleAuthUtil.getToken(appContext,
+                        AppSettings.getGoogleAccountName(),
+                        "oauth2:https://picasaweb.google.com/data/");
+                AppSettings.setGoogleAccountToken(authToken);
+
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/user/" + AppSettings.getGoogleAccountName());
+                httpGet.setHeader("Authorization", "OAuth " + authToken);
+                httpGet.setHeader("X-GData-Client", ApiKeys.PICASA_CLIENT_ID);
+                httpGet.setHeader("GData-Version", "2");
                 inputStream = httpClient.execute(httpGet).getEntity().getContent();
                 reader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"), 8);
                 StringBuilder stringBuilder = new StringBuilder();
@@ -965,6 +963,7 @@ public class SourceInfoFragment extends PreferenceFragment {
 
             }
             catch (Exception e) {
+                publishProgress("Error loading albums");
             }
             finally {
                 try {
