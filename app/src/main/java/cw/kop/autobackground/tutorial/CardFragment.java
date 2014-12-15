@@ -133,7 +133,8 @@ public class CardFragment extends Fragment implements View.OnClickListener {
         tutorialText.setTextColor(colorFilterInt);
         tutorialText.setText("These are the parts that make up your wallpaper. " +
                 "Each represents an image source like an album from Imgur or " +
-                "a subreddit.");
+                "a subreddit. Note that not all websites or entries can work " +
+                "with AutoBackground.");
 
         return view;
     }

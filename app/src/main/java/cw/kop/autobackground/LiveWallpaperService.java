@@ -345,7 +345,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                 .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
                     @Override
                     public void onConnectionFailed(ConnectionResult result) {
-                        Toast.makeText(LiveWallpaperService.this, "Connection to Wear device failed", Toast.LENGTH_LONG).show();
                         isWearConnected = false;
                     }
                 })
@@ -801,7 +800,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             notificationBuilder = new Notification.Builder(this)
                     .setContent(normalView)
-                    .setSmallIcon(R.drawable.app_icon)
+                    .setSmallIcon(R.drawable.notification_icon)
                     .setOngoing(true);
 
             if (Build.VERSION.SDK_INT >= 16) {

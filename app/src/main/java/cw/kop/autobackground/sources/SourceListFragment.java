@@ -111,8 +111,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     private int screenHeight;
     private int screenWidth;
 
-    private GoogleApiClient googleApiClient;
-
     /**
      * Receives DOWNLOAD_TERMINATED intent to reset download button icon and recount available images
      */
@@ -169,29 +167,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         AppSettings.resetVer1_30();
         AppSettings.resetVer1_40();
         AppSettings.resetVer2_00();
-
-        googleApiClient = new GoogleApiClient.Builder(appContext)
-                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
-                    @Override
-                    public void onConnected(Bundle connectionHint) {
-                        Log.d(TAG, "onConnected: " + connectionHint);
-                        // Now you can use the Data Layer API
-                    }
-                    @Override
-                    public void onConnectionSuspended(int cause) {
-                        Log.d(TAG, "onConnectionSuspended: " + cause);
-                    }
-                })
-                .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(ConnectionResult result) {
-                        Log.d(TAG, "onConnectionFailed: " + result);
-                    }
-                })
-                        // Request access only to the Wearable API
-                .addApi(Wearable.API)
-                .build();
-        googleApiClient.connect();
     }
 
     @Override

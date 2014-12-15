@@ -417,12 +417,6 @@ public class SourceInfoFragment extends PreferenceFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        if (sourcePosition == -1) {
-            Toast.makeText(appContext,
-                    "Please remember not all websites or entries will work",
-                    Toast.LENGTH_SHORT).show();
-        }
     }
 
     @Override

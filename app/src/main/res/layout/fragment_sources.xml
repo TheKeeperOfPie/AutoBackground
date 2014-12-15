@@ -48,11 +48,12 @@
     <ImageView
         android:id="@+id/empty_arrow"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:scaleType="fitEnd"
         android:layout_above="@+id/floating_button"
         android:layout_alignEnd="@+id/floating_button"
         android:layout_alignRight="@+id/floating_button"
+        android:layout_marginBottom="16dp"
         android:visibility="gone"
         android:src="@drawable/empty_arrow"
         />

@@ -34,20 +34,11 @@
         <!--<item name="android:statusBarColor">@color/DARK_BLUE_OPAQUE</item>-->
         <!--<item name="navigationBarColor">@color/DARK_BLUE_OPAQUE</item>-->
         <item name="android:listSeparatorTextViewStyle">@style/ListSeparator</item>"
-        <item name="android:titleTextStyle">@style/ToolbarTitle</item>
-        <item name="toolbarStyle">@style/ToolbarTitle</item>
 
     </style>
 
     <!-- Application theme. -->
     <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-
-    <style name="ToolbarTitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
-
-        <item name="android:textStyle">bold</item>
-        <item name="android:textSize">40sp</item>
-
-    </style>
 
     <style name="AppLightTheme" parent="AppBaseTheme">
         <item name="android:windowBackground">@color/LIGHT_THEME_BACKGROUND</item>
