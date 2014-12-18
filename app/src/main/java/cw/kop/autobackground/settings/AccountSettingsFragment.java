@@ -128,7 +128,10 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
                         }
                         catch (UserRecoverableAuthException e) {
                             e.printStackTrace();
-                            startActivityForResult(e.getIntent(), GoogleAccount.GOOGLE_AUTH_CODE);
+                            if (isAdded()) {
+                                startActivityForResult(e.getIntent(),
+                                        GoogleAccount.GOOGLE_AUTH_CODE);
+                            }
                             return null;
                         }
                         catch (GoogleAuthException authEx) {

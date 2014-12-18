@@ -282,6 +282,8 @@
     <string name="change_theme_description">Use different app theme</string>
     <string name="use_advanced">Advanced Settings</string>
     <string name="use_advanced_description">Show advanced settings</string>
+    <string name="export_sources">Export Sources</string>
+    <string name="export_sources_description">Export source data to a file</string>
     <string name="use_fabric">Use Fabric</string>
     <string name="use_fabric_description">Send usage and crash data (no personal data is collected)</string>
     <string name="clear_pref">Reset Settings</string>

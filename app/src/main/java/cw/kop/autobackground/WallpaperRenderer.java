@@ -331,20 +331,15 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         BitmapFactory.Options options = new BitmapFactory.Options();
         if (!AppSettings.useHighQuality()) {
             options.inPreferredConfig = Bitmap.Config.RGB_565;
-            options.inJustDecodeBounds = true;
         }
 
         try {
 
-            long start = System.currentTimeMillis();
             Bitmap bitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath(), options);
-            long finish = System.currentTimeMillis();
 
             if (bitmap == null) {
                 return;
             }
-
-            Log.d(TAG, "Time to load bitmap: " + (finish - start));
 
             RenderImage newImage;
             if (AppSettings.useDoubleImage()) {

@@ -316,11 +316,14 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             boolean wasInAmbientMode = isInAmbientMode();
             super.onAmbientModeChanged(inAmbientMode);
 
-            if (inAmbientMode != wasInAmbientMode) {
+//            if (inAmbientMode != wasInAmbientMode) {
                 if (isInAmbientMode()) {
                     applyAmbientMode();
                 }
-            }
+                else {
+                    syncSettings();
+                }
+//            }
 
             invalidate();
             updateTimer();
@@ -335,9 +338,11 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             hourPaint.setColor(Color.WHITE);
             minutePaint.setColor(Color.WHITE);
 
-            separatorPaint.setStyle(Paint.Style.STROKE);
-            hourPaint.setStyle(Paint.Style.STROKE);
-            minutePaint.setStyle(Paint.Style.STROKE);
+            if (burnProtectionMode) {
+                separatorPaint.setStyle(Paint.Style.STROKE);
+                hourPaint.setStyle(Paint.Style.STROKE);
+                minutePaint.setStyle(Paint.Style.STROKE);
+            }
         }
 
         @Override

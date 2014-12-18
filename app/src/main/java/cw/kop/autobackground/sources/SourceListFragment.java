@@ -29,8 +29,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -43,7 +41,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.CardView;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -63,17 +60,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.wearable.Asset;
-import com.google.android.gms.wearable.PutDataRequest;
-import com.google.android.gms.wearable.Wearable;
 import com.squareup.picasso.Cache;
 import com.squareup.picasso.Picasso;
 
-import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Field;
-import java.util.HashMap;
 
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
@@ -125,7 +115,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                             intent.getStringExtra("type"),
                             intent.getStringExtra("title"),
                             intent.getStringExtra("data"),
-                            "" + intent.getIntExtra("num", 0),
+                            intent.getIntExtra("num", 0),
                             intent.getBooleanExtra("use", true),
                             intent.getBooleanExtra("preview", true),
                             intent.getBooleanExtra("use_time", false),
@@ -137,7 +127,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                             intent.getStringExtra("type"),
                             intent.getStringExtra("title"),
                             intent.getStringExtra("data"),
-                            "" + intent.getIntExtra("num", 0),
+                            intent.getIntExtra("num", 0),
                             intent.getBooleanExtra("use", true),
                             intent.getBooleanExtra("preview", true),
                             intent.getBooleanExtra("use_time", false),
@@ -258,8 +248,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                     return;
                 }
 
-                HashMap<String, String> item = listAdapter.getItem(index);
-                String type = item.get("type");
+                Source item = listAdapter.getItem(index);
+                String type = item.getType();
                 if (type.equals(AppSettings.FOLDER)) {
 
                     DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
@@ -274,7 +264,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
                     DialogFactory.showActionDialog(appContext,
                             "",
-                            "Delete " + item.get("title") + "?",
+                            "Delete " + item.getTitle() + "?",
                             clickListener,
                             -1,
                             R.string.cancel_button,
@@ -337,7 +327,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         AppSettings.getSourceTitle(i),
                         AppSettings.getSourceData(i),
                         AppSettings.useSource(i),
-                        "" + AppSettings.getSourceNum(i),
+                        AppSettings.getSourceNum(i),
                         AppSettings.useSourcePreview(i),
                         AppSettings.useSourceTime(i),
                         AppSettings.getSourceTime(i),
@@ -583,8 +573,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         sourceList.setEnabled(false);
 
         listAdapter.saveData();
-        HashMap<String, String> item = listAdapter.getItem(index);
-        String type = item.get("type");
+        Source item = listAdapter.getItem(index);
+        String type = item.getType();
         String directory;
         if (type.equals(AppSettings.FOLDER)) {
             directory = AppSettings.getSourceData(index).split(AppSettings.DATA_SPLITTER)[0];
@@ -775,7 +765,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     public void addEntry(String type,
             String title,
             String data,
-            String num,
+            int num,
             boolean use,
             boolean preview,
             boolean useTime,
@@ -803,7 +793,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             String type,
             String title,
             String data,
-            String num,
+            int num,
             boolean use,
             boolean preview, boolean useTime, String time) {
         if (!listAdapter.setItem(position, type, title, data, use, num, preview, useTime, time)) {
@@ -937,18 +927,18 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         sourceList.setEnabled(false);
         listAdapter.saveData();
 
-        HashMap<String, String> dataItem = listAdapter.getItem(position);
+        Source dataItem = listAdapter.getItem(position);
         final SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
         sourceInfoFragment.setImageDrawable(((ImageView) view.findViewById(R.id.source_image)).getDrawable());
         Bundle arguments = new Bundle();
         arguments.putInt("position", position);
-        arguments.putString("type", dataItem.get("type"));
-        arguments.putString("title", dataItem.get("title"));
-        arguments.putString("data", dataItem.get("data"));
-        arguments.putString("num", dataItem.get("num"));
-        arguments.putBoolean("use", Boolean.parseBoolean(dataItem.get("use")));
-        arguments.putBoolean("preview", Boolean.parseBoolean(dataItem.get("preview")));
-        String imageFileName = dataItem.get("image");
+        arguments.putString("type", dataItem.getType());
+        arguments.putString("title", dataItem.getTitle());
+        arguments.putString("data", dataItem.getData());
+        arguments.putInt("num", dataItem.getNum());
+        arguments.putBoolean("use", dataItem.isUse());
+        arguments.putBoolean("preview", dataItem.isPreview());
+        String imageFileName = dataItem.getImageFile().getAbsolutePath();
         if (imageFileName != null && imageFileName.length() > 0) {
             arguments.putString("image", imageFileName);
         }
@@ -956,8 +946,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             arguments.putString("image", "");
         }
 
-        arguments.putBoolean("use_time", Boolean.parseBoolean(dataItem.get("use_time")));
-        arguments.putString("time", dataItem.get("time"));
+        arguments.putBoolean("use_time", dataItem.isUseTime());
+        arguments.putString("time", dataItem.getTime());
 
         sourceInfoFragment.setArguments(arguments);
 

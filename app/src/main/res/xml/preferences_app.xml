@@ -55,6 +55,12 @@
             android:summary="@string/use_advanced_description"
             />
 
+        <Preference
+            android:key="export_sources"
+            android:title="@string/export_sources"
+            android:summary="@string/export_sources_description"
+            />
+
         <cw.kop.autobackground.CustomSwitchPreference
             android:defaultValue="true"
             android:key="use_fabric"

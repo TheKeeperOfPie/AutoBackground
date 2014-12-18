@@ -549,24 +549,38 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 float sideLength = surfaceView.getWidth();
                 Log.i(TAG, "sideLength: " + sideLength);
                 if (sideLength > 0) {
-                    if (imageBitmap  != null) {
-                        try {
-                            imageBitmap.recycle();
-                        }
-                        catch (Exception e) {
-
-                        }
-                    }
 
                     if (FileHandler.getCurrentBitmapFile() != null) {
 
-                        final Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath()),
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inJustDecodeBounds = true;
+                        BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(), options);
+                        options.inJustDecodeBounds = false;
+
+                        int sampleSize = 1;
+
+                        float longestLength = options.outWidth > options.outHeight ? options.outWidth : options.outHeight;
+
+                        while (longestLength / (sampleSize + 1) > sideLength) {
+                            sampleSize++;
+                        }
+                        options.inSampleSize = sampleSize;
+
+                        final Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(), options),
                                 Math.round(sideLength),
                                 Math.round(sideLength));
 
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
+                                if (imageBitmap  != null) {
+                                    try {
+                                        imageBitmap.recycle();
+                                    }
+                                    catch (Exception e) {
+
+                                    }
+                                }
                                 imageBitmap = bitmap;
                                 redraw();
                             }
@@ -1518,7 +1532,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 intentFilter);
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         loadImageFile();
-        redraw();
     }
 
     @Override

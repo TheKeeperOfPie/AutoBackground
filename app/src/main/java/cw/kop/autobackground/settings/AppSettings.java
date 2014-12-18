@@ -22,6 +22,8 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 import android.util.Log;
 
+import org.json.JSONException;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.sources.Source;
 
 public class AppSettings {
 
@@ -741,6 +744,23 @@ public class AppSettings {
 
     public static boolean useHighResolutionNotificationIcon() {
         return prefs.getBoolean("high_resolution_notification_icon", false);
+    }
+
+    public static void setSources(List<Source> listData) {
+
+        int index = 0;
+
+        for (Source source: listData) {
+            try {
+                prefs.edit().putString("source_" + index, source.toJson().toString());
+                index++;
+            }
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        prefs.edit().putInt("num_sources", index).commit();
     }
 
     public static void setSources(ArrayList<HashMap<String, String>> listData) {

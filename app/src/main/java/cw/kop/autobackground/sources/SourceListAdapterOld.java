@@ -43,13 +43,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 
-public class SourceListAdapter extends BaseAdapter {
+public class SourceListAdapterOld extends BaseAdapter {
 
     public static final String NO_SOURCES = "NO_SOURCE";
     public static final String NO_ACTIVE_SOURCES = "NO_ACTIVE_SOURCES";
@@ -57,16 +58,16 @@ public class SourceListAdapter extends BaseAdapter {
     public static final String NO_IMAGES = "NO_IMAGES";
     public static final String OKAY = "OKAY";
 
-    private static final String TAG = SourceListAdapter.class.getCanonicalName();
+    private static final String TAG = SourceListAdapterOld.class.getCanonicalName();
     private static final float OVERLAY_ALPHA = 0.85f;
     private Activity mainActivity;
-    private ArrayList<Source> listData;
+    private ArrayList<HashMap<String, String>> listData;
     private HashSet<String> titles;
     private LayoutInflater inflater = null;
     private CardClickListener cardClickListener;
     private boolean isRemoving = false;
 
-    public SourceListAdapter(Activity activity, CardClickListener listener) {
+    public SourceListAdapterOld(Activity activity, CardClickListener listener) {
         mainActivity = activity;
         listData = new ArrayList<>();
         titles = new HashSet<>();
@@ -79,7 +80,7 @@ public class SourceListAdapter extends BaseAdapter {
         return listData.size();
     }
 
-    public Source getItem(int position) {
+    public HashMap<String, String> getItem(int position) {
         return listData.get(position);
     }
 
@@ -91,7 +92,7 @@ public class SourceListAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
 
-        final Source listItem = listData.get(position);
+        final HashMap<String, String> listItem = listData.get(position);
 
         if (convertView == null) {
             convertView = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
@@ -104,11 +105,11 @@ public class SourceListAdapter extends BaseAdapter {
         int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
         int lightGrayColor = resources.getColor(R.color.LIGHT_GRAY_OPAQUE);
         int darkGrayColor = resources.getColor(R.color.DARK_GRAY_OPAQUE);
-        boolean use = listItem.isUse();
-        boolean preview = listItem.isPreview();
+        boolean use = Boolean.parseBoolean(listItem.get("use"));
+        boolean preview = Boolean.parseBoolean(listItem.get("preview"));
 
         EditText title = (EditText) view.findViewById(R.id.source_title);
-        title.setText(listItem.getTitle());
+        title.setText(listItem.get("title"));
         title.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -174,8 +175,8 @@ public class SourceListAdapter extends BaseAdapter {
                     PorterDuff.Mode.MULTIPLY);
             image.setImageDrawable(downloadDrawable);
 
-            if (listItem.getType().equals(AppSettings.FOLDER)) {
-                String[] folders = listItem.getData().split(AppSettings.DATA_SPLITTER);
+            if (listItem.get("type").equals(AppSettings.FOLDER)) {
+                String[] folders = listItem.get("data").split(AppSettings.DATA_SPLITTER);
                 boolean needsImage = true;
                 for (int index = 0; needsImage && index < folders.length; index++) {
 
@@ -183,19 +184,19 @@ public class SourceListAdapter extends BaseAdapter {
 
                     if (files != null && files.length > 0) {
                         needsImage = false;
-                        listItem.setImageFile(files[0]);
+                        listItem.put("image", files[0].getAbsolutePath());
                         Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(
                                 image);
                     }
                 }
             }
             else {
-                File folder = new File(AppSettings.getDownloadPath() + "/" + listItem.getTitle() + " " + AppSettings.getImagePrefix());
+                File folder = new File(AppSettings.getDownloadPath() + "/" + listItem.get("title") + " " + AppSettings.getImagePrefix());
                 if (folder.exists() && folder.isDirectory()) {
                     File[] files = folder.listFiles(FileHandler.getImageFileNameFilter());
 
                     if (files != null && files.length > 0) {
-                        listItem.setImageFile(files[0]);
+                        listItem.put("image", files[0].getAbsolutePath());
                         Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(
                                 image);
                     }
@@ -247,25 +248,25 @@ public class SourceListAdapter extends BaseAdapter {
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         sourceType.setText(typePrefix);
-        sourceType.append(listItem.getType());
+        sourceType.append(listItem.get("type"));
         sourceData.setText(dataPrefix);
-        if (listItem.getType().equals(AppSettings.FOLDER)) {
-            sourceData.append(Arrays.toString(listItem.getData().split(AppSettings.DATA_SPLITTER)));
+        if (listItem.get("type").equals(AppSettings.FOLDER)) {
+            sourceData.append(Arrays.toString(listItem.get("data").split(AppSettings.DATA_SPLITTER)));
         }
         else {
-            sourceData.append(listItem.getData());
+            sourceData.append(listItem.get("data"));
         }
         sourceNum.setText(numPrefix);
-        if (listItem.getType().equals(AppSettings.FOLDER)) {
-            sourceNum.append("" + listItem.getNum());
+        if (listItem.get("type").equals(AppSettings.FOLDER)) {
+            sourceNum.append(listItem.get("num"));
         }
         else {
-            sourceNum.append(listItem.getNumStored() + " / " + listItem.getNum());
+            sourceNum.append(listItem.get("numStored") + " / " + listItem.get("num"));
         }
         sourceTime.setText(timePrefix);
 
-        if (listItem.isUseTime()) {
-            sourceTime.append(listItem.getTime());
+        if (listItem.get("use_time").equals("true")) {
+            sourceTime.append(listItem.get("time"));
         }
         else {
             sourceTime.append("N/A");
@@ -275,44 +276,45 @@ public class SourceListAdapter extends BaseAdapter {
     }
 
     public void setActivated(int position, boolean use) {
-        Source changedItem = listData.get(position);
-        changedItem.setUse(use);
+        HashMap<String, String> changedItem = listData.get(position);
+        changedItem.put("use", "" + use);
         listData.set(position, changedItem);
         notifyDataSetChanged();
     }
 
     public void toggleActivated(int position) {
-        Source changedItem = listData.get(position);
-        changedItem.setUse(!changedItem.isUse());
+        HashMap<String, String> changedItem = listData.get(position);
+        changedItem.put("use", "" + !Boolean.parseBoolean(changedItem.get("use")));
         listData.set(position, changedItem);
     }
 
     public boolean setItem(int position, String type, String title, String data, boolean use,
-            int num, boolean preview, boolean useTime, String time) {
+            String num, boolean preview, boolean useTime, String time) {
 
-        Source changedItem = listData.get(position);
+        HashMap<String, String> changedItem = listData.get(position);
 
-        if (!changedItem.getTitle().equals(title)) {
+        if (!changedItem.get("title").equals(title)) {
             if (titles.contains(title)) {
                 return false;
             }
         }
 
-        titles.remove(changedItem.getTitle());
-        changedItem.setType(type);
-        changedItem.setTitle(title);
-        changedItem.setData(data);
-        changedItem.setNum(num);
-        changedItem.setUse(use);
-        changedItem.setPreview(preview);
-        changedItem.setUseTime(useTime);
-        changedItem.setTime(time);
+        titles.remove(changedItem.get("title"));
+        changedItem.put("type", type);
+        changedItem.put("title", title);
+        changedItem.put("data", data);
+        changedItem.put("num", "" + num);
+        changedItem.put("use", "" + use);
+        changedItem.put("preview", "" + preview);
+        changedItem.put("use_time", "" + useTime);
+        changedItem.put("time", time);
         File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
         if (folder.exists() && folder.isDirectory()) {
-            changedItem.setNumStored(folder.listFiles(FileHandler.getImageFileNameFilter()).length);
+            changedItem.put("numStored",
+                    "" + folder.listFiles(FileHandler.getImageFileNameFilter()).length);
         }
         else {
-            changedItem.setNumStored(0);
+            changedItem.put("numStored", "0");
         }
         listData.set(position, changedItem);
         titles.add(title);
@@ -325,7 +327,7 @@ public class SourceListAdapter extends BaseAdapter {
             String title,
             String data,
             boolean use,
-            int num,
+            String num,
             boolean preview,
             boolean useTime,
             String time,
@@ -335,22 +337,23 @@ public class SourceListAdapter extends BaseAdapter {
             return false;
         }
 
-        Source newItem = new Source();
-        newItem.setType(type);
-        newItem.setTitle(title);
-        newItem.setData(data);
-        newItem.setNum(num);
-        newItem.setUse(use);
-        newItem.setNumStored(0);
-        newItem.setPreview(preview);
-        newItem.setUseTime(useTime);
-        newItem.setTime(time);
+        HashMap<String, String> newItem = new HashMap<>();
+        newItem.put("type", type);
+        newItem.put("title", title);
+        newItem.put("data", data);
+        newItem.put("num", "" + num);
+        newItem.put("use", "" + use);
+        newItem.put("numStored", "0");
+        newItem.put("preview", "" + preview);
+        newItem.put("use_time", "" + useTime);
+        newItem.put("time", time);
         File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
         if (folder.exists() && folder.isDirectory()) {
-            newItem.setNumStored(folder.listFiles(FileHandler.getImageFileNameFilter()).length);
+            newItem.put("numStored",
+                    "" + folder.listFiles(FileHandler.getImageFileNameFilter()).length);
         }
         else {
-            newItem.setNumStored(0);
+            newItem.put("numStored", "0");
         }
 
         listData.add(newItem);
@@ -367,7 +370,7 @@ public class SourceListAdapter extends BaseAdapter {
 
     public void removeItem(final int position) {
 
-        titles.remove(listData.get(position).getTitle());
+        titles.remove(listData.get(position).get("title"));
         listData.remove(position);
         notifyDataSetChanged();
     }
@@ -379,24 +382,25 @@ public class SourceListAdapter extends BaseAdapter {
         String cacheDir = AppSettings.getDownloadPath();
 
         if (listData != null) {
-            for (Source hashMap : listData) {
-                if (hashMap.getType().equals(AppSettings.FOLDER)) {
+            for (HashMap<String, String> hashMap : listData) {
+                if (hashMap.get("type").equals(AppSettings.FOLDER)) {
 
                     int numImages = 0;
 
-                    for (String folderName : hashMap.getData().split(AppSettings.DATA_SPLITTER)) {
+                    for (String folderName : hashMap.get("data").split(AppSettings.DATA_SPLITTER)) {
                         File folder = new File(folderName);
                         if (folder.exists() && folder.isDirectory()) {
                             numImages += folder.listFiles(filenameFilter).length;
                         }
                     }
 
-                    hashMap.setNum(numImages);
+                    hashMap.put("num", "" + numImages);
                 }
                 else {
-                    File folder = new File(cacheDir + "/" + hashMap.getTitle() + " " + AppSettings.getImagePrefix());
+                    File folder = new File(cacheDir + "/" + hashMap.get("title") + " " + AppSettings.getImagePrefix());
                     if (folder.exists() && folder.isDirectory()) {
-                        hashMap.setNumStored(folder.listFiles(filenameFilter).length);
+                        hashMap.put("numStored",
+                                "" + folder.listFiles(filenameFilter).length);
                     }
                 }
             }
@@ -415,15 +419,15 @@ public class SourceListAdapter extends BaseAdapter {
 
         for (int index = 0; (noActive || needDownload) && index < listData.size(); index++) {
 
-            boolean use = listData.get(index).isUse();
+            boolean use = listData.get(index).get("use").equals("true");
 
             if (noActive && use) {
                 noActive = false;
             }
 
-            if (needDownload && use && listData.get(index).getType().equals(AppSettings.FOLDER)) {
+            if (needDownload && use && listData.get(index).get("type").equals(AppSettings.FOLDER)) {
                 needDownload = false;
-                Log.i("SLA", "Type: " + listData.get(index).getType());
+                Log.i("SLA", "Type: " + listData.get(index).get("type"));
             }
 
         }
@@ -446,19 +450,19 @@ public class SourceListAdapter extends BaseAdapter {
 
     public void sortData(final String key) {
 
-        ArrayList<Source> sortList = new ArrayList<Source>();
+        ArrayList<HashMap<String, String>> sortList = new ArrayList<HashMap<String, String>>();
         sortList.addAll(listData);
 
-        Collections.sort(sortList, new Comparator<Source>() {
+        Collections.sort(sortList, new Comparator<HashMap<String, String>>() {
             @Override
-            public int compare(Source lhs, Source rhs) {
+            public int compare(HashMap<String, String> lhs, HashMap<String, String> rhs) {
 
                 if (key.equals("use")) {
-                    boolean first = lhs.isUse();
-                    boolean second = rhs.isUse();
+                    boolean first = Boolean.parseBoolean(lhs.get("use"));
+                    boolean second = Boolean.parseBoolean(rhs.get("use"));
 
                     if (first && second || (!first && !second)) {
-                        return lhs.getTitle().compareTo(rhs.getTitle());
+                        return lhs.get("title").compareTo(rhs.get("title"));
                     }
 
                     return first ? -1 : 1;
@@ -466,10 +470,10 @@ public class SourceListAdapter extends BaseAdapter {
                 }
 
                 if (key.equals("num")) {
-                    return lhs.getNum() - rhs.getNum();
+                    return Integer.parseInt(lhs.get("num")) - Integer.parseInt(rhs.get("num"));
                 }
 
-                return -1; // TODO: Fix lhs.get(key).compareTo(rhs.get(key));
+                return lhs.get(key).compareTo(rhs.get(key));
             }
         });
 

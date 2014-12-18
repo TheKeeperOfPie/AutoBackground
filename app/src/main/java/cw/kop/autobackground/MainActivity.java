@@ -110,7 +110,7 @@ public class MainActivity extends ActionBarActivity {
         AppSettings.initPrefs(prefs, getApplicationContext());
 
         switch (AppSettings.getTheme()) {
-
+            default:
             case AppSettings.APP_LIGHT_THEME:
                 setTheme(R.style.AppLightTheme);
                 break;

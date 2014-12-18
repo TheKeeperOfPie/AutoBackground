@@ -26,6 +26,7 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
+import android.util.JsonWriter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +35,11 @@ import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 
 import cw.kop.autobackground.CustomSwitchPreference;
 import cw.kop.autobackground.DialogFactory;
@@ -117,6 +123,52 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
             }
         });
 
+        findPreference("export_sources").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                if (appContext != null) {
+                    DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
+
+                        @Override
+                        public void onClickMiddle(View v) {
+                            AppSettings.setUseTutorial(true);
+                            this.dismissDialog();
+                        }
+
+                        @Override
+                        public void onClickRight(View v) {
+
+                            final File outputFile = new File(AppSettings.getDownloadPath() + "/SourceData" + System.currentTimeMillis() + ".txt");
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    exportSources(outputFile);
+                                }
+                            }).start();
+
+                            if (AppSettings.useToast()) {
+                                Toast.makeText(appContext,
+                                        "Exporting to " + outputFile.getAbsolutePath(),
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                            this.dismissDialog();
+                        }
+                    };
+
+                    DialogFactory.showActionDialog(appContext,
+                            "Export sources?",
+                            "",
+                            listener,
+                            -1,
+                            R.string.cancel_button,
+                            R.string.ok_button);
+
+                }
+                return true;
+            }
+        });
+
         themePref = findPreference("change_theme");
         themePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -147,6 +199,32 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
         }
 
         return inflater.inflate(R.layout.fragment_list, container, false);
+
+    }
+
+    private void exportSources(File outputFile) {
+
+        try {
+            JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
+            writer.setIndent("  ");
+            writer.beginArray();
+            for (int i = 0; i < AppSettings.getNumSources(); i++) {
+                writer.beginObject();
+                writer.name("type").value(AppSettings.getSourceType(i));
+                writer.name("title").value(AppSettings.getSourceTitle(i));
+                writer.name("data").value(AppSettings.getSourceData(i));
+                writer.name("num").value(AppSettings.getSourceNum(i));
+                writer.name("use").value(AppSettings.useSource(i));
+                writer.name("preview").value(AppSettings.useSourcePreview(i));
+                writer.name("time").value(AppSettings.getSourceTime(i));
+                writer.endObject();
+            }
+            writer.endArray();
+            writer.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
