@@ -315,6 +315,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         AppSettings.resetVer1_30();
         AppSettings.resetVer1_40();
         AppSettings.resetVer2_00();
+        AppSettings.resetVer2_00_20();
 
         setIntents();
         createGameIntents();
@@ -1579,7 +1580,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         private void loadWearImage(File file) {
 
-            if (!AppSettings.useSyncWearImage()) {
+            if (!AppSettings.useSyncImage()) {
                 file = FileHandler.getNextWearImage();
             }
 

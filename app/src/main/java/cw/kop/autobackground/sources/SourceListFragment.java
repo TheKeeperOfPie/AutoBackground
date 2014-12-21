@@ -63,6 +63,8 @@ import android.widget.Toast;
 import com.squareup.picasso.Cache;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONObject;
+
 import java.lang.reflect.Field;
 
 import cw.kop.autobackground.DialogFactory;
@@ -111,27 +113,32 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             String action = intent.getAction();
             switch (action) {
                 case SourceListFragment.ADD_ENTRY:
-                    addEntry(
-                            intent.getStringExtra("type"),
-                            intent.getStringExtra("title"),
-                            intent.getStringExtra("data"),
-                            intent.getIntExtra("num", 0),
-                            intent.getBooleanExtra("use", true),
-                            intent.getBooleanExtra("preview", true),
-                            intent.getBooleanExtra("use_time", false),
-                            intent.getStringExtra("time"));
+                    Source addSource = new Source();
+
+                    addSource.setType(intent.getStringExtra("type"));
+                    addSource.setTitle(intent.getStringExtra("title"));
+                    addSource.setData(intent.getStringExtra("data"));
+                    addSource.setNum(intent.getIntExtra("num", 0));
+                    addSource.setUse(intent.getBooleanExtra("use", true));
+                    addSource.setPreview(intent.getBooleanExtra("preview", true));
+                    addSource.setUseTime(intent.getBooleanExtra("use_time", false));
+                    addSource.setTime(intent.getStringExtra("time"));
+
+                    addEntry(addSource);
                     break;
                 case SourceListFragment.SET_ENTRY:
-                    setEntry(
-                            intent.getIntExtra("position", -1),
-                            intent.getStringExtra("type"),
-                            intent.getStringExtra("title"),
-                            intent.getStringExtra("data"),
-                            intent.getIntExtra("num", 0),
-                            intent.getBooleanExtra("use", true),
-                            intent.getBooleanExtra("preview", true),
-                            intent.getBooleanExtra("use_time", false),
-                            intent.getStringExtra("time"));
+                    Source setSource = new Source();
+
+                    setSource.setType(intent.getStringExtra("type"));
+                    setSource.setTitle(intent.getStringExtra("title"));
+                    setSource.setData(intent.getStringExtra("data"));
+                    setSource.setNum(intent.getIntExtra("num", 0));
+                    setSource.setUse(intent.getBooleanExtra("use", true));
+                    setSource.setPreview(intent.getBooleanExtra("preview", true));
+                    setSource.setUseTime(intent.getBooleanExtra("use_time", false));
+                    setSource.setTime(intent.getStringExtra("time"));
+
+                    setEntry(intent.getIntExtra("position", -1), setSource);
                     break;
                 case FileHandler.DOWNLOAD_TERMINATED:
                     new ImageCountTask().execute();
@@ -157,6 +164,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         AppSettings.resetVer1_30();
         AppSettings.resetVer1_40();
         AppSettings.resetVer2_00();
+        AppSettings.resetVer2_00_20();
     }
 
     @Override
@@ -284,8 +292,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
                         @Override
                         public void onClickRight(View v) {
-                            FileHandler.deleteBitmaps(appContext, index);
-                            sendToast("Deleting " + AppSettings.getSourceTitle(index) + " images");
+                            Source source = listAdapter.getItem(index);
+                            FileHandler.deleteBitmaps(appContext, source);
+                            sendToast("Deleting " + source.getTitle() + " images");
                             listAdapter.removeItem(index);
                             new ImageCountTask().execute();
                             this.dismissDialog();
@@ -322,17 +331,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         if (listAdapter == null) {
             listAdapter = new SourceListAdapter(getActivity(), listener);
-            for (int i = 0; i < AppSettings.getNumSources(); i++) {
-                listAdapter.addItem(AppSettings.getSourceType(i),
-                        AppSettings.getSourceTitle(i),
-                        AppSettings.getSourceData(i),
-                        AppSettings.useSource(i),
-                        AppSettings.getSourceNum(i),
-                        AppSettings.useSourcePreview(i),
-                        AppSettings.useSourceTime(i),
-                        AppSettings.getSourceTime(i),
-                        false);
-                Log.i("WLF", "Added: " + AppSettings.getSourceTitle(i));
+            for (int index = 0; index < AppSettings.getNumberSources(); index++) {
+
+                Source source = AppSettings.getSource(index);
+
+                listAdapter.addItem(source, false);
+                Log.i(TAG, "Added: " + source.getTitle());
             }
         }
         sourceList.setAdapter(listAdapter);
@@ -577,11 +581,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         String type = item.getType();
         String directory;
         if (type.equals(AppSettings.FOLDER)) {
-            directory = AppSettings.getSourceData(index).split(AppSettings.DATA_SPLITTER)[0];
+            directory  =item.getData().split(AppSettings.DATA_SPLITTER)[0];
         }
         else {
-            directory = AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(
-                    index) + " " + AppSettings.getImagePrefix();
+            directory = AppSettings.getDownloadPath() + "/" + item.getTitle() + " " + AppSettings.getImagePrefix();
         }
 
         Log.i(TAG, "Directory: " + directory);
@@ -753,24 +756,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     /**
      * Adds source to listAdapter
      *
-     * @param type    source type
-     * @param title   source title
-     * @param data    source data
-     * @param num     number of images for source
-     * @param use     whether or not source will be active
-     * @param preview show preview in source list
-     * @param useTime use active time setting
-     * @param time    time for active time setting
+     * @param source source
      */
-    public void addEntry(String type,
-            String title,
-            String data,
-            int num,
-            boolean use,
-            boolean preview,
-            boolean useTime,
-            String time) {
-        if (!listAdapter.addItem(type, title, data, use, num, preview, useTime, time, true)) {
+    public void addEntry(Source source) {
+        if (!listAdapter.addItem(source, true)) {
             sendToast("Error: Title in use.\nPlease use a different title.");
         }
 
@@ -779,24 +768,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     /**
      * Changes entry in listAdapter
      *
-     * @param position source index
-     * @param type     source type
-     * @param title    source title
-     * @param data     source data
-     * @param num      number of images for source
-     * @param use      whether or not source will be active
-     * @param preview  show preview in source list
-     * @param useTime  use active time setting
-     * @param time     time for active time setting
+     * @param position index
+     * @param source source
      */
     public void setEntry(int position,
-            String type,
-            String title,
-            String data,
-            int num,
-            boolean use,
-            boolean preview, boolean useTime, String time) {
-        if (!listAdapter.setItem(position, type, title, data, use, num, preview, useTime, time)) {
+            Source source) {
+        if (!listAdapter.setItem(position, source)) {
             sendToast("Error: Title in use.\nPlease use a different title.");
         }
     }
@@ -1143,17 +1120,20 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             listAdapter.updateNum();
 
-            resetAddButtonIcon();
+            if (isAdded()) {
 
-            if (toolbarMenu != null) {
-                Drawable drawable = FileHandler.isDownloading ?
-                        getResources().getDrawable(R.drawable.ic_cancel_white_24dp) :
-                        getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
-                drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                        PorterDuff.Mode.MULTIPLY);
-                toolbarMenu.getItem(1).setIcon(drawable);
+                resetAddButtonIcon();
+
+                if (toolbarMenu != null) {
+                    Drawable drawable = FileHandler.isDownloading ?
+                            getResources().getDrawable(R.drawable.ic_cancel_white_24dp) :
+                            getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
+                    drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                            PorterDuff.Mode.MULTIPLY);
+                    toolbarMenu.getItem(1).setIcon(drawable);
+                }
+
             }
-
 
 //            noImageText.setVisibility(sourceState.equals(SourceListAdapter.OKAY) ?
 //                    View.GONE :

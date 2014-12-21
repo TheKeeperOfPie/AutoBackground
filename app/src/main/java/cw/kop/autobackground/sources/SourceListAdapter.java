@@ -287,83 +287,130 @@ public class SourceListAdapter extends BaseAdapter {
         listData.set(position, changedItem);
     }
 
-    public boolean setItem(int position, String type, String title, String data, boolean use,
-            int num, boolean preview, boolean useTime, String time) {
+    public boolean setItem(int position, Source source) {
 
-        Source changedItem = listData.get(position);
+        Source oldSource = listData.get(position);
 
-        if (!changedItem.getTitle().equals(title)) {
-            if (titles.contains(title)) {
+        if (!oldSource.getTitle().equals(source.getTitle())) {
+            if (titles.contains(source.getTitle())) {
                 return false;
             }
         }
-
-        titles.remove(changedItem.getTitle());
-        changedItem.setType(type);
-        changedItem.setTitle(title);
-        changedItem.setData(data);
-        changedItem.setNum(num);
-        changedItem.setUse(use);
-        changedItem.setPreview(preview);
-        changedItem.setUseTime(useTime);
-        changedItem.setTime(time);
-        File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
+        titles.remove(oldSource.getTitle());
+        File folder = new File(AppSettings.getDownloadPath() + "/" + source.getTitle() + " " + AppSettings.getImagePrefix());
         if (folder.exists() && folder.isDirectory()) {
-            changedItem.setNumStored(folder.listFiles(FileHandler.getImageFileNameFilter()).length);
+            source.setNumStored(folder.listFiles(FileHandler.getImageFileNameFilter()).length);
         }
         else {
-            changedItem.setNumStored(0);
+            source.setNumStored(0);
         }
-        listData.set(position, changedItem);
-        titles.add(title);
+        listData.set(position, source);
+        titles.add(source.getTitle());
         notifyDataSetChanged();
         saveData();
         return true;
     }
 
-    public boolean addItem(String type,
-            String title,
-            String data,
-            boolean use,
-            int num,
-            boolean preview,
-            boolean useTime,
-            String time,
-            boolean save) {
+//    public boolean setItem(int position, String type, String title, String data, boolean use,
+//            int num, boolean preview, boolean useTime, String time) {
+//
+//        Source changedItem = listData.get(position);
+//
+//        if (!changedItem.getTitle().equals(title)) {
+//            if (titles.contains(title)) {
+//                return false;
+//            }
+//        }
+//
+//        titles.remove(changedItem.getTitle());
+//        changedItem.setType(type);
+//        changedItem.setTitle(title);
+//        changedItem.setData(data);
+//        changedItem.setNum(num);
+//        changedItem.setUse(use);
+//        changedItem.setPreview(preview);
+//        changedItem.setUseTime(useTime);
+//        changedItem.setTime(time);
+//        File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
+//        if (folder.exists() && folder.isDirectory()) {
+//            changedItem.setNumStored(folder.listFiles(FileHandler.getImageFileNameFilter()).length);
+//        }
+//        else {
+//            changedItem.setNumStored(0);
+//        }
+//        listData.set(position, changedItem);
+//        titles.add(title);
+//        notifyDataSetChanged();
+//        saveData();
+//        return true;
+//    }
 
-        if (titles.contains(title)) {
+    public boolean addItem(Source source, boolean save) {
+
+        if (titles.contains(source.getTitle())) {
             return false;
         }
 
-        Source newItem = new Source();
-        newItem.setType(type);
-        newItem.setTitle(title);
-        newItem.setData(data);
-        newItem.setNum(num);
-        newItem.setUse(use);
-        newItem.setNumStored(0);
-        newItem.setPreview(preview);
-        newItem.setUseTime(useTime);
-        newItem.setTime(time);
-        File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
+        File folder = new File(AppSettings.getDownloadPath() + "/" + source.getTitle() + " " + AppSettings.getImagePrefix());
         if (folder.exists() && folder.isDirectory()) {
-            newItem.setNumStored(folder.listFiles(FileHandler.getImageFileNameFilter()).length);
+            source.setNumStored(folder.listFiles(FileHandler.getImageFileNameFilter()).length);
         }
         else {
-            newItem.setNumStored(0);
+            source.setNumStored(0);
         }
 
-        listData.add(newItem);
-        titles.add(title);
+        listData.add(source);
+        titles.add(source.getTitle());
         notifyDataSetChanged();
-
         if (save) {
             saveData();
         }
-
-        Log.i("WLA", "listData" + listData.size());
         return true;
     }
+
+//    public boolean addItem(String type,
+//            String title,
+//            String data,
+//            boolean use,
+//            int num,
+//            boolean preview,
+//            boolean useTime,
+//            String time,
+//            boolean save) {
+//
+//        if (titles.contains(title)) {
+//            return false;
+//        }
+//
+//        Source newItem = new Source();
+//        newItem.setType(type);
+//        newItem.setTitle(title);
+//        newItem.setData(data);
+//        newItem.setNum(num);
+//        newItem.setUse(use);
+//        newItem.setNumStored(0);
+//        newItem.setPreview(preview);
+//        newItem.setUseTime(useTime);
+//        newItem.setTime(time);
+//        File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
+//        if (folder.exists() && folder.isDirectory()) {
+//            newItem.setNumStored(folder.listFiles(FileHandler.getImageFileNameFilter()).length);
+//        }
+//        else {
+//            newItem.setNumStored(0);
+//        }
+//
+//        listData.add(newItem);
+//        titles.add(title);
+//        notifyDataSetChanged();
+//
+//        if (save) {
+//            saveData();
+//        }
+//
+//        Log.i("WLA", "listData" + listData.size());
+//        return true;
+//    }
 
     public void removeItem(final int position) {
 
@@ -487,7 +534,7 @@ public class SourceListAdapter extends BaseAdapter {
         AppSettings.setSources(listData);
 
         Log.i("WLA", "SavedListData" + listData.size());
-        Log.i("WLA", "Saved Data: " + AppSettings.getNumSources());
+        Log.i("WLA", "Saved Data: " + AppSettings.getNumberSources());
     }
 
 

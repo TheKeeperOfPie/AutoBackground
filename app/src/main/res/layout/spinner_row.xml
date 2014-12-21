@@ -30,6 +30,7 @@
         android:paddingEnd="@dimen/side_margin"
         android:paddingLeft="@dimen/side_margin"
         android:paddingRight="@dimen/side_margin"
+        android:textColor="@color/ACCENT_OPAQUE"
         />
 
 </RelativeLayout>

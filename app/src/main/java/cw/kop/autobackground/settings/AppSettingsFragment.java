@@ -36,10 +36,18 @@ import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import cw.kop.autobackground.CustomSwitchPreference;
 import cw.kop.autobackground.DialogFactory;
@@ -47,11 +55,14 @@ import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.Source;
 import cw.kop.autobackground.tutorial.TutorialActivity;
 import io.fabric.sdk.android.Fabric;
 
 public class AppSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
+    private static final String TAG = AppSettingsFragment.class.getCanonicalName();
+    private static final int IMPORT_SOURCES_REQUEST_CODE = 0;
     private Context appContext;
     private SwitchPreference toastPref;
     private Preference themePref;
@@ -139,7 +150,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                         @Override
                         public void onClickRight(View v) {
 
-                            final File outputFile = new File(AppSettings.getDownloadPath() + "/SourceData" + System.currentTimeMillis() + ".txt");
+                            final File outputFile = new File(AppSettings.getDownloadPath() + "/Exported/SourceData" + System.currentTimeMillis() + ".txt");
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -165,6 +176,18 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                             R.string.ok_button);
 
                 }
+                return true;
+            }
+        });
+
+        findPreference("import_sources").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("file/*");
+                startActivityForResult(intent, IMPORT_SOURCES_REQUEST_CODE);
+
                 return true;
             }
         });
@@ -205,22 +228,20 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
     private void exportSources(File outputFile) {
 
         try {
-            JsonWriter writer = new JsonWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
-            writer.setIndent("  ");
-            writer.beginArray();
-            for (int i = 0; i < AppSettings.getNumSources(); i++) {
-                writer.beginObject();
-                writer.name("type").value(AppSettings.getSourceType(i));
-                writer.name("title").value(AppSettings.getSourceTitle(i));
-                writer.name("data").value(AppSettings.getSourceData(i));
-                writer.name("num").value(AppSettings.getSourceNum(i));
-                writer.name("use").value(AppSettings.useSource(i));
-                writer.name("preview").value(AppSettings.useSourcePreview(i));
-                writer.name("time").value(AppSettings.getSourceTime(i));
-                writer.endObject();
+            PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
+            JSONArray jsonArray = new JSONArray();
+            for (int index = 0; index < AppSettings.getNumberSources(); index++) {
+                Source source = AppSettings.getSource(index);
+                try {
+                    jsonArray.put(source.toJson());
+                }
+                catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
-            writer.endArray();
+            writer.print(jsonArray.toString());
             writer.close();
+
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -228,13 +249,52 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     }
 
+    private void importSources(File inputFile) {
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+            StringBuilder builder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
+            }
+            reader.close();
+
+            ArrayList<Source> newSources = new ArrayList<>();
+            JSONArray jsonArray = new JSONArray(builder.toString());
+
+            for (int index = 0; index < jsonArray.length(); index++) {
+                newSources.add(Source.fromJson(jsonArray.getJSONObject(index)));
+            }
+
+            AppSettings.setSources(newSources);
+            restartActivity();
+
+        }
+        catch (FileNotFoundException e) {
+            Toast.makeText(appContext, "File not found", Toast.LENGTH_SHORT).show();
+        }
+        catch (IOException | JSONException e) {
+            Toast.makeText(appContext, "File invalid", Toast.LENGTH_SHORT).show();
+        }
+
+
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == TutorialActivity.TUTORIAL_REQUEST) {
-            restartActivity();
+        switch (requestCode) {
+            case TutorialActivity.TUTORIAL_REQUEST:
+                restartActivity();
+                break;
+            case IMPORT_SOURCES_REQUEST_CODE:
+                if (resultCode == Activity.RESULT_OK) {
+                    File file = new File(data.getData().getPath());
+                    importSources(file);
+                }
+                break;
         }
-
         super.onActivityResult(requestCode, resultCode, data);
     }
 

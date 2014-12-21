@@ -52,7 +52,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -299,12 +298,6 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_notification);
-    }
-
-    private void hide(ShowcaseView view) {
-        if (view != null) {
-            view.hide();
-        }
     }
 
     @Override

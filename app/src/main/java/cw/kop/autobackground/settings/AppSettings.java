@@ -23,6 +23,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -59,6 +60,7 @@ public class AppSettings {
     public static final String APP_DARK_THEME = "Dark Theme";
     public static final String APP_TRANSPARENT_THEME = "Transparent Theme";
 
+    private static final String TAG = AppSettings.class.getCanonicalName();
     private static final long DEFAULT_INTERVAL = 0;
 
     private static SharedPreferences prefs;
@@ -148,6 +150,34 @@ public class AppSettings {
 
     public static void debugVer2_00() {
         prefs.edit().putBoolean("reset_ver_2_00", true).commit();
+    }
+
+    public static void resetVer2_00_20() {
+
+        if (prefs.getBoolean("reset_ver_2_00_20", true)) {
+
+            ArrayList<Source> sourceList = new ArrayList<>();
+
+            for (int index = 0; index < AppSettings.getNumSources(); index++) {
+
+                Source source = new Source();
+
+                source.setType(AppSettings.getSourceType(index));
+                source.setTitle(AppSettings.getSourceTitle(index));
+                source.setData(AppSettings.getSourceData(index));
+                source.setNum(AppSettings.getSourceNum(index));
+                source.setUse(AppSettings.useSource(index));
+                source.setPreview(AppSettings.useSourcePreview(index));
+                source.setUseTime(AppSettings.useSourceTime(index));
+                source.setTime(AppSettings.getSourceTime(index));
+
+                sourceList.add(source);
+            }
+            setSources(sourceList);
+            prefs.edit().putInt("num_sources", 0).commit();
+            prefs.edit().putBoolean("reset_ver_2_00_20", false).commit();
+        }
+
     }
 
     public static void resetVer2_00() {
@@ -746,13 +776,17 @@ public class AppSettings {
         return prefs.getBoolean("high_resolution_notification_icon", false);
     }
 
+    public static int getNumberSources() {
+        return prefs.getInt("number_sources", 0);
+    }
+
     public static void setSources(List<Source> listData) {
 
         int index = 0;
 
-        for (Source source: listData) {
+        for (Source source : listData) {
             try {
-                prefs.edit().putString("source_" + index, source.toJson().toString());
+                prefs.edit().putString("source_" + index, source.toJson().toString()).commit();
                 index++;
             }
             catch (JSONException e) {
@@ -760,7 +794,23 @@ public class AppSettings {
             }
         }
 
-        prefs.edit().putInt("num_sources", index).commit();
+        prefs.edit().putInt("number_sources", listData.size()).commit();
+    }
+
+    public static Source getSource(int index) {
+
+        try {
+            return Source.fromJson(new JSONObject(prefs.getString("source_" + index, "{}")));
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return new Source();
+
+    }
+
+    public static int getNumSources() {
+        return prefs.getInt("num_sources", 0);
     }
 
     public static void setSources(ArrayList<HashMap<String, String>> listData) {
@@ -851,10 +901,6 @@ public class AppSettings {
 
     public static boolean useSource(int index) {
         return prefs.getBoolean("use_source_" + index, false);
-    }
-
-    public static int getNumSources() {
-        return prefs.getInt("num_sources", 0);
     }
 
     public static String getSourceTitle(int index) {
@@ -1380,8 +1426,12 @@ public class AppSettings {
         return prefs.getString("time_type", DIGITAL);
     }
 
-    public static boolean useSyncWearImage() {
+    public static boolean useSyncImage() {
         return prefs.getBoolean("use_sync_image", false);
+    }
+
+    public static boolean useTimePalette() {
+        return prefs.getBoolean("use_time_palette", false);
     }
 
     public static void setTimeOffset(long offset) {

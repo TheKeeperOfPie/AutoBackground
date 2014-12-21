@@ -491,7 +491,7 @@ public class SourceListAdapterOld extends BaseAdapter {
         AppSettings.setSources(listData);
 
         Log.i("WLA", "SavedListData" + listData.size());
-        Log.i("WLA", "Saved Data: " + AppSettings.getNumSources());
+        Log.i("WLA", "Saved Data: " + AppSettings.getNumberSources());
     }
 
 

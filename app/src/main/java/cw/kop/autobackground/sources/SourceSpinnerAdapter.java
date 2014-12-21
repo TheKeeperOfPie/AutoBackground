@@ -35,7 +35,6 @@ public class SourceSpinnerAdapter extends ArrayAdapter<String> {
 
     private List<String> itemList;
     private LayoutInflater inflater;
-    private int textColor;
     private int backgroundColor;
 
     public SourceSpinnerAdapter(Context context, int resource, List<String> objects) {
@@ -43,7 +42,6 @@ public class SourceSpinnerAdapter extends ArrayAdapter<String> {
 
         itemList = objects;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        textColor = AppSettings.getColorFilterInt(context);
         backgroundColor = context.getResources().getColor(AppSettings.getBackgroundColorResource());
     }
 
@@ -56,7 +54,6 @@ public class SourceSpinnerAdapter extends ArrayAdapter<String> {
 
         TextView spinnerText = (TextView) convertView.findViewById(R.id.spinner_text);
         spinnerText.setText(itemList.get(position));
-        spinnerText.setTextColor(textColor);
         spinnerText.setBackgroundColor(backgroundColor);
 
         return convertView;
@@ -71,7 +68,6 @@ public class SourceSpinnerAdapter extends ArrayAdapter<String> {
 
         TextView spinnerText = (TextView) convertView.findViewById(R.id.spinner_text);
         spinnerText.setText(itemList.get(position));
-        spinnerText.setTextColor(textColor);
         spinnerText.setBackgroundColor(backgroundColor);
 
         return convertView;

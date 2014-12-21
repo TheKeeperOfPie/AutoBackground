@@ -73,7 +73,6 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
 
         findPreference("about_self_copyright").setOnPreferenceClickListener(this);
         findPreference("about_library_jsoup").setOnPreferenceClickListener(this);
-        findPreference("about_library_showcaseview").setOnPreferenceClickListener(this);
         findPreference("about_library_picasso").setOnPreferenceClickListener(this);
         findPreference("about_library_colorpickerview").setOnPreferenceClickListener(this);
 
@@ -106,10 +105,6 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
             case "about_library_jsoup":
                 intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse("http://jsoup.org/"));
-                break;
-            case "about_library_showcaseview":
-                intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse("http://amlcurran.github.io/ShowcaseView/"));
                 break;
             case "about_library_picasso":
                 intent = new Intent(Intent.ACTION_VIEW);

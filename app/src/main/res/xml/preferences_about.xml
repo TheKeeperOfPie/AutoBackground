@@ -38,12 +38,6 @@
             />
 
         <Preference
-            android:key="about_library_showcaseview"
-            android:summary="@string/about_library_showcaseview_description"
-            android:title="@string/about_library_showcaseview"
-            />
-
-        <Preference
             android:key="about_library_picasso"
             android:summary="@string/about_library_picasso_description"
             android:title="@string/about_library_picasso"
@@ -62,6 +56,5 @@
             />
 
     </PreferenceCategory>
-
 
 </PreferenceScreen>

@@ -356,7 +356,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             }
 
             sourceTitle.setText(arguments.getString("title"));
-            sourceNum.setText(arguments.getString("num"));
+            sourceNum.setText("" + arguments.getInt("num"));
             sourceData.setText(data);
 
             if (imageDrawable != null) {
@@ -987,13 +987,16 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            showAlbumFragment(AppSettings.GOOGLE_ALBUM,
-                    changePosition,
-                    albumNames,
-                    albumImageLinks,
-                    albumLinks,
-                    albumNums,
-                    use);
+
+            if (isAdded()) {
+                showAlbumFragment(AppSettings.GOOGLE_ALBUM,
+                        changePosition,
+                        albumNames,
+                        albumImageLinks,
+                        albumLinks,
+                        albumNums,
+                        use);
+            }
         }
     }
 

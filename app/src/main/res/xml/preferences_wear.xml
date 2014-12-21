@@ -23,9 +23,16 @@
         >
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:key="use_sync_wear_image"
-            android:title="@string/use_sync_wear_image"
-            android:summary="@string/use_sync_wear_image_description"
+            android:key="use_sync_image"
+            android:title="@string/use_sync_image"
+            android:summary="@string/use_sync_image_description"
+            android:defaultValue="false"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:key="use_time_palette"
+            android:title="@string/use_time_palette"
+            android:summary="@string/use_time_palette_description"
             android:defaultValue="false"
             />
 

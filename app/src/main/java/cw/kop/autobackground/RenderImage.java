@@ -53,12 +53,12 @@ public class RenderImage {
     private static int mtrxhandle;
     private static int mAlphaHandle;
     private static int program;
-    public float vertices[];
-    public short indices[];
-    public float uvs[];
-    public FloatBuffer vertexBuffer;
-    public ShortBuffer drawListBuffer;
-    public FloatBuffer uvBuffer;
+    private float vertices[];
+    private short indices[];
+    private float uvs[];
+    private FloatBuffer vertexBuffer;
+    private ShortBuffer drawListBuffer;
+    private FloatBuffer uvBuffer;
     private float renderScreenWidth;
     private float renderScreenHeight;
     private float[] matrixProjection = new float[16];

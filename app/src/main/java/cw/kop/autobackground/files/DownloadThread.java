@@ -67,6 +67,7 @@ import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.Source;
 
 /**
  * Created by TheKeeperOfPie on 8/6/2014.
@@ -74,7 +75,7 @@ import cw.kop.autobackground.settings.AppSettings;
 public class DownloadThread extends Thread {
 
     private static final int NOTIFICATION_ID = 1;
-    private static final String TAG = "DownloaderAsyncTask";
+    private static final String TAG = DownloadThread.class.getCanonicalName();
     private Context appContext;
     private String imageDetails = "";
     private NotificationManager notificationManager = null;
@@ -126,11 +127,13 @@ public class DownloadThread extends Thread {
         }
 
         List<Integer> indexes = new ArrayList<>();
-        for (int index = 0; index < AppSettings.getNumSources(); index++) {
-            if (!AppSettings.getSourceType(index).equals(AppSettings.FOLDER) && AppSettings.useSource(
-                    index)) {
+        for (int index = 0; index < AppSettings.getNumberSources(); index++) {
+
+            Source source = AppSettings.getSource(index);
+
+            if (!source.getType().equals(AppSettings.FOLDER) && source.isUse()) {
                 indexes.add(index);
-                progressMax += AppSettings.getSourceNum(index);
+                progressMax += source.getNum();
             }
         }
 
@@ -150,6 +153,8 @@ public class DownloadThread extends Thread {
 
         for (int index : indexes) {
 
+            Source source = AppSettings.getSource(index);
+
             if (isInterrupted()) {
                 cancel();
                 return;
@@ -158,50 +163,50 @@ public class DownloadThread extends Thread {
             try {
 
                 if (AppSettings.deleteOldImages()) {
-                    FileHandler.deleteBitmaps(appContext, index);
+                    FileHandler.deleteBitmaps(appContext, source);
                 }
 
-                String title = AppSettings.getSourceTitle(index);
+                String title = source.getTitle();
                 File file = new File(downloadCacheDir + "/" + title + " " + AppSettings.getImagePrefix());
 
                 if (!file.exists() || !file.isDirectory()) {
                     file.mkdir();
                 }
 
-                String sourceType = AppSettings.getSourceType(index);
-                String sourceData = AppSettings.getSourceData(index);
+                String sourceType = source.getType();
+                String sourceData = source.getData();
 
                 switch (sourceType) {
                     case AppSettings.WEBSITE:
-                        downloadWebsite(sourceData, index);
+                        downloadWebsite(sourceData, source);
                         break;
                     case AppSettings.IMGUR_SUBREDDIT:
-                        downloadImgurSubreddit(sourceData, index);
+                        downloadImgurSubreddit(sourceData, source);
                         break;
                     case AppSettings.IMGUR_ALBUM:
-                        downloadImgurAlbum(sourceData, index);
+                        downloadImgurAlbum(sourceData, source);
                         break;
                     case AppSettings.GOOGLE_ALBUM:
-                        downloadPicasa(sourceData, index);
+                        downloadPicasa(sourceData, source);
                         break;
                     case AppSettings.TUMBLR_BLOG:
-                        downloadTumblrBlog(sourceData, index);
+                        downloadTumblrBlog(sourceData, source);
                         break;
                     case AppSettings.TUMBLR_TAG:
-                        downloadTumblrTag(sourceData, index);
+                        downloadTumblrTag(sourceData, source);
                         break;
                     case AppSettings.REDDIT_SUBREDDIT:
-                        downloadRedditSubreddit(sourceData, index);
+                        downloadRedditSubreddit(sourceData, source);
                         break;
                 }
 
-                totalTarget += AppSettings.getSourceNum(index);
+                totalTarget += source.getNum();
 
                 updateNotification(totalTarget);
 
             }
             catch (IOException | IllegalArgumentException e) {
-                sendToast("Invalid URL: " + AppSettings.getSourceData(index));
+                sendToast("Invalid URL: " + source.getData());
                 Log.i(TAG, "Invalid URL");
             }
         }
@@ -241,10 +246,10 @@ public class DownloadThread extends Thread {
         return links;
     }
 
-    private void startDownload(List<String> links, List<String> data, int index) {
+    private void startDownload(List<String> links, List<String> data, Source source) {
         String dir = AppSettings.getDownloadPath();
-        String title = AppSettings.getSourceTitle(index);
-        int targetNum = AppSettings.getSourceNum(index);
+        String title = source.getTitle();
+        int targetNum = source.getNum();
         int numDownloaded = 0;
 
         Set<File> downloadedFiles = new HashSet<>();
@@ -294,8 +299,8 @@ public class DownloadThread extends Thread {
         if (numDownloaded == 0) {
             sendToast("No images downloaded from " + title);
         }
-        if (!isInterrupted() && numDownloaded < AppSettings.getSourceNum(index)) {
-            sendToast("Not enough photos from " + AppSettings.getSourceData(index) + " " +
+        if (!isInterrupted() && numDownloaded < targetNum) {
+            sendToast("Not enough photos from " + source.getData() + " " +
                     "Try lowering the resolution or changing sources. " +
                     "There may also have been too many duplicates.");
         }
@@ -326,7 +331,7 @@ public class DownloadThread extends Thread {
         }
     }
 
-    private void downloadWebsite(String url, int index) throws IOException {
+    private void downloadWebsite(String url, Source source) throws IOException {
 
         if (isInterrupted()) {
             return;
@@ -344,10 +349,10 @@ public class DownloadThread extends Thread {
 
         Log.i(TAG, "imageLinks: " + imageList.toString());
 
-        startDownload(imageList, imageList, index);
+        startDownload(imageList, imageList, source);
     }
 
-    private void downloadImgurSubreddit(String subreddit, int index) {
+    private void downloadImgurSubreddit(String subreddit, Source source) {
 
         if (isInterrupted()) {
             return;
@@ -389,7 +394,7 @@ public class DownloadThread extends Thread {
 
             Log.i(TAG, "imageList size: " + imageList.size());
 
-            startDownload(imageList, imagePages, index);
+            startDownload(imageList, imagePages, source);
 
         }
         catch (JSONException e) {
@@ -398,7 +403,7 @@ public class DownloadThread extends Thread {
         }
     }
 
-    private void downloadImgurAlbum(String albumId, int index) {
+    private void downloadImgurAlbum(String albumId, Source source) {
 
         if (isInterrupted()) {
             return;
@@ -425,7 +430,6 @@ public class DownloadThread extends Thread {
             JSONArray jArray = jsonObject.getJSONArray("data");
 
             List<String> imageList = new ArrayList<>();
-            List<String> imagePages = new ArrayList<>();
 
             for (int i = 0; i < jArray.length(); i++) {
                 JSONObject imageObject = jArray.getJSONObject(i);
@@ -436,7 +440,7 @@ public class DownloadThread extends Thread {
 
             Log.i(TAG, "imageList size: " + imageList.size());
 
-            startDownload(imageList, imagePages, index);
+            startDownload(imageList, imageList, source);
 
         }
         catch (JSONException e) {
@@ -445,13 +449,18 @@ public class DownloadThread extends Thread {
         }
     }
 
-    private void downloadPicasa(String data, int index) {
+    private void downloadPicasa(String data, Source source) {
 
         if (isInterrupted()) {
             return;
         }
 
-        data = data.substring(data.indexOf("user/"));
+        if (data.contains("user/")) {
+            data = data.substring(data.indexOf("user/"));
+        }
+        else {
+            return;
+        }
 
         HttpGet httpGet = new HttpGet("https://picasaweb.google.com/data/feed/api/" + data + "?imgmax=d");
         httpGet.setHeader("Authorization", "OAuth " + AppSettings.getGoogleAccountToken());
@@ -471,11 +480,11 @@ public class DownloadThread extends Thread {
             imageList.add(link.select("media|content").attr("url"));
         }
 
-        startDownload(imageList, imageList, index);
+        startDownload(imageList, imageList, source);
 
     }
 
-    private void downloadTumblrBlog(String data, int index) {
+    private void downloadTumblrBlog(String data, Source source) {
 
         if (isInterrupted()) {
             return;
@@ -512,14 +521,14 @@ public class DownloadThread extends Thread {
 
             Log.i(TAG, "imageList size: " + imageList.size());
 
-            startDownload(imageList, imagePages, index);
+            startDownload(imageList, imagePages, source);
         }
         catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    private void downloadTumblrTag(String tag, int index) {
+    private void downloadTumblrTag(String tag, Source source) {
 
         try {
             HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/tagged?tag=" + tag + "&api_key=" + ApiKeys.TUMBLR_CLIENT_ID);
@@ -556,7 +565,7 @@ public class DownloadThread extends Thread {
 
             Log.i(TAG, "imageList size: " + imageList.size());
 
-            startDownload(imageList, imagePages, index);
+            startDownload(imageList, imagePages, source);
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -564,7 +573,7 @@ public class DownloadThread extends Thread {
 
     }
 
-    private void downloadRedditSubreddit(String sourceData, int index) {
+    private void downloadRedditSubreddit(String sourceData, Source source) {
         if (isInterrupted()) {
             return;
         }
@@ -606,7 +615,7 @@ public class DownloadThread extends Thread {
             Log.i(TAG, "imageList " + imageList.toString());
             Log.i(TAG, "imagePages " + imagePages.toString());
 
-            startDownload(imageList, imagePages, index);
+            startDownload(imageList, imagePages, source);
 
         }
         catch (JSONException e) {
@@ -819,6 +828,7 @@ public class DownloadThread extends Thread {
 
             AppSettings.setUrl(file.getName(), saveData);
             Log.i(TAG, file.getName() + " " + saveData);
+            thumbnail.recycle();
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();

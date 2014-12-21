@@ -48,6 +48,13 @@ public class WearSettings {
         return prefs.getString("time_type", DIGITAL);
     }
 
+    public static void setUseTimePalette(boolean use) {
+        prefs.edit().putBoolean("use_time_palette", use).commit();
+    }
+
+    public static boolean useTimePalette() {
+        return prefs.getBoolean("use_time_palette", false);
+    }
 
     public static void setTimeOffset(long offset) {
         prefs.edit().putLong("time_offset", offset).commit();

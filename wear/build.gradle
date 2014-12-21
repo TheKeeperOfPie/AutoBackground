@@ -41,4 +41,5 @@ dependencies {
     compile 'com.google.android.gms:play-services-wearable:6.5.87'
     compile project(':shared')
     compile 'com.google.android.support:wearable:1.1.0'
+    compile 'com.android.support:palette-v7:21.0.3'
 }

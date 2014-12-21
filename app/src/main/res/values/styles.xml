@@ -114,11 +114,6 @@
         <item name="android:layout_marginTop">8dp</item>
     </style>
 
-    <style name="ShowcaseStyle" parent="@style/AppTransparentTheme">
-        <item name="android:background">@color/BLACK_TRANSPARENT</item>
-        <item name="sv_backgroundColor">@color/BLACK_TRANSPARENT</item>
-    </style>
-
     <style name="LightListView" parent="android:style/Widget.Holo.Light.ListView">
         <item name="android:textColor">@color/DARK_GRAY_OPAQUE</item>
         <item name="android:divider">@color/DARK_GRAY_TRANSPARENT</item>

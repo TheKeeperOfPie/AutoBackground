@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Random;
 
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.Source;
 
 public class FileHandler {
 
@@ -110,13 +111,15 @@ public class FileHandler {
 
         String cacheDir = AppSettings.getDownloadPath();
 
-        for (int index = 0; noImages && index < AppSettings.getNumSources(); index++) {
+        for (int index = 0; noImages && index < AppSettings.getNumberSources(); index++) {
 
-            if (AppSettings.useSource(index)) {
-                String type = AppSettings.getSourceType(index);
+            Source source = AppSettings.getSource(index);
+
+            if (source.isUse()) {
+                String type = source.getType();
                 if (type.equals(AppSettings.FOLDER)) {
 
-                    String[] folders = AppSettings.getSourceData(index).split(AppSettings.DATA_SPLITTER);
+                    String[] folders = source.getData().split(AppSettings.DATA_SPLITTER);
 
                     for (int folderIndex = 0; noImages && folderIndex < folders.length; folderIndex++) {
                         File folder = new File(folders[folderIndex]);
@@ -127,7 +130,7 @@ public class FileHandler {
                     }
                 }
                 else {
-                    File folder = new File(cacheDir + "/" + AppSettings.getSourceTitle(index) + " " + AppSettings.getImagePrefix());
+                    File folder = new File(cacheDir + "/" + source.getTitle() + " " + AppSettings.getImagePrefix());
                     if (folder.exists() && folder.isDirectory() && folder.listFiles(filenameFilter).length > 0) {
                         noImages = false;
                     }
@@ -146,12 +149,14 @@ public class FileHandler {
 
         List<File> bitmaps = new ArrayList<>();
 
-        for (int i = 0; i < AppSettings.getNumSources(); i++) {
+        for (int i = 0; i < AppSettings.getNumberSources(); i++) {
 
-            if (AppSettings.useSource(i)) {
+            Source source = AppSettings.getSource(i);
 
-                if (AppSettings.useSourceTime(i)) {
-                    String[] timeArray = AppSettings.getSourceTime(i).split(":|[ -]+");
+            if (source.isUse()) {
+
+                if (source.isUseTime()) {
+                    String[] timeArray = source.getTime().split(":|[ -]+");
 
                     try {
                         int startTime = Integer.parseInt(timeArray[0] + "" + timeArray[1]);
@@ -175,10 +180,10 @@ public class FileHandler {
                     }
                 }
 
-                String type = AppSettings.getSourceType(i);
+                String type = source.getType();
                 if (type.equals(AppSettings.FOLDER)) {
 
-                    for (String folderName : AppSettings.getSourceData(i).split(AppSettings.DATA_SPLITTER)) {
+                    for (String folderName : source.getData().split(AppSettings.DATA_SPLITTER)) {
                         File folder = new File(folderName);
                         if (folder.exists() && folder.isDirectory()) {
                             ArrayList<File> images = new ArrayList<>(Arrays.asList(folder.listFiles(
@@ -189,7 +194,7 @@ public class FileHandler {
                     }
                 }
                 else {
-                    File folder = new File(cacheDir + "/" + AppSettings.getSourceTitle(i) + " " + AppSettings.getImagePrefix());
+                    File folder = new File(cacheDir + "/" + source.getTitle() + " " + AppSettings.getImagePrefix());
                     if (folder.exists() && folder.isDirectory()) {
                         ArrayList<File> images = new ArrayList<>(Arrays.asList(folder.listFiles(
                                 filenameFilter)));
@@ -251,10 +256,9 @@ public class FileHandler {
 
     }
 
-    public static void deleteBitmaps(Context appContext, int position) {
+    public static void deleteBitmaps(Context appContext, Source source) {
 
-        File folder = new File(AppSettings.getDownloadPath() + "/" + AppSettings.getSourceTitle(
-                position) + " " + AppSettings.getImagePrefix());
+        File folder = new File(AppSettings.getDownloadPath() + "/" + source.getTitle() + " " + AppSettings.getImagePrefix());
 
         if (folder.exists() && folder.isDirectory()) {
             if (folder.listFiles().length > 0) {

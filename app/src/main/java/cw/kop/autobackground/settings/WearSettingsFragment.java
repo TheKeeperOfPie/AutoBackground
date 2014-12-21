@@ -788,6 +788,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 PutDataMapRequest dataMap = PutDataMapRequest.create("/settings");
                 dataMap.getDataMap().putString("time_type", AppSettings.getTimeType());
                 dataMap.getDataMap().putLong("time_offset", AppSettings.getTimeOffset());
+                dataMap.getDataMap().putBoolean("use_time_palette", AppSettings.useTimePalette());
                 dataMap.getDataMap().putLong("time", new Date().getTime());
                 dataMap.getDataMap().putInt("analog_hour_color",
                         AppSettings.getAnalogHourColor());

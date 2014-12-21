@@ -130,7 +130,7 @@ public class Source {
         object.put("preview", preview);
         object.put("useTime", useTime);
         object.put("time", time);
-        object.put("imageFile", imageFile.getAbsolutePath());
+        object.put("imageFile", imageFile != null ? imageFile.getAbsolutePath() : null);
         return object;
     }
 
@@ -149,5 +149,14 @@ public class Source {
         return source;
     }
 
-
+    @Override
+    public String toString() {
+        try {
+            return toJson().toString();
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return super.toString();
+    }
 }

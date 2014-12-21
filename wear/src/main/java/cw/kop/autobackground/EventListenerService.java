@@ -116,6 +116,7 @@ public class EventListenerService extends WearableListenerService {
                     case "/settings":
                         WearSettings.setTimeType(dataMap.getString("time_type", WearSettings.DIGITAL));
                         WearSettings.setTimeOffset(dataMap.getLong("time_offset", 0));
+                        WearSettings.setUseTimePalette(dataMap.getBoolean("use_time_palette", false));
 
                         // Set analog settings
 
