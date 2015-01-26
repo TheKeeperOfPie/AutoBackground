@@ -27,8 +27,15 @@
             android:defaultValue="false"
             android:icon="@drawable/google_plus_icon"
             android:key="use_google_account"
-            android:summary="@string/use_google_account_description"
             android:title="@string/use_google_account"
+            android:summary="@string/use_google_account_description"
+            />
+
+        <cw.kop.autobackground.CustomSwitchPreference
+            android:defaultValue="false"
+            android:key="use_google_account"
+            android:title="@string/use_dropbox_account"
+            android:summary="@string/use_dropbox_account_description"
             />
 
     </PreferenceCategory>

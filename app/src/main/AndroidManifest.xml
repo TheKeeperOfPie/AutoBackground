@@ -112,7 +112,21 @@
             android:windowSoftInputMode="adjustPan"
             >
         </activity>
+
         <meta-data android:name="com.crashlytics.ApiKey" android:value="5cda1cb2574fd377ad47423cbfb8d3f787c9f6b5"/>
+
+        <activity
+            android:name="com.dropbox.client2.android.AuthActivity"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|keyboard">
+            <intent-filter>
+                <!-- Change this to be db- followed by your app key -->
+                <data android:scheme="db-mljfnr5u8v4dttl" />
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
     </application>
 

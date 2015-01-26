@@ -18,26 +18,18 @@ package cw.kop.autobackground.sources;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.FragmentManager;
-import android.app.TimePickerDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v4.content.LocalBroadcastManager;
-import android.text.format.DateFormat;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,6 +49,9 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.android.AndroidAuthSession;
+import com.dropbox.client2.session.AppKeyPair;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -74,12 +69,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 
 import cw.kop.autobackground.CustomSwitchPreference;
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.R;
-import cw.kop.autobackground.TimePickerFragment;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.AlbumFragment;
@@ -129,12 +122,17 @@ public class SourceInfoFragment extends PreferenceFragment {
 
     private String folderData;
 
+    private DropboxAPI<AndroidAuthSession> dropboxAPI;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_source);
         handler = new Handler();
         setRetainInstance(true);
+        AppKeyPair appKeys = new AppKeyPair(ApiKeys.DROPBOX_KEY, ApiKeys.DROPBOX_SECRET);
+        AndroidAuthSession session = new AndroidAuthSession(appKeys, ApiKeys.DROPBOX_ACCESS_TYPE);
+        dropboxAPI = new DropboxAPI<>(session);
     }
 
     @Override
@@ -431,6 +429,23 @@ public class SourceInfoFragment extends PreferenceFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        if (dropboxAPI.getSession().authenticationSuccessful()) {
+            try {
+                dropboxAPI.getSession().finishAuthentication();
+
+                AppSettings.setUseDropboxAccount(true);
+                AppSettings.setDropboxAccountToken(dropboxAPI.getSession().getOAuth2AccessToken());
+            } catch (IllegalStateException e) {
+                Log.i("DbAuthLog", "Error authenticating", e);
+            }
+        }
+
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         Animation animation;
@@ -720,6 +735,16 @@ public class SourceInfoFragment extends PreferenceFragment {
             case 7:
                 type = AppSettings.REDDIT_SUBREDDIT;
                 break;
+            case 8 :
+                type = AppSettings.DROPBOX_FOLDER;
+                if (AppSettings.getDropboxAccountToken().equals("")) {
+                    dropboxAPI.getSession().startOAuth2Authentication(appContext);
+                }
+                else {
+                    showDropboxFragment();
+                }
+
+                break;
             default:
         }
 
@@ -761,7 +786,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                                     accountName,
                                     "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
-                            AppSettings.setGoogleAccount(true);
+                            AppSettings.setUseGoogleAccount(true);
                             new PicasaAlbumTask(-1, true).execute();
                         }
                         catch (IOException transientEx) {
@@ -769,7 +794,10 @@ public class SourceInfoFragment extends PreferenceFragment {
                         }
                         catch (UserRecoverableAuthException e) {
                             e.printStackTrace();
-                            startActivityForResult(e.getIntent(), GoogleAccount.GOOGLE_AUTH_CODE);
+                            if (isAdded()) {
+                                startActivityForResult(e.getIntent(),
+                                        GoogleAccount.GOOGLE_AUTH_CODE);
+                            }
                             return null;
                         }
                         catch (GoogleAuthException authEx) {
@@ -793,7 +821,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                                     AppSettings.getGoogleAccountName(),
                                     "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
-                            AppSettings.setGoogleAccount(true);
+                            AppSettings.setUseGoogleAccount(true);
                             new PicasaAlbumTask(-1, true).execute();
                         }
                         catch (IOException transientEx) {
@@ -854,6 +882,10 @@ public class SourceInfoFragment extends PreferenceFragment {
                     .addToBackStack(null)
                     .commit();
         }
+    }
+
+    private void showDropboxFragment() {
+
     }
 
     public void onBackPressed() {

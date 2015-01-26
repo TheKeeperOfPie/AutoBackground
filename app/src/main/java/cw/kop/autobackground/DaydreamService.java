@@ -17,6 +17,7 @@
 package cw.kop.autobackground;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.service.dreams.DreamService;
@@ -38,10 +39,13 @@ public class DaydreamService extends DreamService {
     private GestureDetector gestureDetector;
     private ScaleGestureDetector scaleGestureDetector;
     private int touchCount = 0;
+    private Context context;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        context = getApplicationContext();
+        AppSettings.initPrefs(getApplicationContext());
         gestureDetector = new GestureDetector(getApplicationContext(),
                 new GestureDetector.SimpleOnGestureListener() {
 

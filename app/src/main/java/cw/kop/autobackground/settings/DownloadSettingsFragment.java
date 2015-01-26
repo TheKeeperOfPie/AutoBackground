@@ -99,7 +99,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
                     @Override
                     public void onClickRight(View v) {
-                        FileHandler.deleteAllBitmaps(appContext);
+                        FileHandler.deleteAllBitmaps();
                         Toast.makeText(appContext,
                                 "Deleted images with prefix\n" + AppSettings.getImagePrefix(),
                                 Toast.LENGTH_SHORT).show();

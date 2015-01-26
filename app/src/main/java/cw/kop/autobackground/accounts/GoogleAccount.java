@@ -16,6 +16,7 @@
 
 package cw.kop.autobackground.accounts;
 
+import android.content.Context;
 import android.content.Intent;
 
 import com.google.android.gms.common.AccountPicker;
@@ -39,6 +40,7 @@ public class GoogleAccount {
     }
 
     public static void deleteAccount() {
+
         AppSettings.setGoogleAccountName("");
         AppSettings.setGoogleAccountToken("");
     }

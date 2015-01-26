@@ -256,10 +256,10 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
                 minutePaint.setColor(imagePalette.getVibrantColor(WearSettings.getDigitalMinuteColor()));
                 secondPaint.setColor(imagePalette.getVibrantColor(WearSettings.getDigitalSecondColor()));
 
-                separatorShadowPaint.setColor(imagePalette.getDarkVibrantColor(WearSettings.getDigitalSeparatorShadowColor()));
-                hourShadowPaint.setColor(imagePalette.getDarkVibrantColor(WearSettings.getDigitalHourShadowColor()));
-                minuteShadowPaint.setColor(imagePalette.getDarkVibrantColor(WearSettings.getDigitalMinuteShadowColor()));
-                secondShadowPaint.setColor(imagePalette.getDarkVibrantColor(WearSettings.getDigitalSecondShadowColor()));
+                separatorShadowPaint.setColor(imagePalette.getDarkMutedColor(WearSettings.getDigitalSeparatorShadowColor()));
+                hourShadowPaint.setColor(imagePalette.getDarkMutedColor(WearSettings.getDigitalHourShadowColor()));
+                minuteShadowPaint.setColor(imagePalette.getDarkMutedColor(WearSettings.getDigitalMinuteShadowColor()));
+                secondShadowPaint.setColor(imagePalette.getDarkMutedColor(WearSettings.getDigitalSecondShadowColor()));
             }
             else {
                 separatorPaint.setColor(WearSettings.getDigitalSeparatorColor());

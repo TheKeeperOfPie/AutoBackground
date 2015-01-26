@@ -63,7 +63,7 @@ import cw.kop.autobackground.sources.SourceListFragment;
 import cw.kop.autobackground.tutorial.TutorialActivity;
 import io.fabric.sdk.android.Fabric;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements AdapterView.OnItemClickListener {
 
     public static final String DRAWER_OPENED = "cw.kop.autobackground.MainActivity.DRAWER_OPENED";
     public static final String DRAWER_CLOSED = "cw.kop.autobackground.MainActivity.DRAWER_CLOSED";
@@ -104,10 +104,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.i("MP", "onCreate");
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(
-                getApplicationContext());
-
-        AppSettings.initPrefs(prefs, getApplicationContext());
+        AppSettings.initPrefs(getApplicationContext());
 
         switch (AppSettings.getTheme()) {
             default:
@@ -180,7 +177,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         if (drawerLayout != null) {
-            drawerList.setOnItemClickListener(new DrawerItemClickListener());
+            drawerList.setOnItemClickListener(this);
             drawerToggle = new ActionBarDrawerToggle(
                     this,
                     drawerLayout,
@@ -443,14 +440,13 @@ public class MainActivity extends ActionBarActivity {
         super.onPause();
     }
 
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            newPosition = position;
-            drawerList.setItemChecked(position, true);
-            if (drawerLayout != null) {
-                drawerLayout.closeDrawer(navLayout);
-            }
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        newPosition = position;
+        drawerList.setItemChecked(position, true);
+        if (drawerLayout != null) {
+            drawerLayout.closeDrawer(navLayout);
         }
     }
+
 }

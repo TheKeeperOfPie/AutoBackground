@@ -20,10 +20,12 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.os.DropBoxManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -221,6 +223,7 @@ public class LocalImageAdapter extends BaseAdapter {
     public void remove(int index) {
         listFiles.remove(index);
         notifyDataSetChanged();
+
     }
 
 }

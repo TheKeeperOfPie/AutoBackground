@@ -20,6 +20,7 @@ import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -49,6 +50,7 @@ public class AppSettings {
     public static final String TUMBLR_BLOG = "Tumblr Blog";
     public static final String TUMBLR_TAG = "Tumblr Tag";
     public static final String REDDIT_SUBREDDIT = "Reddit Subreddit";
+    public static final String DROPBOX_FOLDER = "Dropbox Folder";
 
     public static final String DATA_SPLITTER = ":::";
 
@@ -85,8 +87,8 @@ public class AppSettings {
         prefs.edit().putBoolean("use_tutorial", use).commit();
     }
 
-    public static void initPrefs(SharedPreferences preferences, Context context) {
-        prefs = preferences;
+    public static void initPrefs(Context context) {
+        prefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         if (isFirstRun()) {
             prefs.edit().putString("user_width",
                     "" + (WallpaperManager.getInstance(context).getDesiredMinimumWidth() / 2)).commit();
@@ -104,54 +106,6 @@ public class AppSettings {
         }
     }
 
-    public static void versionUpdate() {
-
-        if (prefs.getBoolean("version_update_1.0", true)) {
-
-            FilenameFilter fileFilter = (new FilenameFilter() {
-
-                @Override
-                public boolean accept(File dir, String filename) {
-                    return filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(
-                            ".jpg");
-                }
-            });
-
-            String downloadCache = getDownloadPath();
-            for (int i = 0; i < AppSettings.getNumSources(); i++) {
-                if (AppSettings.getSourceType(i).equals(AppSettings.WEBSITE)) {
-                    String title = AppSettings.getSourceTitle(i);
-                    String titleTrimmed = title.replaceAll(" ", "");
-                    File oldFolder = new File(downloadCache + "/" + titleTrimmed + AppSettings.getImagePrefix());
-                    if (oldFolder.exists() && oldFolder.isDirectory()) {
-
-                        File[] fileList = oldFolder.listFiles(fileFilter);
-
-                        for (int index = 0; index < fileList.length; index++) {
-                            if (fileList[index].getName().contains(title)) {
-                                fileList[index].renameTo(new File(downloadCache + "/" + title + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + index + ".png"));
-                                Log.i("AS", "Renamed file");
-                            }
-                        }
-
-                        oldFolder.renameTo(new File(downloadCache + "/" + title + " " + getImagePrefix()));
-
-                        Log.i("AS", "Renamed");
-                    }
-                }
-            }
-            prefs.edit().putBoolean("version_update_1.0", false).commit();
-        }
-    }
-
-    public static void setVersionUpdate(boolean update) {
-        prefs.edit().putBoolean("version_update_1.0", true).apply();
-    }
-
-    public static void debugVer2_00() {
-        prefs.edit().putBoolean("reset_ver_2_00", true).commit();
-    }
-
     public static void resetVer2_00_20() {
 
         if (prefs.getBoolean("reset_ver_2_00_20", true)) {
@@ -160,21 +114,26 @@ public class AppSettings {
 
             for (int index = 0; index < AppSettings.getNumSources(); index++) {
 
-                Source source = new Source();
+                try {
+                    Source source = new Source();
 
-                source.setType(AppSettings.getSourceType(index));
-                source.setTitle(AppSettings.getSourceTitle(index));
-                source.setData(AppSettings.getSourceData(index));
-                source.setNum(AppSettings.getSourceNum(index));
-                source.setUse(AppSettings.useSource(index));
-                source.setPreview(AppSettings.useSourcePreview(index));
-                source.setUseTime(AppSettings.useSourceTime(index));
-                source.setTime(AppSettings.getSourceTime(index));
+                    source.setType(AppSettings.getSourceType(index));
+                    source.setTitle(AppSettings.getSourceTitle(index));
+                    source.setData(AppSettings.getSourceData(index));
+                    source.setNum(AppSettings.getSourceNum(index));
+                    source.setUse(AppSettings.useSource(index));
+                    source.setPreview(AppSettings.useSourcePreview(index));
+                    source.setUseTime(AppSettings.useSourceTime(index));
+                    source.setTime(AppSettings.getSourceTime(index));
 
-                sourceList.add(source);
+                    sourceList.add(source);
+                }
+                catch (Throwable e) {
+
+                }
             }
             setSources(sourceList);
-            prefs.edit().putInt("num_sources", 0).commit();
+
             prefs.edit().putBoolean("reset_ver_2_00_20", false).commit();
         }
 
@@ -278,7 +237,7 @@ public class AppSettings {
 
     public static void clearPrefs(Context context) {
         prefs.edit().clear().commit();
-        initPrefs(prefs, context);
+        initPrefs(context);
     }
 
     public static void setUrl(String key, String url) {
@@ -1398,8 +1357,8 @@ public class AppSettings {
         return prefs.getBoolean("use_google_account", false);
     }
 
-    public static void setGoogleAccount(boolean use) {
-        prefs.edit().putBoolean("use_google_account", true).apply();
+    public static void setUseGoogleAccount(boolean use) {
+        prefs.edit().putBoolean("use_google_account", use).commit();
     }
 
     public static String getGoogleAccountName() {
@@ -1407,7 +1366,7 @@ public class AppSettings {
     }
 
     public static void setGoogleAccountName(String name) {
-        prefs.edit().putString("google_account_name", name).apply();
+        prefs.edit().putString("google_account_name", name).commit();
     }
 
     public static String getGoogleAccountToken() {
@@ -1415,7 +1374,23 @@ public class AppSettings {
     }
 
     public static void setGoogleAccountToken(String token) {
-        prefs.edit().putString("google_account_token", token).apply();
+        prefs.edit().putString("google_account_token", token).commit();
+    }
+
+    public static boolean useDropboxAccount() {
+        return prefs.getBoolean("use_dropbox_account", false);
+    }
+
+    public static void setUseDropboxAccount(boolean use) {
+        prefs.edit().putBoolean("use_dropbox_account", use).commit();
+    }
+
+    public static String getDropboxAccountToken() {
+        return prefs.getString("dropbox_account_token", "");
+    }
+
+    public static void setDropboxAccountToken(String token) {
+        prefs.edit().putString("dropbox_account_token", token).commit();
     }
 
     public static void setTimeType(String type) {

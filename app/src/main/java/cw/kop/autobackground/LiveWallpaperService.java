@@ -28,8 +28,6 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -44,9 +42,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.ParcelFileDescriptor;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -58,15 +54,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.wearable.Asset;
-import com.google.android.gms.wearable.DataApi;
-import com.google.android.gms.wearable.MessageApi;
-import com.google.android.gms.wearable.MessageEvent;
-import com.google.android.gms.wearable.Node;
-import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
-import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -74,16 +63,13 @@ import com.squareup.picasso.Target;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
-import cw.kop.autobackground.shared.MessagePath;
 
 public class LiveWallpaperService extends GLWallpaperService {
 
@@ -256,7 +242,6 @@ public class LiveWallpaperService extends GLWallpaperService {
         public void onPrepareLoad(Drawable arg0) {
         }
     };
-    public static SharedPreferences prefs;
     private ArrayList<Bitmap> tileBitmaps = new ArrayList<>();
     private ArrayList<Integer> tileOrder = new ArrayList<>();
     private ArrayList<Integer> usedTiles = new ArrayList<>();
@@ -309,8 +294,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         super.onCreate();
 
         handler = new Handler();
-        prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        AppSettings.initPrefs(prefs, getApplicationContext());
+        AppSettings.initPrefs(getApplicationContext());
 
         AppSettings.resetVer1_30();
         AppSettings.resetVer1_40();
@@ -1195,7 +1179,9 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                         @Override
                         public boolean onDoubleTap(MotionEvent e) {
-                            loadNextImage(e.getY());
+                            if (AppSettings.useDoubleTap()) {
+                                loadNextImage(e.getY());
+                            }
                             return true;
                         }
 

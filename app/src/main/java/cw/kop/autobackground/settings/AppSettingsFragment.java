@@ -227,6 +227,8 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     private void exportSources(File outputFile) {
 
+        outputFile.getParentFile().mkdirs();
+
         try {
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
             JSONArray jsonArray = new JSONArray();

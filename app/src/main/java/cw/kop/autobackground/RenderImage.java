@@ -90,7 +90,6 @@ public class RenderImage {
     private volatile boolean inEndTransition = false;
     private long transitionEndtime = 0;
     private EffectFactory effectFactory;
-
     private EventListener eventListener;
 
     public RenderImage(Bitmap bitmap,

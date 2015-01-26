@@ -212,6 +212,7 @@ public class FileHandler {
     }
 
     public static String getBitmapLocation() {
+
         if (currentBitmapFile != null) {
             if (AppSettings.getUrl(currentBitmapFile.getName()) == null) {
                 return currentBitmapFile.getAbsolutePath();
@@ -241,7 +242,7 @@ public class FileHandler {
         Log.i(TAG, "Deleted: " + currentBitmapFile.delete());
     }
 
-    public static void deleteAllBitmaps(Context appContext) {
+    public static void deleteAllBitmaps() {
         File mainDir = new File(AppSettings.getDownloadPath());
 
         for (File folder : mainDir.listFiles()) {
@@ -256,8 +257,7 @@ public class FileHandler {
 
     }
 
-    public static void deleteBitmaps(Context appContext, Source source) {
-
+    public static void deleteBitmaps(Source source) {
         File folder = new File(AppSettings.getDownloadPath() + "/" + source.getTitle() + " " + AppSettings.getImagePrefix());
 
         if (folder.exists() && folder.isDirectory()) {

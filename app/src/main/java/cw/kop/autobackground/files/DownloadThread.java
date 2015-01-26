@@ -163,7 +163,7 @@ public class DownloadThread extends Thread {
             try {
 
                 if (AppSettings.deleteOldImages()) {
-                    FileHandler.deleteBitmaps(appContext, source);
+                    FileHandler.deleteBitmaps(source);
                 }
 
                 String title = source.getTitle();
@@ -607,7 +607,7 @@ public class DownloadThread extends Thread {
                     Log.i(TAG, "First object: " + linkObject.toString());
                 }
                 imageList.add(linkObject.getString("url"));
-                imagePages.add(linkObject.getString("permalink"));
+                imagePages.add("https://reddit.com" + linkObject.getString("permalink"));
 
             }
 

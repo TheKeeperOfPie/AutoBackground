@@ -94,6 +94,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     private ImageView addButtonBackground;
     private ImageView addButton;
     private Menu toolbarMenu;
+    private AppSettings AppSettings;
 
     // Volatile variables to assure animations are reset properly
     private volatile boolean needsButtonReset = false;
@@ -293,7 +294,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         @Override
                         public void onClickRight(View v) {
                             Source source = listAdapter.getItem(index);
-                            FileHandler.deleteBitmaps(appContext, source);
+                            FileHandler.deleteBitmaps(source);
                             sendToast("Deleting " + source.getTitle() + " images");
                             listAdapter.removeItem(index);
                             new ImageCountTask().execute();
@@ -915,9 +916,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         arguments.putInt("num", dataItem.getNum());
         arguments.putBoolean("use", dataItem.isUse());
         arguments.putBoolean("preview", dataItem.isPreview());
-        String imageFileName = dataItem.getImageFile().getAbsolutePath();
-        if (imageFileName != null && imageFileName.length() > 0) {
-            arguments.putString("image", imageFileName);
+        if (dataItem.getImageFile() != null) {
+            arguments.putString("image", dataItem.getImageFile().getAbsolutePath());
         }
         else {
             arguments.putString("image", "");

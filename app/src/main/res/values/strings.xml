@@ -214,6 +214,8 @@
 
     <string name="use_google_account">Google Account</string>
     <string name="use_google_account_description">Connect a Google account</string>
+    <string name="use_dropbox_account">Dropbox Account</string>
+    <string name="use_dropbox_account_description">Connect a Dropbox account</string>
 
     <string name="use_effects">Use Effects</string>
     <string name="use_effects_description">Use image effects</string>
@@ -529,6 +531,7 @@
         <item>Tumblr Blog</item>
         <item>Tumblr Tag Search</item>
         <item>Reddit Subreddit</item>
+        <item>Dropbox Folder</item>
     </string-array>
 
     <string-array name="source_sort_menu">
