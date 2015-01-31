@@ -85,15 +85,27 @@ public class LocalImageAdapter extends BaseAdapter {
             boolean isImage = file.getName().contains(".png") || file.getName().contains(".jpg") || file.getName().contains(
                     ".jpeg");
 
-            View view = convertView;
+            TextView fileTitle;
+            TextView fileSummary;
+            ImageView fileImage;
+            ImageView fileImageFull;
+
             if (convertView == null) {
-                view = inflater.inflate(R.layout.image_list_row, parent, false);
+                convertView = inflater.inflate(R.layout.image_list_row, parent, false);
+
+                fileTitle = (TextView) convertView.findViewById(R.id.file_title);
+                fileSummary = (TextView) convertView.findViewById(R.id.file_summary);
+                fileImage = (ImageView) convertView.findViewById(R.id.file_image);
+                fileImageFull = (ImageView) convertView.findViewById(R.id.file_image_full);
+
+                convertView.setTag(new ViewHolder(fileTitle, fileSummary, fileImage, fileImageFull));
             }
 
-            TextView fileTitle = (TextView) view.findViewById(R.id.file_title);
-            TextView fileSummary = (TextView) view.findViewById(R.id.file_summary);
-            ImageView fileImage = (ImageView) view.findViewById(R.id.file_image);
-            ImageView fileImageFull = (ImageView) view.findViewById(R.id.file_image_full);
+            ViewHolder viewHolder = (ViewHolder) convertView.getTag();
+            fileTitle = viewHolder.fileTitle;
+            fileSummary = viewHolder.fileSummary;
+            fileImage = viewHolder.fileImage;
+            fileImageFull = viewHolder.fileImageFull;
 
             if (isImage) {
                 fileImageFull.setVisibility(View.VISIBLE);
@@ -138,10 +150,10 @@ public class LocalImageAdapter extends BaseAdapter {
             }
 
             if (position == 0 && hideFirst) {
-                view.setAlpha(1.0f);
+                convertView.setAlpha(1.0f);
             }
 
-            return view;
+            return convertView;
         }
         return null;
     }
@@ -224,6 +236,24 @@ public class LocalImageAdapter extends BaseAdapter {
         listFiles.remove(index);
         notifyDataSetChanged();
 
+    }
+
+    private static class ViewHolder {
+
+        public final TextView fileTitle;
+        public final TextView fileSummary;
+        public final ImageView fileImage;
+        public final ImageView fileImageFull;
+
+        public ViewHolder(TextView fileTitle,
+                TextView fileSummary,
+                ImageView fileImage,
+                ImageView fileImageFull) {
+            this.fileTitle = fileTitle;
+            this.fileSummary = fileSummary;
+            this.fileImage = fileImage;
+            this.fileImageFull = fileImageFull;
+        }
     }
 
 }

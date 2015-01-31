@@ -123,7 +123,7 @@ public class DownloadThread extends Thread {
         File cache = new File(downloadCacheDir);
 
         if (!cache.exists() || !cache.isDirectory()) {
-            cache.mkdir();
+            cache.mkdirs();
         }
 
         List<Integer> indexes = new ArrayList<>();
@@ -170,7 +170,7 @@ public class DownloadThread extends Thread {
                 File file = new File(downloadCacheDir + "/" + title + " " + AppSettings.getImagePrefix());
 
                 if (!file.exists() || !file.isDirectory()) {
-                    file.mkdir();
+                    file.mkdirs();
                 }
 
                 String sourceType = source.getType();
@@ -815,7 +815,7 @@ public class DownloadThread extends Thread {
             File thumbnailCache = new File(dir + "/HistoryCache");
 
             if (!thumbnailCache.exists() || (thumbnailCache.exists() && !thumbnailCache.isDirectory())) {
-                thumbnailCache.mkdir();
+                thumbnailCache.mkdirs();
             }
 
             File thumbnailFile = new File(thumbnailCache.getAbsolutePath() + "/" + time + ".png");

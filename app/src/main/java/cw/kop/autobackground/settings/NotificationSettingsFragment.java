@@ -316,6 +316,16 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         super.onPause();
     }
 
+    public boolean onBackPressed() {
+
+        if (recyclerView.isShown()) {
+            clearHighlights();
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     public void onClick(View v) {
 
@@ -373,7 +383,13 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             }
         };
 
-        DialogFactory.showColorPickerDialog(appContext, "Enter background color:", listener, -1, R.string.cancel_button, R.string.ok_button, AppSettings.getNotificationColor());
+        DialogFactory.showColorPickerDialog(appContext,
+                "Enter background color:",
+                listener,
+                -1,
+                R.string.cancel_button,
+                R.string.ok_button,
+                AppSettings.getNotificationColor());
 
     }
 
@@ -622,42 +638,46 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 switch (index) {
                     case 4:
                         AppSettings.setNotificationTitleColor(getColorPickerView().getColor());
-                        if (title.equals("Application")) {
-                            AppSettings.setNotificationTitle("AutoBackground");
-                            notificationTitle.setText("AutoBackground");
-                        }
-                        else if (title.equals("Location")) {
-                            AppSettings.setNotificationTitle(title);
-                            if (FileHandler.getCurrentBitmapFile() != null) {
-                                notificationTitle.setText(FileHandler.getCurrentBitmapFile().getAbsolutePath());
-                            }
-                            else {
+                        switch (title) {
+                            case "Application":
+                                AppSettings.setNotificationTitle("AutoBackground");
+                                notificationTitle.setText("AutoBackground");
+                                break;
+                            case "Location":
+                                AppSettings.setNotificationTitle(title);
+                                if (FileHandler.getCurrentBitmapFile() != null) {
+                                    notificationTitle.setText(FileHandler.getCurrentBitmapFile().getAbsolutePath());
+                                }
+                                else {
+                                    notificationTitle.setText(title);
+                                }
+                                break;
+                            case "None":
+                                AppSettings.setNotificationTitle("");
+                                notificationTitle.setText("");
+                                break;
+                            default:
+                                AppSettings.setNotificationTitle(title);
                                 notificationTitle.setText(title);
-                            }
-                        }
-                        else if (title.equals("None")) {
-                            AppSettings.setNotificationTitle("");
-                            notificationTitle.setText("");
-                        }
-                        else {
-                            AppSettings.setNotificationTitle(title);
-                            notificationTitle.setText(title);
+                                break;
                         }
                         notificationTitle.setTextColor(AppSettings.getNotificationTitleColor());
                         break;
                     case 5:
                         AppSettings.setNotificationSummaryColor(getColorPickerView().getColor());
-                        if (title.equals("Application")) {
-                            AppSettings.setNotificationTitle("AutoBackground");
-                            notificationSummary.setText("AutoBackground");
-                        }
-                        else if (title.equals("None")) {
-                            AppSettings.setNotificationSummary("");
-                            notificationSummary.setText("");
-                        }
-                        else {
-                            AppSettings.setNotificationSummary(title);
-                            notificationSummary.setText(title);
+                        switch (title) {
+                            case "Application":
+                                AppSettings.setNotificationTitle("AutoBackground");
+                                notificationSummary.setText("AutoBackground");
+                                break;
+                            case "None":
+                                AppSettings.setNotificationSummary("");
+                                notificationSummary.setText("");
+                                break;
+                            default:
+                                AppSettings.setNotificationSummary(title);
+                                notificationSummary.setText(title);
+                                break;
                         }
                         notificationSummary.setTextColor(AppSettings.getNotificationSummaryColor());
                         break;
@@ -713,7 +733,13 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             }
         };
 
-        DialogFactory.showColorPickerDialog(appContext, "Enter icon and text color:", listener, -1, R.string.cancel_button, R.string.ok_button, AppSettings.getNotificationOptionPreviousColor());
+        DialogFactory.showColorPickerDialog(appContext,
+                "Enter icon and text color:",
+                listener,
+                -1,
+                R.string.cancel_button,
+                R.string.ok_button,
+                AppSettings.getNotificationOptionPreviousColor());
 
     }
 

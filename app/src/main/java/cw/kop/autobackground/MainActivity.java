@@ -304,24 +304,6 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         }
     }
 
-    public void toggleDrawer() {
-        LocalImageFragment localImageFragment = (LocalImageFragment) getFragmentManager().findFragmentByTag(
-                "image_fragment");
-        AlbumFragment albumFragment = (AlbumFragment) getFragmentManager().findFragmentByTag(
-                "album_fragment");
-        if (localImageFragment != null || albumFragment != null) {
-            onBackPressed();
-        }
-
-        if (drawerLayout.isDrawerOpen(navLayout)) {
-            drawerLayout.closeDrawer(navLayout);
-        }
-        else {
-            drawerLayout.openDrawer(navLayout);
-        }
-
-    }
-
     private void selectItem(int position, boolean slideAnimate) {
 
         if (position == currentPosition || position < 0) {
@@ -363,7 +345,8 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
                 break;
             case 5:
                 fragmentTransaction.replace(R.id.content_frame,
-                        new NotificationSettingsFragment()).commit();
+                        new NotificationSettingsFragment(),
+                        "notification_fragment").commit();
                 break;
             case 6:
                 fragmentTransaction.replace(R.id.content_frame,
@@ -416,6 +399,11 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         }
         else if (getFragmentManager().findFragmentByTag("source_info_fragment") != null) {
             ((SourceInfoFragment) getFragmentManager().findFragmentByTag("source_info_fragment")).onBackPressed();
+        }
+        else if (getFragmentManager().findFragmentByTag(("notification_fragment")) != null) {
+            if (!((NotificationSettingsFragment) getFragmentManager().findFragmentByTag("notification_fragment")).onBackPressed()) {
+                super.onBackPressed();
+            }
         }
         else if (getFragmentManager().getBackStackEntryCount() > 0) {
             getFragmentManager().popBackStack();

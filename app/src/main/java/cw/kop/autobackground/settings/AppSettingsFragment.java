@@ -151,6 +151,7 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                         public void onClickRight(View v) {
 
                             final File outputFile = new File(AppSettings.getDownloadPath() + "/Exported/SourceData" + System.currentTimeMillis() + ".txt");
+
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -227,7 +228,9 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
 
     private void exportSources(File outputFile) {
 
-        outputFile.getParentFile().mkdirs();
+        if (!outputFile.getParentFile().exists()) {
+            outputFile.getParentFile().mkdirs();
+        }
 
         try {
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));

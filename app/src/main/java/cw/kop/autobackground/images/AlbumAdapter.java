@@ -67,14 +67,20 @@ public class AlbumAdapter extends BaseAdapter {
 
         if (albumLinks.size() > 0) {
 
-            View view = convertView;
+            ImageView icon;
+            TextView name;
 
             if (convertView == null) {
-                view = inflater.inflate(R.layout.album_list_cell, parent, false);
+                convertView = inflater.inflate(R.layout.album_list_cell, parent, false);
+                icon = (ImageView) convertView.findViewById(R.id.album_image);
+                name = (TextView) convertView.findViewById(R.id.album_name);
+                convertView.setTag(new ViewHolder(icon, name));
+
             }
 
-            ImageView icon = (ImageView) view.findViewById(R.id.album_image);
-            TextView name = (TextView) view.findViewById(R.id.album_name);
+            ViewHolder viewHolder = (ViewHolder) convertView.getTag();
+            icon = viewHolder.icon;
+            name = viewHolder.name;
 
             name.setSelected(true);
             name.setText(albumNames.get(position));
@@ -83,8 +89,19 @@ public class AlbumAdapter extends BaseAdapter {
                 Picasso.with(parent.getContext()).load(albumImages.get(position)).into(icon);
             }
 
-            return view;
+            return convertView;
         }
         return null;
+    }
+
+    private static class ViewHolder {
+
+        public final ImageView icon;
+        public final TextView name;
+
+        public ViewHolder(ImageView icon, TextView name) {
+            this.icon = icon;
+            this.name = name;
+        }
     }
 }

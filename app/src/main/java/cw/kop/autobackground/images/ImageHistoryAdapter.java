@@ -98,15 +98,25 @@ public class ImageHistoryAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
 
         if (historyItems.size() > 0) {
-            View view = convertView;
+
+            TextView fileTitle;
+            TextView fileSummary;
+            ImageView fileImage;
 
             if (convertView == null) {
-                view = inflater.inflate(R.layout.image_list_row, parent, false);
+                convertView = inflater.inflate(R.layout.image_list_row, parent, false);
+
+                fileTitle = (TextView) convertView.findViewById(R.id.file_title);
+                fileSummary = (TextView) convertView.findViewById(R.id.file_summary);
+                fileImage = (ImageView) convertView.findViewById(R.id.file_image);
+
+                convertView.setTag(new ViewHolder(fileTitle, fileSummary, fileImage));
             }
 
-            TextView fileTitle = (TextView) view.findViewById(R.id.file_title);
-            TextView fileSummary = (TextView) view.findViewById(R.id.file_summary);
-            ImageView fileImage = (ImageView) view.findViewById(R.id.file_image);
+            ViewHolder viewHolder = (ViewHolder) convertView.getTag();
+            fileTitle = viewHolder.fileTitle;
+            fileSummary = viewHolder.fileSummary;
+            fileImage = viewHolder.fileImage;
 
             File thumbnailFile = new File(AppSettings.getDownloadPath() + "/HistoryCache/"
                     + historyItems.get(position).getTime() + ".png");
@@ -129,7 +139,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
                     position).getTime())));
             fileSummary.setText(historyItems.get(position).getUrl());
 
-            return view;
+            return convertView;
         }
         return null;
     }
@@ -185,4 +195,18 @@ public class ImageHistoryAdapter extends BaseAdapter {
             }
         }).start();
     }
+
+    private static class ViewHolder {
+
+        public final TextView fileTitle;
+        public final TextView fileSummary;
+        public final ImageView fileImage;
+
+        private ViewHolder(TextView fileTitle, TextView fileSummary, ImageView fileImage) {
+            this.fileTitle = fileTitle;
+            this.fileSummary = fileSummary;
+            this.fileImage = fileImage;
+        }
+    }
+
 }

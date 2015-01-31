@@ -70,7 +70,7 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
                 parent,
                 false);
 
-        return new ViewHolder(rowLayout);
+        return new ViewHolder(rowLayout, listClickListener);
     }
 
     @Override
@@ -86,13 +86,6 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
 
         viewHolder.optionIcon.setImageDrawable(iconDrawable);
         viewHolder.position = optionPosition;
-        viewHolder.rowLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listClickListener.onClick(position, optionData.getTitle(),
-                        optionData.getDrawable());
-            }
-        });
 
     }
 
@@ -101,7 +94,7 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
         return optionsList.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         public ImageView optionIcon;
         public TextView optionTitle;
@@ -110,12 +103,20 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
 
         public int position;
 
-        public ViewHolder(View rowLayout) {
+        public ViewHolder(View rowLayout, final RecyclerViewListClickListener listClickListener) {
             super(rowLayout);
             this.rowLayout = rowLayout;
             optionIcon = (ImageView) rowLayout.findViewById(R.id.notification_list_icon);
             optionTitle = (TextView) rowLayout.findViewById(R.id.notification_list_title);
             optionSummary = (TextView) rowLayout.findViewById(R.id.notification_list_summary);
+            rowLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listClickListener.onClick(position, optionsList.get(getPosition()).getTitle(),
+                            optionsList.get(getPosition()).getDrawable());
+                }
+            });
         }
+
     }
 }

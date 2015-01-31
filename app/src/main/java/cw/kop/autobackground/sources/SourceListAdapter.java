@@ -93,13 +93,50 @@ public class SourceListAdapter extends BaseAdapter {
 
         final Source listItem = listData.get(position);
 
+        EditText title;
+        View imageOverlay;
+        ImageView deleteButton;
+        ImageView viewButton;
+        ImageView editButton;
+        TextView sourceType;
+        TextView sourceData;
+        TextView sourceNum;
+        TextView sourceTime;
+        ImageView image;
+
         if (convertView == null) {
             convertView = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
                     inflater.inflate(R.layout.source_list_card, parent, false) :
                     inflater.inflate(R.layout.source_list_card_dark, parent, false);
+
+
+            title = (EditText) convertView.findViewById(R.id.source_title);
+            imageOverlay = convertView.findViewById(R.id.source_image_overlay);
+            deleteButton = (ImageView) convertView.findViewById(R.id.source_delete_button);
+            viewButton = (ImageView) convertView.findViewById(R.id.source_view_image_button);
+            editButton = (ImageView) convertView.findViewById(R.id.source_edit_button);
+            sourceType = (TextView) convertView.findViewById(R.id.source_type);
+            sourceData = (TextView) convertView.findViewById(R.id.source_data);
+            sourceNum = (TextView) convertView.findViewById(R.id.source_num);
+            sourceTime = (TextView) convertView.findViewById(R.id.source_time);
+            image = (ImageView) convertView.findViewById(R.id.source_image);
+
+            convertView.setTag(new ViewHolder(title, imageOverlay, deleteButton, viewButton, editButton, sourceType, sourceData, sourceNum, sourceTime, image));
+
         }
 
-        final View view = convertView;
+        ViewHolder viewHolder = (ViewHolder) convertView.getTag();
+        title = viewHolder.title;
+        imageOverlay = viewHolder.imageOverlay;
+        deleteButton = viewHolder.deleteButton;
+        viewButton = viewHolder.viewButton;
+        editButton = viewHolder.editButton;
+        sourceType = viewHolder.sourceType;
+        sourceData = viewHolder.sourceData;
+        sourceNum = viewHolder.sourceNum;
+        sourceTime = viewHolder.sourceTime;
+        image = viewHolder.image;
+
         Resources resources = parent.getContext().getResources();
         int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
         int lightGrayColor = resources.getColor(R.color.LIGHT_GRAY_OPAQUE);
@@ -107,16 +144,15 @@ public class SourceListAdapter extends BaseAdapter {
         boolean use = listItem.isUse();
         boolean preview = listItem.isPreview();
 
-        EditText title = (EditText) view.findViewById(R.id.source_title);
+        final View finalConvertView = convertView;
         title.setText(listItem.getTitle());
         title.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cardClickListener.onExpandClick(view, position);
+                cardClickListener.onExpandClick(finalConvertView, position);
             }
         });
 
-        View imageOverlay = view.findViewById(R.id.source_image_overlay);
 
         if (use) {
             imageOverlay.setAlpha(0);
@@ -125,10 +161,6 @@ public class SourceListAdapter extends BaseAdapter {
             imageOverlay.setBackgroundColor(resources.getColor(AppSettings.getBackgroundColorResource()));
             imageOverlay.setAlpha(OVERLAY_ALPHA);
         }
-
-        ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
-        ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
-        ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
 
         Drawable deleteDrawable = resources.getDrawable(R.drawable.ic_delete_white_24dp);
         Drawable viewDrawable = resources.getDrawable(R.drawable.ic_photo_white_24dp);
@@ -145,23 +177,21 @@ public class SourceListAdapter extends BaseAdapter {
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cardClickListener.onDeleteClick(view, position);
+                cardClickListener.onDeleteClick(finalConvertView, position);
             }
         });
         viewButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cardClickListener.onViewImageClick(view, position);
+                cardClickListener.onViewImageClick(finalConvertView, position);
             }
         });
         editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cardClickListener.onEditClick(view, position);
+                cardClickListener.onEditClick(finalConvertView, position);
             }
         });
-
-        ImageView image = (ImageView) view.findViewById(R.id.source_image);
 
         ViewGroup.LayoutParams imageParams = image.getLayoutParams();
 
@@ -227,11 +257,6 @@ public class SourceListAdapter extends BaseAdapter {
         title.setLayoutParams(titleParams);
         image.setLayoutParams(imageParams);
 
-        TextView sourceType = (TextView) view.findViewById(R.id.source_type);
-        TextView sourceData = (TextView) view.findViewById(R.id.source_data);
-        TextView sourceNum = (TextView) view.findViewById(R.id.source_num);
-        TextView sourceTime = (TextView) view.findViewById(R.id.source_time);
-
         int colorPrimary = resources.getColor(R.color.BLUE_OPAQUE);
         SpannableString typePrefix = new SpannableString("Type: ");
         typePrefix.setSpan(new ForegroundColorSpan(colorPrimary), 0, typePrefix.length(),
@@ -271,7 +296,7 @@ public class SourceListAdapter extends BaseAdapter {
             sourceTime.append("N/A");
         }
 
-        return view;
+        return finalConvertView;
     }
 
     public void setActivated(int position, boolean use) {
@@ -311,40 +336,6 @@ public class SourceListAdapter extends BaseAdapter {
         return true;
     }
 
-//    public boolean setItem(int position, String type, String title, String data, boolean use,
-//            int num, boolean preview, boolean useTime, String time) {
-//
-//        Source changedItem = listData.get(position);
-//
-//        if (!changedItem.getTitle().equals(title)) {
-//            if (titles.contains(title)) {
-//                return false;
-//            }
-//        }
-//
-//        titles.remove(changedItem.getTitle());
-//        changedItem.setType(type);
-//        changedItem.setTitle(title);
-//        changedItem.setData(data);
-//        changedItem.setNum(num);
-//        changedItem.setUse(use);
-//        changedItem.setPreview(preview);
-//        changedItem.setUseTime(useTime);
-//        changedItem.setTime(time);
-//        File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
-//        if (folder.exists() && folder.isDirectory()) {
-//            changedItem.setNumStored(folder.listFiles(FileHandler.getImageFileNameFilter()).length);
-//        }
-//        else {
-//            changedItem.setNumStored(0);
-//        }
-//        listData.set(position, changedItem);
-//        titles.add(title);
-//        notifyDataSetChanged();
-//        saveData();
-//        return true;
-//    }
-
     public boolean addItem(Source source, boolean save) {
 
         if (titles.contains(source.getTitle())) {
@@ -367,50 +358,6 @@ public class SourceListAdapter extends BaseAdapter {
         }
         return true;
     }
-
-//    public boolean addItem(String type,
-//            String title,
-//            String data,
-//            boolean use,
-//            int num,
-//            boolean preview,
-//            boolean useTime,
-//            String time,
-//            boolean save) {
-//
-//        if (titles.contains(title)) {
-//            return false;
-//        }
-//
-//        Source newItem = new Source();
-//        newItem.setType(type);
-//        newItem.setTitle(title);
-//        newItem.setData(data);
-//        newItem.setNum(num);
-//        newItem.setUse(use);
-//        newItem.setNumStored(0);
-//        newItem.setPreview(preview);
-//        newItem.setUseTime(useTime);
-//        newItem.setTime(time);
-//        File folder = new File(AppSettings.getDownloadPath() + "/" + title + " " + AppSettings.getImagePrefix());
-//        if (folder.exists() && folder.isDirectory()) {
-//            newItem.setNumStored(folder.listFiles(FileHandler.getImageFileNameFilter()).length);
-//        }
-//        else {
-//            newItem.setNumStored(0);
-//        }
-//
-//        listData.add(newItem);
-//        titles.add(title);
-//        notifyDataSetChanged();
-//
-//        if (save) {
-//            saveData();
-//        }
-//
-//        Log.i("WLA", "listData" + listData.size());
-//        return true;
-//    }
 
     public void removeItem(final int position) {
 
@@ -537,6 +484,38 @@ public class SourceListAdapter extends BaseAdapter {
         Log.i("WLA", "Saved Data: " + AppSettings.getNumberSources());
     }
 
+    private static class ViewHolder {
+
+        public final EditText title;
+        public final View imageOverlay;
+        public final ImageView deleteButton;
+        public final ImageView viewButton;
+        public final ImageView editButton;
+        public final TextView sourceType;
+        public final TextView sourceData;
+        public final TextView sourceNum;
+        public final TextView sourceTime;
+        public final ImageView image;
+
+        public ViewHolder(EditText title,
+                View imageOverlay,
+                ImageView deleteButton,
+                ImageView viewButton,
+                ImageView editButton,
+                TextView sourceType,
+                TextView sourceData, TextView sourceNum, TextView sourceTime, ImageView image) {
+            this.title = title;
+            this.imageOverlay = imageOverlay;
+            this.deleteButton = deleteButton;
+            this.viewButton = viewButton;
+            this.editButton = editButton;
+            this.sourceType = sourceType;
+            this.sourceData = sourceData;
+            this.sourceNum = sourceNum;
+            this.sourceTime = sourceTime;
+            this.image = image;
+        }
+    }
 
     public interface CardClickListener {
 

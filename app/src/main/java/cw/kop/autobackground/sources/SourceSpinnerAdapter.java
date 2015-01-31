@@ -62,15 +62,32 @@ public class SourceSpinnerAdapter extends ArrayAdapter<String> {
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
 
+        TextView spinnerText;
+
         if (convertView == null) {
             convertView = inflater.inflate(R.layout.spinner_row, parent, false);
+
+            spinnerText = (TextView) convertView.findViewById(R.id.spinner_text);
+
+            convertView.setTag(new ViewHolder(spinnerText));
         }
 
-        TextView spinnerText = (TextView) convertView.findViewById(R.id.spinner_text);
+        ViewHolder viewHolder = (ViewHolder) convertView.getTag();
+        spinnerText = viewHolder.spinnerText;
+
         spinnerText.setText(itemList.get(position));
         spinnerText.setBackgroundColor(backgroundColor);
 
         return convertView;
+    }
+
+    private class ViewHolder {
+
+        public final TextView spinnerText;
+
+        public ViewHolder(TextView spinnerText) {
+            this.spinnerText = spinnerText;
+        }
     }
 
 }

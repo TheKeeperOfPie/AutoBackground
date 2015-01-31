@@ -844,19 +844,23 @@ public class SourceInfoFragment extends PreferenceFragment {
     }
 
     private void showImageFragment(boolean setPath, String viewPath, int position, boolean use) {
-        LocalImageFragment localImageFragment = new LocalImageFragment();
-        Bundle arguments = new Bundle();
-        arguments.putBoolean("set_path", setPath);
-        arguments.putString("view_path", viewPath);
-        arguments.putInt("position", position);
-        arguments.putBoolean("use", use);
-        localImageFragment.setArguments(arguments);
-        localImageFragment.setTargetFragment(this, -1);
 
-        getFragmentManager().beginTransaction()
-                .add(R.id.content_frame, localImageFragment, "image_fragment")
-                .addToBackStack(null)
-                .commit();
+
+
+
+//        LocalImageFragment localImageFragment = new LocalImageFragment();
+//        Bundle arguments = new Bundle();
+//        arguments.putBoolean("set_path", setPath);
+//        arguments.putString("view_path", viewPath);
+//        arguments.putInt("position", position);
+//        arguments.putBoolean("use", use);
+//        localImageFragment.setArguments(arguments);
+//        localImageFragment.setTargetFragment(this, -1);
+//
+//        getFragmentManager().beginTransaction()
+//                .add(R.id.content_frame, localImageFragment, "image_fragment")
+//                .addToBackStack(null)
+//                .commit();
     }
 
     private void showAlbumFragment(String type, int position, ArrayList<String> names,

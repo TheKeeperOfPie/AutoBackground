@@ -83,14 +83,22 @@ public class NavListAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View view = convertView;
+
+        ImageView fragmentImage;
+        TextView fragmentTitle;
 
         if (convertView == null) {
-            view = inflater.inflate(R.layout.nav_row, parent, false);
+            convertView = inflater.inflate(R.layout.nav_row, parent, false);
+
+            fragmentImage = (ImageView) convertView.findViewById(R.id.fragment_image);
+            fragmentTitle = (TextView) convertView.findViewById(R.id.fragment_title);
+
+            convertView.setTag(new ViewHolder(fragmentImage, fragmentTitle));
         }
 
-        ImageView fragmentImage = (ImageView) view.findViewById(R.id.fragment_image);
-        TextView fragmentTitle = (TextView) view.findViewById(R.id.fragment_title);
+        ViewHolder viewHolder = (ViewHolder) convertView.getTag();
+        fragmentImage = viewHolder.fragmentImage;
+        fragmentTitle = viewHolder.fragmentTitle;
 
         Drawable iconDrawable = parent.getContext().getResources().getDrawable(iconImages[position]).mutate();
         iconDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
@@ -98,6 +106,18 @@ public class NavListAdapter extends BaseAdapter {
 
         fragmentTitle.setText(fragmentList.get(position));
 
-        return view;
+        return convertView;
     }
+
+    private static class ViewHolder {
+
+        public final ImageView fragmentImage;
+        public final TextView fragmentTitle;
+
+        public ViewHolder(ImageView fragmentImage, TextView fragmentTitle) {
+            this.fragmentImage = fragmentImage;
+            this.fragmentTitle = fragmentTitle;
+        }
+    }
+
 }
