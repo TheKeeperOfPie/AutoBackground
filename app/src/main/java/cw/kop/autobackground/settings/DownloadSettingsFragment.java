@@ -37,14 +37,15 @@ import android.widget.AdapterView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.Calendar;
 
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
-import cw.kop.autobackground.images.LocalImageFragment;
-import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.images.FolderFragment;
+import cw.kop.autobackground.images.LocalImageAdapter;
 
 public class DownloadSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
@@ -454,16 +455,47 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
             if (key.equals("use_download_path") && AppSettings.useDownloadPath()) {
 
-                LocalImageFragment localImageFragment = new LocalImageFragment();
+                File rootDir = new File(File.separator);
+                final FolderFragment folderFragment = new FolderFragment();
                 Bundle arguments = new Bundle();
-                arguments.putBoolean("change", true);
-                arguments.putBoolean("set_path", true);
-                arguments.putBoolean("use", false);
-                arguments.putInt("position", 0);
-                localImageFragment.setArguments(arguments);
+                arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
+                arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
+                final LocalImageAdapter adapter = new LocalImageAdapter(appContext, rootDir, rootDir);
+                folderFragment.setArguments(arguments);
+                folderFragment.setAdapter(adapter);
+                folderFragment.setListener(new FolderFragment.FolderEventListener() {
+                    @Override
+                    public void onUseDirectoryClick() {
+                        AppSettings.setDownloadPath(adapter.getDirectory().getAbsolutePath());
+                        Toast.makeText(appContext,
+                                "Download path set to: \n" + AppSettings.getDownloadPath(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onItemClick(AdapterView<?> parent,
+                            View view,
+                            int positionInList,
+                            long id) {
+                        File selectedFile = adapter.getItem(positionInList);
+
+                        if (selectedFile.exists() && selectedFile.isDirectory()) {
+                            adapter.setDirectory(selectedFile);
+                            folderFragment.setDirectoryText(adapter.getDirectory().getAbsolutePath());
+                        }
+                    }
+
+                    @Override
+                    public boolean onBackPressed() {
+                        boolean endDirectory = adapter.backDirectory();
+                        folderFragment.setDirectoryText(adapter.getDirectory().getAbsolutePath());
+
+                        return endDirectory;
+                    }
+                });
 
                 getFragmentManager().beginTransaction()
-                        .add(R.id.content_frame, localImageFragment, "image_fragment")
+                        .add(R.id.content_frame, folderFragment, "folder_fragment")
                         .addToBackStack(null)
                         .commit();
             }

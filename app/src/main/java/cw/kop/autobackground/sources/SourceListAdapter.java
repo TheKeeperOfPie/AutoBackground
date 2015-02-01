@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.support.v7.widget.CardView;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -93,6 +94,7 @@ public class SourceListAdapter extends BaseAdapter {
 
         final Source listItem = listData.get(position);
 
+        CardView cardView;
         EditText title;
         View imageOverlay;
         ImageView deleteButton;
@@ -109,7 +111,7 @@ public class SourceListAdapter extends BaseAdapter {
                     inflater.inflate(R.layout.source_list_card, parent, false) :
                     inflater.inflate(R.layout.source_list_card_dark, parent, false);
 
-
+            cardView = (CardView) convertView.findViewById(R.id.source_card);
             title = (EditText) convertView.findViewById(R.id.source_title);
             imageOverlay = convertView.findViewById(R.id.source_image_overlay);
             deleteButton = (ImageView) convertView.findViewById(R.id.source_delete_button);
@@ -121,11 +123,13 @@ public class SourceListAdapter extends BaseAdapter {
             sourceTime = (TextView) convertView.findViewById(R.id.source_time);
             image = (ImageView) convertView.findViewById(R.id.source_image);
 
-            convertView.setTag(new ViewHolder(title, imageOverlay, deleteButton, viewButton, editButton, sourceType, sourceData, sourceNum, sourceTime, image));
+            title.setClickable(false);
+            convertView.setTag(new ViewHolder(cardView, title, imageOverlay, deleteButton, viewButton, editButton, sourceType, sourceData, sourceNum, sourceTime, image));
 
         }
 
         ViewHolder viewHolder = (ViewHolder) convertView.getTag();
+        cardView = viewHolder.cardView;
         title = viewHolder.title;
         imageOverlay = viewHolder.imageOverlay;
         deleteButton = viewHolder.deleteButton;
@@ -139,20 +143,30 @@ public class SourceListAdapter extends BaseAdapter {
 
         Resources resources = parent.getContext().getResources();
         int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
-        int lightGrayColor = resources.getColor(R.color.LIGHT_GRAY_OPAQUE);
-        int darkGrayColor = resources.getColor(R.color.DARK_GRAY_OPAQUE);
         boolean use = listItem.isUse();
         boolean preview = listItem.isPreview();
 
         final View finalConvertView = convertView;
-        title.setText(listItem.getTitle());
-        title.setOnClickListener(new View.OnClickListener() {
+
+        View.OnClickListener expandClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 cardClickListener.onExpandClick(finalConvertView, position);
             }
+        };
+
+        cardView.setOnClickListener(expandClickListener);
+
+        cardView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                cardClickListener.onLongClick(position);
+                return true;
+            }
         });
 
+        title.setText(listItem.getTitle());
+        title.setOnClickListener(expandClickListener);
 
         if (use) {
             imageOverlay.setAlpha(0);
@@ -447,7 +461,7 @@ public class SourceListAdapter extends BaseAdapter {
             @Override
             public int compare(Source lhs, Source rhs) {
 
-                if (key.equals("use")) {
+                if (key.equals(Source.USE)) {
                     boolean first = lhs.isUse();
                     boolean second = rhs.isUse();
 
@@ -459,11 +473,19 @@ public class SourceListAdapter extends BaseAdapter {
 
                 }
 
-                if (key.equals("num")) {
+                if (key.equals(Source.NUM)) {
                     return lhs.getNum() - rhs.getNum();
                 }
 
-                return -1; // TODO: Fix lhs.get(key).compareTo(rhs.get(key));
+                if (key.equals(Source.TITLE)) {
+                    return lhs.getTitle().compareTo(rhs.getTitle());
+                }
+
+                if (key.equals(Source.DATA)) {
+                    return lhs.getData().compareTo(rhs.getData());
+                }
+
+                return lhs.getTitle().compareTo(rhs.getTitle());
             }
         });
 
@@ -486,6 +508,7 @@ public class SourceListAdapter extends BaseAdapter {
 
     private static class ViewHolder {
 
+        public final CardView cardView;
         public final EditText title;
         public final View imageOverlay;
         public final ImageView deleteButton;
@@ -497,13 +520,15 @@ public class SourceListAdapter extends BaseAdapter {
         public final TextView sourceTime;
         public final ImageView image;
 
-        public ViewHolder(EditText title,
+        public ViewHolder(CardView cardView,
+                EditText title,
                 View imageOverlay,
                 ImageView deleteButton,
                 ImageView viewButton,
                 ImageView editButton,
                 TextView sourceType,
                 TextView sourceData, TextView sourceNum, TextView sourceTime, ImageView image) {
+            this.cardView = cardView;
             this.title = title;
             this.imageOverlay = imageOverlay;
             this.deleteButton = deleteButton;
@@ -526,6 +551,8 @@ public class SourceListAdapter extends BaseAdapter {
         void onEditClick(View view, int index);
 
         void onExpandClick(View view, int position);
+
+        void onLongClick(int position);
     }
 
 }

@@ -600,6 +600,13 @@ public class LiveWallpaperService extends GLWallpaperService {
                                         Toast.LENGTH_SHORT).show();
                             }
                         }
+                        catch (NullPointerException e) {
+                            if (AppSettings.useToast()) {
+                                Toast.makeText(LiveWallpaperService.this,
+                                        "Null error",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
                     }
                 }).start();
             }
@@ -1438,9 +1445,12 @@ public class LiveWallpaperService extends GLWallpaperService {
                     }
 
                     File nextImage = previousBitmaps.get(0);
-                    if (nextImage == null) {
+                    if (nextImage == null || !nextImage.exists()) {
+                        previousBitmaps.remove(0);
                         return;
                     }
+
+                    FileHandler.setCurrentBitmapFile(nextImage);
 
                     renderer.loadNext(nextImage);
                     loadWearImage(nextImage);

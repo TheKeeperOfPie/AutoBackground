@@ -34,8 +34,8 @@ android {
         applicationId "cw.kop.autobackground"
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 62
-        versionName "2.00.30"
+        versionCode 63
+        versionName "2.10.00"
 
         resConfigs "en"
         resConfigs "nodpi", "hdpi", "xhdpi", "xxhdpi"
@@ -73,7 +73,7 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile fileTree(include: ['*.jar'], dir: 'libs/DropBox')
+    compile fileTree(include: ['*.jar'], dir: 'libs/Dropbox')
     compile project(':libraries:colorpickerpreference')
     compile 'com.android.support:support-v4:21.0.3'
     compile 'com.android.support:appcompat-v7:21.0.3'

@@ -89,19 +89,32 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
         if (!((Activity) appContext).isFinishing()) {
-            if (key.equals("use_google_account")) {
-                if (AppSettings.useGoogleAccount()) {
-                    startActivityForResult(GoogleAccount.getPickerIntent(),
-                            GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
-                }
-                else {
-                    GoogleAccount.deleteAccount();
-                    if (AppSettings.useToast()) {
-                        Toast.makeText(appContext,
-                                "Google access token has been deleted",
-                                Toast.LENGTH_SHORT).show();
+            switch (key) {
+                case "use_google_account":
+                    if (AppSettings.useGoogleAccount()) {
+                        startActivityForResult(GoogleAccount.getPickerIntent(),
+                                GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
                     }
-                }
+                    else {
+                        GoogleAccount.deleteAccount();
+                        if (AppSettings.useToast()) {
+                            Toast.makeText(appContext,
+                                    "Google access token has been deleted",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    break;
+                case "use_dropbox_account":
+                    if (AppSettings.useDropboxAccount()) {
+                    }
+                    else {
+                        AppSettings.setDropboxAccountToken("");
+                        if (AppSettings.useToast()) {
+                            Toast.makeText(appContext,
+                                    "Dropbox access token has been deleted",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
             }
         }
 

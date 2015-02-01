@@ -21,11 +21,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
@@ -46,9 +44,8 @@ import com.crashlytics.android.Crashlytics;
 import com.squareup.picasso.Picasso;
 
 import cw.kop.autobackground.files.FileHandler;
-import cw.kop.autobackground.images.AlbumFragment;
+import cw.kop.autobackground.images.FolderFragment;
 import cw.kop.autobackground.images.ImageHistoryFragment;
-import cw.kop.autobackground.images.LocalImageFragment;
 import cw.kop.autobackground.settings.AboutFragment;
 import cw.kop.autobackground.settings.AccountSettingsFragment;
 import cw.kop.autobackground.settings.AppSettings;
@@ -58,6 +55,7 @@ import cw.kop.autobackground.settings.EffectsSettingsFragment;
 import cw.kop.autobackground.settings.NotificationSettingsFragment;
 import cw.kop.autobackground.settings.WallpaperSettingsFragment;
 import cw.kop.autobackground.settings.WearSettingsFragment;
+import cw.kop.autobackground.sources.Source;
 import cw.kop.autobackground.sources.SourceInfoFragment;
 import cw.kop.autobackground.sources.SourceListFragment;
 import cw.kop.autobackground.tutorial.TutorialActivity;
@@ -269,7 +267,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
 
         if (AppSettings.useTutorial()) {
             Intent tutorialIntent = new Intent(this, TutorialActivity.class);
-            tutorialIntent.putExtra("position", getIntent().getIntExtra("position", 0));
+            tutorialIntent.putExtra(Source.POSITION, getIntent().getIntExtra(Source.POSITION, 0));
             startActivityForResult(tutorialIntent, TutorialActivity.TUTORIAL_REQUEST);
         }
     }
@@ -370,7 +368,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {;
 
-        if (getFragmentManager().findFragmentByTag("image_fragment") == null) {
+        if (getFragmentManager().findFragmentByTag("folder_fragment") == null) {
             if (drawerToggle != null) {
                 return drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
             }
@@ -379,7 +377,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
                 super.onOptionsItemSelected(item);
             }
         }
-        else if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
+        else if (getFragmentManager().findFragmentByTag("folder_fragment") != null) {
             getFragmentManager().popBackStack();
         }
         return super.onOptionsItemSelected(item);
@@ -388,9 +386,9 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
     @Override
     public void onBackPressed() {
 
-        if (getFragmentManager().findFragmentByTag("image_fragment") != null) {
+        if (getFragmentManager().findFragmentByTag("folder_fragment") != null) {
             Log.i("MP", "Back directory");
-            if (((LocalImageFragment) getFragmentManager().findFragmentByTag("image_fragment")).onBackPressed()) {
+            if (((FolderFragment) getFragmentManager().findFragmentByTag("folder_fragment")).onBackPressed()) {
                 getFragmentManager().popBackStack();
             }
         }

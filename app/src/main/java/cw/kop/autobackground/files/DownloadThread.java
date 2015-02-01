@@ -31,6 +31,12 @@ import android.util.Log;
 import android.util.Patterns;
 import android.widget.Toast;
 
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.DropboxAPI.Entry;
+import com.dropbox.client2.android.AndroidAuthSession;
+import com.dropbox.client2.exception.DropboxException;
+import com.dropbox.client2.session.AppKeyPair;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -74,20 +80,30 @@ import cw.kop.autobackground.sources.Source;
  */
 public class DownloadThread extends Thread {
 
+    public static final String DROPBOX_FILE_PREFIX = "Dropbox File: ";
+
     private static final int NOTIFICATION_ID = 1;
     private static final String TAG = DownloadThread.class.getCanonicalName();
+    private final DropboxAPI<AndroidAuthSession> dropboxAPI;
     private Context appContext;
     private String imageDetails = "";
     private NotificationManager notificationManager = null;
     private Notification.Builder notifyProgress;
-    private int progressMax = 0;
-    private int totalDownloaded = 0;
-    private int totalTarget = 0;
+    private int progressMax;
+    private int totalDownloaded;
+    private int totalTarget;
+    private int numTarget;
     private HashSet<String> usedLinks;
-    private List<File> downloadedFiles;
+    private List<File> downloadedFiles;;
 
     public DownloadThread(Context context) {
         appContext = context;
+        AppKeyPair appKeys = new AppKeyPair(ApiKeys.DROPBOX_KEY, ApiKeys.DROPBOX_SECRET);
+        AndroidAuthSession session = new AndroidAuthSession(appKeys);
+        dropboxAPI = new DropboxAPI<>(session);
+        if (AppSettings.useDropboxAccount() && !AppSettings.getDropboxAccountToken().equals("")) {
+            dropboxAPI.getSession().setOAuth2AccessToken(AppSettings.getDropboxAccountToken());
+        }
     }
 
     @Override
@@ -126,13 +142,13 @@ public class DownloadThread extends Thread {
             cache.mkdirs();
         }
 
-        List<Integer> indexes = new ArrayList<>();
+        List<Source> validSources = new ArrayList<>();
         for (int index = 0; index < AppSettings.getNumberSources(); index++) {
 
             Source source = AppSettings.getSource(index);
 
             if (!source.getType().equals(AppSettings.FOLDER) && source.isUse()) {
-                indexes.add(index);
+                validSources.add(source);
                 progressMax += source.getNum();
             }
         }
@@ -151,9 +167,7 @@ public class DownloadThread extends Thread {
 
         downloadedFiles = new ArrayList<>();
 
-        for (int index : indexes) {
-
-            Source source = AppSettings.getSource(index);
+        for (Source source : validSources) {
 
             if (isInterrupted()) {
                 cancel();
@@ -178,28 +192,31 @@ public class DownloadThread extends Thread {
 
                 switch (sourceType) {
                     case AppSettings.WEBSITE:
-                        downloadWebsite(sourceData, source);
+                        downloadWebsite(source);
                         break;
                     case AppSettings.IMGUR_SUBREDDIT:
-                        downloadImgurSubreddit(sourceData, source);
+                        downloadImgurSubreddit(source);
                         break;
                     case AppSettings.IMGUR_ALBUM:
-                        downloadImgurAlbum(sourceData, source);
+                        downloadImgurAlbum(source);
                         break;
                     case AppSettings.GOOGLE_ALBUM:
-                        downloadPicasa(sourceData, source);
+                        downloadPicasa(source);
                         break;
                     case AppSettings.TUMBLR_BLOG:
-                        downloadTumblrBlog(sourceData, source);
+                        downloadTumblrBlog(source);
                         break;
                     case AppSettings.TUMBLR_TAG:
-                        downloadTumblrTag(sourceData, source);
+                        downloadTumblrTag(source);
                         break;
                     case AppSettings.REDDIT_SUBREDDIT:
-                        downloadRedditSubreddit(sourceData, source);
+                        downloadRedditSubreddit(source);
                         break;
+                    case AppSettings.DROPBOX_FOLDER:
+                        downloadDropbox(source);
                 }
 
+                numTarget = 0;
                 totalTarget += source.getNum();
 
                 updateNotification(totalTarget);
@@ -272,7 +289,7 @@ public class DownloadThread extends Thread {
                     File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + " " + time + ".png");
 
                     if (AppSettings.useImageHistory()) {
-                        AppSettings.addUsedLink(randLink, time);
+                        AppSettings.addUsedLink(data.get(count), time);
                         if (AppSettings.cacheThumbnails()) {
                             writeToFileWithThumbnail(bitmap,
                                     data.get(count),
@@ -289,7 +306,7 @@ public class DownloadThread extends Thread {
                     }
                     downloadedFiles.add(file);
                     numDownloaded++;
-                    updateNotification(++totalTarget);
+                    updateNotification(++numTarget + totalTarget);
                 }
             }
         }
@@ -331,7 +348,7 @@ public class DownloadThread extends Thread {
         }
     }
 
-    private void downloadWebsite(String url, Source source) throws IOException {
+    private void downloadWebsite(Source source) throws IOException {
 
         if (isInterrupted()) {
             return;
@@ -340,7 +357,7 @@ public class DownloadThread extends Thread {
         Set<String> imageLinks = new HashSet<>();
         List<String> imageList = new ArrayList<>();
 
-        Document linkDoc = Jsoup.connect(url).get();
+        Document linkDoc = Jsoup.connect(source.getData()).get();
 
         imageLinks.addAll(compileImageLinks(linkDoc, "a", "href"));
         imageLinks.addAll(compileImageLinks(linkDoc, "img", "href"));
@@ -352,13 +369,13 @@ public class DownloadThread extends Thread {
         startDownload(imageList, imageList, source);
     }
 
-    private void downloadImgurSubreddit(String subreddit, Source source) {
+    private void downloadImgurSubreddit(Source source) {
 
         if (isInterrupted()) {
             return;
         }
 
-        String apiUrl = "https://api.imgur.com/3/gallery/r/" + subreddit;
+        String apiUrl = "https://api.imgur.com/3/gallery/r/" + source.getData();
 
         Log.i(TAG, "apiUrl: " + apiUrl);
 
@@ -403,11 +420,13 @@ public class DownloadThread extends Thread {
         }
     }
 
-    private void downloadImgurAlbum(String albumId, Source source) {
+    private void downloadImgurAlbum(Source source) {
 
         if (isInterrupted()) {
             return;
         }
+
+        String albumId = source.getData();
 
         if (albumId.contains("/")) {
             albumId = albumId.substring(0, albumId.indexOf("/"));
@@ -449,11 +468,13 @@ public class DownloadThread extends Thread {
         }
     }
 
-    private void downloadPicasa(String data, Source source) {
+    private void downloadPicasa(Source source) {
 
         if (isInterrupted()) {
             return;
         }
+
+        String data = source.getData();
 
         if (data.contains("user/")) {
             data = data.substring(data.indexOf("user/"));
@@ -484,14 +505,14 @@ public class DownloadThread extends Thread {
 
     }
 
-    private void downloadTumblrBlog(String data, Source source) {
+    private void downloadTumblrBlog(Source source) {
 
         if (isInterrupted()) {
             return;
         }
 
         try {
-            HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/blog/" + data + ".tumblr.com/posts/photo?api_key=" + ApiKeys.TUMBLR_CLIENT_ID);
+            HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/blog/" + source.getData() + ".tumblr.com/posts/photo?api_key=" + ApiKeys.TUMBLR_CLIENT_ID);
 
             String response = getResponse(httpGet);
             if (response == null) {
@@ -528,10 +549,10 @@ public class DownloadThread extends Thread {
         }
     }
 
-    private void downloadTumblrTag(String tag, Source source) {
+    private void downloadTumblrTag(Source source) {
 
         try {
-            HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/tagged?tag=" + tag + "&api_key=" + ApiKeys.TUMBLR_CLIENT_ID);
+            HttpGet httpGet = new HttpGet("http://api.tumblr.com/v2/tagged?tag=" + source.getData() + "&api_key=" + ApiKeys.TUMBLR_CLIENT_ID);
 
             String response = getResponse(httpGet);
             if (response == null) {
@@ -573,12 +594,12 @@ public class DownloadThread extends Thread {
 
     }
 
-    private void downloadRedditSubreddit(String sourceData, Source source) {
+    private void downloadRedditSubreddit(Source source) {
         if (isInterrupted()) {
             return;
         }
 
-        String apiUrl = "https://reddit.com/r/" + sourceData + "/hot/.json?limit=100";
+        String apiUrl = "https://reddit.com/r/" + source.getData() + "/hot/.json?limit=100";
 
         Log.i(TAG, "apiUrl: " + apiUrl);
 
@@ -622,6 +643,32 @@ public class DownloadThread extends Thread {
             e.printStackTrace();
             Log.i(TAG, "JSON parse error");
         }
+    }
+
+    private void downloadDropbox(Source source) {
+
+        try {
+            List<Entry> entries = dropboxAPI.metadata(source.getData(), 0, null, true, null).contents;
+
+            List<String> imageLinks = new ArrayList<>();
+            List<String> imageData = new ArrayList<>();
+
+            for (Entry entry : entries) {
+                if (!entry.isDir &&
+                        (entry.path.contains(".jpg") || entry.path.contains(".jpeg") || entry.path.contains(
+                                ".png"))) {
+                    imageLinks.add(dropboxAPI.media(entry.path, true).url);
+                    imageData.add(DROPBOX_FILE_PREFIX + entry.path);
+                }
+            }
+
+            startDownload(imageLinks, imageData, source);
+
+        }
+        catch (DropboxException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private String getResponse(HttpGet httpGet) {

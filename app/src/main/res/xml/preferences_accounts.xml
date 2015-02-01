@@ -33,7 +33,7 @@
 
         <cw.kop.autobackground.CustomSwitchPreference
             android:defaultValue="false"
-            android:key="use_google_account"
+            android:key="use_dropbox_account"
             android:title="@string/use_dropbox_account"
             android:summary="@string/use_dropbox_account_description"
             />

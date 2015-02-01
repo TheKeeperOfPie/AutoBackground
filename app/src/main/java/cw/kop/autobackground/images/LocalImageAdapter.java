@@ -16,16 +16,12 @@
 
 package cw.kop.autobackground.images;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.os.DropBoxManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -40,24 +36,25 @@ import java.util.Comparator;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 
+/**
+ * Created by TheKeeperOfPie on 1/31/2015.
+ */
 public class LocalImageAdapter extends BaseAdapter {
 
     private static final String TAG = LocalImageAdapter.class.getCanonicalName();
     private static final int BYTE_TO_MEBIBYTE = 1048576;
-    private File mainDir;
+    private File topDir;
     private File startDir;
     private ArrayList<File> listFiles;
     private LayoutInflater inflater;
     private boolean finish;
-    private boolean hideFirst;
 
-    public LocalImageAdapter(Activity activity, File directory, boolean hideFirst) {
+    public LocalImageAdapter(Context activity, File topDir, File startDir) {
         listFiles = new ArrayList<>();
         inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        startDir = directory;
-        mainDir = directory;
-        this.hideFirst = hideFirst;
-        setDirectory(mainDir);
+        this.startDir = startDir;
+        this.topDir = topDir;
+        setDirectory(startDir);
     }
 
     @Override
@@ -91,7 +88,7 @@ public class LocalImageAdapter extends BaseAdapter {
             ImageView fileImageFull;
 
             if (convertView == null) {
-                convertView = inflater.inflate(R.layout.image_list_row, parent, false);
+                convertView = inflater.inflate(R.layout.file_row, parent, false);
 
                 fileTitle = (TextView) convertView.findViewById(R.id.file_title);
                 fileSummary = (TextView) convertView.findViewById(R.id.file_summary);
@@ -146,11 +143,7 @@ public class LocalImageAdapter extends BaseAdapter {
                 }
 
                 fileTitle.setText(file.getName());
-                fileSummary.setText("" + (file.length() / BYTE_TO_MEBIBYTE) + " MiB");
-            }
-
-            if (position == 0 && hideFirst) {
-                convertView.setAlpha(1.0f);
+                fileSummary.setText(file.isDirectory() ? file.list().length + " Files" : "" + (file.length() / BYTE_TO_MEBIBYTE) + " MiB");
             }
 
             return convertView;
@@ -158,21 +151,17 @@ public class LocalImageAdapter extends BaseAdapter {
         return null;
     }
 
-    public void addItem(File file) {
-        listFiles.add(file);
-    }
-
     public File getDirectory() {
-        return mainDir;
+        return topDir;
     }
 
     public void setDirectory(File selectedFile) {
 
         if (selectedFile != null && selectedFile.isDirectory()) {
-            mainDir = selectedFile;
+            topDir = selectedFile;
 
-            ArrayList<File> folders = new ArrayList<File>();
-            ArrayList<File> files = new ArrayList<File>();
+            ArrayList<File> folders = new ArrayList<>();
+            ArrayList<File> files = new ArrayList<>();
 
             if (selectedFile.listFiles() != null) {
                 for (File file : selectedFile.listFiles()) {
@@ -219,11 +208,11 @@ public class LocalImageAdapter extends BaseAdapter {
 
     public Boolean backDirectory() {
 
-        if (finish || mainDir.getAbsolutePath().equals(startDir.getAbsolutePath())) {
+        if (finish || topDir.getAbsolutePath().equals(startDir.getAbsolutePath())) {
             return true;
         }
 
-        File parentDir = mainDir.getParentFile();
+        File parentDir = topDir.getParentFile();
 
         if (parentDir != null && parentDir.exists() && parentDir.isDirectory()) {
             setDirectory(parentDir);
@@ -235,7 +224,6 @@ public class LocalImageAdapter extends BaseAdapter {
     public void remove(int index) {
         listFiles.remove(index);
         notifyDataSetChanged();
-
     }
 
     private static class ViewHolder {

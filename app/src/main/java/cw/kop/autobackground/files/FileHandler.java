@@ -222,6 +222,11 @@ public class FileHandler {
         return null;
     }
 
+    public static void setCurrentBitmapFile(File file) {
+        previousBitmapFile = currentBitmapFile;
+        currentBitmapFile = file;
+    }
+
     public static File getCurrentBitmapFile() {
         return currentBitmapFile;
     }

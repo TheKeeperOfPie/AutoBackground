@@ -772,29 +772,6 @@ public class AppSettings {
         return prefs.getInt("num_sources", 0);
     }
 
-    public static void setSources(ArrayList<HashMap<String, String>> listData) {
-
-        for (int i = 0; i < listData.size(); i++) {
-
-            String type = listData.get(i).get("type");
-
-            prefs.edit().putString("source_type_" + i, type).commit();
-            prefs.edit().putString("source_title_" + i, listData.get(i).get("title")).commit();
-            prefs.edit().putString("source_data_" + i, listData.get(i).get("data")).commit();
-            prefs.edit().putString("source_num_" + i, listData.get(i).get("num")).commit();
-            prefs.edit().putBoolean("use_source_" + i,
-                    Boolean.valueOf(listData.get(i).get("use"))).commit();
-            prefs.edit().putBoolean("source_preview_" + i,
-                    Boolean.valueOf(listData.get(i).get("preview"))).commit();
-            prefs.edit().putBoolean("use_source_time_" + i,
-                    Boolean.valueOf(listData.get(i).get("use_time"))).commit();
-            prefs.edit().putString("source_time_" + i, listData.get(i).get("time")).commit();
-
-        }
-
-        prefs.edit().putInt("num_sources", listData.size()).commit();
-    }
-
     public static String getSourceDataPrefix(String type) {
 
         switch (type) {

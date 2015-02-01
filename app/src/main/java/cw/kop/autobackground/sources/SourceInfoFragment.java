@@ -18,13 +18,13 @@ package cw.kop.autobackground.sources;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -50,7 +50,9 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.DropboxAPI.Entry;
 import com.dropbox.client2.android.AndroidAuthSession;
+import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
@@ -64,6 +66,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -75,8 +79,10 @@ import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.files.FileHandler;
-import cw.kop.autobackground.images.AlbumFragment;
-import cw.kop.autobackground.images.LocalImageFragment;
+import cw.kop.autobackground.images.AlbumAdapter;
+import cw.kop.autobackground.images.DropboxAdapter;
+import cw.kop.autobackground.images.FolderFragment;
+import cw.kop.autobackground.images.LocalImageAdapter;
 import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -131,8 +137,12 @@ public class SourceInfoFragment extends PreferenceFragment {
         handler = new Handler();
         setRetainInstance(true);
         AppKeyPair appKeys = new AppKeyPair(ApiKeys.DROPBOX_KEY, ApiKeys.DROPBOX_SECRET);
-        AndroidAuthSession session = new AndroidAuthSession(appKeys, ApiKeys.DROPBOX_ACCESS_TYPE);
+        AndroidAuthSession session = new AndroidAuthSession(appKeys);
         dropboxAPI = new DropboxAPI<>(session);
+
+        if (AppSettings.useDropboxAccount() && !AppSettings.getDropboxAccountToken().equals("")) {
+            dropboxAPI.getSession().setOAuth2AccessToken(AppSettings.getDropboxAccountToken());
+        }
     }
 
     @Override
@@ -153,7 +163,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             Bundle savedInstanceState) {
 
         Bundle arguments = getArguments();
-        sourcePosition = (Integer) arguments.get("position");
+        sourcePosition = (Integer) arguments.get(Source.POSITION);
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
         View view = inflater.inflate(R.layout.source_info_fragment, container, false);
@@ -196,10 +206,9 @@ public class SourceInfoFragment extends PreferenceFragment {
                 switch (type) {
 
                     case AppSettings.FOLDER:
-                        selectSource(getPositionOfType(AppSettings.FOLDER));
-                        break;
                     case AppSettings.GOOGLE_ALBUM:
-                        selectSource(getPositionOfType(AppSettings.GOOGLE_ALBUM));
+                    case AppSettings.DROPBOX_FOLDER:
+                        selectSource(getPositionOfType(type));
                         break;
 
                 }
@@ -282,7 +291,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         if (savedInstanceState != null) {
 
             if (sourcePosition == -1) {
-                sourceSpinner.setSelection(getPositionOfType(savedInstanceState.getString("type",
+                sourceSpinner.setSelection(getPositionOfType(savedInstanceState.getString(Source.TYPE,
                         AppSettings.WEBSITE)));
             }
 
@@ -330,9 +339,9 @@ public class SourceInfoFragment extends PreferenceFragment {
             sourceSpinnerText.setVisibility(View.GONE);
             sourceSpinner.setVisibility(View.GONE);
 
-            type = arguments.getString("type");
+            type = arguments.getString(Source.TYPE);
 
-            folderData = arguments.getString("data");
+            folderData = arguments.getString(Source.DATA);
             String data = folderData;
 
             hint = AppSettings.getSourceDataHint(type);
@@ -353,22 +362,25 @@ public class SourceInfoFragment extends PreferenceFragment {
 
             }
 
-            sourceTitle.setText(arguments.getString("title"));
-            sourceNum.setText("" + arguments.getInt("num"));
+            sourceTitle.setText(arguments.getString(Source.TITLE));
+
+            if (getArguments().getInt(Source.NUM, -1) >= 0) {
+                sourceNum.setText("" + arguments.getInt(Source.NUM));
+            }
             sourceData.setText(data);
 
             if (imageDrawable != null) {
                 sourceImage.setImageDrawable(imageDrawable);
             }
 
-            boolean showPreview = arguments.getBoolean("preview");
+            boolean showPreview = arguments.getBoolean(Source.PREVIEW);
             if (showPreview) {
                 sourceImage.setVisibility(View.VISIBLE);
             }
 
             ((CustomSwitchPreference) findPreference("source_show_preview")).setChecked(showPreview);
 
-            String[] timeArray = arguments.getString("time").split(":|[ -]+");
+            String[] timeArray = arguments.getString(Source.TIME).split(":|[ -]+");
 
             try {
                 startHour = Integer.parseInt(timeArray[0]);
@@ -391,7 +403,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         setDataWrappers();
 
         sourceUse = (Switch) headerView.findViewById(R.id.source_use_switch);
-        sourceUse.setChecked(arguments.getBoolean("use"));
+        sourceUse.setChecked(arguments.getBoolean(Source.USE));
 
         if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
             view.setBackgroundColor(getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
@@ -404,9 +416,9 @@ public class SourceInfoFragment extends PreferenceFragment {
         listView.addHeaderView(headerView);
 
         if (savedInstanceState != null) {
-            sourceTitle.setText(savedInstanceState.getString("title", ""));
-            sourceData.setText(savedInstanceState.getString("data", ""));
-            sourceNum.setText(savedInstanceState.getString("num", ""));
+            sourceTitle.setText(savedInstanceState.getString(Source.TITLE, ""));
+            sourceData.setText(savedInstanceState.getString(Source.DATA, ""));
+            sourceNum.setText(savedInstanceState.getString(Source.NUM, ""));
         }
 
         return view;
@@ -420,10 +432,10 @@ public class SourceInfoFragment extends PreferenceFragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
 
-        outState.putString("type", type);
-        outState.putString("title", String.valueOf(sourceTitle.getText()));
-        outState.putString("data", String.valueOf(sourceData.getText()));
-        outState.putString("num", String.valueOf(sourceNum.getText()));
+        outState.putString(Source.TYPE, type);
+        outState.putString(Source.TITLE, String.valueOf(sourceTitle.getText()));
+        outState.putString(Source.DATA, String.valueOf(sourceData.getText()));
+        outState.putString(Source.NUM, String.valueOf(sourceNum.getText()));
 
         super.onSaveInstanceState(outState);
     }
@@ -438,6 +450,7 @@ public class SourceInfoFragment extends PreferenceFragment {
 
                 AppSettings.setUseDropboxAccount(true);
                 AppSettings.setDropboxAccountToken(dropboxAPI.getSession().getOAuth2AccessToken());
+                showDropboxFragment();
             } catch (IllegalStateException e) {
                 Log.i("DbAuthLog", "Error authenticating", e);
             }
@@ -533,8 +546,8 @@ public class SourceInfoFragment extends PreferenceFragment {
         }
         else {
 
-            if (!getArguments().getString("title").equals(title)) {
-                FileHandler.renameFolder(getArguments().getString("title"), title);
+            if (!getArguments().getString(Source.TITLE).equals(title)) {
+                FileHandler.renameFolder(getArguments().getString(Source.TITLE), title);
             }
 
             if (FileHandler.isDownloading) {
@@ -547,16 +560,16 @@ public class SourceInfoFragment extends PreferenceFragment {
             sourceIntent.setAction(SourceListFragment.SET_ENTRY);
         }
 
-        sourceIntent.putExtra("type", type);
-        sourceIntent.putExtra("title", sourceTitle.getText().toString());
-        sourceIntent.putExtra("data", data);
-        sourceIntent.putExtra("num", num);
-        sourceIntent.putExtra("position", sourcePosition);
-        sourceIntent.putExtra("use", sourceUse.isChecked());
-        sourceIntent.putExtra("preview",
+        sourceIntent.putExtra(Source.TYPE, type);
+        sourceIntent.putExtra(Source.TITLE, sourceTitle.getText().toString());
+        sourceIntent.putExtra(Source.DATA, data);
+        sourceIntent.putExtra(Source.NUM, num);
+        sourceIntent.putExtra(Source.POSITION, sourcePosition);
+        sourceIntent.putExtra(Source.USE, sourceUse.isChecked());
+        sourceIntent.putExtra(Source.PREVIEW,
                 ((CustomSwitchPreference) findPreference("source_show_preview")).isChecked());
-        sourceIntent.putExtra("use_time", timePref.isChecked());
-        sourceIntent.putExtra("time", String.format("%02d:%02d - %02d:%02d",
+        sourceIntent.putExtra(Source.USE_TIME, timePref.isChecked());
+        sourceIntent.putExtra(Source.TIME, String.format("%02d:%02d - %02d:%02d",
                 startHour, startMinute, endHour, endMinute));
 
         try {
@@ -697,7 +710,15 @@ public class SourceInfoFragment extends PreferenceFragment {
         prefix = "";
         suffix = "";
 
+        boolean blockTitle = false;
         boolean blockData = false;
+        boolean blockNum = false;
+
+        if (type.equals(AppSettings.FOLDER)) {
+            sourceTitle.setText("");
+            sourceData.setText("");
+            sourceNum.setText("");
+        }
 
         switch (position) {
             case 0:
@@ -705,8 +726,17 @@ public class SourceInfoFragment extends PreferenceFragment {
                 break;
             case 1:
                 type = AppSettings.FOLDER;
-                showImageFragment(false, "", -1, true);
+                File externalStorageDirectory = Environment.getExternalStorageDirectory();
+                if (getFragmentManager().findFragmentByTag("folder_fragment") == null) {
+                    if (externalStorageDirectory.exists() && externalStorageDirectory.canRead()) {
+                        showImageFragment(new File(File.separator), externalStorageDirectory);
+                    }
+                    else {
+                        showImageFragment(new File(File.separator), new File(File.separator));
+                    }
+                }
                 blockData = true;
+                blockNum = true;
                 break;
             case 2:
                 type = AppSettings.IMGUR_SUBREDDIT;
@@ -720,8 +750,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                     startActivityForResult(GoogleAccount.getPickerIntent(),
                             GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
                 }
-                else {
-                    new PicasaAlbumTask(-1, true).execute();
+                else if (getFragmentManager().findFragmentByTag("folder_fragment") == null) {
+                    new PicasaAlbumTask().execute();
                 }
                 blockData = true;
                 break;
@@ -737,13 +767,13 @@ public class SourceInfoFragment extends PreferenceFragment {
                 break;
             case 8 :
                 type = AppSettings.DROPBOX_FOLDER;
-                if (AppSettings.getDropboxAccountToken().equals("")) {
+                if (AppSettings.getDropboxAccountToken().equals("") || !dropboxAPI.getSession().isLinked()) {
                     dropboxAPI.getSession().startOAuth2Authentication(appContext);
                 }
-                else {
+                else if (getFragmentManager().findFragmentByTag("folder_fragment") == null) {
                     showDropboxFragment();
                 }
-
+                blockData = true;
                 break;
             default:
         }
@@ -753,20 +783,21 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         setDataWrappers();
 
-        if (blockData) {
-            sourceTitle.setFocusable(false);
-            sourceData.setFocusable(false);
-            sourceNum.setFocusable(false);
-        }
-        else {
-            sourceTitle.setFocusable(true);
-            sourceTitle.setFocusableInTouchMode(true);
-            sourceData.setFocusable(true);
-            sourceData.setFocusableInTouchMode(true);
-            sourceNum.setFocusable(true);
-            sourceNum.setFocusableInTouchMode(true);
+        sourceTitle.setFocusable(true);
+        sourceTitle.setFocusableInTouchMode(true);
+        sourceData.setFocusable(true);
+        sourceData.setFocusableInTouchMode(true);
+        sourceNum.setFocusable(true);
+        sourceNum.setFocusableInTouchMode(true);
 
-            Log.i(TAG, "Reset fields");
+        if (blockTitle) {
+            sourceTitle.setFocusable(false);
+        }
+        if (blockData) {
+            sourceData.setFocusable(false);
+        }
+        if (blockNum) {
+            sourceNum.setFocusable(false);
         }
 
     }
@@ -787,7 +818,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                                     "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             AppSettings.setUseGoogleAccount(true);
-                            new PicasaAlbumTask(-1, true).execute();
+                            new PicasaAlbumTask().execute();
                         }
                         catch (IOException transientEx) {
                             return null;
@@ -822,7 +853,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                                     "oauth2:https://picasaweb.google.com/data/");
                             AppSettings.setGoogleAccountToken(authToken);
                             AppSettings.setUseGoogleAccount(true);
-                            new PicasaAlbumTask(-1, true).execute();
+                            new PicasaAlbumTask().execute();
                         }
                         catch (IOException transientEx) {
                             return null;
@@ -843,52 +874,298 @@ public class SourceInfoFragment extends PreferenceFragment {
         }
     }
 
-    private void showImageFragment(boolean setPath, String viewPath, int position, boolean use) {
+    private void showImageFragment(File topDir, File startDir) {
 
+        final FolderFragment folderFragment = new FolderFragment();
+        Bundle arguments = new Bundle();
+        arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
+        arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
+        final LocalImageAdapter adapter = new LocalImageAdapter(appContext, topDir, startDir);
+        folderFragment.setArguments(arguments);
+        folderFragment.setAdapter(adapter);
+        folderFragment.setStartingDirectoryText(startDir.getAbsolutePath());
+        folderFragment.setListener(new FolderFragment.FolderEventListener() {
+            @Override
+            public void onUseDirectoryClick() {
+                DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
+                    @Override
+                    public void onClickMiddle(View v) {
+                        setAppDirectory(false);
+                        this.dismissDialog();
+                    }
 
+                    @Override
+                    public void onClickRight(View v) {
+                        setAppDirectory(true);
+                        this.dismissDialog();
+                    }
+                };
 
+                DialogFactory.showActionDialog(appContext,
+                        "",
+                        "Include subdirectories?",
+                        listener,
+                        R.string.cancel_button,
+                        R.string.no_button,
+                        R.string.yes_button);
+            }
 
-//        LocalImageFragment localImageFragment = new LocalImageFragment();
-//        Bundle arguments = new Bundle();
-//        arguments.putBoolean("set_path", setPath);
-//        arguments.putString("view_path", viewPath);
-//        arguments.putInt("position", position);
-//        arguments.putBoolean("use", use);
-//        localImageFragment.setArguments(arguments);
-//        localImageFragment.setTargetFragment(this, -1);
-//
-//        getFragmentManager().beginTransaction()
-//                .add(R.id.content_frame, localImageFragment, "image_fragment")
-//                .addToBackStack(null)
-//                .commit();
+            private void setAppDirectory(boolean useSubdirectories) {
+                final File dir = adapter.getDirectory();
+                final FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
+
+                final StringBuilder stringBuilder = new StringBuilder();
+
+                if (useSubdirectories) {
+
+                    Toast.makeText(appContext, "Loading subdirectories...", Toast.LENGTH_SHORT).show();
+
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            int numImages = 0;
+
+                            ArrayList<File> folderNames = getAllDirectories(dir);
+
+                            for (File folderName : folderNames) {
+                                stringBuilder.append(folderName.getAbsolutePath());
+                                stringBuilder.append(AppSettings.DATA_SPLITTER);
+                                numImages += folderName.list(filenameFilter).length;
+                            }
+
+                            setData(AppSettings.FOLDER,
+                                    dir.getName(),
+                                    "",
+                                    stringBuilder.toString(),
+                                    "",
+                                    numImages);
+                        }
+                    }).start();
+                }
+                else {
+                    ((SourceInfoFragment) getTargetFragment()).setData(AppSettings.FOLDER,
+                            dir.getName(),
+                            "",
+                            dir.getAbsolutePath(),
+                            "",
+                            dir.listFiles(filenameFilter) != null ? dir.listFiles(filenameFilter).length : 0);
+                }
+                adapter.setFinished();
+                getActivity().onBackPressed();
+            }
+
+            private ArrayList<File> getAllDirectories(File dir) {
+
+                ArrayList<File> directoryList = new ArrayList<>();
+
+                File[] fileList = dir.listFiles();
+
+                if (fileList != null) {
+                    if (dir.listFiles(FileHandler.getImageFileNameFilter()).length > 0) {
+                        directoryList.add(dir);
+                    }
+
+                    for (File folder : fileList) {
+                        if (folder.isDirectory()) {
+                            directoryList.addAll(getAllDirectories(folder));
+                        }
+                    }
+                }
+
+                return directoryList;
+
+            }
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+                File selectedFile = adapter.getItem(positionInList);
+
+                if (selectedFile.exists() && selectedFile.isDirectory()) {
+                    adapter.setDirectory(selectedFile);
+                    folderFragment.setDirectoryText(adapter.getDirectory().getAbsolutePath());
+                }
+            }
+
+            @Override
+            public boolean onBackPressed() {
+
+                boolean endDirectory = adapter.backDirectory();
+                folderFragment.setDirectoryText(adapter.getDirectory().getAbsolutePath());
+
+                return endDirectory;
+            }
+        });
+
+        getFragmentManager().beginTransaction()
+                .add(R.id.content_frame, folderFragment, "folder_fragment")
+                .addToBackStack(null)
+                .commit();
     }
 
-    private void showAlbumFragment(String type, int position, ArrayList<String> names,
-            ArrayList<String> images, ArrayList<String> links,
-            ArrayList<String> nums, boolean use) {
-        AlbumFragment albumFragment = new AlbumFragment();
+    private void showAlbumFragment(final String type, final ArrayList<String> names,
+            ArrayList<String> images, final ArrayList<String> links,
+            final ArrayList<String> nums) {
+
+        FolderFragment folderFragment = new FolderFragment();
         Bundle arguments = new Bundle();
-        arguments.putString("type", type);
-        arguments.putInt("position", position);
-        arguments.putBoolean("use", use);
-        arguments.putStringArrayList("album_names", names);
-        arguments.putStringArrayList("album_images", images);
-        arguments.putStringArrayList("album_links", links);
-        arguments.putStringArrayList("album_nums", nums);
-        albumFragment.setArguments(arguments);
-        albumFragment.setTargetFragment(this, -1);
+        arguments.putBoolean(FolderFragment.USE_DIRECTORY, false);
+        arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, false);
+        final AlbumAdapter adapter = new AlbumAdapter(appContext, names, images, links);
+        folderFragment.setArguments(arguments);
+        folderFragment.setAdapter(adapter);
+        folderFragment.setListener(new FolderFragment.FolderEventListener() {
+            @Override
+            public void onUseDirectoryClick() {
+                // Not implemented
+            }
 
-        FragmentManager fragmentManager = getFragmentManager();
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+                setData(type,
+                        names.get(positionInList),
+                        "",
+                        links.get(positionInList),
+                        "",
+                        Integer.parseInt(nums.get(positionInList)));
 
-        if (fragmentManager != null) {
-            fragmentManager.beginTransaction()
-                    .add(R.id.content_frame, albumFragment, "album_fragment")
-                    .addToBackStack(null)
-                    .commit();
-        }
+                getActivity().onBackPressed();
+            }
+
+            @Override
+            public boolean onBackPressed() {
+                return true;
+            }
+        });
+
+        getFragmentManager().beginTransaction()
+                .add(R.id.content_frame, folderFragment, "folder_fragment")
+                .addToBackStack(null)
+                .commit();
     }
 
     private void showDropboxFragment() {
+
+        final FolderFragment folderFragment = new FolderFragment();
+        Bundle arguments = new Bundle();
+        arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
+        arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
+
+        final DropboxAdapter adapter = new DropboxAdapter((Activity) appContext);
+        folderFragment.setArguments(arguments);
+        folderFragment.setListener(new FolderFragment.FolderEventListener() {
+
+            @Override
+            public void onUseDirectoryClick() {
+                Entry entry = adapter.getMainDir();
+                if (entry.isDir) {
+                    setData(AppSettings.DROPBOX_FOLDER, entry.fileName(), "", entry.path, "", 1);
+                    adapter.setFinished(true);
+                    getActivity().onBackPressed();
+                }
+            }
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+                final Entry entry = adapter.getItem(positionInList);
+                if (!entry.isDir) {
+                    return;
+                }
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final Entry newEntry;
+                        try {
+                            newEntry = dropboxAPI.metadata(entry.path,
+                                    0,
+                                    null,
+                                    true,
+                                    null);
+                            if (newEntry != null) {
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        adapter.setDir(newEntry);
+                                        folderFragment.setDirectoryText(newEntry.path);
+                                    }
+                                });
+                            }
+                        }
+                        catch (DropboxException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+
+            }
+
+            @Override
+            public boolean onBackPressed() {
+                if (adapter.backDirectory()) {
+                    return true;
+                }
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final Entry parentDir;
+                        try {
+                            parentDir = dropboxAPI.metadata(adapter.getMainDir().parentPath(),
+                                    0,
+                                    null,
+                                    true,
+                                    null);
+                            if (parentDir != null) {
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        adapter.setDir(parentDir);
+                                        folderFragment.setDirectoryText(parentDir.path);
+                                    }
+                                });
+                            }
+                        }
+                        catch (DropboxException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+
+                return false;
+            }
+        });
+
+        Toast.makeText(appContext, "Loading Dropbox", Toast.LENGTH_SHORT).show();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Entry startEntry;
+                try {
+                    startEntry = dropboxAPI.metadata("/", 0, null, true, null);
+                }
+                catch (DropboxException e) {
+                    e.printStackTrace();
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(appContext,
+                                    "Error loading Dropbox",
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    return;
+                }
+                adapter.setDirs(startEntry, startEntry);
+                folderFragment.setAdapter(adapter);
+                folderFragment.setStartingDirectoryText(startEntry.path);
+
+                getFragmentManager().beginTransaction()
+                        .add(R.id.content_frame, folderFragment, "folder_fragment")
+                        .addToBackStack(null)
+                        .commit();
+            }
+        }).start();
 
     }
 
@@ -948,13 +1225,6 @@ public class SourceInfoFragment extends PreferenceFragment {
         ArrayList<String> albumImageLinks = new ArrayList<>();
         ArrayList<String> albumLinks = new ArrayList<>();
         ArrayList<String> albumNums = new ArrayList<>();
-        private int changePosition;
-        private boolean use;
-
-        public PicasaAlbumTask(int position, boolean use) {
-            changePosition = position;
-            this.use = use;
-        }
 
         @Override
         protected void onProgressUpdate(String... values) {
@@ -1026,12 +1296,10 @@ public class SourceInfoFragment extends PreferenceFragment {
 
             if (isAdded()) {
                 showAlbumFragment(AppSettings.GOOGLE_ALBUM,
-                        changePosition,
                         albumNames,
                         albumImageLinks,
                         albumLinks,
-                        albumNums,
-                        use);
+                        albumNums);
             }
         }
     }

@@ -40,6 +40,9 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class FolderFragment extends Fragment {
 
+    public static final String USE_DIRECTORY = "useDirectory";
+    public static final String SHOW_DIRECTORY_TEXT = "showDirectoryText";
+
     private Context context;
 
     private ListView fileListView;
@@ -47,6 +50,7 @@ public class FolderFragment extends Fragment {
     private Button useDirectoryButton;
     private FolderEventListener listener;
     private BaseAdapter adapter;
+    private String startDirectoryText;
 
     public FolderFragment() {
         // Required empty public constructor
@@ -91,6 +95,7 @@ public class FolderFragment extends Fragment {
 
         directoryText = (TextView) view.findViewById(R.id.directory_text);
         directoryText.setTextColor(AppSettings.getColorFilterInt(context));
+        directoryText.setText(startDirectoryText);
         directoryText.setSelected(true);
 
         int backgroundColor;
@@ -107,16 +112,27 @@ public class FolderFragment extends Fragment {
         emptyLayout.setBackgroundColor(backgroundColor);
 
         ((ViewGroup) fileListView.getParent()).addView(emptyLayout, 0);
+        fileListView.setEmptyView(emptyLayout);
 
         useDirectoryButton = (Button) view.findViewById(R.id.use_directory_button);
-        useDirectoryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                listener.onUseDirectoryClick();
+
+        if (getArguments() != null) {
+            if (getArguments().getBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true)) {
+                directoryText.setVisibility(View.VISIBLE);
             }
-        });
+            if (getArguments().getBoolean(FolderFragment.USE_DIRECTORY, false)) {
+                useDirectoryButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        listener.onUseDirectoryClick();
+                    }
+                });
+                useDirectoryButton.setVisibility(View.VISIBLE);
+            }
+        }
 
         fileListView.setAdapter(adapter);
+        fileListView.setOnItemClickListener(listener);
 
         return view;
     }
@@ -137,11 +153,15 @@ public class FolderFragment extends Fragment {
         return listener.onBackPressed();
     }
 
+    public void setStartingDirectoryText(String text) {
+        startDirectoryText = text;
+    }
+
     public void setDirectoryText(String text) {
         directoryText.setText(text);
     }
 
-    public interface FolderEventListener {
+    public interface FolderEventListener extends AdapterView.OnItemClickListener {
 
         void onUseDirectoryClick();
         void onItemClick(AdapterView<?> parent, View view, int positionInList, long id);

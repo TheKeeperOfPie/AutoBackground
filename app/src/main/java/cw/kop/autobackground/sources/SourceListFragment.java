@@ -32,6 +32,7 @@ import android.content.IntentFilter;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -63,8 +64,7 @@ import android.widget.Toast;
 import com.squareup.picasso.Cache;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONObject;
-
+import java.io.File;
 import java.lang.reflect.Field;
 
 import cw.kop.autobackground.DialogFactory;
@@ -72,7 +72,8 @@ import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
-import cw.kop.autobackground.images.LocalImageFragment;
+import cw.kop.autobackground.images.FolderFragment;
+import cw.kop.autobackground.images.LocalImageAdapter;
 import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener {
@@ -94,7 +95,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     private ImageView addButtonBackground;
     private ImageView addButton;
     private Menu toolbarMenu;
-    private AppSettings AppSettings;
 
     // Volatile variables to assure animations are reset properly
     private volatile boolean needsButtonReset = false;
@@ -116,30 +116,30 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 case SourceListFragment.ADD_ENTRY:
                     Source addSource = new Source();
 
-                    addSource.setType(intent.getStringExtra("type"));
-                    addSource.setTitle(intent.getStringExtra("title"));
-                    addSource.setData(intent.getStringExtra("data"));
-                    addSource.setNum(intent.getIntExtra("num", 0));
-                    addSource.setUse(intent.getBooleanExtra("use", true));
-                    addSource.setPreview(intent.getBooleanExtra("preview", true));
-                    addSource.setUseTime(intent.getBooleanExtra("use_time", false));
-                    addSource.setTime(intent.getStringExtra("time"));
+                    addSource.setType(intent.getStringExtra(Source.TYPE));
+                    addSource.setTitle(intent.getStringExtra(Source.TITLE));
+                    addSource.setData(intent.getStringExtra(Source.DATA));
+                    addSource.setNum(intent.getIntExtra(Source.NUM, 0));
+                    addSource.setUse(intent.getBooleanExtra(Source.USE, true));
+                    addSource.setPreview(intent.getBooleanExtra(Source.PREVIEW, true));
+                    addSource.setUseTime(intent.getBooleanExtra(Source.USE_TIME, false));
+                    addSource.setTime(intent.getStringExtra(Source.TIME));
 
                     addEntry(addSource);
                     break;
                 case SourceListFragment.SET_ENTRY:
                     Source setSource = new Source();
 
-                    setSource.setType(intent.getStringExtra("type"));
-                    setSource.setTitle(intent.getStringExtra("title"));
-                    setSource.setData(intent.getStringExtra("data"));
-                    setSource.setNum(intent.getIntExtra("num", 0));
-                    setSource.setUse(intent.getBooleanExtra("use", true));
-                    setSource.setPreview(intent.getBooleanExtra("preview", true));
-                    setSource.setUseTime(intent.getBooleanExtra("use_time", false));
-                    setSource.setTime(intent.getStringExtra("time"));
+                    setSource.setType(intent.getStringExtra(Source.TYPE));
+                    setSource.setTitle(intent.getStringExtra(Source.TITLE));
+                    setSource.setData(intent.getStringExtra(Source.DATA));
+                    setSource.setNum(intent.getIntExtra(Source.NUM, 0));
+                    setSource.setUse(intent.getBooleanExtra(Source.USE, true));
+                    setSource.setPreview(intent.getBooleanExtra(Source.PREVIEW, true));
+                    setSource.setUseTime(intent.getBooleanExtra(Source.USE_TIME, false));
+                    setSource.setTime(intent.getStringExtra(Source.TIME));
 
-                    setEntry(intent.getIntExtra("position", -1), setSource);
+                    setEntry(intent.getIntExtra(Source.POSITION, -1), setSource);
                     break;
                 case FileHandler.DOWNLOAD_TERMINATED:
                     new ImageCountTask().execute();
@@ -328,6 +328,11 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             public void onExpandClick(View view, int position) {
                 onItemClick(null, view, position, 0);
             }
+
+            @Override
+            public void onLongClick(int position) {
+                onItemLongClick(position);
+            }
         };
 
         if (listAdapter == null) {
@@ -341,20 +346,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             }
         }
         sourceList.setAdapter(listAdapter);
-
-        sourceList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position,
-                    long id) {
-                listAdapter.toggleActivated(position);
-                int firstVisiblePosition = sourceList.getFirstVisiblePosition();
-                View childView = sourceList.getChildAt(position - firstVisiblePosition);
-                sourceList.getAdapter().getView(position, childView, sourceList);
-                return true;
-            }
-        });
-
-        sourceList.setOnItemClickListener(this);
 
         return view;
     }
@@ -580,12 +571,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         listAdapter.saveData();
         Source item = listAdapter.getItem(index);
         String type = item.getType();
-        String directory;
+        File directory;
         if (type.equals(AppSettings.FOLDER)) {
-            directory  =item.getData().split(AppSettings.DATA_SPLITTER)[0];
+            directory = new File(item.getData().split(AppSettings.DATA_SPLITTER)[0]);
         }
         else {
-            directory = AppSettings.getDownloadPath() + "/" + item.getTitle() + " " + AppSettings.getImagePrefix();
+            directory = new File(AppSettings.getDownloadPath() + "/" + item.getTitle() + " " + AppSettings.getImagePrefix());
         }
 
         Log.i(TAG, "Directory: " + directory);
@@ -606,10 +597,77 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         Log.i(TAG, "listHeight: " + listHeight);
         Log.i(TAG, "viewStartHeight: " + viewStartHeight);
 
-        final LocalImageFragment localImageFragment = new LocalImageFragment();
+        final FolderFragment folderFragment = new FolderFragment();
         Bundle arguments = new Bundle();
-        arguments.putString("view_path", directory);
-        localImageFragment.setArguments(arguments);
+        arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, false);
+        arguments.putBoolean(FolderFragment.USE_DIRECTORY, false);
+        final LocalImageAdapter adapter = new LocalImageAdapter(appContext, directory, directory);
+        folderFragment.setArguments(arguments);
+        folderFragment.setAdapter(adapter);
+        folderFragment.setListener(new FolderFragment.FolderEventListener() {
+            @Override
+            public void onUseDirectoryClick() {
+                // Not implemented
+            }
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+                File selectedFile = adapter.getItem(positionInList);
+
+                if (selectedFile.exists() && selectedFile.isDirectory()) {
+                    adapter.setDirectory(selectedFile);
+                }
+                else if (adapter.getItem(positionInList).getName().contains(".png") || adapter.getItem(
+                        positionInList).getName().contains(".jpg") || adapter.getItem(positionInList).getName().contains(
+                        ".jpeg")) {
+                    DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            switch (position) {
+                                case 0:
+                                    Intent galleryIntent = new Intent();
+                                    galleryIntent.setAction(Intent.ACTION_VIEW);
+                                    galleryIntent.setDataAndType(Uri.fromFile(adapter.getItem(
+                                            position)), "image/*");
+                                    galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
+                                    galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    appContext.startActivity(galleryIntent);
+                                    break;
+                                case 1:
+                                    File file = adapter.getItem(position);
+
+                                    if (file.exists() && file.isFile()) {
+                                        if (FileHandler.getCurrentBitmapFile() != null && file.getAbsolutePath().equals(FileHandler.getCurrentBitmapFile().getAbsolutePath())) {
+                                            Intent intent = new Intent();
+                                            intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
+                                            intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                                            appContext.sendBroadcast(intent);
+                                        }
+                                        file.delete();
+                                        adapter.remove(position);
+                                    }
+                            }
+                            dismissDialog();
+                        }
+                    };
+
+                    DialogFactory.showListDialog(appContext,
+                            "",
+                            clickListener,
+                            R.array.history_menu);
+                }
+            }
+
+            @Override
+            public boolean onBackPressed() {
+                return adapter.backDirectory();
+            }
+        });
+
+//        final LocalImageFragment localImageFragment = new LocalImageFragment();
+//        Bundle arguments = new Bundle();
+//        arguments.putString("view_path", directory);
+//        localImageFragment.setArguments(arguments);
 
         Animation animation = new Animation() {
 
@@ -621,7 +679,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 if (needsFragment && interpolatedTime >= 1) {
                     needsFragment = false;
                     getFragmentManager().beginTransaction()
-                            .add(R.id.content_frame, localImageFragment, "image_fragment")
+                            .add(R.id.content_frame, folderFragment, "folder_fragment")
                             .addToBackStack(null)
                             .setTransition(FragmentTransaction.TRANSIT_NONE)
                             .commit();
@@ -700,15 +758,15 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     private void showSourceAddFragment() {
         final SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
         Bundle arguments = new Bundle();
-        arguments.putInt("position", -1);
-        arguments.putString("type", AppSettings.WEBSITE);
-        arguments.putString("title", "");
-        arguments.putString("data", "");
-        arguments.putString("num", "");
-        arguments.putBoolean("use", true);
-        arguments.putBoolean("preview", true);
-        arguments.putBoolean("use_time", false);
-        arguments.putString("time", "00:00 - 00:00");
+        arguments.putInt(Source.POSITION, -1);
+        arguments.putString(Source.TYPE, AppSettings.WEBSITE);
+        arguments.putString(Source.TITLE, "");
+        arguments.putString(Source.DATA, "");
+        arguments.putInt(Source.NUM, -1);
+        arguments.putBoolean(Source.USE, true);
+        arguments.putBoolean(Source.PREVIEW, true);
+        arguments.putBoolean(Source.USE_TIME, false);
+        arguments.putString(Source.TIME, "00:00 - 00:00");
         sourceInfoFragment.setArguments(arguments);
 
         getFragmentManager().beginTransaction()
@@ -731,16 +789,16 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case 0:
-                        listAdapter.sortData("use");
+                        listAdapter.sortData(Source.USE);
                         break;
                     case 1:
-                        listAdapter.sortData("data");
+                        listAdapter.sortData(Source.DATA);
                         break;
                     case 2:
-                        listAdapter.sortData("title");
+                        listAdapter.sortData(Source.TITLE);
                         break;
                     case 3:
-                        listAdapter.sortData("num");
+                        listAdapter.sortData(Source.NUM);
                         break;
                     default:
                 }
@@ -900,6 +958,14 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     }
 
+    public boolean onItemLongClick(int position) {
+        listAdapter.toggleActivated(position);
+        int firstVisiblePosition = sourceList.getFirstVisiblePosition();
+        View childView = sourceList.getChildAt(position - firstVisiblePosition);
+        sourceList.getAdapter().getView(position, childView, sourceList);
+        return true;
+    }
+
     private void startEditFragment(final View view, final int position) {
         sourceList.setOnItemClickListener(null);
         sourceList.setEnabled(false);
@@ -909,22 +975,22 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
         sourceInfoFragment.setImageDrawable(((ImageView) view.findViewById(R.id.source_image)).getDrawable());
         Bundle arguments = new Bundle();
-        arguments.putInt("position", position);
-        arguments.putString("type", dataItem.getType());
-        arguments.putString("title", dataItem.getTitle());
-        arguments.putString("data", dataItem.getData());
-        arguments.putInt("num", dataItem.getNum());
-        arguments.putBoolean("use", dataItem.isUse());
-        arguments.putBoolean("preview", dataItem.isPreview());
+        arguments.putInt(Source.POSITION, position);
+        arguments.putString(Source.TYPE, dataItem.getType());
+        arguments.putString(Source.TITLE, dataItem.getTitle());
+        arguments.putString(Source.DATA, dataItem.getData());
+        arguments.putInt(Source.NUM, dataItem.getNum());
+        arguments.putBoolean(Source.USE, dataItem.isUse());
+        arguments.putBoolean(Source.PREVIEW, dataItem.isPreview());
         if (dataItem.getImageFile() != null) {
-            arguments.putString("image", dataItem.getImageFile().getAbsolutePath());
+            arguments.putString(Source.IMAGE_FILE, dataItem.getImageFile().getAbsolutePath());
         }
         else {
-            arguments.putString("image", "");
+            arguments.putString(Source.IMAGE_FILE, "");
         }
 
-        arguments.putBoolean("use_time", dataItem.isUseTime());
-        arguments.putString("time", dataItem.getTime());
+        arguments.putBoolean(Source.USE_TIME, dataItem.isUseTime());
+        arguments.putString(Source.TIME, dataItem.getTime());
 
         sourceInfoFragment.setArguments(arguments);
 

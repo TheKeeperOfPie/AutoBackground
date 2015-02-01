@@ -28,6 +28,18 @@ import cw.kop.autobackground.settings.AppSettings;
  */
 public class Source {
 
+    public static final String POSITION = "position";
+    public static final String TYPE = "type";
+    public static final String TITLE = "title";
+    public static final String DATA = "data";
+    public static final String NUM = "num";
+    public static final String USE = "use";
+    public static final String PREVIEW = "preview";
+    public static final String USE_TIME = "useTime";
+    public static final String TIME = "time";
+    public static final String IMAGE_FILE = "imageFile";
+    public static final String NUM_STORED = "numStored";
+
     private String type;
     private String title;
     private String data;
@@ -121,31 +133,31 @@ public class Source {
 
     public JSONObject toJson() throws JSONException {
         JSONObject object = new JSONObject();
-        object.put("type", type);
-        object.put("title", title);
-        object.put("data", data);
-        object.put("num", num);
-        object.put("numStored", numStored);
-        object.put("use", use);
-        object.put("preview", preview);
-        object.put("useTime", useTime);
-        object.put("time", time);
-        object.put("imageFile", imageFile != null ? imageFile.getAbsolutePath() : null);
+        object.put(TYPE, type);
+        object.put(TITLE, title);
+        object.put(DATA, data);
+        object.put(NUM, num);
+        object.put(NUM_STORED, numStored);
+        object.put(USE, use);
+        object.put(PREVIEW, preview);
+        object.put(USE_TIME, useTime);
+        object.put(TIME, time);
+        object.put(IMAGE_FILE, imageFile != null ? imageFile.getAbsolutePath() : null);
         return object;
     }
 
     public static Source fromJson(JSONObject object) throws JSONException {
         Source source = new Source();
-        source.setType(object.has("type") ? object.getString("type") : AppSettings.WEBSITE);
-        source.setTitle(object.has("title") ? object.getString("title") : "" + System.currentTimeMillis());
-        source.setData(object.has("data") ? object.getString("data") : "Error loading data");
-        source.setNum(object.has("num") ? object.getInt("num") : 1);
-        source.setNumStored(object.has("numStored") ? object.getInt("numStored") : 0);
-        source.setUse(!object.has("use") || object.getBoolean("use"));
-        source.setPreview(!object.has("preview") || object.getBoolean("preview"));
-        source.setUseTime(!object.has("useTime") || object.getBoolean("useTime"));
-        source.setTime(object.has("time") ? object.getString("time") : "00:00 - 00:00");
-        source.setImageFile(object.has("imageFile") ? new File(object.getString("imageFile")) : null);
+        source.setType(object.has(TYPE) ? object.getString(TYPE) : AppSettings.WEBSITE);
+        source.setTitle(object.has(TITLE) ? object.getString(TITLE) : "" + System.currentTimeMillis());
+        source.setData(object.has(DATA) ? object.getString(DATA) : "Error loading data");
+        source.setNum(object.has(NUM) ? object.getInt(NUM) : 1);
+        source.setNumStored(object.has(NUM_STORED) ? object.getInt(NUM_STORED) : 0);
+        source.setUse(!object.has(USE) || object.getBoolean(USE));
+        source.setPreview(!object.has(PREVIEW) || object.getBoolean(PREVIEW));
+        source.setUseTime(!object.has(USE_TIME) || object.getBoolean(USE_TIME));
+        source.setTime(object.has(TIME) ? object.getString(TIME) : "00:00 - 00:00");
+        source.setImageFile(object.has(IMAGE_FILE) ? new File(object.getString(IMAGE_FILE)) : null);
         return source;
     }
 

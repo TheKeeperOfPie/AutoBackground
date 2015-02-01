@@ -31,6 +31,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.settings.AppSettings;
 
 public class AlbumAdapter extends BaseAdapter {
 
@@ -74,6 +75,7 @@ public class AlbumAdapter extends BaseAdapter {
                 convertView = inflater.inflate(R.layout.album_list_cell, parent, false);
                 icon = (ImageView) convertView.findViewById(R.id.album_image);
                 name = (TextView) convertView.findViewById(R.id.album_name);
+                name.setTextColor(AppSettings.getColorFilterInt(parent.getContext()));
                 convertView.setTag(new ViewHolder(icon, name));
 
             }

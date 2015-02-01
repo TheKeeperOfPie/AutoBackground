@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -35,12 +36,20 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.android.AndroidAuthSession;
+import com.dropbox.client2.exception.DropboxException;
+import com.dropbox.client2.session.AppKeyPair;
 
 import java.text.DateFormat;
 import java.util.Date;
 
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.files.DownloadThread;
+import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
 
 /**
@@ -51,6 +60,8 @@ public class ImageHistoryFragment extends Fragment {
     private Context appContext;
     private ListView historyListView;
     private ImageHistoryAdapter historyAdapter;
+    private DropboxAPI<AndroidAuthSession> dropboxAPI;
+    private Handler handler;
 
     @Override
     public void onAttach(Activity activity) {
@@ -67,6 +78,13 @@ public class ImageHistoryFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        handler = new Handler(appContext.getMainLooper());
+        AppKeyPair appKeys = new AppKeyPair(ApiKeys.DROPBOX_KEY, ApiKeys.DROPBOX_SECRET);
+        AndroidAuthSession session = new AndroidAuthSession(appKeys);
+        dropboxAPI = new DropboxAPI<>(session);
+        if (AppSettings.useDropboxAccount() && !AppSettings.getDropboxAccountToken().equals("")) {
+            dropboxAPI.getSession().setOAuth2AccessToken(AppSettings.getDropboxAccountToken());
+        }
     }
 
     @Nullable
@@ -169,8 +187,37 @@ public class ImageHistoryFragment extends Fragment {
                 switch (position) {
                     case 0:
                         Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setData(Uri.parse(item.getUrl()));
-                        appContext.startActivity(intent);
+
+                        if (item.getUrl().contains(DownloadThread.DROPBOX_FILE_PREFIX)) {
+
+                            if (!dropboxAPI.getSession().isLinked()) {
+                                return;
+                            }
+
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        Intent dropboxIntent = new Intent(Intent.ACTION_VIEW);
+                                        String url = dropboxAPI.media(item.getUrl().substring(DownloadThread.DROPBOX_FILE_PREFIX.length()), true).url;
+                                        dropboxIntent.setData(Uri.parse(url));
+                                        appContext.startActivity(dropboxIntent);
+                                    }
+                                    catch (DropboxException e) {
+                                        handler.post(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(appContext, "Error loading Dropbox link", Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+                                    }
+                                }
+                            }).start();
+                        }
+                        else {
+                            intent.setData(Uri.parse(item.getUrl()));
+                            appContext.startActivity(intent);
+                        }
                         break;
                     case 1:
                         historyAdapter.removeItem(item);

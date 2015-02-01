@@ -22,7 +22,6 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -104,7 +103,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
             ImageView fileImage;
 
             if (convertView == null) {
-                convertView = inflater.inflate(R.layout.image_list_row, parent, false);
+                convertView = inflater.inflate(R.layout.file_row, parent, false);
 
                 fileTitle = (TextView) convertView.findViewById(R.id.file_title);
                 fileSummary = (TextView) convertView.findViewById(R.id.file_summary);
