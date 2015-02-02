@@ -34,8 +34,8 @@ android {
         applicationId "cw.kop.autobackground"
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 63
-        versionName "2.10.00"
+        versionCode 65
+        versionName "2.11.00"
 
         resConfigs "en"
         resConfigs "nodpi", "hdpi", "xhdpi", "xxhdpi"

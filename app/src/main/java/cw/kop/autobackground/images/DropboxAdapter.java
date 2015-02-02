@@ -116,7 +116,7 @@ public class DropboxAdapter extends BaseAdapter {
 
             fileImage.setImageDrawable(drawable);
             fileTitle.setText(entry.fileName());
-            fileSummary.setText(entry.isDir ? "" + entry.contents.size() : entry.size);
+            fileSummary.setText(entry.isDir ? "" : entry.size);
 
             return convertView;
         }
@@ -139,11 +139,8 @@ public class DropboxAdapter extends BaseAdapter {
 
     public Boolean backDirectory() {
 
-        if (finished || topDir.path.equals(mainDir.path)) {
-            return true;
-        }
+        return finished || topDir.path.equals(mainDir.path);
 
-        return false;
     }
 
     private static class ViewHolder {

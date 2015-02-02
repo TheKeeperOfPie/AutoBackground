@@ -451,7 +451,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                 AppSettings.setUseDropboxAccount(true);
                 AppSettings.setDropboxAccountToken(dropboxAPI.getSession().getOAuth2AccessToken());
                 showDropboxFragment();
-            } catch (IllegalStateException e) {
+            }
+            catch (IllegalStateException e) {
                 Log.i("DbAuthLog", "Error authenticating", e);
             }
         }

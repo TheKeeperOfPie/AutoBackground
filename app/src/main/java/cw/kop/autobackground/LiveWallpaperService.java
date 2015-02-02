@@ -67,6 +67,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
@@ -81,6 +82,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     public static final String TOAST_LOCATION = "cw.kop.autobackground.LiveWallpaperService.TOAST_LOCATION";
     public static final String COPY_IMAGE = "cw.kop.autobackground.LiveWallpaperService.COPY_IMAGE";
     public static final String CYCLE_IMAGE = "cw.kop.autobackground.LiveWallpaperService.CYCLE_IMAGE";
+    public static final String FETCH_IMAGE = "cw.kop.autobackground.LiveWallpaperService.FETCH_IMAGE";
     public static final String DELETE_IMAGE = "cw.kop.autobackground.LiveWallpaperService.DELETE_IMAGE";
     public static final String OPEN_IMAGE = "cw.kop.autobackground.LiveWallpaperService.OPEN_IMAGE";
     public static final String PIN_IMAGE = "cw.kop.autobackground.LiveWallpaperService.PIN_IMAGE";
@@ -88,6 +90,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     public static final String SHARE_IMAGE = "cw.kop.autobackground.LiveWallpaperService.SHARE_IMAGE";
     public static final String TOGGLE_GAME = "cw.kop.autobackground.LiveWallpaperService.TOGGLE_GAME";
     public static final String CURRENT_IMAGE = "cw.kop.autobackground.LiveWallpaperService.CURRENT_IMAGE";
+    public static final String AUTO_BACKGROUND_SEND_IMAGE = "cw.kop.autobackground.AUTO_BACKGROUND_SEND_IMAGE";
     public static final String GAME_TILE0 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE0";
     public static final String GAME_TILE1 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE1";
     public static final String GAME_TILE2 = "cw.kop.autobackground.LiveWallpaperService.GAME_TILE2";
@@ -1269,6 +1272,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction(DOWNLOAD_WALLPAPER);
             intentFilter.addAction(CYCLE_IMAGE);
+            intentFilter.addAction(FETCH_IMAGE);
             intentFilter.addAction(UPDATE_WALLPAPER);
             intentFilter.addAction(DELETE_IMAGE);
             intentFilter.addAction(OPEN_IMAGE);
@@ -1360,11 +1364,11 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 if (!keyguardManager.inKeyguardRestrictedInputMode() || AppSettings.changeWhenLocked()) {
                     if (toChange) {
-                        loadNextImage();
+                        loadNextImage(-1);
                         toChange = false;
                     }
                     else if (AppSettings.useInterval() && AppSettings.getIntervalDuration() == 0) {
-                        loadNextImage();
+                        loadNextImage(-1);
                     }
                 }
             }
@@ -1392,7 +1396,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         public void loadCurrentImage() {
 
             if (FileHandler.getCurrentBitmapFile() == null) {
-                loadNextImage();
+                loadNextImage(-1);
                 return;
             }
 
@@ -1475,56 +1479,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
         }
 
-        private void loadNextImage() {
-            if (pinReleaseTime > 0 && pinReleaseTime < System.currentTimeMillis()) {
-                pinned = false;
-            }
-
-            if (pinned) {
-                return;
-            }
-
-            previousBitmaps.add(0, FileHandler.getCurrentBitmapFile());
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (renderer == null) {
-                            return;
-                        }
-
-                        File nextImage = FileHandler.getNextImage();
-                        if (nextImage == null) {
-                            return;
-                        }
-
-                        renderer.loadNext(nextImage);
-                        loadWearImage(nextImage);
-
-                        handler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                notifyChangeImage();
-                            }
-                        });
-
-                        Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
-                        LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
-                                loadNavPictureIntent);
-                    }
-                    catch (OutOfMemoryError e) {
-                        if (AppSettings.useToast()) {
-                            Toast.makeText(LiveWallpaperService.this,
-                                    "Out of memory error",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }
-            }).start();
-
-        }
-
         private void loadNextImage(final float positionY) {
             if (pinReleaseTime > 0 && pinReleaseTime < System.currentTimeMillis()) {
                 pinned = false;
@@ -1549,7 +1503,13 @@ public class LiveWallpaperService extends GLWallpaperService {
                             return;
                         }
 
-                        renderer.loadNext(nextImage, positionY);
+                        if (positionY >= 0) {
+                            renderer.loadNext(nextImage, positionY);
+                        }
+                        else {
+                            renderer.loadNext(nextImage);
+                        }
+
                         loadWearImage(nextImage);
                         handler.post(new Runnable() {
                             @Override
@@ -1648,7 +1608,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                                     pendingIntent);
                         }
                         if (isVisible()) {
-                            loadNextImage();
+                            loadNextImage(-1);
                         }
                         else {
                             new Thread(new Runnable() {
@@ -1673,6 +1633,17 @@ public class LiveWallpaperService extends GLWallpaperService {
                             }).start();
                         }
                         break;
+                    case FETCH_IMAGE:
+
+                        List<File> fileList = FileHandler.getBitmapList();
+                        File file = fileList.get(new Random().nextInt(fileList.size()));
+                        if (file.exists()) {
+                            Intent sendImageIntent = new Intent(AUTO_BACKGROUND_SEND_IMAGE);
+                            sendImageIntent.putExtra("imageFile", file.getAbsolutePath());
+                            sendBroadcast(sendImageIntent);
+                        }
+
+                        break;
                     case LiveWallpaperService.DELETE_IMAGE:
                         FileHandler.deleteCurrentBitmap();
                         closeNotificationDrawer(context);
@@ -1681,7 +1652,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                                     "Deleted image",
                                     Toast.LENGTH_LONG).show();
                         }
-                        loadNextImage();
+                        loadNextImage(-1);
                         break;
                     case LiveWallpaperService.OPEN_IMAGE:
                         String location = FileHandler.getBitmapLocation();
@@ -1743,7 +1714,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         break;
                     case LiveWallpaperService.UPDATE_WALLPAPER:
                         if (AppSettings.forceInterval()) {
-                            loadNextImage();
+                            loadNextImage(-1);
                         }
                         else {
                             loadWearImage(FileHandler.getNextImage());

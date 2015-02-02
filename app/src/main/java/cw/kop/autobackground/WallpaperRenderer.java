@@ -21,6 +21,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.media.ThumbnailUtils;
 import android.media.effect.Effect;
 import android.media.effect.EffectContext;
 import android.media.effect.EffectFactory;
@@ -341,23 +342,32 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                 return;
             }
 
+            int maxTextureSize = RenderImage.maxTextureSize[0];
+
+            int width = maxTextureSize < bitmap.getWidth() ? maxTextureSize : bitmap.getWidth();
+            int height = maxTextureSize < bitmap.getHeight() ? maxTextureSize : bitmap.getHeight();
+
             RenderImage newImage;
             if (AppSettings.useDoubleImage()) {
+
                 if (positionY < renderScreenHeight / 2) {
-                    newImage = getNewImage(scaleBitmap(bitmap,
-                            renderScreenWidth,
-                            renderScreenHeight / 2), 0.0f, 1.0f, 0.5f, 1.0f);
+                    newImage = getNewImage(ThumbnailUtils.extractThumbnail(bitmap,
+                            width,
+                            height,
+                            ThumbnailUtils.OPTIONS_RECYCLE_INPUT), 0.0f, 1.0f, 0.5f, 1.0f);
                 }
                 else {
-                    newImage = getNewImage(scaleBitmap(bitmap,
-                            renderScreenWidth,
-                            renderScreenHeight / 2), 0.0f, 1.0f, 0.0f, 0.5f);
+                    newImage = getNewImage(ThumbnailUtils.extractThumbnail(bitmap,
+                            width,
+                            height,
+                            ThumbnailUtils.OPTIONS_RECYCLE_INPUT), 0.0f, 1.0f, 0.0f, 0.5f);
                 }
             }
             else {
-                newImage = getNewImage(scaleBitmap(bitmap,
-                        renderScreenWidth,
-                        renderScreenHeight), 0.0f, 1.0f, 0.0f, 1.0f);
+                newImage = getNewImage(ThumbnailUtils.extractThumbnail(bitmap,
+                        width,
+                        height,
+                        ThumbnailUtils.OPTIONS_RECYCLE_INPUT), 0.0f, 1.0f, 0.0f, 1.0f);
             }
             newImage.setRawOffsetX(rawOffsetX);
             newImage.setDimensions(renderScreenWidth, renderScreenHeight);
@@ -383,78 +393,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             e.printStackTrace();
         }
 
-    }
-
-    public Bitmap scaleBitmap(Bitmap bitmap, float targetWidth, float targetHeight) {
-        if (!AppSettings.scaleImages()) {
-            Log.i(TAG, "Not scaled");
-            return bitmap;
-        }
-
-        int bitWidth = bitmap.getWidth();
-        int bitHeight = bitmap.getHeight();
-
-        int maxTextureSize = RenderImage.maxTextureSize[0];
-
-        if (bitWidth > 0 && bitHeight > 0 && maxTextureSize > 0) {
-            float scaleWidth = targetWidth / bitWidth;
-            float scaleHeight = targetHeight / bitHeight;
-
-            if (bitWidth * scaleWidth > maxTextureSize ||
-                    bitWidth * scaleHeight > maxTextureSize ||
-                    bitHeight * scaleWidth > maxTextureSize ||
-                    bitHeight * scaleHeight > maxTextureSize) {
-
-                float ratio = maxTextureSize / targetHeight;
-
-                int scaledWidth = Math.round(bitHeight * ratio);
-                if (scaledWidth > bitWidth || scaledWidth == 0) {
-                    scaledWidth = bitWidth;
-                }
-
-                if (scaledWidth > maxTextureSize) {
-                    scaledWidth = maxTextureSize;
-                }
-
-                bitmap = Bitmap.createBitmap(bitmap,
-                        (bitWidth / 2) - (scaledWidth / 2),
-                        0,
-                        scaledWidth,
-                        bitHeight);
-
-                bitWidth = bitmap.getWidth();
-                bitHeight = bitmap.getHeight();
-                scaleWidth = targetWidth / bitWidth;
-                scaleHeight = targetHeight / bitHeight;
-            }
-
-            Matrix matrix = new Matrix();
-            if (scaleWidth > scaleHeight) {
-                matrix.postScale(scaleWidth, scaleWidth);
-            }
-            else {
-                matrix.postScale(scaleHeight, scaleHeight);
-            }
-
-            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitWidth, bitHeight, matrix, false);
-
-            if (bitmap.getWidth() > maxTextureSize) {
-                bitmap = Bitmap.createBitmap(bitmap,
-                        0,
-                        0,
-                        maxTextureSize,
-                        bitmap.getHeight());
-            }
-            if (bitmap.getHeight() > maxTextureSize) {
-                bitmap = Bitmap.createBitmap(bitmap,
-                        0,
-                        0,
-                        bitmap.getWidth(),
-                        maxTextureSize);
-            }
-        }
-
-        return bitmap;
     }
 
     public void setLoadCurrent(boolean load) {
