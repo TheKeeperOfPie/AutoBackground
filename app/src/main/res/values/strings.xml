@@ -525,13 +525,13 @@
     <string-array name="source_menu">
         <item>Website</item>
         <item>Folder</item>
+        <item>Dropbox Folder</item>
+        <item>Google+ Album</item>
         <item>Imgur Subreddit</item>
         <item>Imgur Album</item>
-        <item>Google+ Album</item>
-        <item>Tumblr Blog</item>
-        <item>Tumblr Tag Search</item>
         <item>Reddit Subreddit</item>
-        <item>Dropbox Folder</item>
+        <item>Tumblr Blog</item>
+        <item>Tumblr Tag</item>
     </string-array>
 
     <string-array name="source_sort_menu">

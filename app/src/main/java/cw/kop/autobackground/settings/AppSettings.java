@@ -789,7 +789,6 @@ public class AppSettings {
                 return "imgur.com/a/";
             case REDDIT_SUBREDDIT:
                 return "/r/";
-
         }
     }
 
@@ -813,6 +812,23 @@ public class AppSettings {
                 return "Tag";
             case AppSettings.REDDIT_SUBREDDIT:
                 return "Subreddit";
+        }
+    }
+
+    public static String getSourceDataSuffix(String type) {
+
+        switch (type) {
+            default:
+            case WEBSITE:
+            case FOLDER:
+            case GOOGLE_ALBUM:
+            case TUMBLR_TAG:
+            case IMGUR_SUBREDDIT:
+            case IMGUR_ALBUM:
+            case REDDIT_SUBREDDIT:
+                return "";
+            case TUMBLR_BLOG:
+                return ".tumblr.com";
         }
     }
 

@@ -208,7 +208,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                     case AppSettings.FOLDER:
                     case AppSettings.GOOGLE_ALBUM:
                     case AppSettings.DROPBOX_FOLDER:
-                        selectSource(getPositionOfType(type));
+                        selectSource(type);
                         break;
 
                 }
@@ -314,7 +314,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                         int position,
                         long id) {
 
-                    selectSource(position);
+                    selectSource(getTypeFromPosition(position));
                     Log.i(TAG, "Spinner launched folder fragment");
                 }
 
@@ -325,9 +325,9 @@ public class SourceInfoFragment extends PreferenceFragment {
             });
 
             type = AppSettings.WEBSITE;
-            hint = "URL";
-            prefix = "";
-            suffix = "";
+            prefix = AppSettings.getSourceDataPrefix(type);
+            hint = AppSettings.getSourceDataHint(type);
+            suffix = AppSettings.getSourceDataSuffix(type);
 
             startHour = 0;
             startMinute = 0;
@@ -346,7 +346,7 @@ public class SourceInfoFragment extends PreferenceFragment {
 
             hint = AppSettings.getSourceDataHint(type);
             prefix = AppSettings.getSourceDataPrefix(type);
-            suffix = "";
+            suffix = AppSettings.getSourceDataSuffix(type);
 
             switch (type) {
                 case AppSettings.GOOGLE_ALBUM:
@@ -355,9 +355,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                     sourceNum.setFocusable(false);
                 case AppSettings.FOLDER:
                     data = Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER));
-                    break;
-                case AppSettings.TUMBLR_BLOG:
-                    suffix = ".tumblr.com";
                     break;
 
             }
@@ -422,6 +419,10 @@ public class SourceInfoFragment extends PreferenceFragment {
         }
 
         return view;
+    }
+
+    private int getPositionOfType(String type) {
+        return Arrays.asList(getResources().getStringArray(R.array.source_menu)).indexOf(type);
     }
 
     @Override
@@ -638,14 +639,13 @@ public class SourceInfoFragment extends PreferenceFragment {
 
     public void setData(String type,
             final String title,
-            final String prefix,
             final String data,
-            final String suffix,
             final int num) {
 
         this.type = type;
-        this.prefix = prefix;
-        this.suffix = suffix;
+        this.prefix = AppSettings.getSourceDataPrefix(type);
+        this.hint = AppSettings.getSourceDataHint(type);
+        this.suffix = AppSettings.getSourceDataSuffix(type);
         this.folderData = data;
 
         handler.post(new Runnable() {
@@ -679,54 +679,32 @@ public class SourceInfoFragment extends PreferenceFragment {
 
     }
 
-    private int getPositionOfType(String type) {
+    private String getTypeFromPosition(int position) {
 
-        switch (type) {
-
-            default:
-            case AppSettings.WEBSITE:
-                return 0;
-            case AppSettings.FOLDER:
-                return 1;
-            case AppSettings.IMGUR_SUBREDDIT:
-                return 2;
-            case AppSettings.IMGUR_ALBUM:
-                return 3;
-            case AppSettings.GOOGLE_ALBUM:
-                return 4;
-            case AppSettings.TUMBLR_BLOG:
-                return 5;
-            case AppSettings.TUMBLR_TAG:
-                return 6;
-            case AppSettings.REDDIT_SUBREDDIT:
-                return 7;
-
-        }
+        return getResources().getStringArray(R.array.source_menu)[position];
 
     }
 
-    private void selectSource(int position) {
-
-        hint = "";
-        prefix = "";
-        suffix = "";
+    private void selectSource(String newType) {
 
         boolean blockTitle = false;
         boolean blockData = false;
         boolean blockNum = false;
 
-        if (type.equals(AppSettings.FOLDER)) {
+        if (type.equals(AppSettings.FOLDER) ||
+                type.equals(AppSettings.GOOGLE_ALBUM) ||
+                type.equals(AppSettings.DROPBOX_FOLDER)) {
             sourceTitle.setText("");
             sourceData.setText("");
             sourceNum.setText("");
         }
 
-        switch (position) {
-            case 0:
-                type = AppSettings.WEBSITE;
+        type = newType;
+
+        switch (type) {
+            case AppSettings.WEBSITE:
                 break;
-            case 1:
-                type = AppSettings.FOLDER;
+            case AppSettings.FOLDER:
                 File externalStorageDirectory = Environment.getExternalStorageDirectory();
                 if (getFragmentManager().findFragmentByTag("folder_fragment") == null) {
                     if (externalStorageDirectory.exists() && externalStorageDirectory.canRead()) {
@@ -739,14 +717,11 @@ public class SourceInfoFragment extends PreferenceFragment {
                 blockData = true;
                 blockNum = true;
                 break;
-            case 2:
-                type = AppSettings.IMGUR_SUBREDDIT;
+            case AppSettings.IMGUR_SUBREDDIT:
                 break;
-            case 3:
-                type = AppSettings.IMGUR_ALBUM;
+            case AppSettings.IMGUR_ALBUM:
                 break;
-            case 4:
-                type = AppSettings.GOOGLE_ALBUM;
+            case AppSettings.GOOGLE_ALBUM:
                 if (AppSettings.getGoogleAccountName().equals("")) {
                     startActivityForResult(GoogleAccount.getPickerIntent(),
                             GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
@@ -756,18 +731,13 @@ public class SourceInfoFragment extends PreferenceFragment {
                 }
                 blockData = true;
                 break;
-            case 5:
-                type = AppSettings.TUMBLR_BLOG;
-                suffix = ".tumblr.com";
+            case AppSettings.TUMBLR_BLOG:
                 break;
-            case 6:
-                type = AppSettings.TUMBLR_TAG;
+            case AppSettings.TUMBLR_TAG:
                 break;
-            case 7:
-                type = AppSettings.REDDIT_SUBREDDIT;
+            case AppSettings.REDDIT_SUBREDDIT:
                 break;
-            case 8 :
-                type = AppSettings.DROPBOX_FOLDER;
+            case AppSettings.DROPBOX_FOLDER:
                 if (AppSettings.getDropboxAccountToken().equals("") || !dropboxAPI.getSession().isLinked()) {
                     dropboxAPI.getSession().startOAuth2Authentication(appContext);
                 }
@@ -779,8 +749,9 @@ public class SourceInfoFragment extends PreferenceFragment {
             default:
         }
 
-        hint = AppSettings.getSourceDataHint(type);
         prefix = AppSettings.getSourceDataPrefix(type);
+        hint = AppSettings.getSourceDataHint(type);
+        suffix = AppSettings.getSourceDataSuffix(type);
 
         setDataWrappers();
 
@@ -937,19 +908,15 @@ public class SourceInfoFragment extends PreferenceFragment {
 
                             setData(AppSettings.FOLDER,
                                     dir.getName(),
-                                    "",
                                     stringBuilder.toString(),
-                                    "",
                                     numImages);
                         }
                     }).start();
                 }
                 else {
-                    ((SourceInfoFragment) getTargetFragment()).setData(AppSettings.FOLDER,
+                    setData(AppSettings.FOLDER,
                             dir.getName(),
-                            "",
                             dir.getAbsolutePath(),
-                            "",
                             dir.listFiles(filenameFilter) != null ? dir.listFiles(filenameFilter).length : 0);
                 }
                 adapter.setFinished();
@@ -1025,9 +992,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
                 setData(type,
                         names.get(positionInList),
-                        "",
                         links.get(positionInList),
-                        "",
                         Integer.parseInt(nums.get(positionInList)));
 
                 getActivity().onBackPressed();
@@ -1060,7 +1025,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             public void onUseDirectoryClick() {
                 Entry entry = adapter.getMainDir();
                 if (entry.isDir) {
-                    setData(AppSettings.DROPBOX_FOLDER, entry.fileName(), "", entry.path, "", 1);
+                    setData(AppSettings.DROPBOX_FOLDER, entry.fileName(), entry.path, 1);
                     adapter.setFinished(true);
                     getActivity().onBackPressed();
                 }

@@ -94,7 +94,7 @@ public class DownloadThread extends Thread {
     private int totalTarget;
     private int numTarget;
     private HashSet<String> usedLinks;
-    private List<File> downloadedFiles;;
+    private List<File> downloadedFiles;
 
     public DownloadThread(Context context) {
         appContext = context;

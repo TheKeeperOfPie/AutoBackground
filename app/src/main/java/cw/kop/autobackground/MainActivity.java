@@ -366,7 +366,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {;
+    public boolean onOptionsItemSelected(MenuItem item) {
 
         if (getFragmentManager().findFragmentByTag("folder_fragment") == null) {
             if (drawerToggle != null) {

@@ -94,5 +94,4 @@ dependencies {
     }
     wearApp project(':wear')
     compile project(':shared')
-    compile files('libs/Dropbox/dropbox-android=sdk-1.6.3.jar')
 }

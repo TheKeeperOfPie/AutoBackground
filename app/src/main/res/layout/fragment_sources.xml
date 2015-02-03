@@ -60,12 +60,13 @@
 
     <Button
         android:id="@+id/set_button"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
         android:text="@string/set_wallpaper"
         android:textAllCaps="true"
-        android:textColor="@color/BLUE_OPAQUE"
+        android:textColor="@color/ACCENT_OPAQUE"
         />
 
     <ImageView
