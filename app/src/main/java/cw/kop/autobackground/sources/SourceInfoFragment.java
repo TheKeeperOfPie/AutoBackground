@@ -288,15 +288,6 @@ public class SourceInfoFragment extends PreferenceFragment {
             }
         });
 
-        if (savedInstanceState != null) {
-
-            if (sourcePosition == -1) {
-                sourceSpinner.setSelection(getPositionOfType(savedInstanceState.getString(Source.TYPE,
-                        AppSettings.WEBSITE)));
-            }
-
-        }
-
         if (sourcePosition == -1) {
             sourceImage.setVisibility(View.GONE);
             sourceSpinnerText.setVisibility(View.VISIBLE);
@@ -413,6 +404,10 @@ public class SourceInfoFragment extends PreferenceFragment {
         listView.addHeaderView(headerView);
 
         if (savedInstanceState != null) {
+            if (arguments.getString(Source.TYPE, "").length() > 0) {
+                sourceSpinner.setSelection(getPositionOfType(savedInstanceState.getString(Source.TYPE,
+                        AppSettings.WEBSITE)));
+            }
             sourceTitle.setText(savedInstanceState.getString(Source.TITLE, ""));
             sourceData.setText(savedInstanceState.getString(Source.DATA, ""));
             sourceNum.setText(savedInstanceState.getString(Source.NUM, ""));

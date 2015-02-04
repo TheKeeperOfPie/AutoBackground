@@ -253,7 +253,6 @@ public class LiveWallpaperService extends GLWallpaperService {
     private int tileWins = 0;
     private boolean gameSet = false;
     private int[] tileIds;
-    private int tilesLoaded = 0;
     private PendingIntent pendingToastIntent;
     private PendingIntent pendingCopyIntent;
     private PendingIntent pendingCycleIntent;
@@ -974,14 +973,14 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             tileBitmaps.clear();
 
-            startLoadImageThreads(bitmapFiles);
+            startLoadImageThreads(bitmapFiles, 0);
             return true;
         }
 
         return false;
     }
 
-    private void startLoadImageThreads(final ArrayList<File> files) {
+    private void startLoadImageThreads(final ArrayList<File> files, final int index) {
 
         if (tileBitmaps.size() < NUM_TO_WIN) {
 
@@ -997,7 +996,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         if (AppSettings.useHighResolutionNotificationIcon()) {
 
                             options.inJustDecodeBounds = true;
-                            BitmapFactory.decodeFile(files.get(tilesLoaded).getAbsolutePath(),
+                            BitmapFactory.decodeFile(files.get(index).getAbsolutePath(),
                                     options);
 
                             int bitWidth = options.outWidth;
@@ -1021,18 +1020,14 @@ public class LiveWallpaperService extends GLWallpaperService {
                         else {
                             options.inSampleSize = NOTIFICATION_ICON_SAMPLE_SIZE;
                         }
-                        Bitmap bitmap = BitmapFactory.decodeFile(files.get(tilesLoaded).getAbsolutePath(),
+                        Bitmap bitmap = BitmapFactory.decodeFile(files.get(index).getAbsolutePath(),
                                 options);
                         if (tileBitmaps.size() < NUM_TO_WIN) {
                             tileBitmaps.add(bitmap);
                         }
                         setTileOrder();
-                        tilesLoaded++;
-                        if (tilesLoaded < NUM_TO_WIN) {
-                            startLoadImageThreads(files);
-                        }
-                        else {
-                            tilesLoaded = 0;
+                        if (tileBitmaps.size() < NUM_TO_WIN) {
+                            startLoadImageThreads(files, index + 1);
                         }
                     }
                     catch (OutOfMemoryError e) {
