@@ -597,16 +597,26 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
                         catch (OutOfMemoryError e) {
                             if (AppSettings.useToast()) {
-                                Toast.makeText(LiveWallpaperService.this,
-                                        "Out of memory error",
-                                        Toast.LENGTH_SHORT).show();
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(LiveWallpaperService.this,
+                                                "Out of memory error",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             }
                         }
                         catch (NullPointerException e) {
                             if (AppSettings.useToast()) {
-                                Toast.makeText(LiveWallpaperService.this,
-                                        "Null error",
-                                        Toast.LENGTH_SHORT).show();
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(LiveWallpaperService.this,
+                                                "Null error",
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                });
                             }
                         }
                     }
@@ -1432,7 +1442,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 pinned = false;
             }
 
-            if (pinned || previousBitmaps.size() == 0 || previousBitmaps.get(0) == null) {
+            if (pinned || previousBitmaps.isEmpty() || previousBitmaps.get(0) == null) {
                 return;
             }
 

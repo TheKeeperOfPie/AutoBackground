@@ -23,11 +23,13 @@ import android.media.effect.Effect;
 import android.media.effect.EffectContext;
 import android.media.effect.EffectFactory;
 import android.opengl.GLES20;
-import android.opengl.GLES30;
 import android.opengl.GLUtils;
+import android.support.v8.renderscript.Allocation;
+import android.support.v8.renderscript.Element;
+import android.support.v8.renderscript.RenderScript;
+import android.support.v8.renderscript.ScriptIntrinsicBlur;
 import android.util.Log;
 import android.view.animation.OvershootInterpolator;
-import android.widget.Toast;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -131,9 +133,9 @@ public class RenderImage {
 
     public static void setupRenderValues() {
         int vertexShader = GLShaders.loadShader(GLES20.GL_VERTEX_SHADER,
-                GLShaders.vertexShaderImage);
+                GLShaders.VERTEX_SHADER);
         int fragmentShader = GLShaders.loadShader(GLES20.GL_FRAGMENT_SHADER,
-                GLShaders.fragmentShaderImage);
+                GLShaders.FRAGMENT_SHADER);
         program = GLES20.glCreateProgram();
         GLES20.glAttachShader(program, vertexShader);
         GLES20.glAttachShader(program, fragmentShader);
@@ -305,7 +307,6 @@ public class RenderImage {
             Log.w(TAG, "Null on loading image error");
         }
     }
-
 
     private void initEffects() {
 
@@ -954,7 +955,7 @@ public class RenderImage {
     }
 
     public void finishImmediately() {
-        GLES20.glDeleteTextures(1, textureNames, 0);
+        GLES20.glDeleteTextures(2, textureNames, 0);
         eventListener.removeSelf(this);
     }
 
@@ -966,7 +967,7 @@ public class RenderImage {
             transitionEndtime = time + AppSettings.getTransitionSpeed() * 100;
         }
         else if (transitionEndtime < time) {
-            GLES20.glDeleteTextures(1, textureNames, 0);
+            GLES20.glDeleteTextures(2, textureNames, 0);
             eventListener.removeSelf(this);
             return;
         }

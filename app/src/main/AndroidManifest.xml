@@ -113,8 +113,6 @@
             >
         </activity>
 
-        <meta-data android:name="com.crashlytics.ApiKey" android:value="5cda1cb2574fd377ad47423cbfb8d3f787c9f6b5"/>
-
         <activity
             android:name="com.dropbox.client2.android.AuthActivity"
             android:launchMode="singleTask"
@@ -128,6 +126,11 @@
             </intent-filter>
         </activity>
 
+        <meta-data
+            android:name="com.crashlytics.ApiKey"
+            android:value="5cda1cb2574fd377ad47423cbfb8d3f787c9f6b5"
+            />
+        
     </application>
 
 </manifest>

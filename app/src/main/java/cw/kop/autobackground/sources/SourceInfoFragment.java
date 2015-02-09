@@ -456,6 +456,11 @@ public class SourceInfoFragment extends PreferenceFragment {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         Animation animation;
@@ -1006,6 +1011,10 @@ public class SourceInfoFragment extends PreferenceFragment {
     }
 
     private void showDropboxFragment() {
+
+        if (!type.equals(AppSettings.DROPBOX_FOLDER)) {
+            return;
+        }
 
         final FolderFragment folderFragment = new FolderFragment();
         Bundle arguments = new Bundle();

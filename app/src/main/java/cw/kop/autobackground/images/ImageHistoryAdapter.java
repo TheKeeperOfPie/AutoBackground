@@ -152,8 +152,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
             @Override
             public boolean accept(File dir, String filename) {
 
-                return filename.length() > 4 && filename.substring(filename.length() - 4,
-                        filename.length()).equals(".png");
+                return filename.endsWith(".png");
 
             }
         };

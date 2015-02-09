@@ -18,9 +18,6 @@ package cw.kop.autobackground.files;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -30,9 +27,7 @@ import java.io.FilenameFilter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -42,44 +37,28 @@ import cw.kop.autobackground.sources.Source;
 
 public class FileHandler {
 
+    public static final FilenameFilter filenameFilter = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String filename) {
+            return filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(
+                    ".jpeg") || filename.endsWith(".webp");
+        }
+    };
     public static final String DOWNLOAD_TERMINATED = "cw.kop.autobackground.files.FileHandler.DOWNLOAD_TERMINATED";
-    private static final String TAG = "FileHandler";
     public static volatile boolean isDownloading = false;
+    private static final String TAG = "FileHandler";
     private static File currentWearFile = null;
     private static File currentBitmapFile = null;
     private static File previousBitmapFile = null;
-    private static int randIndex = 0;
+    private static int imageIndex = 0;
     private static DownloadThread downloadThread;
 
     public static boolean download(Context appContext) {
 
         if (!isDownloading) {
-            ConnectivityManager connect = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-            NetworkInfo wifi = connect.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-            NetworkInfo mobile = connect.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-
-            if (wifi != null && wifi.isConnected() && AppSettings.useWifi()) {
-            }
-            else if (mobile != null && mobile.isConnected() && AppSettings.useMobile()) {
-            }
-            else {
-                if (AppSettings.useToast()) {
-                    Toast.makeText(appContext,
-                            "No connection available,\ncheck Download Settings",
-                            Toast.LENGTH_SHORT).show();
-                }
-
-                Intent resetDownloadIntent = new Intent(FileHandler.DOWNLOAD_TERMINATED);
-                LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
-                return false;
-            }
             isDownloading = true;
             downloadThread = new DownloadThread(appContext);
             downloadThread.start();
-            if (AppSettings.useToast()) {
-                Toast.makeText(appContext, "Downloading images", Toast.LENGTH_SHORT).show();
-            }
             return true;
         }
         else {
@@ -282,7 +261,12 @@ public class FileHandler {
         images.remove(currentBitmapFile);
         previousBitmapFile = currentBitmapFile;
         if (images.size() > 0) {
-            currentBitmapFile = images.get(new Random().nextInt(images.size()));
+            if (AppSettings.shuffleImages()) {
+                currentBitmapFile = images.get(new Random().nextInt(images.size()));
+            }
+            else {
+                currentBitmapFile = images.get(imageIndex++ % images.size());
+            }
         }
         else {
             currentBitmapFile = null;
@@ -306,18 +290,11 @@ public class FileHandler {
     }
 
     public static void decreaseIndex() {
-        randIndex--;
+        imageIndex--;
     }
 
     public static FilenameFilter getImageFileNameFilter() {
-        return new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String filename) {
-                return filename.endsWith(".png") || filename.endsWith(".jpg") || filename.endsWith(
-                        ".jpeg");
-            }
-        };
+        return filenameFilter;
     }
 
 }

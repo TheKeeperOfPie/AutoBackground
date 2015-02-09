@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Set;
 
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.sources.Source;
 
 public class AppSettings {
@@ -315,6 +316,19 @@ public class AppSettings {
             case APP_DARK_THEME:
             case APP_TRANSPARENT_THEME:
                 return context.getResources().getColor(R.color.LIGHT_GRAY_OPAQUE);
+        }
+
+    }
+
+    public static int getTransparentOverlayColor(Context context) {
+
+        switch (getTheme()) {
+            default:
+            case APP_LIGHT_THEME:
+                return context.getResources().getColor(R.color.LIGHT_GRAY_TRANSPARENT);
+            case APP_DARK_THEME:
+            case APP_TRANSPARENT_THEME:
+                return context.getResources().getColor(R.color.DARK_GRAY_TRANSPARENT);
         }
 
     }
@@ -1024,8 +1038,7 @@ public class AppSettings {
 
             File image = new File(prefs.getString("notification_icon_file", null));
 
-            if (image.exists() && image.isFile() && (image.getAbsolutePath().contains(".png") || image.getAbsolutePath().contains(
-                    ".jpg") || image.getAbsolutePath().contains(".jpeg"))) {
+            if (image.exists() && image.isFile() && FileHandler.getImageFileNameFilter().accept(image.getParentFile(), image.getName())) {
                 return image.getAbsolutePath();
             }
         }
@@ -1272,6 +1285,14 @@ public class AppSettings {
 
     public static boolean useEffectsOverride() {
         return prefs.getBoolean("use_effects_override", false);
+    }
+
+    public static void setBlurRadius(int radius) {
+        prefs.edit().putInt("blur_radius", radius).apply();
+    }
+
+    public static int getBlurRadius() {
+        return prefs.getInt("blur_radius", 0);
     }
 
     public static float getAutoFixEffect() {

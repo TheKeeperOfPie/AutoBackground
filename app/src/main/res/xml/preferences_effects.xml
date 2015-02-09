@@ -25,6 +25,12 @@
         android:title="@string/title_effects_settings"
         >
 
+        <Preference
+            android:key="blur_radius"
+            android:summary="@string/blur_radius_description"
+            android:title="@string/blur_radius"
+            />
+
         <cw.kop.autobackground.CustomSwitchPreference
             android:defaultValue="false"
             android:key="use_effects"
@@ -85,8 +91,8 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:key="title_effects_parameters"
-        android:title="@string/title_effects_parameters"
+        android:key="title_opengl_effects"
+        android:title="@string/title_opengl_effects"
         >
 
         <cw.kop.autobackground.EffectPreference

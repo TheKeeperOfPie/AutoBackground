@@ -67,7 +67,7 @@
                 android:layout_alignStart="@id/source_image"
                 android:layout_alignTop="@id/source_image"
                 android:alpha="0"
-                android:background="@color/DARK_GRAY_OPAQUE"
+                android:background="@color/LIGHT_GRAY_OPAQUE"
                 />
 
             <EditText

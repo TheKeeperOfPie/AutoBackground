@@ -32,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -90,6 +91,38 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
         duotonePref = (SwitchPreference) findPreference("effect_duotone_switch");
 
+        Preference blurRadiusPref = findPreference("blur_radius");
+        blurRadiusPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.SeekBarDialogListener listener = new DialogFactory.SeekBarDialogListener() {
+
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setBlurRadius(getValue());
+                        this.dismissDialog();
+                    }
+
+                    @Override
+                    public void onValueChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        setValueText("" + ((float) progress / 10));
+                    }
+                };
+
+                DialogFactory.showSeekBarDialog(appContext,
+                        "Blur effect",
+                        "pixel radius",
+                        listener,
+                        250,
+                        AppSettings.getBlurRadius(),
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button);
+
+                return true;
+            }
+        });
 
         if (!AppSettings.useAdvanced()) {
 
@@ -104,12 +137,12 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
         findPreference("random_effects_frequency").setOnPreferenceClickListener(this);
 
         PreferenceCategory parametersCategory = (PreferenceCategory) findPreference(
-                "title_effects_parameters");
+                "title_opengl_effects");
 
         for (int i = 0; i < parametersCategory.getPreferenceCount(); i++) {
             String key = parametersCategory.getPreference(i).getKey();
 
-            if (key != null && !key.contains("switch")) {
+            if (key != null && findPreference(key) instanceof EffectPreference) {
                 EffectPreference effectPref = (EffectPreference) findPreference(key);
                 effectPref.setSummary(effectPref.getTitle() + ": " + AppSettings.getEffectValue(key) + "%");
                 effectPref.setOnPreferenceClickListener(this);
@@ -236,7 +269,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
         randomPref.setSummary("Effect: " + AppSettings.getRandomEffect());
 
         PreferenceCategory parametersCategory = (PreferenceCategory) findPreference(
-                "title_effects_parameters");
+                "title_opengl_effects");
 
         for (int i = 0; i < parametersCategory.getPreferenceCount(); i++) {
             String key = parametersCategory.getPreference(i).getKey();

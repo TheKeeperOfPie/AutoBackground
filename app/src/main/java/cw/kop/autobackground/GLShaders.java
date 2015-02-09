@@ -20,24 +20,24 @@ import android.opengl.GLES20;
 
 public class GLShaders {
 
-    public static final String vertexShaderImage =
+    public static final String VERTEX_SHADER =
             "uniform mat4 uMVPMatrix;" +
-                    "attribute vec4 vPosition;" +
-                    "attribute vec2 aTexCoords;" +
-                    "varying vec2 vTexCoords;" +
-                    "void main() {" +
-                    "  gl_Position = uMVPMatrix * vPosition;" +
-                    "  vTexCoords = aTexCoords;" +
-                    "}";
-    public static final String fragmentShaderImage =
+            "attribute vec4 vPosition;" +
+            "attribute vec2 aTexCoords;" +
+            "varying vec2 vTexCoords;" +
+            "void main() {" +
+            "    gl_Position = uMVPMatrix * vPosition;" +
+            "    vTexCoords = aTexCoords;" +
+            "}";
+    public static final String FRAGMENT_SHADER =
             "precision mediump float;" +
-                    "varying vec2 vTexCoords;" +
-                    "uniform float opacity;" +
-                    "uniform sampler2D sTexture;" +
-                    "void main() {" +
-                    "  gl_FragColor = texture2D(sTexture, vTexCoords);" +
-                    "  gl_FragColor.a *= opacity;" +
-                    "}";
+            "varying vec2 vTexCoords;" +
+            "uniform float opacity;" +
+            "uniform sampler2D sTexture;" +
+            "void main() {" +
+            "    gl_FragColor = texture2D(sTexture, vTexCoords);" +
+            "    gl_FragColor.a *= opacity;" +
+            "}";
 
     public static int loadShader(int type, String shaderCode) {
 

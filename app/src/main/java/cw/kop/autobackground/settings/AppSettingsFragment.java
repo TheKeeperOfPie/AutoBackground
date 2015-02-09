@@ -34,8 +34,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -57,7 +55,6 @@ import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.Source;
 import cw.kop.autobackground.tutorial.TutorialActivity;
-import io.fabric.sdk.android.Fabric;
 
 public class AppSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 

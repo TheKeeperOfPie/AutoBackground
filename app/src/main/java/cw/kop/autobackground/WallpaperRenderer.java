@@ -29,6 +29,10 @@ import android.media.effect.EffectUpdateListener;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Handler;
+import android.support.v8.renderscript.Allocation;
+import android.support.v8.renderscript.Element;
+import android.support.v8.renderscript.RenderScript;
+import android.support.v8.renderscript.ScriptIntrinsicBlur;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -208,14 +212,14 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
                 1f,
                 0.0f);
 
-        if (renderImagesTop.size() == 0) {
+        if (renderImagesTop.isEmpty()) {
             File nextImage = FileHandler.getNextImage();
             if (nextImage != null && nextImage.exists()) {
                 loadNext(nextImage);
             }
         }
 
-        if (renderImagesBottom.size() == 0 && AppSettings.useDoubleImage()) {
+        if (renderImagesBottom.isEmpty() && AppSettings.useDoubleImage()) {
             File nextImage = FileHandler.getNextImage();
             if (nextImage != null && nextImage.exists()) {
                 loadNext(nextImage);
@@ -335,7 +339,6 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         }
 
         try {
-
             Bitmap bitmap = BitmapFactory.decodeFile(nextImage.getAbsolutePath(), options);
 
             if (bitmap == null) {
@@ -347,27 +350,30 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             int width = maxTextureSize < bitmap.getWidth() ? maxTextureSize : bitmap.getWidth();
             int height = maxTextureSize < bitmap.getHeight() ? maxTextureSize : bitmap.getHeight();
 
+            if (AppSettings.getBlurRadius() > 0) {
+                float ratio = (float) height / width;
+                width -= width % 4;
+                height = (int) (width * ratio);
+            }
+
+            bitmap = ThumbnailUtils.extractThumbnail(bitmap, width, height, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+
+            if (AppSettings.getBlurRadius() > 0) {
+                bitmap = blurBitmap(bitmap);
+            }
+
             RenderImage newImage;
             if (AppSettings.useDoubleImage()) {
 
                 if (positionY < renderScreenHeight / 2) {
-                    newImage = getNewImage(ThumbnailUtils.extractThumbnail(bitmap,
-                            width,
-                            height,
-                            ThumbnailUtils.OPTIONS_RECYCLE_INPUT), 0.0f, 1.0f, 0.5f, 1.0f);
+                    newImage = getNewImage(bitmap, 0.0f, 1.0f, 0.5f, 1.0f);
                 }
                 else {
-                    newImage = getNewImage(ThumbnailUtils.extractThumbnail(bitmap,
-                            width,
-                            height,
-                            ThumbnailUtils.OPTIONS_RECYCLE_INPUT), 0.0f, 1.0f, 0.0f, 0.5f);
+                    newImage = getNewImage(bitmap, 0.0f, 1.0f, 0.0f, 0.5f);
                 }
             }
             else {
-                newImage = getNewImage(ThumbnailUtils.extractThumbnail(bitmap,
-                        width,
-                        height,
-                        ThumbnailUtils.OPTIONS_RECYCLE_INPUT), 0.0f, 1.0f, 0.0f, 1.0f);
+                newImage = getNewImage(bitmap, 0.0f, 1.0f, 0.0f, 1.0f);
             }
             newImage.setRawOffsetX(rawOffsetX);
             newImage.setDimensions(renderScreenWidth, renderScreenHeight);
@@ -393,6 +399,29 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
             e.printStackTrace();
         }
 
+    }
+
+    private Bitmap blurBitmap(Bitmap bitmap) {
+
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+
+        RenderScript renderScript = RenderScript.create(serviceContext);
+        ScriptIntrinsicBlur script = ScriptIntrinsicBlur.create(renderScript, Element.U8_4(renderScript));
+        Allocation inAlloc = Allocation.createFromBitmap(renderScript,
+                bitmap,
+                Allocation.MipmapControl.MIPMAP_NONE,
+                Allocation.USAGE_GRAPHICS_TEXTURE);
+        Allocation outAlloc = Allocation.createFromBitmap(renderScript, output);
+        script.setRadius(AppSettings.getBlurRadius() / 10f);
+        script.setInput(inAlloc);
+        script.forEach(outAlloc);
+        outAlloc.copyTo(output);
+
+        renderScript.destroy();
+
+        bitmap.recycle();
+
+        return output;
     }
 
     public void setLoadCurrent(boolean load) {

@@ -124,10 +124,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
             setContentView(R.layout.activity_layout);
         }
         if (AppSettings.useFabric()) {
-            final Fabric fabric = new Fabric.Builder(this)
-                    .kits(new Crashlytics())
-                    .build();
-            Fabric.with(fabric);
+            Fabric.with(getApplicationContext(), new Crashlytics());
         }
 
         fragmentList = getResources().getStringArray(R.array.fragment_titles);

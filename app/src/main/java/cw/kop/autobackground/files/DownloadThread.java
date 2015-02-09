@@ -24,7 +24,10 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -62,8 +65,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -82,10 +83,15 @@ public class DownloadThread extends Thread {
 
     public static final String DROPBOX_FILE_PREFIX = "Dropbox File: ";
 
+    private static final String CHECK_DOWNLOAD = "Check download settings";
+    private static final String NO_CHOSEN_METHOD = "No download method chosen";
+    private static final String NO_WIFI = "No WiFi connection";
+    private static final String NO_MOBILE = "No mobile data connection";
     private static final int NOTIFICATION_ID = 1;
     private static final String TAG = DownloadThread.class.getCanonicalName();
     private final DropboxAPI<AndroidAuthSession> dropboxAPI;
     private Context appContext;
+    private Handler handler;
     private String imageDetails = "";
     private NotificationManager notificationManager = null;
     private Notification.Builder notifyProgress;
@@ -94,7 +100,11 @@ public class DownloadThread extends Thread {
     private int totalTarget;
     private int numTarget;
     private HashSet<String> usedLinks;
+    private HashSet<String> usedDropboxPaths;
     private List<File> downloadedFiles;
+    private boolean isAnyLowResolution;
+    private boolean isLowResolution;
+    private boolean isNotEnoughNew;
 
     public DownloadThread(Context context) {
         appContext = context;
@@ -110,13 +120,13 @@ public class DownloadThread extends Thread {
     public void run() {
         super.run();
 
-        Looper.prepare();
+        handler = new Handler(appContext.getMainLooper());
 
         if (AppSettings.useDownloadNotification()) {
             PendingIntent pendingStopIntent = PendingIntent.getBroadcast(appContext,
                     0,
                     new Intent(LiveWallpaperService.STOP_DOWNLOAD),
-                    0);
+                    PendingIntent.FLAG_CANCEL_CURRENT);
 
             notificationManager = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
             notifyProgress = new Notification.Builder(appContext)
@@ -132,6 +142,34 @@ public class DownloadThread extends Thread {
             }
 
             updateNotification(0);
+        }
+
+        if (!AppSettings.useWifi() && !AppSettings.useMobile()) {
+            imageDetails += CHECK_DOWNLOAD + AppSettings.DATA_SPLITTER + NO_CHOSEN_METHOD + AppSettings.DATA_SPLITTER;
+            sendToast(NO_CHOSEN_METHOD);
+            finish();
+            return;
+        }
+
+        ConnectivityManager connect = (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo wifi = connect.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        NetworkInfo mobile = connect.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+
+        boolean hasWifi = wifi != null && wifi.isConnected();
+        boolean hasMobile = mobile != null && mobile.isConnected();
+
+        if (((!AppSettings.useWifi() || !hasWifi)) && ((!AppSettings.useMobile() || !hasMobile))) {
+            if (AppSettings.useWifi()) {
+                imageDetails += NO_WIFI + AppSettings.DATA_SPLITTER;
+                sendToast(NO_WIFI);
+            }
+            if (AppSettings.useMobile()) {
+                imageDetails += NO_MOBILE + AppSettings.DATA_SPLITTER;
+                sendToast(NO_MOBILE);
+            }
+            finish();
+            return;
         }
 
         String downloadCacheDir = AppSettings.getDownloadPath();
@@ -154,14 +192,20 @@ public class DownloadThread extends Thread {
         }
 
         usedLinks = new HashSet<>();
+        usedDropboxPaths = new HashSet<>();
 
         if (AppSettings.checkDuplicates()) {
             Set<String> rawLinks = AppSettings.getUsedLinks();
             for (String link : rawLinks) {
-                if (link.lastIndexOf("Time:") > 0) {
-                    link = link.substring(0, link.lastIndexOf("Time:"));
+                if (link.contains(DROPBOX_FILE_PREFIX)) {
+                    usedDropboxPaths.add(link.substring(link.indexOf(DROPBOX_FILE_PREFIX) + DROPBOX_FILE_PREFIX.length()));
                 }
-                usedLinks.add(link);
+                else {
+                    if (link.lastIndexOf("Time:") > 0) {
+                        link = link.substring(0, link.lastIndexOf("Time:"));
+                    }
+                    usedLinks.add(link);
+                }
             }
         }
 
@@ -188,7 +232,6 @@ public class DownloadThread extends Thread {
                 }
 
                 String sourceType = source.getType();
-                String sourceData = source.getData();
 
                 switch (sourceType) {
                     case AppSettings.WEBSITE:
@@ -223,8 +266,8 @@ public class DownloadThread extends Thread {
 
             }
             catch (IOException | IllegalArgumentException e) {
-                sendToast("Invalid URL: " + source.getData());
-                Log.i(TAG, "Invalid URL");
+                sendToast("Invalid data: " + source.getData());
+                Log.i(TAG, "Invalid data");
             }
         }
         finish();
@@ -250,11 +293,11 @@ public class DownloadThread extends Thread {
                 catch (NumberFormatException e) {
                 }
             }
-            if (url.contains(".png") || url.contains(".jpg") || url.contains(".jpeg")) {
+            if (url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".jpeg")) {
                 links.add(url);
             }
-            else if (AppSettings.forceDownload() && url.length() > 5 && (url.contains(".com") || url.contains(
-                    ".org") || url.contains(".net"))) {
+            else if (AppSettings.forceDownload() && url.length() > 5 && (url.endsWith(".com") || url.endsWith(
+                    ".org") || url.endsWith(".net"))) {
                 links.add(url + ".png");
                 links.add(url + ".jpg");
                 links.add(url);
@@ -269,6 +312,7 @@ public class DownloadThread extends Thread {
         int targetNum = source.getNum();
         int numDownloaded = 0;
 
+        isLowResolution = false;
         Set<File> downloadedFiles = new HashSet<>();
 
         for (int count = 0; numDownloaded < targetNum && count < links.size(); count++) {
@@ -277,8 +321,9 @@ public class DownloadThread extends Thread {
             }
 
             String randLink = links.get(count);
+            String randData = data.get(count);
 
-            boolean newLink = usedLinks.add(randLink);
+            boolean newLink = usedLinks.add(randData);
 
             if (newLink) {
 
@@ -289,20 +334,20 @@ public class DownloadThread extends Thread {
                     File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + " " + time + ".png");
 
                     if (AppSettings.useImageHistory()) {
-                        AppSettings.addUsedLink(data.get(count), time);
+                        AppSettings.addUsedLink(randData, time);
                         if (AppSettings.cacheThumbnails()) {
                             writeToFileWithThumbnail(bitmap,
-                                    data.get(count),
+                                    randData,
                                     dir,
                                     file,
                                     time);
                         }
                         else {
-                            writeToFile(bitmap, data.get(count), file);
+                            writeToFile(bitmap, randData, file);
                         }
                     }
                     else {
-                        writeToFile(bitmap, data.get(count), file);
+                        writeToFile(bitmap, randData, file);
                     }
                     downloadedFiles.add(file);
                     numDownloaded++;
@@ -312,14 +357,15 @@ public class DownloadThread extends Thread {
         }
 
         removeExtras(dir, title, targetNum, downloadedFiles);
-        imageDetails += title + ": " + numDownloaded + " images" + AppSettings.DATA_SPLITTER;
-        if (numDownloaded == 0) {
-            sendToast("No images downloaded from " + title);
-        }
-        if (!isInterrupted() && numDownloaded < targetNum) {
-            sendToast("Not enough photos from " + source.getData() + " " +
-                    "Try lowering the resolution or changing sources. " +
-                    "There may also have been too many duplicates.");
+        imageDetails += title + ": " + numDownloaded + " / " + targetNum + " images" + AppSettings.DATA_SPLITTER;
+
+        if (numDownloaded < targetNum) {
+            if (isLowResolution) {
+                isAnyLowResolution = true;
+            }
+            else {
+                isNotEnoughNew = true;
+            }
         }
 
         totalDownloaded += numDownloaded;
@@ -655,6 +701,7 @@ public class DownloadThread extends Thread {
 
             for (Entry entry : entries) {
                 if (!entry.isDir &&
+                        !usedDropboxPaths.contains(entry.path) &&
                         (entry.path.contains(".jpg") || entry.path.contains(".jpeg") || entry.path.contains(
                                 ".png"))) {
                     imageLinks.add(dropboxAPI.media(entry.path, true).url);
@@ -744,7 +791,8 @@ public class DownloadThread extends Thread {
 
                 Log.i(TAG, "bitWidth: " + bitWidth + " bitHeight: " + bitHeight);
 
-                if (bitWidth + 10 < minWidth || bitHeight + 10 < minHeight) {
+                if (bitWidth + 1 < minWidth || bitHeight + 1 < minHeight) {
+                    isLowResolution = true;
                     return null;
                 }
 
@@ -897,9 +945,14 @@ public class DownloadThread extends Thread {
         image.recycle();
     }
 
-    private void sendToast(String message) {
+    private void sendToast(final String message) {
         if (AppSettings.useToast()) {
-            Toast.makeText(appContext, message, Toast.LENGTH_SHORT).show();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(appContext, message, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
@@ -947,7 +1000,7 @@ public class DownloadThread extends Thread {
             Notification notification;
 
             if (Build.VERSION.SDK_INT >= 16) {
-                notifyComplete.setPriority(Notification.PRIORITY_LOW);
+                notifyComplete.setPriority(Notification.PRIORITY_MAX);
                 Notification.InboxStyle inboxStyle = new Notification.InboxStyle();
                 inboxStyle.setBigContentTitle("Downloaded Image Details:");
 
@@ -955,6 +1008,14 @@ public class DownloadThread extends Thread {
 
                 for (String detail : imageDetails.split(AppSettings.DATA_SPLITTER)) {
                     inboxStyle.addLine(detail);
+                }
+
+                if (isAnyLowResolution) {
+                    inboxStyle.addLine("Not enough suitable resolution images");
+                }
+
+                if (isNotEnoughNew) {
+                    inboxStyle.addLine("Not enough new images");
                 }
 
                 notifyComplete.setStyle(inboxStyle);
@@ -982,7 +1043,12 @@ public class DownloadThread extends Thread {
         appContext.sendBroadcast(intent);
 
         AppSettings.checkUsedLinksSize();
-        appContext = null;
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                appContext = null;
+            }
+        });
 
         Log.i(TAG, "Download Finished");
         FileHandler.setIsDownloading(false);

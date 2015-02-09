@@ -1,3 +1,7 @@
 /build
+/libs
 
 src/main/java/cw/kop/autobackground/settings/ApiKeys.java
+src/main/res/values/com_crashlytics_export_strings.xml
+src/main/assets/crashlytics-build.properties
+crashlytics.properties

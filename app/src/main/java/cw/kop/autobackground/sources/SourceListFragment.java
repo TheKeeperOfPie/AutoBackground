@@ -87,6 +87,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     private static final int ADD_ANIMATION_TIME = 350;
     private static final long EXIT_ANIMATION_TIME = 200l;
 
+    private TextView alertText;
     private ListView sourceList;
     private SourceListAdapter listAdapter;
     private Context appContext;
@@ -227,14 +228,17 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
 
         final ImageView emptyArrow = (ImageView) view.findViewById(R.id.empty_arrow);
-        TextView emptyText = (TextView) view.findViewById(R.id.empty_text);
+        final TextView emptyText = (TextView) view.findViewById(R.id.empty_text);
         emptyText.setText("Try hitting the + and adding some sources");
-        emptyText.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
+        emptyArrow.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
             @Override
             public void onSystemUiVisibilityChange(int visibility) {
-                emptyArrow.setVisibility(visibility);
+                emptyText.setVisibility(visibility);
             }
         });
+
+        alertText = (TextView) view.findViewById(R.id.source_alert_text);
+
         sourceList = (ListView) view.findViewById(R.id.source_list);
         sourceList.setEmptyView(emptyArrow);
         addButtonBackground = (ImageView) view.findViewById(R.id.floating_button);
@@ -611,30 +615,28 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             }
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+            public void onItemClick(AdapterView<?> parent, View view, final int positionInList, long id) {
                 File selectedFile = adapter.getItem(positionInList);
 
                 if (selectedFile.exists() && selectedFile.isDirectory()) {
                     adapter.setDirectory(selectedFile);
                 }
-                else if (adapter.getItem(positionInList).getName().contains(".png") || adapter.getItem(
-                        positionInList).getName().contains(".jpg") || adapter.getItem(positionInList).getName().contains(
-                        ".jpeg")) {
+                else if (FileHandler.getImageFileNameFilter().accept(null, adapter.getItem(positionInList).getName())) {
                     DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
                         @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            switch (position) {
+                        public void onItemClick(AdapterView<?> parent, View view, int positionInDialog, long id) {
+                            switch (positionInDialog) {
                                 case 0:
                                     Intent galleryIntent = new Intent();
                                     galleryIntent.setAction(Intent.ACTION_VIEW);
                                     galleryIntent.setDataAndType(Uri.fromFile(adapter.getItem(
-                                            position)), "image/*");
+                                            positionInList)), "image/*");
                                     galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
                                     galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                     appContext.startActivity(galleryIntent);
                                     break;
                                 case 1:
-                                    File file = adapter.getItem(position);
+                                    File file = adapter.getItem(positionInList);
 
                                     if (file.exists() && file.isFile()) {
                                         if (FileHandler.getCurrentBitmapFile() != null && file.getAbsolutePath().equals(FileHandler.getCurrentBitmapFile().getAbsolutePath())) {
@@ -644,7 +646,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                                             appContext.sendBroadcast(intent);
                                         }
                                         file.delete();
-                                        adapter.remove(position);
+                                        adapter.remove(positionInList);
                                     }
                             }
                             dismissDialog();
@@ -663,11 +665,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 return adapter.backDirectory();
             }
         });
-
-//        final LocalImageFragment localImageFragment = new LocalImageFragment();
-//        Bundle arguments = new Bundle();
-//        arguments.putString("view_path", directory);
-//        localImageFragment.setArguments(arguments);
 
         Animation animation = new Animation() {
 
@@ -820,6 +817,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     public void addEntry(Source source) {
         if (!listAdapter.addItem(source, true)) {
             sendToast("Error: Title in use.\nPlease use a different title.");
+        }
+        else {
+            new ImageCountTask().execute();
         }
 
     }
@@ -1174,6 +1174,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     }
 
     class ImageCountTask extends AsyncTask<Void, String, String> {
+
         @Override
         protected String doInBackground(Void... params) {
             return listAdapter.checkSources();
@@ -1184,52 +1185,52 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             Log.i("SLA", "ImageCountTask onPostExecute");
 
-            listAdapter.updateNum();
-
-            if (isAdded()) {
-
-                resetAddButtonIcon();
-
-                if (toolbarMenu != null) {
-                    Drawable drawable = FileHandler.isDownloading ?
-                            getResources().getDrawable(R.drawable.ic_cancel_white_24dp) :
-                            getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
-                    drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                            PorterDuff.Mode.MULTIPLY);
-                    toolbarMenu.getItem(1).setIcon(drawable);
-                }
-
+            if (!isAdded()) {
+                return;
             }
 
-//            noImageText.setVisibility(sourceState.equals(SourceListAdapter.OKAY) ?
-//                    View.GONE :
-//                    View.VISIBLE);
-//
-//            switch (sourceState) {
-//
-//                case SourceListAdapter.NO_SOURCES:
-//                    noImageText.setText("Please add a source");
-//                    Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
-//                    addDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
-//                            PorterDuff.Mode.MULTIPLY);
-//                    addButtonBackground.setImageDrawable(addDrawable);
-//                    break;
-//                case SourceListAdapter.NO_ACTIVE_SOURCES:
-//                    noImageText.setText("No active sources");
-//                    break;
-//                case SourceListAdapter.NEED_DOWNLOAD:
-//                    noImageText.setText("No downloaded images");
-//                    if (!FileHandler.isDownloading && toolbarMenu != null) {
-//                        Drawable downloadDrawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp).mutate();
-//                        downloadDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
-//                                PorterDuff.Mode.MULTIPLY);
-//                        toolbarMenu.getItem(1).setIcon(downloadDrawable);
-//                    }
-//                    break;
-//                case SourceListAdapter.OKAY:
-//                    break;
-//
-//            }
+            listAdapter.updateNum();
+
+            resetAddButtonIcon();
+
+            if (toolbarMenu != null) {
+                Drawable drawable = FileHandler.isDownloading ?
+                        getResources().getDrawable(R.drawable.ic_cancel_white_24dp) :
+                        getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
+                drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                        PorterDuff.Mode.MULTIPLY);
+                toolbarMenu.getItem(1).setIcon(drawable);
+            }
+
+            alertText.setVisibility(sourceState.equals(SourceListAdapter.OKAY) ?
+                    View.GONE :
+                    View.VISIBLE);
+
+            switch (sourceState) {
+
+                case SourceListAdapter.NO_SOURCES:
+                    alertText.setText("Please add a source");
+                    Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
+                    addDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
+                            PorterDuff.Mode.MULTIPLY);
+                    addButtonBackground.setImageDrawable(addDrawable);
+                    break;
+                case SourceListAdapter.NO_ACTIVE_SOURCES:
+                    alertText.setText("No active sources");
+                    break;
+                case SourceListAdapter.NEED_DOWNLOAD:
+                    alertText.setText("No downloaded images");
+                    if (!FileHandler.isDownloading && toolbarMenu != null) {
+                        Drawable downloadDrawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp).mutate();
+                        downloadDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
+                                PorterDuff.Mode.MULTIPLY);
+                        toolbarMenu.getItem(1).setIcon(downloadDrawable);
+                    }
+                    break;
+                case SourceListAdapter.OKAY:
+                    break;
+
+            }
 
         }
     }

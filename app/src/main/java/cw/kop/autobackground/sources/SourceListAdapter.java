@@ -104,7 +104,7 @@ public class SourceListAdapter extends BaseAdapter {
         TextView sourceData;
         TextView sourceNum;
         TextView sourceTime;
-        ImageView image;
+        ImageView sourceImage;
 
         if (convertView == null) {
             convertView = AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME) ?
@@ -121,10 +121,10 @@ public class SourceListAdapter extends BaseAdapter {
             sourceData = (TextView) convertView.findViewById(R.id.source_data);
             sourceNum = (TextView) convertView.findViewById(R.id.source_num);
             sourceTime = (TextView) convertView.findViewById(R.id.source_time);
-            image = (ImageView) convertView.findViewById(R.id.source_image);
+            sourceImage = (ImageView) convertView.findViewById(R.id.source_image);
 
             title.setClickable(false);
-            convertView.setTag(new ViewHolder(cardView, title, imageOverlay, deleteButton, viewButton, editButton, sourceType, sourceData, sourceNum, sourceTime, image));
+            convertView.setTag(new ViewHolder(cardView, title, imageOverlay, deleteButton, viewButton, editButton, sourceType, sourceData, sourceNum, sourceTime, sourceImage));
 
         }
 
@@ -139,7 +139,7 @@ public class SourceListAdapter extends BaseAdapter {
         sourceData = viewHolder.sourceData;
         sourceNum = viewHolder.sourceNum;
         sourceTime = viewHolder.sourceTime;
-        image = viewHolder.image;
+        sourceImage = viewHolder.sourceImage;
 
         Resources resources = parent.getContext().getResources();
         int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
@@ -207,7 +207,7 @@ public class SourceListAdapter extends BaseAdapter {
             }
         });
 
-        ViewGroup.LayoutParams imageParams = image.getLayoutParams();
+        ViewGroup.LayoutParams imageParams = sourceImage.getLayoutParams();
 
         RelativeLayout.LayoutParams titleParams = (RelativeLayout.LayoutParams) title.getLayoutParams();
 
@@ -216,7 +216,7 @@ public class SourceListAdapter extends BaseAdapter {
             Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_48dp);
             downloadDrawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
                     PorterDuff.Mode.MULTIPLY);
-            image.setImageDrawable(downloadDrawable);
+            sourceImage.setImageDrawable(downloadDrawable);
 
             if (listItem.getType().equals(AppSettings.FOLDER)) {
                 String[] folders = listItem.getData().split(AppSettings.DATA_SPLITTER);
@@ -229,7 +229,7 @@ public class SourceListAdapter extends BaseAdapter {
                         needsImage = false;
                         listItem.setImageFile(files[0]);
                         Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(
-                                image);
+                                sourceImage);
                     }
                 }
             }
@@ -241,13 +241,13 @@ public class SourceListAdapter extends BaseAdapter {
                     if (files != null && files.length > 0) {
                         listItem.setImageFile(files[0]);
                         Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(
-                                image);
+                                sourceImage);
                     }
                 }
             }
         }
         else {
-            Picasso.with(parent.getContext()).load(android.R.color.transparent).into(image);
+            Picasso.with(parent.getContext()).load(android.R.color.transparent).into(sourceImage);
             imageParams.height = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP,
                     28,
                     resources.getDisplayMetrics()) + TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
@@ -269,7 +269,7 @@ public class SourceListAdapter extends BaseAdapter {
         }
 
         title.setLayoutParams(titleParams);
-        image.setLayoutParams(imageParams);
+        sourceImage.setLayoutParams(imageParams);
 
         int colorPrimary = resources.getColor(R.color.BLUE_OPAQUE);
         SpannableString typePrefix = new SpannableString("Type: ");
@@ -414,7 +414,7 @@ public class SourceListAdapter extends BaseAdapter {
 
     public String checkSources() {
 
-        if (listData.size() == 0) {
+        if (listData.isEmpty()) {
             return NO_SOURCES;
         }
 
@@ -518,7 +518,7 @@ public class SourceListAdapter extends BaseAdapter {
         public final TextView sourceData;
         public final TextView sourceNum;
         public final TextView sourceTime;
-        public final ImageView image;
+        public final ImageView sourceImage;
 
         public ViewHolder(CardView cardView,
                 EditText title,
@@ -527,7 +527,7 @@ public class SourceListAdapter extends BaseAdapter {
                 ImageView viewButton,
                 ImageView editButton,
                 TextView sourceType,
-                TextView sourceData, TextView sourceNum, TextView sourceTime, ImageView image) {
+                TextView sourceData, TextView sourceNum, TextView sourceTime, ImageView sourceImage) {
             this.cardView = cardView;
             this.title = title;
             this.imageOverlay = imageOverlay;
@@ -538,7 +538,7 @@ public class SourceListAdapter extends BaseAdapter {
             this.sourceData = sourceData;
             this.sourceNum = sourceNum;
             this.sourceTime = sourceTime;
-            this.image = image;
+            this.sourceImage = sourceImage;
         }
     }
 

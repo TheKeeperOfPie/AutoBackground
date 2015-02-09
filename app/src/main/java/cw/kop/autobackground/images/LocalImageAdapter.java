@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.Comparator;
 
 import cw.kop.autobackground.R;
+import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 
 /**
@@ -79,8 +80,7 @@ public class LocalImageAdapter extends BaseAdapter {
 
             File file = listFiles.get(position);
 
-            boolean isImage = file.getName().contains(".png") || file.getName().contains(".jpg") || file.getName().contains(
-                    ".jpeg");
+            boolean isImage = FileHandler.getImageFileNameFilter().accept(null, file.getName());
 
             TextView fileTitle;
             TextView fileSummary;

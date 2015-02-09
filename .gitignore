@@ -41,3 +41,6 @@ Thumbs.db
 
 # Hidden Files
 app/src/main/java/cw/kop/autobackground/settings/ApiKeys.java
+app/src/main/res/values/com_crashlytics_export_strings.xml
+app/src/main/assets/crashlytics-build.properties
+app/crashlytics.properties

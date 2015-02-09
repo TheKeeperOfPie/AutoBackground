@@ -37,7 +37,7 @@
     <string name="title_source_settings">Source Settings</string>
     <string name="title_wallpaper_settings">Wallpaper Settings</string>
     <string name="title_effects_settings">Effect Settings</string>
-    <string name="title_effects_parameters">Effect Parameters</string>
+    <string name="title_opengl_effects">Effect Parameters</string>
     <string name="title_interval_settings">Interval Settings</string>
     <string name="title_download_settings">Download Settings</string>
     <string name="title_account_settings">Account Settings</string>
@@ -217,8 +217,8 @@
     <string name="use_dropbox_account">Dropbox Account</string>
     <string name="use_dropbox_account_description">Connect a Dropbox account</string>
 
-    <string name="use_effects">Use Effects</string>
-    <string name="use_effects_description">Use image effects</string>
+    <string name="use_effects">Use OpenGL Effects</string>
+    <string name="use_effects_description">Use OpenGL image effects</string>
     <string name="effects_frequency">Manual Frequency</string>
     <string name="effects_frequency_description">Chance of applying manual effects</string>
     <string name="random_effects_frequency">Random Frequency</string>
@@ -253,6 +253,8 @@
     <string name="effect_fill_light_description">Contrast of image</string>
     <string name="effect_fisheye">Fisheye Effect</string>
     <string name="effect_fisheye_description">Fisheye effect</string>
+    <string name="blur_radius">Gaussian Blur Effect</string>
+    <string name="blur_radius_description">Blur image, note this effect is not using OpenGL and is always applied</string>
     <string name="effect_grain">Grain Effect</string>
     <string name="effect_grain_description">Grain effect</string>
     <string name="effect_grayscale">Grayscale Effect</string>

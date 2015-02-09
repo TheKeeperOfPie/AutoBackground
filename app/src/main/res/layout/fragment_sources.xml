@@ -22,12 +22,24 @@
     android:layout_height="match_parent"
     >
 
+    <TextView
+        android:id="@+id/source_alert_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="16dp"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:textColor="@color/ACCENT_OPAQUE"
+        android:visibility="gone"
+        />
+
     <ListView
         android:id="@+id/source_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/set_button"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/source_alert_text"
         android:clipToPadding="false"
         android:dividerHeight="0px"
         android:paddingBottom="85dp"
