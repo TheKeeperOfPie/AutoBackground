@@ -763,7 +763,6 @@ public class DownloadThread extends Thread {
             try {
                 int minWidth = AppSettings.getImageWidth();
                 int minHeight = AppSettings.getImageHeight();
-                System.gc();
                 URL imageUrl = new URL(url);
                 HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
                 connection.connect();
@@ -775,11 +774,10 @@ public class DownloadThread extends Thread {
                 }
 
                 BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
                 options.inJustDecodeBounds = true;
-                if (!AppSettings.useHighQuality()) {
-                    options.inPreferredConfig = Bitmap.Config.RGB_565;
-                }
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                options.inPreferQualityOverSpeed = true;
+                options.inDither = true;
 
                 BitmapFactory.decodeStream(input, null, options);
 
@@ -814,7 +812,6 @@ public class DownloadThread extends Thread {
 
                 connection = (HttpURLConnection) imageUrl.openConnection();
                 connection.setConnectTimeout(5000);
-                connection.setConnectTimeout(30000);
                 connection.connect();
                 input = connection.getInputStream();
 
@@ -868,6 +865,8 @@ public class DownloadThread extends Thread {
         }
 
         image.recycle();
+        image = null;
+        System.gc();
     }
 
     private void writeToFileWithThumbnail(Bitmap image,
@@ -924,6 +923,7 @@ public class DownloadThread extends Thread {
             AppSettings.setUrl(file.getName(), saveData);
             Log.i(TAG, file.getName() + " " + saveData);
             thumbnail.recycle();
+            thumbnail = null;
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -943,6 +943,8 @@ public class DownloadThread extends Thread {
         }
 
         image.recycle();
+        image = null;
+        System.gc();
     }
 
     private void sendToast(final String message) {

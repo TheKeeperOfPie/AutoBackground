@@ -334,8 +334,12 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
         }
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-        if (!AppSettings.useHighQuality()) {
-            options.inPreferredConfig = Bitmap.Config.RGB_565;
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        options.inPreferQualityOverSpeed = true;
+        options.inDither = true;
+
+        if (AppSettings.getBlurRadius() > 0) {
+            options.inSampleSize = 2;
         }
 
         try {

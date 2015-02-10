@@ -217,24 +217,6 @@ public class RenderImage {
             offsetY += yMovement;
         }
 
-//        if (AppSettings.reverseDrag()) {
-//            if (bitmapWidth * scaleFactor < renderScreenWidth
-//                    || offsetX + xMovement > (-bitmapWidth + renderScreenWidth / scaleFactor) && offsetX + xMovement < 0) {
-//                offsetX += xMovement;
-//            }
-//            if (bitmapHeight * scaleFactor < renderScreenHeight || offsetY - yMovement > (-bitmapHeight + renderScreenHeight / scaleFactor) && offsetY - yMovement < 0) {
-//                offsetY -= yMovement;
-//            }
-//        }
-//        else {
-//            if (bitmapWidth * scaleFactor < renderScreenWidth
-//                    || offsetX - xMovement > (-bitmapWidth + renderScreenWidth / scaleFactor) && offsetX - xMovement < 0) {
-//                offsetX -= xMovement;
-//            }
-//            if (bitmapHeight * scaleFactor < renderScreenHeight || offsetY + yMovement > (maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight) && offsetY + yMovement < 0) {
-//                offsetY += yMovement;
-//            }
-//        }
     }
 
     public void loadTexture() {
@@ -291,7 +273,7 @@ public class RenderImage {
             vertexBuffer = bb.asFloatBuffer();
             vertexBuffer.put(vertices);
             vertexBuffer.position(0);
-            checkGLError("textImage2D: ");
+            checkGLError("texImage2D: ");
             eventListener.doneLoading();
             textureLoaded = true;
             imageBitmap.recycle();

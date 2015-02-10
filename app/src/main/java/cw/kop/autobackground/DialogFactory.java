@@ -197,13 +197,11 @@ public class DialogFactory {
             int textThreeResource,
             int inputType) {
 
-
         Dialog dialog = getDialog(context);
         listener.setDialog(dialog);
 
         View dialogView = View.inflate(context, R.layout.input_dialog, null);
         dialog.setContentView(dialogView);
-
 
         if (title.length() > 0) {
             TextView dialogTitle = (TextView) dialogView.findViewById(R.id.dialog_title);

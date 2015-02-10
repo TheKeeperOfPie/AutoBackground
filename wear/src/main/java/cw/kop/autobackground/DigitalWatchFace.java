@@ -99,10 +99,10 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
         private IntentFilter timeZoneIntentFilter;
 
         /* handler to update the time once a second in interactive mode */
-        final Handler timeHandler = new Handler() {
+        private Handler timeHandler = new Handler(new Handler.Callback() {
             @Override
-            public void handleMessage(Message message) {
-                switch (message.what) {
+            public boolean handleMessage(Message msg) {
+                switch (msg.what) {
                     case MSG_UPDATE_TIME:
                         try {
                             invalidate();
@@ -119,8 +119,9 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
                         }
                         break;
                 }
+                return true;
             }
-        };
+        });
 
         /* receiver to update the time zone */
         final BroadcastReceiver timeZoneReceiver = new BroadcastReceiver() {
@@ -189,18 +190,22 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             separatorPaint = new Paint();
             separatorPaint.setStrokeCap(Paint.Cap.BUTT);
             separatorPaint.setTextAlign(Paint.Align.LEFT);
+            separatorPaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalSeparatorShadowColor());
 
             hourPaint = new Paint();
             hourPaint.setStrokeCap(Paint.Cap.BUTT);
             hourPaint.setTextAlign(Paint.Align.LEFT);
+            hourPaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalHourShadowColor());
 
             minutePaint = new Paint();
             minutePaint.setStrokeCap(Paint.Cap.BUTT);
             minutePaint.setTextAlign(Paint.Align.LEFT);
+            minutePaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalMinuteShadowColor());
 
             secondPaint = new Paint();
             secondPaint.setStrokeCap(Paint.Cap.BUTT);
             secondPaint.setTextAlign(Paint.Align.LEFT);
+            minutePaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalSecondShadowColor());
 
             separatorShadowPaint = new Paint();
             separatorShadowPaint.setStrokeCap(Paint.Cap.BUTT);
@@ -307,6 +312,12 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             secondShadowPaint.setTextScaleX(textScale);
 
             separatorWidth = separatorPaint.measureText(timeSeparator);
+
+
+            hourPaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalHourShadowColor());
+            minutePaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalMinuteShadowColor());
+            secondPaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalSecondShadowColor());
+            separatorPaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalSeparatorShadowColor());
 
             invalidate();
         }
@@ -419,38 +430,39 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             float yOffset = bounds.height() / 2;
 
 
-            if (!isAmbient) {
-                if (time.hour > 9) {
-                    canvas.drawText("" + (time.hour / 10), x - 3.0f, yOffset + 2.0f, hourShadowPaint);
-                    x += hourPaint.measureText("" + (time.hour / 10));
-                }
-                canvas.drawText("" + (time.hour % 10), x - 3.0f, yOffset + 2.0f, hourShadowPaint);
-                x += hourPaint.measureText("" + (time.hour % 10));
-                if (drawSeparator) {
-                    canvas.drawText(timeSeparator, x - 3.0f, yOffset + 2.0f, separatorShadowPaint);
-                }
-                x += separatorWidth;
+//            if (!isAmbient) {
+//                if (time.hour > 9) {
+//                    canvas.drawText("" + (time.hour / 10), x - 3.0f, yOffset + 2.0f, hourShadowPaint);
+//                    x += hourPaint.measureText("" + (time.hour / 10));
+//                }
+//                canvas.drawText("" + (time.hour % 10), x - 3.0f, yOffset + 2.0f, hourShadowPaint);
+//                x += hourPaint.measureText("" + (time.hour % 10));
+//                if (drawSeparator) {
+//                    canvas.drawText(timeSeparator, x - 3.0f, yOffset + 2.0f, separatorShadowPaint);
+//                }
+//                x += separatorWidth;
+//
+//
+//                canvas.drawText("" + (time.minute / 10), x - 3.0f, yOffset + 2.0f, minuteShadowPaint);
+//                x += minutePaint.measureText("" + (time.minute / 10));
+//                canvas.drawText("" + (time.minute % 10), x - 3.0f, yOffset + 2.0f, minuteShadowPaint);
+//                x += minutePaint.measureText("" + (time.minute % 10));
+//
+//                if (drawSeparator) {
+//                    canvas.drawText(timeSeparator, x - 3.0f, yOffset + 2.0f, separatorShadowPaint);
+//                }
+//                x += separatorWidth;
+//                canvas.drawText("" + (time.second / 10), x - 3.0f, yOffset + 2.0f, secondShadowPaint);
+//                x += secondPaint.measureText("" + (time.second / 10));
+//                canvas.drawText("" + (time.second % 10), x - 3.0f, yOffset + 2.0f, secondShadowPaint);
+//                x -= secondPaint.measureText("" + (time.second / 10));
+//                canvas.drawText(String.format("%02d", time.second), x, yOffset,
+//                        secondPaint);
+//            }
 
-
-                canvas.drawText("" + (time.minute / 10), x - 3.0f, yOffset + 2.0f, minuteShadowPaint);
-                x += minutePaint.measureText("" + (time.minute / 10));
-                canvas.drawText("" + (time.minute % 10), x - 3.0f, yOffset + 2.0f, minuteShadowPaint);
-                x += minutePaint.measureText("" + (time.minute % 10));
-
-                if (drawSeparator) {
-                    canvas.drawText(timeSeparator, x - 3.0f, yOffset + 2.0f, separatorShadowPaint);
-                }
-                x += separatorWidth;
-                canvas.drawText("" + (time.second / 10), x - 3.0f, yOffset + 2.0f, secondShadowPaint);
-                x += secondPaint.measureText("" + (time.second / 10));
-                canvas.drawText("" + (time.second % 10), x - 3.0f, yOffset + 2.0f, secondShadowPaint);
-                x -= secondPaint.measureText("" + (time.second / 10));
-                canvas.drawText(String.format("%02d", time.second), x, yOffset,
-                        secondPaint);
-            }
+            x = xOffset + (time.hour < 10 ?  hourPaint.measureText("0") : 0);
 
             if (drawSeparator) {
-                x = xOffset + (time.hour < 10 ?  hourPaint.measureText("0") : 0);
                 x += hourWidth;
                 canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
                 if (!isAmbient) {
@@ -458,13 +470,20 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
                     x += minuteWidth;
                     canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
                 }
+                x = xOffset + (time.hour < 10 ?  hourPaint.measureText("0") : 0);
             }
 
-            x = xOffset + (time.hour < 10 ?  hourPaint.measureText("0") : 0);
+            canvas.drawText("" + time.hour, x, yOffset, hourPaint);
+            canvas.drawText("" + time.hour, x, yOffset, hourPaint);
+            canvas.drawText("" + time.hour, x, yOffset, hourPaint);
+            canvas.drawText("" + time.hour, x, yOffset, hourPaint);
             canvas.drawText("" + time.hour, x, yOffset, hourPaint);
             x += hourWidth;
             x += separatorWidth;
             canvas.drawText(String.format("%02d", time.minute), x, yOffset, minutePaint);
+            x += separatorWidth;
+            canvas.drawText(String.format("%02d", time.second), x, yOffset,
+                        secondPaint);
 
         }
 

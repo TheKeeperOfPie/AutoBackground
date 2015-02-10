@@ -185,8 +185,6 @@
     <string name="download_on_connection_description">Will retry download on connection obtained if timer is missed</string>
     <string name="use_download_notification">Download Notification</string>
     <string name="use_download_notification_description">Notify on download completed</string>
-    <string name="use_high_quality">High Quality</string>
-    <string name="use_high_quality_description">Download high quality images</string>
     <string name="force_download">Force Images</string>
     <string name="force_download_description">Attempt to force download</string>
     <string name="use_download_path">Custom Download Path</string>

@@ -31,6 +31,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.android.AndroidAuthSession;
+import com.dropbox.client2.session.AppKeyPair;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
@@ -45,6 +48,7 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
 
     private Context appContext;
     private SwitchPreference googlePref;
+    private DropboxAPI<AndroidAuthSession> dropboxAPI;
 
     @Override
     public void onAttach(Activity activity) {
@@ -62,6 +66,10 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_accounts);
+
+        AppKeyPair appKeys = new AppKeyPair(ApiKeys.DROPBOX_KEY, ApiKeys.DROPBOX_SECRET);
+        AndroidAuthSession session = new AndroidAuthSession(appKeys);
+        dropboxAPI = new DropboxAPI<>(session);
     }
 
     @Override
@@ -77,6 +85,18 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
     public void onResume() {
         super.onResume();
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+
+        if (dropboxAPI.getSession().authenticationSuccessful()) {
+            try {
+                dropboxAPI.getSession().finishAuthentication();
+
+                AppSettings.setUseDropboxAccount(true);
+                AppSettings.setDropboxAccountToken(dropboxAPI.getSession().getOAuth2AccessToken());
+            }
+            catch (IllegalStateException e) {
+                Log.i("DbAuthLog", "Error authenticating", e);
+            }
+        }
     }
 
     @Override
@@ -106,6 +126,7 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
                     break;
                 case "use_dropbox_account":
                     if (AppSettings.useDropboxAccount()) {
+                        dropboxAPI.getSession().startOAuth2Authentication(appContext);
                     }
                     else {
                         AppSettings.setDropboxAccountToken("");

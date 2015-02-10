@@ -93,13 +93,6 @@
             />
 
         <cw.kop.autobackground.CustomSwitchPreference
-            android:defaultValue="true"
-            android:key="use_high_quality"
-            android:summary="@string/use_high_quality_description"
-            android:title="@string/use_high_quality"
-            />
-
-        <cw.kop.autobackground.CustomSwitchPreference
             android:defaultValue="false"
             android:key="force_download"
             android:summary="@string/force_download_description"

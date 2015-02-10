@@ -191,7 +191,6 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             preferenceCategory.removePreference(findPreference("reset_on_manual_download"));
             preferenceCategory.removePreference(findPreference("download_on_connection"));
             preferenceCategory.removePreference(findPreference("use_download_notification"));
-            preferenceCategory.removePreference(findPreference("use_high_quality"));
             preferenceCategory.removePreference(findPreference("force_download"));
             preferenceCategory.removePreference(findPreference("use_download_path"));
             preferenceCategory.removePreference(findPreference("use_image_history"));

@@ -251,12 +251,8 @@
             android:title="@string/animation_frame_rate"
             />
 
-        <EditTextPreference
-            android:defaultValue="50"
-            android:inputType="number"
+        <Preference
             android:key="animation_safety_adv"
-            android:maxLength="3"
-            android:numeric="integer"
             android:summary="@string/animation_safety_description"
             android:title="@string/animation_safety"
             />

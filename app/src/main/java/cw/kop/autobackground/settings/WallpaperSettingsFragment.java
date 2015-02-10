@@ -365,7 +365,6 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                         R.string.ok_button,
                         InputType.TYPE_CLASS_NUMBER);
 
-
                 return true;
             }
         });

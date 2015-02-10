@@ -738,7 +738,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             case AppSettings.REDDIT_SUBREDDIT:
                 break;
             case AppSettings.DROPBOX_FOLDER:
-                if (AppSettings.getDropboxAccountToken().equals("") || !dropboxAPI.getSession().isLinked()) {
+                if (!AppSettings.useDropboxAccount() || AppSettings.getDropboxAccountToken().equals("") || !dropboxAPI.getSession().isLinked()) {
                     dropboxAPI.getSession().startOAuth2Authentication(appContext);
                 }
                 else if (getFragmentManager().findFragmentByTag("folder_fragment") == null) {

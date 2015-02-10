@@ -366,7 +366,7 @@ public class AppSettings {
             width = Integer.parseInt(prefs.getString("user_width", "1000"));
         }
         catch (NumberFormatException e) {
-            setImageHeight("" + width);
+            setImageWidth("" + width);
         }
 
         return width;
@@ -509,10 +509,6 @@ public class AppSettings {
         return prefs.getBoolean("download_on_connection", false);
     }
 
-    public static boolean useHighQuality() {
-        return prefs.getBoolean("use_high_quality", true);
-    }
-
     public static boolean preserveContext() {
         return prefs.getBoolean("preserve_context", true);
     }
@@ -549,14 +545,14 @@ public class AppSettings {
         return prefs.getBoolean("use_animation_vertical", true);
     }
 
-    public static float getAnimationSafety() {
-        float buffer = 50;
+    public static int getAnimationSafety() {
+        int buffer = 250;
 
         try {
-            buffer = Float.parseFloat(prefs.getString("animation_safety_adv", "50"));
+            buffer = Integer.parseInt(prefs.getString("animation_safety_adv", "250"));
         }
         catch (NumberFormatException e) {
-            setAnimationFrameRate("" + buffer);
+            setAnimationSafety("" + buffer);
         }
 
         return buffer;
@@ -593,7 +589,7 @@ public class AppSettings {
             rate = Integer.parseInt(prefs.getString("animation_frame_rate", "60"));
         }
         catch (NumberFormatException e) {
-            setImageHeight("" + rate);
+            setAnimationFrameRate("" + rate);
         }
 
         return rate;

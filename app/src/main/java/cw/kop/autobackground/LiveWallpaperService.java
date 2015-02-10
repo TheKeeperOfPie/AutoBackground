@@ -559,9 +559,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                     public void run() {
                         try {
                             BitmapFactory.Options options = new BitmapFactory.Options();
-                            if (!AppSettings.useHighQuality()) {
-                                options.inPreferredConfig = Bitmap.Config.RGB_565;
-                            }
+                            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                            options.inPreferQualityOverSpeed = true;
+                            options.inDither = true;
 
                             if (AppSettings.useHighResolutionNotificationIcon()) {
 
@@ -999,9 +999,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                 public void run() {
                     try {
                         BitmapFactory.Options options = new BitmapFactory.Options();
-                        if (!AppSettings.useHighQuality()) {
-                            options.inPreferredConfig = Bitmap.Config.RGB_565;
-                        }
+                        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                        options.inPreferQualityOverSpeed = true;
+                        options.inDither = true;
 
                         if (AppSettings.useHighResolutionNotificationIcon()) {
 
@@ -1548,8 +1548,10 @@ public class LiveWallpaperService extends GLWallpaperService {
             if (isWearConnected && file != null) {
 
                 BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inPreferredConfig = Bitmap.Config.RGB_565;
                 options.inJustDecodeBounds = true;
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                options.inPreferQualityOverSpeed = true;
+                options.inDither = true;
 
                 BitmapFactory.decodeFile(file.getAbsolutePath(), options);
 
