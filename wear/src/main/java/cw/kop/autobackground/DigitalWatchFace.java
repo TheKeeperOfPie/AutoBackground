@@ -84,10 +84,6 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
         private Paint hourPaint;
         private Paint minutePaint;
         private Paint secondPaint;
-        private Paint separatorShadowPaint;
-        private Paint hourShadowPaint;
-        private Paint minuteShadowPaint;
-        private Paint secondShadowPaint;
 
         private String timeSeparator = ":";
         private float separatorWidth = 0f;
@@ -190,93 +186,24 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             separatorPaint = new Paint();
             separatorPaint.setStrokeCap(Paint.Cap.BUTT);
             separatorPaint.setTextAlign(Paint.Align.LEFT);
-            separatorPaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalSeparatorShadowColor());
+            separatorPaint.setShadowLayer(WearSettings.SHADOW_RADIUS, 0f, 0f, WearSettings.getDigitalSeparatorShadowColor());
 
             hourPaint = new Paint();
             hourPaint.setStrokeCap(Paint.Cap.BUTT);
             hourPaint.setTextAlign(Paint.Align.LEFT);
-            hourPaint.setShadowLayer(5f, 0f, 0f, 0xFFFFFFFF);
+            hourPaint.setShadowLayer(WearSettings.SHADOW_RADIUS, 0f, 0f, WearSettings.getDigitalHourShadowColor());
 
             minutePaint = new Paint();
             minutePaint.setStrokeCap(Paint.Cap.BUTT);
             minutePaint.setTextAlign(Paint.Align.LEFT);
-            minutePaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalMinuteShadowColor());
+            minutePaint.setShadowLayer(WearSettings.SHADOW_RADIUS, 0f, 0f, WearSettings.getDigitalMinuteShadowColor());
 
             secondPaint = new Paint();
             secondPaint.setStrokeCap(Paint.Cap.BUTT);
             secondPaint.setTextAlign(Paint.Align.LEFT);
-            minutePaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalSecondShadowColor());
-
-            separatorShadowPaint = new Paint();
-            separatorShadowPaint.setStrokeCap(Paint.Cap.BUTT);
-            separatorShadowPaint.setTextAlign(Paint.Align.LEFT);
-
-            hourShadowPaint = new Paint();
-            hourShadowPaint.setStrokeCap(Paint.Cap.BUTT);
-            hourShadowPaint.setTextAlign(Paint.Align.LEFT);
-
-            minuteShadowPaint = new Paint();
-            minuteShadowPaint.setStrokeCap(Paint.Cap.BUTT);
-            minuteShadowPaint.setTextAlign(Paint.Align.LEFT);
-
-            secondShadowPaint = new Paint();
-            secondShadowPaint.setStrokeCap(Paint.Cap.BUTT);
-            secondShadowPaint.setTextAlign(Paint.Align.LEFT);
+            secondPaint.setShadowLayer(WearSettings.SHADOW_RADIUS, 0f, 0f, WearSettings.getDigitalSecondShadowColor());
 
             syncSettings();
-        }
-
-        @Override
-        public void onApplyWindowInsets(WindowInsets insets) {
-            super.onApplyWindowInsets(insets);
-        }
-
-        private void syncSettings() {
-            timeOffset = WearSettings.getTimeOffset();
-            timeSeparator = WearSettings.getDigitalSeparatorText();
-
-            separatorPaint.setAntiAlias(true);
-            hourPaint.setAntiAlias(true);
-            minutePaint.setAntiAlias(true);
-            secondPaint.setAntiAlias(true);
-            separatorShadowPaint.setAntiAlias(true);
-            hourShadowPaint.setAntiAlias(true);
-            minuteShadowPaint.setAntiAlias(true);
-            secondShadowPaint.setAntiAlias(true);
-
-            separatorPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-            hourPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-            minutePaint.setStyle(Paint.Style.FILL_AND_STROKE);
-            secondPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-            separatorShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-            hourShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-            minuteShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-            secondShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-
-            if (imagePalette != null) {
-                separatorPaint.setColor(imagePalette.getMutedColor(WearSettings.getDigitalSeparatorColor()));
-
-                separatorPaint.setColor(imagePalette.getVibrantColor(WearSettings.getDigitalSeparatorColor()));
-                hourPaint.setColor(imagePalette.getVibrantColor(WearSettings.getDigitalHourColor()));
-                minutePaint.setColor(imagePalette.getVibrantColor(WearSettings.getDigitalMinuteColor()));
-                secondPaint.setColor(imagePalette.getVibrantColor(WearSettings.getDigitalSecondColor()));
-
-                separatorShadowPaint.setColor(imagePalette.getDarkMutedColor(WearSettings.getDigitalSeparatorShadowColor()));
-                hourShadowPaint.setColor(imagePalette.getDarkMutedColor(WearSettings.getDigitalHourShadowColor()));
-                minuteShadowPaint.setColor(imagePalette.getDarkMutedColor(WearSettings.getDigitalMinuteShadowColor()));
-                secondShadowPaint.setColor(imagePalette.getDarkMutedColor(WearSettings.getDigitalSecondShadowColor()));
-            }
-            else {
-                separatorPaint.setColor(WearSettings.getDigitalSeparatorColor());
-                hourPaint.setColor(WearSettings.getDigitalHourColor());
-                minutePaint.setColor(WearSettings.getDigitalMinuteColor());
-                secondPaint.setColor(WearSettings.getDigitalSecondColor());
-
-                separatorShadowPaint.setColor(WearSettings.getDigitalSeparatorShadowColor());
-                hourShadowPaint.setColor(WearSettings.getDigitalHourShadowColor());
-                minuteShadowPaint.setColor(WearSettings.getDigitalMinuteShadowColor());
-                secondShadowPaint.setColor(WearSettings.getDigitalSecondShadowColor());
-            }
 
             DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
             float textSize = displayMetrics.heightPixels / 4;
@@ -293,10 +220,6 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             hourPaint.setTextSize(textSize);
             minutePaint.setTextSize(textSize);
             secondPaint.setTextSize(textSize);
-            separatorShadowPaint.setTextSize(textSize + 4f);
-            hourShadowPaint.setTextSize(textSize + 4f);
-            minuteShadowPaint.setTextSize(textSize + 4f);
-            secondShadowPaint.setTextSize(textSize + 4f);
 
             while (getTimeWidth() > width) {
                 textScale -= 0.05f;
@@ -306,29 +229,55 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
                 secondPaint.setTextScaleX(textScale);
                 Log.i(TAG, "Time width: " + getTimeWidth());
             }
-            separatorShadowPaint.setTextScaleX(textScale);
-            hourShadowPaint.setTextScaleX(textScale);
-            minuteShadowPaint.setTextScaleX(textScale);
-            secondShadowPaint.setTextScaleX(textScale);
 
             separatorWidth = separatorPaint.measureText(timeSeparator);
-
-
-            hourPaint.setShadowLayer(5f, 0f, 0f, 0xFFFFFFFF);
-            minutePaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalMinuteShadowColor());
-            secondPaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalSecondShadowColor());
-            separatorPaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalSeparatorShadowColor());
-
-            invalidate();
         }
 
-        private int getContrastingColor(int color) {
+        @Override
+        public void onApplyWindowInsets(WindowInsets insets) {
+            super.onApplyWindowInsets(insets);
+        }
 
-            float[] hsv = new float[3];
+        private void syncSettings() {
+            timeOffset = WearSettings.getTimeOffset();
+            timeSeparator = WearSettings.getDigitalSeparatorText();
 
-            hsv[2] = hsv[2] > 0.5f ? 0.2f : 0.8f;
+            separatorPaint.setAntiAlias(true);
+            hourPaint.setAntiAlias(true);
+            minutePaint.setAntiAlias(true);
+            secondPaint.setAntiAlias(true);
 
-            return Color.HSVToColor(hsv);
+            separatorPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+            hourPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+            minutePaint.setStyle(Paint.Style.FILL_AND_STROKE);
+            secondPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+
+            if (imagePalette != null) {
+                separatorPaint.setColor(imagePalette.getMutedColor(WearSettings.getDigitalSeparatorColor()));
+
+                separatorPaint.setColor(imagePalette.getVibrantColor(WearSettings.getDigitalSeparatorColor()));
+                hourPaint.setColor(imagePalette.getVibrantColor(WearSettings.getDigitalHourColor()));
+                minutePaint.setColor(imagePalette.getVibrantColor(WearSettings.getDigitalMinuteColor()));
+                secondPaint.setColor(imagePalette.getVibrantColor(WearSettings.getDigitalSecondColor()));
+
+                separatorPaint.setShadowLayer(WearSettings.SHADOW_RADIUS, 0f, 0f, imagePalette.getDarkMutedColor(WearSettings.getDigitalSeparatorShadowColor()));
+                hourPaint.setShadowLayer(WearSettings.SHADOW_RADIUS, 0f, 0f, imagePalette.getDarkMutedColor(WearSettings.getDigitalHourShadowColor()));
+                minutePaint.setShadowLayer(WearSettings.SHADOW_RADIUS, 0f, 0f, imagePalette.getDarkMutedColor(WearSettings.getDigitalMinuteShadowColor()));
+                secondPaint.setShadowLayer(WearSettings.SHADOW_RADIUS, 0f, 0f, imagePalette.getDarkMutedColor(WearSettings.getDigitalSecondShadowColor()));
+            }
+            else {
+                separatorPaint.setColor(WearSettings.getDigitalSeparatorColor());
+                hourPaint.setColor(WearSettings.getDigitalHourColor());
+                minutePaint.setColor(WearSettings.getDigitalMinuteColor());
+                secondPaint.setColor(WearSettings.getDigitalSecondColor());
+
+                separatorPaint.setShadowLayer(WearSettings.SHADOW_RADIUS, 0f, 0f, WearSettings.getDigitalSeparatorShadowColor());
+                hourPaint.setShadowLayer(WearSettings.SHADOW_RADIUS, 0f, 0f, WearSettings.getDigitalHourShadowColor());
+                minutePaint.setShadowLayer(WearSettings.SHADOW_RADIUS, 0f, 0f, WearSettings.getDigitalMinuteShadowColor());
+                secondPaint.setShadowLayer(WearSettings.SHADOW_RADIUS, 0f, 0f, WearSettings.getDigitalSecondShadowColor());
+            }
+
+            invalidate();
         }
 
         private float getTimeWidth() {
@@ -429,45 +378,20 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             float minuteWidth = minutePaint.measureText(String.format("%02d", time.minute));
             float yOffset = bounds.height() / 2;
 
-
-//            if (!isAmbient) {
-//                if (time.hour > 9) {
-//                    canvas.drawText("" + (time.hour / 10), x - 3.0f, yOffset + 2.0f, hourShadowPaint);
-//                    x += hourPaint.measureText("" + (time.hour / 10));
-//                }
-//                canvas.drawText("" + (time.hour % 10), x - 3.0f, yOffset + 2.0f, hourShadowPaint);
-//                x += hourPaint.measureText("" + (time.hour % 10));
-//                if (drawSeparator) {
-//                    canvas.drawText(timeSeparator, x - 3.0f, yOffset + 2.0f, separatorShadowPaint);
-//                }
-//                x += separatorWidth;
-//
-//
-//                canvas.drawText("" + (time.minute / 10), x - 3.0f, yOffset + 2.0f, minuteShadowPaint);
-//                x += minutePaint.measureText("" + (time.minute / 10));
-//                canvas.drawText("" + (time.minute % 10), x - 3.0f, yOffset + 2.0f, minuteShadowPaint);
-//                x += minutePaint.measureText("" + (time.minute % 10));
-//
-//                if (drawSeparator) {
-//                    canvas.drawText(timeSeparator, x - 3.0f, yOffset + 2.0f, separatorShadowPaint);
-//                }
-//                x += separatorWidth;
-//                canvas.drawText("" + (time.second / 10), x - 3.0f, yOffset + 2.0f, secondShadowPaint);
-//                x += secondPaint.measureText("" + (time.second / 10));
-//                canvas.drawText("" + (time.second % 10), x - 3.0f, yOffset + 2.0f, secondShadowPaint);
-//                x -= secondPaint.measureText("" + (time.second % 10));
-//                canvas.drawText(String.format("%02d", time.second), x, yOffset,
-//                        secondPaint);
-//            }
-
-//            x = xOffset + (time.hour < 10 ?  hourPaint.measureText("0") : 0);
-
             if (drawSeparator) {
                 x += hourWidth;
+                canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
+                canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
+                canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
+                canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
                 canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
                 if (!isAmbient) {
                     x += separatorWidth;
                     x += minuteWidth;
+                    canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
+                    canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
+                    canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
+                    canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
                     canvas.drawText(timeSeparator, x, yOffset, separatorPaint);
                 }
                 x = xOffset + (time.hour < 10 ?  hourPaint.measureText("0") : 0);
@@ -481,11 +405,25 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             x += hourWidth;
             x += separatorWidth;
             canvas.drawText(String.format("%02d", time.minute), x, yOffset, minutePaint);
-            x += separatorWidth;
-            x += secondPaint.measureText("" + (time.second / 10));
-            x -= secondPaint.measureText("" + (time.second % 10));
-            canvas.drawText(String.format("%02d", time.second), x, yOffset,
+            canvas.drawText(String.format("%02d", time.minute), x, yOffset, minutePaint);
+            canvas.drawText(String.format("%02d", time.minute), x, yOffset, minutePaint);
+            canvas.drawText(String.format("%02d", time.minute), x, yOffset, minutePaint);
+            canvas.drawText(String.format("%02d", time.minute), x, yOffset, minutePaint);
+            if (!isAmbient) {
+                x += separatorWidth;
+                x += minutePaint.measureText("" + (time.minute / 10));
+                x += minutePaint.measureText("" + (time.minute % 10));
+                canvas.drawText(String.format("%02d", time.second), x, yOffset,
                         secondPaint);
+                canvas.drawText(String.format("%02d", time.second), x, yOffset,
+                        secondPaint);
+                canvas.drawText(String.format("%02d", time.second), x, yOffset,
+                        secondPaint);
+                canvas.drawText(String.format("%02d", time.second), x, yOffset,
+                        secondPaint);
+                canvas.drawText(String.format("%02d", time.second), x, yOffset,
+                        secondPaint);
+            }
 
         }
 

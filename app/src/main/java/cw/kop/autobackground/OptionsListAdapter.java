@@ -87,6 +87,13 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
         viewHolder.optionIcon.setImageDrawable(iconDrawable);
         viewHolder.position = optionPosition;
 
+        viewHolder.rowLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listClickListener.onClick(position, optionsList.get(position).getTitle(),
+                        optionsList.get(position).getDrawable());
+            }
+        });
     }
 
     @Override
@@ -109,13 +116,6 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
             optionIcon = (ImageView) rowLayout.findViewById(R.id.notification_list_icon);
             optionTitle = (TextView) rowLayout.findViewById(R.id.notification_list_title);
             optionSummary = (TextView) rowLayout.findViewById(R.id.notification_list_summary);
-            rowLayout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    listClickListener.onClick(position, optionsList.get(getPosition()).getTitle(),
-                            optionsList.get(getPosition()).getDrawable());
-                }
-            });
         }
 
     }

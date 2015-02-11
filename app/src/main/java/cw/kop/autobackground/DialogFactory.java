@@ -21,6 +21,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -41,6 +42,8 @@ import cw.kop.autobackground.settings.AppSettings;
  * Created by TheKeeperOfPie on 11/1/2014.
  */
 public class DialogFactory {
+
+    private static final String TAG = DialogFactory.class.getCanonicalName();
 
     /**
      * Provides Dialog object, mainly used to allow additional themes to be added
@@ -428,6 +431,8 @@ public class DialogFactory {
             int textTwoResource,
             int textThreeResource,
             int defaultColor) {
+
+        Log.d(TAG, "Loading ColorPicker Dialog");
 
         Dialog dialog = getDialog(context);
         listener.setDialog(dialog);

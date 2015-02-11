@@ -88,6 +88,7 @@ import cw.kop.autobackground.files.FileHandler;
 public class WearSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, View.OnTouchListener, View.OnClickListener {
 
     private static final String TAG = WearSettingsFragment.class.getName();
+    private static final float SHADOW_RADIUS = 5f;
     private Context appContext;
     private GoogleApiClient googleApiClient;
     private boolean isWearConnected = false;
@@ -140,11 +141,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
     private Paint hourPaint;
     private Paint minutePaint;
     private Paint secondPaint;
-    private Paint separatorShadowPaint;
-    private Paint hourShadowPaint;
-    private Paint minuteShadowPaint;
-    private Paint secondShadowPaint;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -179,22 +175,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         secondPaint = new Paint();
         secondPaint.setStrokeCap(Paint.Cap.BUTT);
         secondPaint.setTextAlign(Paint.Align.LEFT);
-
-        separatorShadowPaint = new Paint();
-        separatorShadowPaint.setStrokeCap(Paint.Cap.BUTT);
-        separatorShadowPaint.setTextAlign(Paint.Align.LEFT);
-
-        hourShadowPaint = new Paint();
-        hourShadowPaint.setStrokeCap(Paint.Cap.BUTT);
-        hourShadowPaint.setTextAlign(Paint.Align.LEFT);
-
-        minuteShadowPaint = new Paint();
-        minuteShadowPaint.setStrokeCap(Paint.Cap.BUTT);
-        minuteShadowPaint.setTextAlign(Paint.Align.LEFT);
-
-        secondShadowPaint = new Paint();
-        secondShadowPaint.setStrokeCap(Paint.Cap.BUTT);
-        secondShadowPaint.setTextAlign(Paint.Align.LEFT);
     }
 
     @Override
@@ -374,44 +354,44 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
             }
         });
 
-//        findPreference("wear_time_type").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-//            @Override
-//            public boolean onPreferenceClick(Preference preference) {
-//
-//                DialogFactory.ListDialogListener listDialogListener = new DialogFactory.ListDialogListener() {
-//                    @Override
-//                    public void onItemClick(AdapterView<?> parent,
-//                            View view,
-//                            int position,
-//                            long id) {
-//
-//                        switch (position) {
-//                            case 0:
-//                                AppSettings.setTimeType(AppSettings.DIGITAL);
-//                                recyclerView.setAdapter(null);
-//                                preferenceList.setVisibility(View.VISIBLE);
-//                                recyclerView.setVisibility(View.GONE);
-//                                redraw();
-//                                break;
-//                            case 1:
-//                                AppSettings.setTimeType(AppSettings.ANALOG);
-//                                recyclerView.setAdapter(null);
-//                                preferenceList.setVisibility(View.VISIBLE);
-//                                recyclerView.setVisibility(View.GONE);
-//                                redraw();
-//                                break;
-//                        }
-//                        dismissDialog();
-//                    }
-//                };
-//
-//                DialogFactory.showListDialog(appContext,
-//                        "Watch face",
-//                        listDialogListener,
-//                        R.array.wear_time_types);
-//                return true;
-//            }
-//        });
+        findPreference("wear_time_type").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+
+                DialogFactory.ListDialogListener listDialogListener = new DialogFactory.ListDialogListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent,
+                            View view,
+                            int position,
+                            long id) {
+
+                        switch (position) {
+                            case 0:
+                                AppSettings.setTimeType(AppSettings.DIGITAL);
+                                recyclerView.setAdapter(null);
+                                preferenceList.setVisibility(View.VISIBLE);
+                                recyclerView.setVisibility(View.GONE);
+                                redraw();
+                                break;
+                            case 1:
+                                AppSettings.setTimeType(AppSettings.ANALOG);
+                                recyclerView.setAdapter(null);
+                                preferenceList.setVisibility(View.VISIBLE);
+                                recyclerView.setVisibility(View.GONE);
+                                redraw();
+                                break;
+                        }
+                        dismissDialog();
+                    }
+                };
+
+                DialogFactory.showListDialog(appContext,
+                        "Watch face",
+                        listDialogListener,
+                        R.array.wear_time_types);
+                return true;
+            }
+        });
 
         findPreference("wear_time_adjust").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -454,39 +434,47 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         hourPaint.setAntiAlias(true);
         minutePaint.setAntiAlias(true);
         secondPaint.setAntiAlias(true);
-        separatorShadowPaint.setAntiAlias(true);
-        hourShadowPaint.setAntiAlias(true);
-        minuteShadowPaint.setAntiAlias(true);
-        secondShadowPaint.setAntiAlias(true);
 
         tickPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         separatorPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         hourPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         minutePaint.setStyle(Paint.Style.FILL_AND_STROKE);
         secondPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        separatorShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        hourShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        minuteShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        secondShadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         if (AppSettings.getTimeType().equals(AppSettings.DIGITAL)) {
             separatorPaint.setColor(AppSettings.getDigitalSeparatorColor());
             hourPaint.setColor(AppSettings.getDigitalHourColor());
             minutePaint.setColor(AppSettings.getDigitalMinuteColor());
             secondPaint.setColor(AppSettings.getDigitalSecondColor());
-            separatorShadowPaint.setColor(AppSettings.getDigitalSeparatorShadowColor());
-            hourShadowPaint.setColor(AppSettings.getDigitalHourShadowColor());
-            minuteShadowPaint.setColor(AppSettings.getDigitalMinuteShadowColor());
-            secondShadowPaint.setColor(AppSettings.getDigitalSecondShadowColor());
+
+            separatorPaint.setShadowLayer(SHADOW_RADIUS,
+                    0f,
+                    0f,
+                    AppSettings.getDigitalSeparatorShadowColor());
+            hourPaint.setShadowLayer(SHADOW_RADIUS, 0f, 0f, AppSettings.getDigitalHourShadowColor());
+            minutePaint.setShadowLayer(SHADOW_RADIUS,
+                    0f,
+                    0f,
+                    AppSettings.getDigitalMinuteShadowColor());
+            secondPaint.setShadowLayer(SHADOW_RADIUS,
+                    0f,
+                    0f,
+                    AppSettings.getDigitalSecondShadowColor());
         }
         else {
             tickPaint.setColor(AppSettings.getAnalogTickColor());
             hourPaint.setColor(AppSettings.getAnalogHourColor());
             minutePaint.setColor(AppSettings.getAnalogMinuteColor());
             secondPaint.setColor(AppSettings.getAnalogSecondColor());
-            hourShadowPaint.setColor(AppSettings.getAnalogHourShadowColor());
-            minuteShadowPaint.setColor(AppSettings.getAnalogMinuteShadowColor());
-            secondShadowPaint.setColor(AppSettings.getAnalogSecondShadowColor());
+            hourPaint.setShadowLayer(SHADOW_RADIUS, 0f, 0f, AppSettings.getAnalogHourShadowColor());
+            minutePaint.setShadowLayer(SHADOW_RADIUS,
+                    0f,
+                    0f,
+                    AppSettings.getAnalogMinuteShadowColor());
+            secondPaint.setShadowLayer(SHADOW_RADIUS,
+                    0f,
+                    0f,
+                    AppSettings.getAnalogSecondShadowColor());
         }
 
         tickRadius = AppSettings.getAnalogTickLength();
@@ -509,10 +497,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         hourPaint.setTextSize(textSize);
         minutePaint.setTextSize(textSize);
         secondPaint.setTextSize(textSize);
-        separatorShadowPaint.setTextSize(textSize);
-        hourShadowPaint.setTextSize(textSize);
-        minuteShadowPaint.setTextSize(textSize);
-        secondShadowPaint.setTextSize(textSize);
 
         while (getTimeWidth() > width) {
             textScale -= 0.05f;
@@ -520,10 +504,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
             hourPaint.setTextScaleX(textScale);
             minutePaint.setTextScaleX(textScale);
             secondPaint.setTextScaleX(textScale);
-            separatorShadowPaint.setTextScaleX(textScale);
-            hourShadowPaint.setTextScaleX(textScale);
-            minuteShadowPaint.setTextScaleX(textScale);
-            secondShadowPaint.setTextScaleX(textScale);
         }
 
         separatorWidth = separatorPaint.measureText(timeSeparator);
@@ -628,23 +608,42 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         float hourWidth = hourPaint.measureText("" + time.hour);
         float minuteWidth = minutePaint.measureText(String.format("%02d", time.minute));
 
-        canvas.drawText("" + time.hour, x - 2.0f, centerY - 2.0f, hourShadowPaint);
+        canvas.drawText("" + time.hour, x, centerY, hourPaint);
+        canvas.drawText("" + time.hour, x, centerY, hourPaint);
+        canvas.drawText("" + time.hour, x, centerY, hourPaint);
+        canvas.drawText("" + time.hour, x, centerY, hourPaint);
         canvas.drawText("" + time.hour, x, centerY, hourPaint);
         x += hourPaint.measureText("" + time.hour);
 
-        canvas.drawText(timeSeparator, x - 2.0f, centerY - 2.0f, separatorShadowPaint);
+        canvas.drawText(timeSeparator, x, centerY, separatorPaint);
+        canvas.drawText(timeSeparator, x, centerY, separatorPaint);
+        canvas.drawText(timeSeparator, x, centerY, separatorPaint);
+        canvas.drawText(timeSeparator, x, centerY, separatorPaint);
         canvas.drawText(timeSeparator, x, centerY, separatorPaint);
         x += separatorWidth;
 
-        canvas.drawText(String.format("%02d", time.minute), x - 2.0f, centerY - 2.0f, minuteShadowPaint);
+        canvas.drawText(String.format("%02d", time.minute), x, centerY, minutePaint);
+        canvas.drawText(String.format("%02d", time.minute), x, centerY, minutePaint);
+        canvas.drawText(String.format("%02d", time.minute), x, centerY, minutePaint);
+        canvas.drawText(String.format("%02d", time.minute), x, centerY, minutePaint);
         canvas.drawText(String.format("%02d", time.minute), x, centerY, minutePaint);
         x += minutePaint.measureText(String.format("%02d", time.minute));
 
-        canvas.drawText(timeSeparator, x - 2.0f, centerY - 2.0f, separatorShadowPaint);
+        canvas.drawText(timeSeparator, x, centerY, separatorPaint);
+        canvas.drawText(timeSeparator, x, centerY, separatorPaint);
+        canvas.drawText(timeSeparator, x, centerY, separatorPaint);
+        canvas.drawText(timeSeparator, x, centerY, separatorPaint);
         canvas.drawText(timeSeparator, x, centerY, separatorPaint);
         x += separatorWidth;
 
-        canvas.drawText(String.format("%02d", time.second), x - 2.0f, centerY - 2.0f, secondShadowPaint);
+        canvas.drawText(String.format("%02d", time.second), x, centerY,
+                secondPaint);
+        canvas.drawText(String.format("%02d", time.second), x, centerY,
+                secondPaint);
+        canvas.drawText(String.format("%02d", time.second), x, centerY,
+                secondPaint);
+        canvas.drawText(String.format("%02d", time.second), x, centerY,
+                secondPaint);
         canvas.drawText(String.format("%02d", time.second), x, centerY,
                 secondPaint);
 
@@ -693,46 +692,46 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
         // Draw shadows first to prevent outline overlapping other hands
 
-        Path hourShadowPath = new Path();
-        hourShadowPath.moveTo((float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(90f))),
-                (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(90f))));
-        hourShadowPath.quadTo(
-                (float) (centerX - (hourWidth / 1.5f) * Math.cos(Math.toRadians(0f))),
-                (float) (centerY - (hourWidth / 1.5f) * Math.sin(Math.toRadians(0f))),
-                (float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(270f))),
-                (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(270f))));
-        hourShadowPath.lineTo((float) (centerX + (radius * hourRadius / 100f + 2.0f) * Math.cos(Math.toRadians(0f))),
-                (float) (centerY + (radius * hourRadius / 100f + 2.0f) * Math.sin(Math.toRadians(0f))));
-        hourShadowPath.close();
-        canvas.drawPath(hourShadowPath, hourShadowPaint);
-
-        Path minuteShadowPath = new Path();
-        minuteShadowPath.moveTo((float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(0f))),
-                (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(0f))));
-        minuteShadowPath.quadTo(
-                (float) (centerX - (minuteWidth / 1.5f) * Math.cos(Math.toRadians(-180f))),
-                (float) (centerY - (minuteWidth / 1.5f) * Math.sin(Math.toRadians(-180f))),
-                (float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(90f))),
-                (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(90f))));
-        minuteShadowPath.lineTo((float) (centerX + (radius * minuteRadius / 100f + 2.0f) * Math.cos(Math.toRadians(-90f))),
-                (float) (centerY + (radius * minuteRadius / 100f + 2.0f) * Math.sin(Math.toRadians(-90f))));
-        minuteShadowPath.close();
-        canvas.drawPath(minuteShadowPath, minuteShadowPaint);
-
-        Path secondShadowPath = new Path();
-        secondShadowPath.moveTo((float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(225f))),
-                (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(225f))));
-        secondShadowPath.quadTo(
-                (float) (centerX - (secondWidth / 1.5f) * Math.cos(Math.toRadians(45f))),
-                (float) (centerY - (secondWidth / 1.5f) * Math.sin(Math.toRadians(45f))),
-                (float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(315f))),
-                (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(315f))));
-        secondShadowPath.lineTo((float) (centerX + (radius * secondRadius / 100f + 2f) * Math.cos(Math.toRadians(
-                        135f))),
-                (float) (centerY + (radius * secondRadius / 100f + 2.0f) * Math.sin(Math.toRadians(
-                        135f))));
-        secondShadowPath.close();
-        canvas.drawPath(secondShadowPath, secondShadowPaint);
+//        Path hourShadowPath = new Path();
+//        hourShadowPath.moveTo((float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(90f))),
+//                (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(90f))));
+//        hourShadowPath.quadTo(
+//                (float) (centerX - (hourWidth / 1.5f) * Math.cos(Math.toRadians(0f))),
+//                (float) (centerY - (hourWidth / 1.5f) * Math.sin(Math.toRadians(0f))),
+//                (float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(270f))),
+//                (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(270f))));
+//        hourShadowPath.lineTo((float) (centerX + (radius * hourRadius / 100f + 2.0f) * Math.cos(Math.toRadians(0f))),
+//                (float) (centerY + (radius * hourRadius / 100f + 2.0f) * Math.sin(Math.toRadians(0f))));
+//        hourShadowPath.close();
+//        canvas.drawPath(hourShadowPath, hourShadowPaint);
+//
+//        Path minuteShadowPath = new Path();
+//        minuteShadowPath.moveTo((float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(0f))),
+//                (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(0f))));
+//        minuteShadowPath.quadTo(
+//                (float) (centerX - (minuteWidth / 1.5f) * Math.cos(Math.toRadians(-180f))),
+//                (float) (centerY - (minuteWidth / 1.5f) * Math.sin(Math.toRadians(-180f))),
+//                (float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(90f))),
+//                (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(90f))));
+//        minuteShadowPath.lineTo((float) (centerX + (radius * minuteRadius / 100f + 2.0f) * Math.cos(Math.toRadians(-90f))),
+//                (float) (centerY + (radius * minuteRadius / 100f + 2.0f) * Math.sin(Math.toRadians(-90f))));
+//        minuteShadowPath.close();
+//        canvas.drawPath(minuteShadowPath, minuteShadowPaint);
+//
+//        Path secondShadowPath = new Path();
+//        secondShadowPath.moveTo((float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(225f))),
+//                (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(225f))));
+//        secondShadowPath.quadTo(
+//                (float) (centerX - (secondWidth / 1.5f) * Math.cos(Math.toRadians(45f))),
+//                (float) (centerY - (secondWidth / 1.5f) * Math.sin(Math.toRadians(45f))),
+//                (float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(315f))),
+//                (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(315f))));
+//        secondShadowPath.lineTo((float) (centerX + (radius * secondRadius / 100f + 2f) * Math.cos(Math.toRadians(
+//                        135f))),
+//                (float) (centerY + (radius * secondRadius / 100f + 2.0f) * Math.sin(Math.toRadians(
+//                        135f))));
+//        secondShadowPath.close();
+//        canvas.drawPath(secondShadowPath, secondShadowPaint);
 
         // Now draw actual hands
 
@@ -748,6 +747,10 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 (float) (centerY + (radius * hourRadius / 100f) * Math.sin(Math.toRadians(0f))));
         hourPath.close();
         canvas.drawPath(hourPath, hourPaint);
+        canvas.drawPath(hourPath, hourPaint);
+        canvas.drawPath(hourPath, hourPaint);
+        canvas.drawPath(hourPath, hourPaint);
+        canvas.drawPath(hourPath, hourPaint);
 
         Path minutePath = new Path();
         minutePath.moveTo((float) (centerX + minuteWidth / 2f * Math.cos(Math.toRadians(0f))),
@@ -760,6 +763,10 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         minutePath.lineTo((float) (centerX + (radius * minuteRadius / 100f) * Math.cos(Math.toRadians(-90f))),
                 (float) (centerY + (radius * minuteRadius / 100f) * Math.sin(Math.toRadians(-90f))));
         minutePath.close();
+        canvas.drawPath(minutePath, minutePaint);
+        canvas.drawPath(minutePath, minutePaint);
+        canvas.drawPath(minutePath, minutePaint);
+        canvas.drawPath(minutePath, minutePaint);
         canvas.drawPath(minutePath, minutePaint);
 
         Path secondPath = new Path();
@@ -775,6 +782,10 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 (float) (centerY + (radius * secondRadius / 100f) * Math.sin(Math.toRadians(
                         135f))));
         secondPath.close();
+        canvas.drawPath(secondPath, secondPaint);
+        canvas.drawPath(secondPath, secondPaint);
+        canvas.drawPath(secondPath, secondPaint);
+        canvas.drawPath(secondPath, secondPaint);
         canvas.drawPath(secondPath, secondPaint);
 
         surfaceView.getHolder().unlockCanvasAndPost(canvas);
@@ -1539,6 +1550,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
     public void onPause() {
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         LocalBroadcastManager.getInstance(appContext).unregisterReceiver(broadcastReceiver);
+        syncSettings();
         super.onPause();
     }
 

@@ -26,6 +26,7 @@ public class WearSettings {
 
     public static final String DIGITAL = "Digital";
     public static final String ANALOG = "Analog";
+    public static final float SHADOW_RADIUS = 5f;
 
     private static SharedPreferences prefs;
 

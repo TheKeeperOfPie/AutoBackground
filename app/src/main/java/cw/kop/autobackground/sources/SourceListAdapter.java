@@ -232,7 +232,8 @@ public class SourceListAdapter extends BaseAdapter {
                                 sourceImage);
                     }
                     else {
-                        sourceImage.setImageResource(R.drawable.ic_not_interested_white_48dp);
+                        // TODO: Replace this with ic_not_interested_white_48dp and commit it to repo
+                        sourceImage.setImageResource(R.drawable.ic_file_download_white_48dp);
                     }
                 }
             }
