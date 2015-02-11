@@ -959,10 +959,16 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     }
 
     public boolean onItemLongClick(int position) {
-        listAdapter.toggleActivated(position);
+        if (!listAdapter.toggleActivated(position)) {
+            setAlertText(SourceListAdapter.NO_ACTIVE_SOURCES);
+        }
+        else if (alertText.isShown()) {
+            new ImageCountTask().execute();
+        }
         int firstVisiblePosition = sourceList.getFirstVisiblePosition();
         View childView = sourceList.getChildAt(position - firstVisiblePosition);
         sourceList.getAdapter().getView(position, childView, sourceList);
+
         return true;
     }
 
@@ -1173,6 +1179,61 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     }
 
+    private void setAlertText(String sourceState) {
+
+        Log.i("SLA", "ImageCountTask onPostExecute");
+
+        if (!isAdded()) {
+            return;
+        }
+
+        listAdapter.updateNum();
+
+        resetAddButtonIcon();
+
+        if (toolbarMenu != null) {
+            Drawable drawable = FileHandler.isDownloading ?
+                    getResources().getDrawable(R.drawable.ic_cancel_white_24dp) :
+                    getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
+            drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                    PorterDuff.Mode.MULTIPLY);
+            toolbarMenu.getItem(1).setIcon(drawable);
+        }
+
+        alertText.setVisibility(sourceState.equals(SourceListAdapter.OKAY) ?
+                View.GONE :
+                View.VISIBLE);
+
+        switch (sourceState) {
+
+            case SourceListAdapter.NO_SOURCES:
+                alertText.setText("Please add a source");
+                Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
+                addDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
+                        PorterDuff.Mode.MULTIPLY);
+                addButtonBackground.setImageDrawable(addDrawable);
+                break;
+            case SourceListAdapter.NO_ACTIVE_SOURCES:
+                alertText.setText("No active sources");
+                break;
+            case SourceListAdapter.NEED_DOWNLOAD:
+                alertText.setText("No downloaded images");
+                if (!FileHandler.isDownloading && toolbarMenu != null) {
+                    Drawable downloadDrawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp).mutate();
+                    downloadDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
+                            PorterDuff.Mode.MULTIPLY);
+                    toolbarMenu.getItem(1).setIcon(downloadDrawable);
+                }
+                break;
+            case SourceListAdapter.NO_IMAGES:
+                alertText.setText("No images found");
+                break;
+            case SourceListAdapter.OKAY:
+                break;
+
+        }
+    }
+
     class ImageCountTask extends AsyncTask<Void, String, String> {
 
         @Override
@@ -1182,56 +1243,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         @Override
         protected void onPostExecute(String sourceState) {
-
-            Log.i("SLA", "ImageCountTask onPostExecute");
-
-            if (!isAdded()) {
-                return;
-            }
-
-            listAdapter.updateNum();
-
-            resetAddButtonIcon();
-
-            if (toolbarMenu != null) {
-                Drawable drawable = FileHandler.isDownloading ?
-                        getResources().getDrawable(R.drawable.ic_cancel_white_24dp) :
-                        getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
-                drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                        PorterDuff.Mode.MULTIPLY);
-                toolbarMenu.getItem(1).setIcon(drawable);
-            }
-
-            alertText.setVisibility(sourceState.equals(SourceListAdapter.OKAY) ?
-                    View.GONE :
-                    View.VISIBLE);
-
-            switch (sourceState) {
-
-                case SourceListAdapter.NO_SOURCES:
-                    alertText.setText("Please add a source");
-                    Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
-                    addDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
-                            PorterDuff.Mode.MULTIPLY);
-                    addButtonBackground.setImageDrawable(addDrawable);
-                    break;
-                case SourceListAdapter.NO_ACTIVE_SOURCES:
-                    alertText.setText("No active sources");
-                    break;
-                case SourceListAdapter.NEED_DOWNLOAD:
-                    alertText.setText("No downloaded images");
-                    if (!FileHandler.isDownloading && toolbarMenu != null) {
-                        Drawable downloadDrawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp).mutate();
-                        downloadDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
-                                PorterDuff.Mode.MULTIPLY);
-                        toolbarMenu.getItem(1).setIcon(downloadDrawable);
-                    }
-                    break;
-                case SourceListAdapter.OKAY:
-                    break;
-
-            }
-
+            setAlertText(sourceState);
         }
     }
 

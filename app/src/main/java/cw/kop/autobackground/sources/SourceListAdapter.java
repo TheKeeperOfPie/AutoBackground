@@ -213,10 +213,9 @@ public class SourceListAdapter extends BaseAdapter {
 
         if (preview) {
             imageParams.height = (int) ((parent.getWidth() - 2f * resources.getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
-            Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_48dp);
-            downloadDrawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
+            sourceImage.setImageResource(R.drawable.ic_file_download_white_48dp);
+            sourceImage.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
                     PorterDuff.Mode.MULTIPLY);
-            sourceImage.setImageDrawable(downloadDrawable);
 
             if (listItem.getType().equals(AppSettings.FOLDER)) {
                 String[] folders = listItem.getData().split(AppSettings.DATA_SPLITTER);
@@ -228,8 +227,12 @@ public class SourceListAdapter extends BaseAdapter {
                     if (files != null && files.length > 0) {
                         needsImage = false;
                         listItem.setImageFile(files[0]);
+                        sourceImage.clearColorFilter();
                         Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(
                                 sourceImage);
+                    }
+                    else {
+                        sourceImage.setImageResource(R.drawable.ic_not_interested_white_48dp);
                     }
                 }
             }
@@ -240,6 +243,7 @@ public class SourceListAdapter extends BaseAdapter {
 
                     if (files != null && files.length > 0) {
                         listItem.setImageFile(files[0]);
+                        sourceImage.clearColorFilter();
                         Picasso.with(parent.getContext()).load(files[0]).fit().centerCrop().into(
                                 sourceImage);
                     }
@@ -320,10 +324,18 @@ public class SourceListAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
-    public void toggleActivated(int position) {
+    public boolean toggleActivated(int position) {
         Source changedItem = listData.get(position);
         changedItem.setUse(!changedItem.isUse());
         listData.set(position, changedItem);
+
+        for (Source source : listData) {
+            if (source.isUse()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean setItem(int position, Source source) {

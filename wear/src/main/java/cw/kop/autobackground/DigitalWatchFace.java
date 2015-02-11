@@ -195,7 +195,7 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             hourPaint = new Paint();
             hourPaint.setStrokeCap(Paint.Cap.BUTT);
             hourPaint.setTextAlign(Paint.Align.LEFT);
-            hourPaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalHourShadowColor());
+            hourPaint.setShadowLayer(5f, 0f, 0f, 0xFFFFFFFF);
 
             minutePaint = new Paint();
             minutePaint.setStrokeCap(Paint.Cap.BUTT);
@@ -314,7 +314,7 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             separatorWidth = separatorPaint.measureText(timeSeparator);
 
 
-            hourPaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalHourShadowColor());
+            hourPaint.setShadowLayer(5f, 0f, 0f, 0xFFFFFFFF);
             minutePaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalMinuteShadowColor());
             secondPaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalSecondShadowColor());
             separatorPaint.setShadowLayer(5f, 0f, 0f, WearSettings.getDigitalSeparatorShadowColor());
@@ -455,12 +455,12 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
 //                canvas.drawText("" + (time.second / 10), x - 3.0f, yOffset + 2.0f, secondShadowPaint);
 //                x += secondPaint.measureText("" + (time.second / 10));
 //                canvas.drawText("" + (time.second % 10), x - 3.0f, yOffset + 2.0f, secondShadowPaint);
-//                x -= secondPaint.measureText("" + (time.second / 10));
+//                x -= secondPaint.measureText("" + (time.second % 10));
 //                canvas.drawText(String.format("%02d", time.second), x, yOffset,
 //                        secondPaint);
 //            }
 
-            x = xOffset + (time.hour < 10 ?  hourPaint.measureText("0") : 0);
+//            x = xOffset + (time.hour < 10 ?  hourPaint.measureText("0") : 0);
 
             if (drawSeparator) {
                 x += hourWidth;
@@ -482,6 +482,8 @@ public class DigitalWatchFace extends CanvasWatchFaceService {
             x += separatorWidth;
             canvas.drawText(String.format("%02d", time.minute), x, yOffset, minutePaint);
             x += separatorWidth;
+            x += secondPaint.measureText("" + (time.second / 10));
+            x -= secondPaint.measureText("" + (time.second % 10));
             canvas.drawText(String.format("%02d", time.second), x, yOffset,
                         secondPaint);
 
