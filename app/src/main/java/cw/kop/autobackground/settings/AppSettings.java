@@ -1427,198 +1427,142 @@ public class AppSettings {
         return prefs.getLong("time_offset", 0);
     }
 
-    public static void setAnalogTickColor(int color) {
-        prefs.edit().putInt("analog_tick_color", color).commit();
+    public static void setTickWidth(float width) {
+        prefs.edit().putFloat("wear_tick_width", width).commit();
     }
 
-    public static int getAnalogTickColor() {
-        return prefs.getInt("analog_tick_color", 0xFFFFFFFF);
+    public static float getTickWidth() {
+        return prefs.getFloat("wear_tick_width", 5.0f);
     }
 
-    public static void setAnalogHourColor(int color) {
-        prefs.edit().putInt("analog_hour_color", color).commit();
+    public static void setHourWidth(float width) {
+        prefs.edit().putFloat("wear_hour_width", width).commit();
     }
 
-    public static int getAnalogHourColor() {
-        return prefs.getInt("analog_hour_color", 0xFFFFFFF);
+    public static float getHourWidth() {
+        return prefs.getFloat("wear_hour_width", 5.0f);
     }
 
-    public static void setAnalogHourShadowColor(int color) {
-        prefs.edit().putInt("analog_hour_shadow_color", color).commit();
+    public static void setMinuteWidth(float width) {
+        prefs.edit().putFloat("wear_minute_width", width).commit();
     }
 
-    public static int getAnalogHourShadowColor() {
-        return prefs.getInt("analog_hour_shadow_color", 0xFF000000);
+    public static float getMinuteWidth() {
+        return prefs.getFloat("wear_minute_width", 3.0f);
     }
 
-    public static void setAnalogMinuteColor(int color) {
-        prefs.edit().putInt("analog_minute_color", color).commit();
+    public static void setSecondWidth(float width) {
+        prefs.edit().putFloat("wear_second_width", width).commit();
     }
 
-    public static int getAnalogMinuteColor() {
-        return prefs.getInt("analog_minute_color", 0xFFFFFFF);
+    public static float getSecondWidth() {
+        return prefs.getFloat("wear_second_width", 2.0f);
     }
 
-    public static void setAnalogMinuteShadowColor(int color) {
-        prefs.edit().putInt("analog_minute_shadow_color", color).commit();
+    public static void setTickLength(float length) {
+        prefs.edit().putFloat("wear_tick_length", length).commit();
     }
 
-    public static int getAnalogMinuteShadowColor() {
-        return prefs.getInt("analog_minute_shadow_color", 0xFF000000);
+    public static float getTickLength() {
+        return prefs.getFloat("wear_tick_length", 80f);
     }
 
-    public static void setAnalogSecondColor(int color) {
-        prefs.edit().putInt("analog_second_color", color).commit();
+    public static void setHourLength(float length) {
+        prefs.edit().putFloat("wear_hour_length", length).commit();
     }
 
-    public static int getAnalogSecondColor() {
-        return prefs.getInt("analog_second_color", 0xFFFFFFF);
+    public static float getHourLength() {
+        return prefs.getFloat("wear_hour_length", 50f);
     }
 
-    public static void setAnalogSecondShadowColor(int color) {
-        prefs.edit().putInt("analog_second_shadow_color", color).commit();
+    public static void setMinuteLength(float length) {
+        prefs.edit().putFloat("wear_minute_length", length).commit();
     }
 
-    public static int getAnalogSecondShadowColor() {
-        return prefs.getInt("analog_second_shadow_color", 0xFF000000);
+    public static float getMinuteLength() {
+        return prefs.getFloat("wear_minute_length", 66f);
     }
 
-    public static void setAnalogTickWidth(float width) {
-        prefs.edit().putFloat("analog_tick_width", width).commit();
+    public static void setSecondLength(float length) {
+        prefs.edit().putFloat("wear_second_length", length).commit();
     }
 
-    public static float getAnalogTickWidth() {
-        return prefs.getFloat("analog_tick_width", 5.0f);
+    public static float getSecondLength() {
+        return prefs.getFloat("wear_second_length", 100f);
     }
 
-    public static void setAnalogHourWidth(float width) {
-        prefs.edit().putFloat("analog_hour_width", width).commit();
+    // Wear time settings
+
+    public static void setSeparatorText(String text) {
+        prefs.edit().putString("wear_separator_text", text).commit();
     }
 
-    public static float getAnalogHourWidth() {
-        return prefs.getFloat("analog_hour_width", 5.0f);
+    public static String getSeparatorText() {
+        return prefs.getString("wear_separator_text", ":");
     }
 
-    public static void setAnalogMinuteWidth(float width) {
-        prefs.edit().putFloat("analog_minute_width", width).commit();
-    }
-
-    public static float getAnalogMinuteWidth() {
-        return prefs.getFloat("analog_minute_width", 3.0f);
-    }
-
-    public static void setAnalogSecondWidth(float width) {
-        prefs.edit().putFloat("analog_second_width", width).commit();
-    }
-
-    public static float getAnalogSecondWidth() {
-        return prefs.getFloat("analog_second_width", 2.0f);
-    }
-
-    public static void setAnalogTickLength(float length) {
-        prefs.edit().putFloat("analog_tick_length", length).commit();
-    }
-
-    public static float getAnalogTickLength() {
-        return prefs.getFloat("analog_tick_length", 80f);
-    }
-
-    public static void setAnalogHourLength(float length) {
-        prefs.edit().putFloat("analog_hour_length", length).commit();
-    }
-
-    public static float getAnalogHourLength() {
-        return prefs.getFloat("analog_hour_length", 50f);
-    }
-
-    public static void setAnalogMinuteLength(float length) {
-        prefs.edit().putFloat("analog_minute_length", length).commit();
-    }
-
-    public static float getAnalogMinuteLength() {
-        return prefs.getFloat("analog_minute_length", 66f);
-    }
-
-    public static void setAnalogSecondLength(float length) {
-        prefs.edit().putFloat("analog_second_length", length).commit();
-    }
-
-    public static float getAnalogSecondLength() {
-        return prefs.getFloat("analog_second_length", 100f);
-    }
-
-    // DIGITAL TIME SETTINGS
-
-    public static void setDigitalSeparatorText(String text) {
-        prefs.edit().putString("digital_separator_text", text).commit();
-    }
-
-    public static String getDigitalSeparatorText() {
-        return prefs.getString("digital_separator_text", ":");
-    }
-
-    public static void setDigitalSeparatorColor(int color) {
+    public static void setSeparatorColor(int color) {
         prefs.edit().putInt("digital_separator_color", color).commit();
     }
 
-    public static int getDigitalSeparatorColor() {
-        return prefs.getInt("digital_separator_color", 0xFFFFFFFF);
+    public static int getSeparatorColor() {
+        return prefs.getInt("wear_separator_color", 0xFFFFFFFF);
     }
 
-    public static void setDigitalSeparatorShadowColor(int color) {
-        prefs.edit().putInt("digital_separator_shadow_color", color).commit();
+    public static void setSeparatorShadowColor(int color) {
+        prefs.edit().putInt("wear_separator_shadow_color", color).commit();
     }
 
-    public static int getDigitalSeparatorShadowColor() {
-        return prefs.getInt("digital_separator_shadow_color", 0xFF000000);
+    public static int getSeparatorShadowColor() {
+        return prefs.getInt("wear_separator_shadow_color", 0xFF000000);
     }
 
-    public static void setDigitalHourColor(int color) {
-        prefs.edit().putInt("digital_hour_color", color).commit();
+    public static void setHourColor(int color) {
+        prefs.edit().putInt("wear_hour_color", color).commit();
     }
 
-    public static int getDigitalHourColor() {
-        return prefs.getInt("digital_hour_color", 0xFFFFFFFF);
+    public static int getHourColor() {
+        return prefs.getInt("wear_hour_color", 0xFFFFFFFF);
     }
 
-    public static void setDigitalHourShadowColor(int color) {
-        prefs.edit().putInt("digital_hour_shadow_color", color).commit();
+    public static void setHourShadowColor(int color) {
+        prefs.edit().putInt("wear_hour_shadow_color", color).commit();
     }
 
-    public static int getDigitalHourShadowColor() {
-        return prefs.getInt("digital_hour_shadow_color", 0xFF000000);
+    public static int getHourShadowColor() {
+        return prefs.getInt("wear_hour_shadow_color", 0xFF000000);
     }
 
-    public static void setDigitalMinuteColor(int color) {
-        prefs.edit().putInt("digital_minute_color", color).commit();
+    public static void setMinuteColor(int color) {
+        prefs.edit().putInt("wear_minute_color", color).commit();
     }
 
-    public static int getDigitalMinuteColor() {
-        return prefs.getInt("digital_minute_color", 0xFFFFFFFF);
+    public static int getMinuteColor() {
+        return prefs.getInt("wear_minute_color", 0xFFFFFFFF);
     }
 
-    public static void setDigitalMinuteShadowColor(int color) {
-        prefs.edit().putInt("digital_minute_shadow_color", color).commit();
+    public static void setMinuteShadowColor(int color) {
+        prefs.edit().putInt("wear_minute_shadow_color", color).commit();
     }
 
-    public static int getDigitalMinuteShadowColor() {
-        return prefs.getInt("digital_minute_shadow_color", 0xFF000000);
+    public static int getMinuteShadowColor() {
+        return prefs.getInt("wear_minute_shadow_color", 0xFF000000);
     }
 
-    public static void setDigitalSecondColor(int color) {
-        prefs.edit().putInt("digital_second_color", color).commit();
+    public static void setSecondColor(int color) {
+        prefs.edit().putInt("wear_second_color", color).commit();
     }
 
-    public static int getDigitalSecondColor() {
-        return prefs.getInt("digital_second_color", 0xFFFFFFFF);
+    public static int getSecondColor() {
+        return prefs.getInt("wear_second_color", 0xFFFFFFFF);
     }
 
-    public static void setDigitalSecondShadowColor(int color) {
-        prefs.edit().putInt("digital_second_shadow_color", color).commit();
+    public static void setSecondShadowColor(int color) {
+        prefs.edit().putInt("wear_second_shadow_color", color).commit();
     }
 
-    public static int getDigitalSecondShadowColor() {
-        return prefs.getInt("digital_second_shadow_color", 0xFF000000);
+    public static int getSecondShadowColor() {
+        return prefs.getInt("wear_second_shadow_color", 0xFF000000);
     }
 
     public static void setDigitalHourSize(float size) {

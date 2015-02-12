@@ -38,7 +38,9 @@ import android.support.v7.graphics.Palette;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.SurfaceHolder;
 
 import java.util.TimeZone;
@@ -260,10 +262,12 @@ public class AnalogWatchFace extends CanvasWatchFaceService {
             minuteRadius = WearSettings.getAnalogMinuteLength();
             secondRadius = WearSettings.getAnalogSecondLength();
 
-            tickWidth = WearSettings.getAnalogTickWidth();
-            hourWidth = WearSettings.getAnalogHourWidth();
-            minuteWidth = WearSettings.getAnalogMinuteWidth();
-            secondWidth = WearSettings.getAnalogSecondWidth();
+            DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+
+            tickWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, WearSettings.getAnalogTickWidth() / 10, displayMetrics);
+            hourWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, WearSettings.getAnalogHourWidth() / 10, displayMetrics);
+            minuteWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, WearSettings.getAnalogMinuteWidth() / 10, displayMetrics);
+            secondWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, WearSettings.getAnalogSecondWidth() / 10, displayMetrics);
             invalidate();
         }
 
