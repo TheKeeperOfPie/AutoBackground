@@ -50,7 +50,7 @@
         <!--</service>-->
 
         <service
-            android:name=".DigitalWatchFace"
+            android:name=".WatchFace"
             android:label="@string/wallpaper_description"
             android:allowEmbedded="true"
             android:taskAffinity=""

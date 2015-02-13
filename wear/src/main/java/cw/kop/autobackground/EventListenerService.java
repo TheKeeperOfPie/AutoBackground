@@ -38,6 +38,8 @@ import com.google.android.gms.wearable.WearableListenerService;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
+import cw.kop.autobackground.shared.WearConstants;
+
 public class EventListenerService extends WearableListenerService {
 
     public static final String LOAD_IMAGE = "cw.kop.autobackground.EventListenerService.LOAD_IMAGE";
@@ -101,7 +103,7 @@ public class EventListenerService extends WearableListenerService {
             DataMap dataMap = DataMapItem.fromDataItem(dataItem).getDataMap();
             if (event.getType() == DataEvent.TYPE_CHANGED) {
                 switch (dataItem.getUri().getPath()) {
-                    case "/image":
+                    case WearConstants.IMAGE:
                         Asset profileAsset = dataMap.getAsset("faceImage");
                         lastBitmap = currentBitmap;
                         currentBitmap = loadBitmapFromAsset(profileAsset);
@@ -113,39 +115,45 @@ public class EventListenerService extends WearableListenerService {
                             Log.i(TAG, "Bitmap received");
                         }
                         break;
-                    case "/settings":
-                        WearSettings.setTimeType(dataMap.getString("time_type", WearSettings.DIGITAL));
-                        WearSettings.setTimeOffset(dataMap.getLong("time_offset", 0));
-                        WearSettings.setUseTimePalette(dataMap.getBoolean("use_time_palette", false));
+                    case WearConstants.SETTINGS:
+                        WearSettings.setTimeType(dataMap.getString(WearConstants.TIME_TYPE,
+                                WearSettings.DIGITAL));
+                        WearSettings.setTimeOffset(dataMap.getLong(WearConstants.TIME_OFFSET, 0));
+                        WearSettings.setUseTimePalette(dataMap.getBoolean(WearConstants.USE_TIME_PALETTE,
+                                false));
 
-                        // Set analog settings
+                        WearSettings.setSeparatorText(dataMap.getString(WearConstants.SEPARATOR_TEXT,
+                                ":"));
+                        WearSettings.setSeparatorColor(dataMap.getInt(WearConstants.SEPARATOR_COLOR,
+                                0xFFFFFFFF));
+                        WearSettings.setSeparatorShadowColor(dataMap.getInt(WearConstants.
+                                        SEPARATOR_SHADOW_COLOR,
+                                0xFF000000));
+                        WearSettings.setHourColor(dataMap.getInt(WearConstants.HOUR_COLOR,
+                                0xFFFFFFFF));
+                        WearSettings.setHourShadowColor(dataMap.getInt(WearConstants.HOUR_SHADOW_COLOR,
+                                0xFF000000));
+                        WearSettings.setMinuteColor(dataMap.getInt(WearConstants.MINUTE_COLOR,
+                                0xFFFFFFFF));
+                        WearSettings.setMinuteShadowColor(dataMap.getInt(WearConstants.MINUTE_SHADOW_COLOR,
+                                0xFF000000));
+                        WearSettings.setSecondColor(dataMap.getInt(WearConstants.SECOND_COLOR,
+                                0xFFFFFFFF));
+                        WearSettings.setSecondShadowColor(dataMap.getInt(WearConstants.SECOND_SHADOW_COLOR,
+                                0xFF000000));
 
-                        WearSettings.setAnalogHourColor(dataMap.getInt("analog_hour_color", 0xFFFFFFFF));
-                        WearSettings.setAnalogHourShadowColor(dataMap.getInt("analog_hour_shadow_color", 0xFF000000));
-                        WearSettings.setAnalogMinuteColor(dataMap.getInt("analog_minute_color", 0xFFFFFFFF));
-                        WearSettings.setAnalogMinuteShadowColor(dataMap.getInt("analog_minute_shadow_color", 0xFF000000));
-                        WearSettings.setAnalogSecondColor(dataMap.getInt("analog_second_color", 0xFFFFFFFF));
-                        WearSettings.setAnalogSecondShadowColor(dataMap.getInt("analog_second_shadow_color", 0xFF000000));
+                        WearSettings.setHourLengthRatio(dataMap.getFloat(WearConstants.HOUR_LENGTH_RATIO,
+                                50f));
+                        WearSettings.setMinuteLengthRatio(dataMap.getFloat(WearConstants.
+                                        MINUTE_LENGTH_RATIO,
+                                66f));
+                        WearSettings.setSecondLengthRatio(dataMap.getFloat(WearConstants.
+                                        SECOND_LENGTH_RATIO,
+                                100f));
 
-                        WearSettings.setAnalogHourLength(dataMap.getFloat("analog_hour_length", 50f));
-                        WearSettings.setAnalogMinuteLength(dataMap.getFloat("analog_minute_length", 66f));
-                        WearSettings.setAnalogSecondLength(dataMap.getFloat("analog_second_length", 100f));
-
-                        WearSettings.setAnalogHourWidth(dataMap.getFloat("analog_hour_width", 5.0f));
-                        WearSettings.setAnalogMinuteWidth(dataMap.getFloat("analog_minute_width", 3.0f));
-                        WearSettings.setAnalogSecondWidth(dataMap.getFloat("analog_second_width", 2.0f));
-
-                        // Set digital settings
-
-                        WearSettings.setDigitalSeparatorText(dataMap.getString("digital_separator_text", ":"));
-                        WearSettings.setDigitalSeparatorColor(dataMap.getInt("digital_separator_color", 0xFFFFFFFF));
-                        WearSettings.setDigitalSeparatorShadowColor(dataMap.getInt("digital_separator_shadow_color", 0xFF000000));
-                        WearSettings.setDigitalHourColor(dataMap.getInt("digital_hour_color", 0xFFFFFFFF));
-                        WearSettings.setDigitalHourShadowColor(dataMap.getInt("digital_hour_shadow_color", 0xFF000000));
-                        WearSettings.setDigitalMinuteColor(dataMap.getInt("digital_minute_color", 0xFFFFFFFF));
-                        WearSettings.setDigitalMinuteShadowColor(dataMap.getInt("digital_minute_shadow_color", 0xFF000000));
-                        WearSettings.setDigitalSecondColor(dataMap.getInt("digital_second_color", 0xFFFFFFFF));
-                        WearSettings.setDigitalSecondShadowColor(dataMap.getInt("digital_second_shadow_color", 0xFF000000));
+                        WearSettings.setHourWidth(dataMap.getFloat(WearConstants.HOUR_WIDTH, 5.0f));
+                        WearSettings.setMinuteWidth(dataMap.getFloat(WearConstants.MINUTE_WIDTH, 3.0f));
+                        WearSettings.setSecondWidth(dataMap.getFloat(WearConstants.SECOND_WIDTH, 2.0f));
 
                         Intent intent = new Intent(LOAD_SETTINGS);
                         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(

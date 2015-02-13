@@ -77,6 +77,7 @@ import cw.kop.autobackground.OptionsListAdapter;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.RecyclerViewListClickListener;
 import cw.kop.autobackground.files.FileHandler;
+import cw.kop.autobackground.shared.WearConstants;
 
 public class WearSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, View.OnTouchListener, View.OnClickListener {
 
@@ -134,6 +135,9 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
     private Paint minutePaint;
     private Paint secondPaint;
 
+    private String[] options;
+    private String[] optionDescriptions;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -163,6 +167,9 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         secondPaint = new Paint();
         secondPaint.setStrokeCap(Paint.Cap.BUTT);
         secondPaint.setTextAlign(Paint.Align.LEFT);
+
+        options = getResources().getStringArray(R.array.wear_time_options);
+        optionDescriptions = getResources().getStringArray(R.array.wear_time_options_descriptions);
     }
 
     @Override
@@ -462,10 +469,10 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                     AppSettings.getSecondShadowColor());
         }
 
-        tickRadius = AppSettings.getTickLength();
-        hourRadius = AppSettings.getHourLength();
-        minuteRadius = AppSettings.getMinuteLength();
-        secondRadius = AppSettings.getSecondLength();
+        tickRadius = AppSettings.getTickLengthRatio();
+        hourRadius = AppSettings.getHourLengthRatio();
+        minuteRadius = AppSettings.getMinuteLengthRatio();
+        secondRadius = AppSettings.getSecondLengthRatio();
 
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
 
@@ -683,51 +690,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
         // Draw clock hands
 
-        // Draw shadows first to prevent outline overlapping other hands
-
-//        Path hourShadowPath = new Path();
-//        hourShadowPath.moveTo((float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(90f))),
-//                (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(90f))));
-//        hourShadowPath.quadTo(
-//                (float) (centerX - (hourWidth / 1.5f) * Math.cos(Math.toRadians(0f))),
-//                (float) (centerY - (hourWidth / 1.5f) * Math.sin(Math.toRadians(0f))),
-//                (float) (centerX + hourWidth / 1.5f * Math.cos(Math.toRadians(270f))),
-//                (float) (centerY + hourWidth / 1.5f * Math.sin(Math.toRadians(270f))));
-//        hourShadowPath.lineTo((float) (centerX + (radius * hourRadius / 100f + 2.0f) * Math.cos(Math.toRadians(0f))),
-//                (float) (centerY + (radius * hourRadius / 100f + 2.0f) * Math.sin(Math.toRadians(0f))));
-//        hourShadowPath.close();
-//        canvas.drawPath(hourShadowPath, hourShadowPaint);
-//
-//        Path minuteShadowPath = new Path();
-//        minuteShadowPath.moveTo((float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(0f))),
-//                (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(0f))));
-//        minuteShadowPath.quadTo(
-//                (float) (centerX - (minuteWidth / 1.5f) * Math.cos(Math.toRadians(-180f))),
-//                (float) (centerY - (minuteWidth / 1.5f) * Math.sin(Math.toRadians(-180f))),
-//                (float) (centerX + minuteWidth / 1.5f * Math.cos(Math.toRadians(90f))),
-//                (float) (centerY + minuteWidth / 1.5f * Math.sin(Math.toRadians(90f))));
-//        minuteShadowPath.lineTo((float) (centerX + (radius * minuteRadius / 100f + 2.0f) * Math.cos(Math.toRadians(-90f))),
-//                (float) (centerY + (radius * minuteRadius / 100f + 2.0f) * Math.sin(Math.toRadians(-90f))));
-//        minuteShadowPath.close();
-//        canvas.drawPath(minuteShadowPath, minuteShadowPaint);
-//
-//        Path secondShadowPath = new Path();
-//        secondShadowPath.moveTo((float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(225f))),
-//                (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(225f))));
-//        secondShadowPath.quadTo(
-//                (float) (centerX - (secondWidth / 1.5f) * Math.cos(Math.toRadians(45f))),
-//                (float) (centerY - (secondWidth / 1.5f) * Math.sin(Math.toRadians(45f))),
-//                (float) (centerX + secondWidth / 1.5f * Math.cos(Math.toRadians(315f))),
-//                (float) (centerY + secondWidth / 1.5f * Math.sin(Math.toRadians(315f))));
-//        secondShadowPath.lineTo((float) (centerX + (radius * secondRadius / 100f + 2f) * Math.cos(Math.toRadians(
-//                        135f))),
-//                (float) (centerY + (radius * secondRadius / 100f + 2.0f) * Math.sin(Math.toRadians(
-//                        135f))));
-//        secondShadowPath.close();
-//        canvas.drawPath(secondShadowPath, secondShadowPaint);
-
-        // Now draw actual hands
-
         Path hourPath = new Path();
         hourPath.moveTo((float) (centerX + hourWidth / 2f * Math.cos(Math.toRadians(90f))),
                 (float) (centerY + hourWidth / 2f * Math.sin(Math.toRadians(90f))));
@@ -789,52 +751,40 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         new Thread(new Runnable() {
             @Override
             public void run() {
-                PutDataMapRequest dataMap = PutDataMapRequest.create("/settings");
-                dataMap.getDataMap().putString("time_type", AppSettings.getTimeType());
-                dataMap.getDataMap().putLong("time_offset", AppSettings.getTimeOffset());
-                dataMap.getDataMap().putBoolean("use_time_palette", AppSettings.useTimePalette());
-                dataMap.getDataMap().putLong("time", new Date().getTime());
-                dataMap.getDataMap().putInt("analog_hour_color",
-                        AppSettings.getHourColor());
-                dataMap.getDataMap().putInt("analog_hour_shadow_color",
-                        AppSettings.getHourShadowColor());
-                dataMap.getDataMap().putInt("analog_minute_color",
-                        AppSettings.getMinuteColor());
-                dataMap.getDataMap().putInt("analog_minute_shadow_color",
-                        AppSettings.getMinuteShadowColor());
-                dataMap.getDataMap().putInt("analog_second_color",
-                        AppSettings.getSecondColor());
-                dataMap.getDataMap().putInt("analog_second_shadow_color",
-                        AppSettings.getSecondShadowColor());
-                dataMap.getDataMap().putFloat("analog_hour_length", AppSettings.getHourLength());
-                dataMap.getDataMap().putFloat("analog_minute_length", AppSettings.getMinuteLength());
-                dataMap.getDataMap().putFloat("analog_second_length", AppSettings.getSecondLength());
-                dataMap.getDataMap().putFloat("analog_hour_width", AppSettings.getHourWidth());
-                dataMap.getDataMap().putFloat("analog_minute_width", AppSettings.getMinuteWidth());
-                dataMap.getDataMap().putFloat("analog_second_width", AppSettings.getSecondWidth());
+                PutDataMapRequest dataMap = PutDataMapRequest.create(WearConstants.SETTINGS);
+                dataMap.getDataMap().putLong(WearConstants.TIME, new Date().getTime());
+                dataMap.getDataMap().putString(WearConstants.TIME_TYPE, AppSettings.getTimeType());
+                dataMap.getDataMap().putLong(WearConstants.TIME_OFFSET, AppSettings.getTimeOffset());
+                dataMap.getDataMap().putBoolean(WearConstants.USE_TIME_PALETTE,
+                        AppSettings.useTimePalette());
 
-
-                dataMap.getDataMap().putString("digital_separator_text",
+                dataMap.getDataMap().putString(WearConstants.SEPARATOR_TEXT,
                         AppSettings.getSeparatorText());
-                dataMap.getDataMap().putInt("digital_separator_color",
+                dataMap.getDataMap().putInt(WearConstants.SEPARATOR_COLOR,
                         AppSettings.getSeparatorColor());
-                dataMap.getDataMap().putInt("digital_separator_shadow_color",
+                dataMap.getDataMap().putInt(WearConstants.SEPARATOR_SHADOW_COLOR,
                         AppSettings.getSeparatorShadowColor());
-                dataMap.getDataMap().putInt("digital_hour_color",
+                dataMap.getDataMap().putInt(WearConstants.HOUR_COLOR,
                         AppSettings.getHourColor());
-                dataMap.getDataMap().putInt("digital_hour_shadow_color",
+                dataMap.getDataMap().putInt(WearConstants.HOUR_SHADOW_COLOR,
                         AppSettings.getHourShadowColor());
-                dataMap.getDataMap().putInt("digital_minute_color",
+                dataMap.getDataMap().putInt(WearConstants.MINUTE_COLOR,
                         AppSettings.getMinuteColor());
-                dataMap.getDataMap().putInt("digital_minute_shadow_color",
+                dataMap.getDataMap().putInt(WearConstants.MINUTE_SHADOW_COLOR,
                         AppSettings.getMinuteShadowColor());
-                dataMap.getDataMap().putInt("digital_second_color",
+                dataMap.getDataMap().putInt(WearConstants.SECOND_COLOR,
                         AppSettings.getSecondColor());
-                dataMap.getDataMap().putInt("digital_second_shadow_color",
+                dataMap.getDataMap().putInt(WearConstants.SECOND_SHADOW_COLOR,
                         AppSettings.getSecondShadowColor());
+
+                dataMap.getDataMap().putFloat(WearConstants.HOUR_LENGTH_RATIO, AppSettings.getHourLengthRatio());
+                dataMap.getDataMap().putFloat(WearConstants.MINUTE_LENGTH_RATIO, AppSettings.getMinuteLengthRatio());
+                dataMap.getDataMap().putFloat(WearConstants.SECOND_LENGTH_RATIO, AppSettings.getSecondLengthRatio());
+                dataMap.getDataMap().putFloat(WearConstants.HOUR_WIDTH, AppSettings.getHourWidth());
+                dataMap.getDataMap().putFloat(WearConstants.MINUTE_WIDTH, AppSettings.getMinuteWidth());
+                dataMap.getDataMap().putFloat(WearConstants.SECOND_WIDTH, AppSettings.getSecondWidth());
 
                 Wearable.DataApi.putDataItem(googleApiClient, dataMap.asPutDataRequest());
-                Log.i(TAG, "syncSettings");
             }
         }).start();
 
@@ -847,42 +797,36 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
             float x = event.getX();
             float y = event.getY();
 
-            Log.i(TAG, "X touch: " + x);
-            Log.i(TAG, "Y touch: " + y);
-
             if (AppSettings.getTimeType().equals(AppSettings.DIGITAL)) {
 
                 float hourWidth = hourPaint.measureText("00");
                 float minuteWidth = minutePaint.measureText("00");
 
-                Log.i(TAG, "hourWidth: " + hourWidth);
-                Log.i(TAG, "minuteWidth: " + minuteWidth);
-
                 if (y > sideLength / 2) {
-                    showIndicatorOptions();
+                    showIndicatorOptions("Separator", 3);
                 }
                 else if (xOffset < x && x < xOffset + hourWidth) {
-                    showAnalogHourOptions();
+                    showHourOptions(2);
                 }
                 else if (xOffset + hourWidth + separatorWidth < x & x < xOffset + hourWidth + separatorWidth + minuteWidth) {
-                    showAnalogMinuteOptions();
+                    showMinuteOptions(2);
                 }
                 else if (xOffset + hourWidth + separatorWidth + minuteWidth + separatorWidth< x) {
-                    showAnalogSecondOptions();
+                    showSecondOptions(2);
                 }
                 else {
-                    showIndicatorOptions();
+                    showIndicatorOptions("Separator", 3);
                 }
             }
             else {
                 if (y < sideLength / 2 && x < sideLength - y) {
-                    showAnalogMinuteOptions();
+                    showMinuteOptions(4);
                 }
                 else if (x > sideLength / 2) {
-                    showAnalogHourOptions();
+                    showHourOptions(4);
                 }
                 else {
-                    showAnalogSecondOptions();
+                    showSecondOptions(4);
                 }
             }
 
@@ -894,20 +838,22 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         return false;
     }
 
-    private void showIndicatorOptions() {
+    private void showIndicatorOptions(String text, int numToShow) {
 
-        // TODO: Change separator text to analog/digital specific String
-
-        String[] titles = new String[] {"Separator", "Separator Color",
-                "Separator Shadow Color"};
-        String[] summaries = new String[] {"Text to separate time sections", "Color of separator", "Color of separator shadow"};
-        int[] icons = new int[] {R.drawable.ic_text_format_white_24dp, R.drawable.ic_color_lens_white_24dp,
+        String[] titles = new String[] {"TYPE Color",
+                "TYPE Shadow Color",
+                "TYPE"};
+        String[] summaries = new String[] {"Color of TYPE",
+                "Color of TYPE shadow",
+                "Text to separate time sections"};
+        int[] icons = new int[] {R.drawable.ic_text_format_white_24dp,
+                R.drawable.ic_color_lens_white_24dp,
                 R.drawable.ic_color_lens_white_24dp};
         ArrayList<OptionData> optionsList = new ArrayList<>();
 
-        for (int index = 0; index < titles.length; index++) {
-            optionsList.add(new OptionData(titles[index],
-                    summaries[index],
+        for (int index = 0; index < numToShow; index++) {
+            optionsList.add(new OptionData(titles[index].replaceAll("TYPE", text),
+                    summaries[index].replaceAll("TYPE", text.toLowerCase()),
                     icons[index]));
         }
 
@@ -978,27 +924,14 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         recyclerView.setAdapter(titlesAdapter);
     }
 
-    private void showAnalogMinuteOptions() {
-
-
-        String[] titles = new String[] {"Minute Color",
-                "Minute Shadow Color",
-                "Minute Hand Length",
-                "Minute Hand Width"};
-        String[] summaries = new String[] {"Color of hand", "Color of hand shadow",
-                "Hand length",
-                "Hand Width"};
-        int[] icons = new int[] {R.drawable.ic_color_lens_white_24dp,
-                R.drawable.ic_color_lens_white_24dp,
-                R.drawable.ic_color_lens_white_24dp,
-                R.drawable.ic_color_lens_white_24dp};
+    private void showMinuteOptions(int numToShow) {
 
         ArrayList<OptionData> optionsList = new ArrayList<>();
 
-        for (int index = 0; index < titles.length; index++) {
-            optionsList.add(new OptionData(titles[index],
-                    summaries[index],
-                    icons[index]));
+        for (int index = 0; index < numToShow; index++) {
+            optionsList.add(new OptionData(options[index].replaceAll("TYPE", "Minute"),
+                    optionDescriptions[index].replaceAll("TYPE", "Minute"),
+                    R.drawable.ic_color_lens_white_24dp));
         }
 
         RecyclerViewListClickListener listener = new RecyclerViewListClickListener() {
@@ -1053,13 +986,13 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
                             @Override
                             public void onClickRight(View v) {
-                                AppSettings.setMinuteLength(getValue() / 10f);
+                                AppSettings.setMinuteLengthRatio(getValue() / 10f);
                                 redraw();
                                 this.dismissDialog();
                             }
                         };
 
-                        DialogFactory.showSeekBarDialog(appContext, "Minute hand length", "% of radius", minuteLengthDialogListener, 1000, Math.round(AppSettings.getMinuteLength() * 10f), -1, R.string.cancel_button, R.string.ok_button);
+                        DialogFactory.showSeekBarDialog(appContext, "Minute hand length", "% of radius", minuteLengthDialogListener, 1000, Math.round(AppSettings.getMinuteLengthRatio() * 10f), -1, R.string.cancel_button, R.string.ok_button);
                         break;
                     case 3:
                         DialogFactory.SeekBarDialogListener minuteWidthDialogListener = new DialogFactory.SeekBarDialogListener() {
@@ -1093,27 +1026,14 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         recyclerView.setAdapter(titlesAdapter);
     }
 
-    private void showAnalogHourOptions() {
-
-
-        String[] titles = new String[] {"Hour Color",
-                "Hour Shadow Color",
-                "Hour Hand Length",
-                "Hour Hand Width"};
-        String[] summaries = new String[] {"Color of hand", "Color of hand shadow",
-                "Hand length",
-                "Hand Width"};
-        int[] icons = new int[] {R.drawable.ic_color_lens_white_24dp,
-                R.drawable.ic_color_lens_white_24dp,
-                R.drawable.ic_color_lens_white_24dp,
-                R.drawable.ic_color_lens_white_24dp};
+    private void showHourOptions(int numToShow) {
 
         ArrayList<OptionData> optionsList = new ArrayList<>();
 
-        for (int index = 0; index < titles.length; index++) {
-            optionsList.add(new OptionData(titles[index],
-                    summaries[index],
-                    icons[index]));
+        for (int index = 0; index < numToShow; index++) {
+            optionsList.add(new OptionData(options[index].replaceAll("TYPE", "Hour"),
+                    optionDescriptions[index].replaceAll("TYPE", "Hour"),
+                    R.drawable.ic_color_lens_white_24dp));
         }
 
         RecyclerViewListClickListener listener = new RecyclerViewListClickListener() {
@@ -1168,13 +1088,13 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
                             @Override
                             public void onClickRight(View v) {
-                                AppSettings.setHourLength(getValue() / 10f);
+                                AppSettings.setHourLengthRatio(getValue() / 10f);
                                 redraw();
                                 this.dismissDialog();
                             }
                         };
 
-                        DialogFactory.showSeekBarDialog(appContext, "Hour hand length", "% of radius", hourLengthDialogListener, 1000, Math.round(AppSettings.getHourLength() * 10f), -1, R.string.cancel_button, R.string.ok_button);
+                        DialogFactory.showSeekBarDialog(appContext, "Hour hand length", "% of radius", hourLengthDialogListener, 1000, Math.round(AppSettings.getHourLengthRatio() * 10f), -1, R.string.cancel_button, R.string.ok_button);
                         break;
                     case 3:
                         DialogFactory.SeekBarDialogListener hourWidthDialogListener = new DialogFactory.SeekBarDialogListener() {
@@ -1208,27 +1128,14 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         recyclerView.setAdapter(titlesAdapter);
     }
 
-    private void showAnalogSecondOptions() {
-
-
-        String[] titles = new String[] {"Second Color",
-                "Second Shadow Color",
-                "Second Hand Length",
-                "Second Hand Width"};
-        String[] summaries = new String[] {"Color of hand", "Color of hand shadow",
-                "Hand length",
-                "Hand Width"};
-        int[] icons = new int[] {R.drawable.ic_color_lens_white_24dp,
-                R.drawable.ic_color_lens_white_24dp,
-                R.drawable.ic_color_lens_white_24dp,
-                R.drawable.ic_color_lens_white_24dp};
+    private void showSecondOptions(int numToShow) {
 
         ArrayList<OptionData> optionsList = new ArrayList<>();
 
-        for (int index = 0; index < titles.length; index++) {
-            optionsList.add(new OptionData(titles[index],
-                    summaries[index],
-                    icons[index]));
+        for (int index = 0; index < numToShow; index++) {
+            optionsList.add(new OptionData(options[index].replaceAll("TYPE", "Second"),
+                    optionDescriptions[index].replaceAll("TYPE", "Second"),
+                    R.drawable.ic_color_lens_white_24dp));
         }
 
         RecyclerViewListClickListener listener = new RecyclerViewListClickListener() {
@@ -1283,13 +1190,13 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
                             @Override
                             public void onClickRight(View v) {
-                                AppSettings.setSecondLength(getValue() / 10f);
+                                AppSettings.setSecondLengthRatio(getValue() / 10f);
                                 redraw();
                                 this.dismissDialog();
                             }
                         };
 
-                        DialogFactory.showSeekBarDialog(appContext, "Second hand length", "% of radius", secondLengthDialogListener, 1000, Math.round(AppSettings.getSecondLength() * 10f), -1, R.string.cancel_button, R.string.ok_button);
+                        DialogFactory.showSeekBarDialog(appContext, "Second hand length", "% of radius", secondLengthDialogListener, 1000, Math.round(AppSettings.getSecondLengthRatio() * 10f), -1, R.string.cancel_button, R.string.ok_button);
                         break;
                     case 3:
                         DialogFactory.SeekBarDialogListener secondWidthDialogListener = new DialogFactory.SeekBarDialogListener() {

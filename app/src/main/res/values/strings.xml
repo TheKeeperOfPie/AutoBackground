@@ -441,38 +441,18 @@
         <item>Show nothing</item>
     </string-array>
 
-    <string-array name="wear_time_digital_options">
-        <item>Type</item>
-        <item>Color</item>
-        <item>Shadow Color</item>
-        <item>Size</item>
+    <string-array name="wear_time_options">
+        <item>TYPE Color</item>
+        <item>TYPE Shadow Color</item>
+        <item>TYPE Hand Length</item>
+        <item>TYPE Hand Width</item>
     </string-array>
 
-    <string-array name="wear_time_digital_options_descriptions">
-        <item>Digital or analog</item>
-        <item>Color of time display</item>>
-        <item>Color of time text shadow</item>
-        <item>Size of time display</item>
-    </string-array>
-
-    <string-array name="wear_time_analog_options">
-        <item>Type</item>
-        <item>Hour Color</item>
-        <item>Hour Shadow Color</item>
-        <item>Minute Color</item>
-        <item>Minute Shadow Color</item>
-        <item>Second Color</item>
-        <item>Second Shadow Color</item>
-    </string-array>
-
-    <string-array name="wear_time_analog_options_descriptions">
-        <item>Digital or analog</item>
-        <item>Color of hour hand</item>
-        <item>Color of hour hand shadow</item>
-        <item>Color of minute hand</item>
-        <item>Color of minute hand shadow</item>
-        <item>Color of second hand</item>
-        <item>Color of second hand shadow</item>
+    <string-array name="wear_time_options_descriptions">
+        <item>Color of TYPE</item>>
+        <item>Color of TYPE shadow</item>
+        <item>Hand length</item>
+        <item>Hand width</item>
     </string-array>
 
     <string-array name="wear_time_types">

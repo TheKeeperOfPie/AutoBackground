@@ -38,23 +38,9 @@
 
         <cw.kop.autobackground.CustomSwitchPreference
             android:defaultValue="true"
-            android:key="fill_images"
-            android:summary="@string/fill_images_description"
-            android:title="@string/fill_images"
-            />
-
-        <cw.kop.autobackground.CustomSwitchPreference
-            android:defaultValue="true"
             android:key="shuffle_images"
             android:summary="@string/shuffle_images_description"
             android:title="@string/shuffle_images"
-            />
-
-        <cw.kop.autobackground.CustomSwitchPreference
-            android:defaultValue="true"
-            android:key="scale_images"
-            android:summary="@string/scale_images_description"
-            android:title="@string/scale_images"
             />
 
     </PreferenceCategory>

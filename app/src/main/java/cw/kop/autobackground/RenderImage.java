@@ -654,7 +654,7 @@ public class RenderImage {
         float minScaleFactor;
         float scaledRenderHeight = renderScreenHeight * (maxRatioY - minRatioY);
 
-        if (AppSettings.extendScale() || !AppSettings.fillImages()) {
+        if (AppSettings.extendScale()) {
 
             if (renderScreenWidth / bitmapWidth > scaledRenderHeight / bitmapHeight) {
                 minScaleFactor = scaledRenderHeight / bitmapHeight;
@@ -688,47 +688,23 @@ public class RenderImage {
 
     private void calculateBounds() {
 
-        if (AppSettings.fillImages()) {
+        if (offsetX < (-bitmapWidth + renderScreenWidth / scaleFactor)) {
+            animationModifierX = Math.abs(animationModifierX);
+            offsetX = -bitmapWidth + renderScreenWidth / scaleFactor;
 
-            if (offsetX < (-bitmapWidth + renderScreenWidth / scaleFactor)) {
-                animationModifierX = Math.abs(animationModifierX);
-                offsetX = -bitmapWidth + renderScreenWidth / scaleFactor;
-
-            }
-            else if (offsetX > 0f) {
-                animationModifierX = -Math.abs(animationModifierX);
-                offsetX = 0f;
-            }
-
-            if (offsetY < (maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight)) {
-                animationModifierY = Math.abs(animationModifierY);
-                offsetY = maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight;
-            }
-            else if (offsetY > minRatioY * renderScreenHeight / scaleFactor) {
-                animationModifierY = -Math.abs(animationModifierY);
-                offsetY = minRatioY * renderScreenHeight / scaleFactor;
-            }
         }
-        else {
+        else if (offsetX > 0f) {
+            animationModifierX = -Math.abs(animationModifierX);
+            offsetX = 0f;
+        }
 
-            if (offsetX > (-bitmapWidth + renderScreenWidth / scaleFactor)) {
-                animationModifierX = Math.abs(animationModifierX);
-                offsetX = -bitmapWidth + renderScreenWidth / scaleFactor;
-
-            }
-            else if (offsetX < 0f) {
-                animationModifierX = -Math.abs(animationModifierX);
-                offsetX = 0f;
-            }
-
-            if (offsetY > (maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight)) {
-                animationModifierY = Math.abs(animationModifierY);
-                offsetY = maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight;
-            }
-            else if (offsetY < minRatioY * renderScreenHeight / scaleFactor) {
-                animationModifierY = -Math.abs(animationModifierY);
-                offsetY = minRatioY * renderScreenHeight / scaleFactor;
-            }
+        if (offsetY < (maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight)) {
+            animationModifierY = Math.abs(animationModifierY);
+            offsetY = maxRatioY * renderScreenHeight / scaleFactor - bitmapHeight;
+        }
+        else if (offsetY > minRatioY * renderScreenHeight / scaleFactor) {
+            animationModifierY = -Math.abs(animationModifierY);
+            offsetY = minRatioY * renderScreenHeight / scaleFactor;
         }
     }
 

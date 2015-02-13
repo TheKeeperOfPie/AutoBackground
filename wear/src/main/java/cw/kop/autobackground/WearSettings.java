@@ -18,6 +18,8 @@ package cw.kop.autobackground;
 
 import android.content.SharedPreferences;
 
+import cw.kop.autobackground.shared.WearConstants;
+
 /**
  * Created by TheKeeperOfPie on 12/11/2014.
  */
@@ -41,214 +43,164 @@ public class WearSettings {
         return prefs.getBoolean("first_run_wear", true);
     }
 
-    public static void setTimeType(String type) {
-        prefs.edit().putString("time_type", type).commit();
-    }
-
-    public static String getTimeType() {
-        return prefs.getString("time_type", DIGITAL);
-    }
-
     public static void setUseTimePalette(boolean use) {
         prefs.edit().putBoolean("use_time_palette", use).commit();
     }
 
+    public static void setTimeType(String type) {
+        prefs.edit().putString(WearConstants.TIME_TYPE, type).apply();
+    }
+
+    public static String getTimeType() {
+        return prefs.getString(WearConstants.TIME_TYPE, DIGITAL);
+    }
+
     public static boolean useTimePalette() {
-        return prefs.getBoolean("use_time_palette", false);
+        return prefs.getBoolean(WearConstants.USE_TIME_PALETTE, false);
     }
 
     public static void setTimeOffset(long offset) {
-        prefs.edit().putLong("time_offset", offset).commit();
+        prefs.edit().putLong(WearConstants.TIME_OFFSET, offset).commit();
     }
 
     public static long getTimeOffset() {
-        return prefs.getLong("time_offset", 0);
-    }
-
-    public static void setTimeColor(int color) {
-        prefs.edit().putInt("time_color", color).commit();
-    }
-
-    public static int getTimeColor() {
-        return prefs.getInt("time_color", 0xFFFFFFFF);
-    }
-
-    public static void setTimeShadowColor(int color) {
-        prefs.edit().putInt("time_shadow_color", color).commit();
-    }
-
-    public static int getTimeShadowColor() {
-        return prefs.getInt("time_shadow_color", 0xFF000000);
-    }
-
-    public static void setTimeSize(float size) {
-        prefs.edit().putFloat("time_size", size).commit();
-    }
-
-    public static float getTimeSize() {
-        return prefs.getFloat("time_size", 24);
+        return prefs.getLong(WearConstants.TIME_OFFSET, 0);
     }
 
     public static void setTickWidth(float width) {
-        prefs.edit().putFloat("wear_tick_width", width).commit();
+        prefs.edit().putFloat(WearConstants.TICK_WIDTH, width).commit();
     }
 
     public static float getTickWidth() {
-        return prefs.getFloat("wear_tick_width", 5.0f);
+        return prefs.getFloat(WearConstants.TICK_WIDTH, 5.0f);
     }
 
     public static void setHourWidth(float width) {
-        prefs.edit().putFloat("wear_hour_width", width).commit();
+        prefs.edit().putFloat(WearConstants.HOUR_WIDTH, width).commit();
     }
 
     public static float getHourWidth() {
-        return prefs.getFloat("wear_hour_width", 5.0f);
+        return prefs.getFloat(WearConstants.HOUR_WIDTH, 5.0f);
     }
 
     public static void setMinuteWidth(float width) {
-        prefs.edit().putFloat("wear_minute_width", width).commit();
+        prefs.edit().putFloat(WearConstants.MINUTE_WIDTH, width).commit();
     }
 
     public static float getMinuteWidth() {
-        return prefs.getFloat("wear_minute_width", 3.0f);
+        return prefs.getFloat(WearConstants.MINUTE_WIDTH, 3.0f);
     }
 
     public static void setSecondWidth(float width) {
-        prefs.edit().putFloat("wear_second_width", width).commit();
+        prefs.edit().putFloat(WearConstants.SECOND_WIDTH, width).commit();
     }
 
     public static float getSecondWidth() {
-        return prefs.getFloat("wear_second_width", 2.0f);
+        return prefs.getFloat(WearConstants.SECOND_WIDTH, 2.0f);
     }
 
-    public static void setTickLength(float length) {
-        prefs.edit().putFloat("wear_tick_length", length).commit();
+    public static void setTickLengthRatio(float length) {
+        prefs.edit().putFloat(WearConstants.TICK_LENGTH_RATIO, length).commit();
     }
 
-    public static float getTickLength() {
-        return prefs.getFloat("wear_tick_length", 80f);
+    public static float getTickLengthRatio() {
+        return prefs.getFloat(WearConstants.TICK_LENGTH_RATIO, 80f);
     }
 
-    public static void setHourLength(float length) {
-        prefs.edit().putFloat("wear_hour_length", length).commit();
+    public static void setHourLengthRatio(float length) {
+        prefs.edit().putFloat(WearConstants.HOUR_LENGTH_RATIO, length).commit();
     }
 
-    public static float getHourLength() {
-        return prefs.getFloat("wear_hour_length", 50f);
+    public static float getHourLengthRatio() {
+        return prefs.getFloat(WearConstants.HOUR_LENGTH_RATIO, 50f);
     }
 
-    public static void setMinuteLength(float length) {
-        prefs.edit().putFloat("wear_minute_length", length).commit();
+    public static void setMinuteLengthRatio(float length) {
+        prefs.edit().putFloat(WearConstants.MINUTE_LENGTH_RATIO, length).commit();
     }
 
-    public static float getMinuteLength() {
-        return prefs.getFloat("wear_minute_length", 66f);
+    public static float getMinuteLengthRatio() {
+        return prefs.getFloat(WearConstants.MINUTE_LENGTH_RATIO, 66f);
     }
 
-    public static void setSecondLength(float length) {
-        prefs.edit().putFloat("wear_second_length", length).commit();
+    public static void setSecondLengthRatio(float length) {
+        prefs.edit().putFloat(WearConstants.SECOND_LENGTH_RATIO, length).commit();
     }
 
-    public static float getSecondLength() {
-        return prefs.getFloat("wear_second_length", 100f);
+    public static float getSecondLengthRatio() {
+        return prefs.getFloat(WearConstants.SECOND_LENGTH_RATIO, 100f);
     }
-
-    // Wear time settings
 
     public static void setSeparatorText(String text) {
-        prefs.edit().putString("wear_separator_text", text).commit();
+        prefs.edit().putString(WearConstants.SEPARATOR_TEXT, text).commit();
     }
 
     public static String getSeparatorText() {
-        return prefs.getString("wear_separator_text", ":");
+        return prefs.getString(WearConstants.SEPARATOR_TEXT, ":");
     }
 
     public static void setSeparatorColor(int color) {
-        prefs.edit().putInt("digital_separator_color", color).commit();
+        prefs.edit().putInt(WearConstants.SEPARATOR_COLOR, color).commit();
     }
 
     public static int getSeparatorColor() {
-        return prefs.getInt("wear_separator_color", 0xFFFFFFFF);
+        return prefs.getInt(WearConstants.SEPARATOR_COLOR, 0xFFFFFFFF);
     }
 
     public static void setSeparatorShadowColor(int color) {
-        prefs.edit().putInt("wear_separator_shadow_color", color).commit();
+        prefs.edit().putInt(WearConstants.SEPARATOR_SHADOW_COLOR, color).commit();
     }
 
     public static int getSeparatorShadowColor() {
-        return prefs.getInt("wear_separator_shadow_color", 0xFF000000);
+        return prefs.getInt(WearConstants.SEPARATOR_SHADOW_COLOR, 0xFF000000);
     }
 
     public static void setHourColor(int color) {
-        prefs.edit().putInt("wear_hour_color", color).commit();
+        prefs.edit().putInt(WearConstants.HOUR_COLOR, color).commit();
     }
 
     public static int getHourColor() {
-        return prefs.getInt("wear_hour_color", 0xFFFFFFFF);
+        return prefs.getInt(WearConstants.HOUR_COLOR, 0xFFFFFFFF);
     }
 
     public static void setHourShadowColor(int color) {
-        prefs.edit().putInt("wear_hour_shadow_color", color).commit();
+        prefs.edit().putInt(WearConstants.HOUR_SHADOW_COLOR, color).commit();
     }
 
     public static int getHourShadowColor() {
-        return prefs.getInt("wear_hour_shadow_color", 0xFF000000);
+        return prefs.getInt(WearConstants.HOUR_SHADOW_COLOR, 0xFF000000);
     }
 
     public static void setMinuteColor(int color) {
-        prefs.edit().putInt("wear_minute_color", color).commit();
+        prefs.edit().putInt(WearConstants.MINUTE_COLOR, color).commit();
     }
 
     public static int getMinuteColor() {
-        return prefs.getInt("wear_minute_color", 0xFFFFFFFF);
+        return prefs.getInt(WearConstants.MINUTE_COLOR, 0xFFFFFFFF);
     }
 
     public static void setMinuteShadowColor(int color) {
-        prefs.edit().putInt("wear_minute_shadow_color", color).commit();
+        prefs.edit().putInt(WearConstants.MINUTE_SHADOW_COLOR, color).commit();
     }
 
     public static int getMinuteShadowColor() {
-        return prefs.getInt("wear_minute_shadow_color", 0xFF000000);
+        return prefs.getInt(WearConstants.MINUTE_SHADOW_COLOR, 0xFF000000);
     }
 
     public static void setSecondColor(int color) {
-        prefs.edit().putInt("wear_second_color", color).commit();
+        prefs.edit().putInt(WearConstants.SECOND_COLOR, color).commit();
     }
 
     public static int getSecondColor() {
-        return prefs.getInt("wear_second_color", 0xFFFFFFFF);
+        return prefs.getInt(WearConstants.SECOND_COLOR, 0xFFFFFFFF);
     }
 
     public static void setSecondShadowColor(int color) {
-        prefs.edit().putInt("wear_second_shadow_color", color).commit();
+        prefs.edit().putInt(WearConstants.SECOND_SHADOW_COLOR, color).commit();
     }
 
     public static int getSecondShadowColor() {
-        return prefs.getInt("wear_second_shadow_color", 0xFF000000);
-    }
-
-    public static void setDigitalHourSize(float size) {
-        prefs.edit().putFloat("digital_hour_size", size).commit();
-    }
-
-    public static float getDigitalHourSize() {
-        return prefs.getFloat("digital_hour_size", 50f);
-    }
-
-    public static void setDigitalMinuteSize(float size) {
-        prefs.edit().putFloat("digital_minute_size", size).commit();
-    }
-
-    public static float getDigitalMinuteSize() {
-        return prefs.getFloat("digital_minute_size", 66f);
-    }
-
-    public static void setDigitalSecondSize(float size) {
-        prefs.edit().putFloat("digital_second_size", size).commit();
-    }
-
-    public static float getDigitalSecondSize() {
-        return prefs.getFloat("digital_second_size", 100f);
+        return prefs.getInt(WearConstants.SECOND_SHADOW_COLOR, 0xFF000000);
     }
 
 }
