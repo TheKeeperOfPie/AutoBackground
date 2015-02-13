@@ -374,10 +374,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         if (!AppSettings.useAdvanced()) {
             PreferenceCategory wallpaperPreferences = (PreferenceCategory) findPreference(
                     "title_wallpaper_settings");
-
-            wallpaperPreferences.removePreference(findPreference("fill_images"));
             wallpaperPreferences.removePreference(findPreference("preserve_context"));
-            wallpaperPreferences.removePreference(findPreference("scale_images"));
 
             PreferenceCategory intervalPreferences = (PreferenceCategory) findPreference(
                     "title_interval_settings");
