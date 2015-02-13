@@ -1,3 +1,5 @@
+![](/app/src/main/res/drawable-xxhdpi/app_icon.png)
+
 AutoBackground
 ==============
 
@@ -13,46 +15,44 @@ Explanation of Settings
 Sources
 --------------
 
-- Title: Name for source entry, used to name folder and downloaded images, editing causes folder/files to be renamed and the duplicate URL set to be cleared
-- URL/data: URL to download images at, uses Jsoup to connect (which means currently no JS generated webpage support)
-- Number of images: Number of images to download from website, or shows the number of images found in a folder when added
+- Title: Name for source entry, used to name folder and downloaded images, editing causes folder/files to be renamed
+- URL/data: Data representing where to get images, such as a URL or subreddit. Note that genetic websites are parsed with Jsoup, so it cannot fetch JavaScript generated links
+- Number of images: Number of images to download from this source, or displays the number of images found for a local source
 - Toggle On/Off: Determines whether a source is used for both downloading or to display images in the rotation
+- Preview: Whether or not to show a preview image of the source in the source list
+- Time Active: Time throughout a day when a source will be actively used in the displayable images list
 
 Wallpaper
 --------------
 
-- Fill Images:
-    - On: Attempts to fill screen width, cropping height as necessary
-    - Off: Attempts to fit image height into screen, letterboxing sides as necesssary
+- Preserve Context:
+    - On: Saves OpenGL EGL context to prevent redrawing the wallpaper when it comes back into view
+    - Off: Discards context on pause, clearing up more memory but requiring a decode and redraw when the wallpaper is visible again
+- Double Image:
+    - On: Shows two images at once, each taking up a constant half of the screen height
+    - Off: Shows a single full screen image
 - Shuffle Images:
-    - On: Causes Java Random.nextInt() to select a random image from a compiled list of all usable images in sources
+    - On: Selects a random image from a compiled list of all usable images in sources
     - Off: Rotates through images in order at time of cycle, does not check for adjustment of images by other processes
+- Scale Images:
+    - On: Will resize bitmaps to screen dimensions if they're too small or large, uses less memory
+    - Off: Assuming bitmap size is not larger than the max supported texture resolution, bitmaps will be loaded at their actual resolution
 
-- Update Interval:
-    - On: Cycles wallpaper to next image every amount of specified time, advanced allows minute by minute control
-    - Off: Will not cycle wallpaper, must be cycled manually or using change on return
+- Update Interval: Time between changing images, or to change on a return to the wallpaper
 - Force Interval:
-    - On: Will cause update timer to immediately change image, used when a screen with the wallpaper is constantly enabled and visible
-    - Off: Will cause update timer to update only on a return visibility change, to prevent using CPU cycles and RAM while user is in a different application
-- Change on Return:
-    - On: Causes wallpaper to update when returning from non-visibility, such as another opaque application
-    - Off: Will not update on return
-- Double Tap Gesture:
-    - On: Will cycle wallpaper on a double tap gesture on app or on wallpaper
-    - Off: Will not cycle on double tap
+    - On: Forces images to change
+    - Off: Waits until visibility change to cycle image
+- Reset On Cycle:
+    - On: Resets update interval when the image is cycled manually
+    - Off: Update timer will continue as normal when image is cycled
+- Change When Locked:
+    - On: Allows wallpaper to be changed on the lockscreen, does not wake device
+    - Off: Prevents wallpaper from being change on the lockscreen
 
-- Parallax Scroll:
-    - On: Internally forces wallpaper to scroll in opposite direction
-    - Off: Defaults to normal scroll dictated by launcher
-- Use Fade:
-    - On: Will cause a fade between images, done by overlapping two OpenGL textures with one texture increasing alpha and the other decreasing, upon finishing will delete old texture, does not animate while fading
-    - Off: Will not fade, uses a stark cut into the new image
-- Use Animation:
-    - On: Will use a pan animation bouncing back and forth, default 30 FPS animation
-    - Off: Will not animate
-- Animation Speed: Changes speed of animation by changing number of pixels in image skipped on each frame
-- Frame Rate: Changes how often the renderer will render a new frame, most devices are locked to 60 FPS
-- Animation Safety: Pixel buffer applied such that if (screenWidth + buffer < bitmapWidth), will not animate, default 50 pixels to prevent side to side stutter due to rapid direction change
+- Transition Speed: Amount of time transition takes between images
+- Fade:
+    - On: Fades image alphas during transition
+    - Off: New image will instantly replace old image
 
 Downloader
 --------------
