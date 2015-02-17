@@ -472,9 +472,9 @@
         <item>Size of date display</item>
     </string-array>
 
-    <string name="copy">Copy</string>
-    <string name="cycle">Cycle</string>
     <string name="delete">Delete</string>
+    <string name="view_images">View Images</string>
+    <string name="edit">Edit</string>
 
     <string-array name="fragment_titles">
         <item>Sources</item>

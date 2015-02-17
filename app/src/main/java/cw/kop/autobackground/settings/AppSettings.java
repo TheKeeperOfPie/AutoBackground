@@ -506,10 +506,6 @@ public class AppSettings {
         return prefs.getBoolean("preserve_context", true);
     }
 
-    public static boolean changeOnReturn() {
-        return prefs.getBoolean("on_return", true);
-    }
-
     public static boolean changeWhenLocked() {
         return prefs.getBoolean("when_locked", true);
     }

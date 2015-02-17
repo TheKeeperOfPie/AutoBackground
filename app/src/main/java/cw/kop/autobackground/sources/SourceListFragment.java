@@ -340,7 +340,23 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         };
 
         if (listAdapter == null) {
-            listAdapter = new SourceListAdapter(getActivity(), listener);
+            listAdapter = new SourceListAdapter(getActivity(), listener, new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    switch (v.getId()) {
+                        case R.id.source_delete_button:
+                            Toast.makeText(appContext, getString(R.string.delete), Toast.LENGTH_SHORT).show();
+                            return true;
+                        case R.id.source_view_image_button:
+                            Toast.makeText(appContext, getString(R.string.view_images), Toast.LENGTH_SHORT).show();
+                            return true;
+                        case R.id.source_edit_button:
+                            Toast.makeText(appContext, getString(R.string.edit), Toast.LENGTH_SHORT).show();
+                            return true;
+                    }
+                    return false;
+                }
+            });
             for (int index = 0; index < AppSettings.getNumberSources(); index++) {
 
                 Source source = AppSettings.getSource(index);

@@ -66,13 +66,15 @@ public class SourceListAdapter extends BaseAdapter {
     private LayoutInflater inflater = null;
     private CardClickListener cardClickListener;
     private boolean isRemoving = false;
+    private View.OnLongClickListener longClickListener;
 
-    public SourceListAdapter(Activity activity, CardClickListener listener) {
+    public SourceListAdapter(Activity activity, CardClickListener listener, View.OnLongClickListener longClickListener) {
         mainActivity = activity;
         listData = new ArrayList<>();
         titles = new HashSet<>();
         inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         cardClickListener = listener;
+        this.longClickListener = longClickListener;
     }
 
     @Override
@@ -122,6 +124,10 @@ public class SourceListAdapter extends BaseAdapter {
             sourceNum = (TextView) convertView.findViewById(R.id.source_num);
             sourceTime = (TextView) convertView.findViewById(R.id.source_time);
             sourceImage = (ImageView) convertView.findViewById(R.id.source_image);
+
+            deleteButton.setOnLongClickListener(longClickListener);
+            viewButton.setOnLongClickListener(longClickListener);
+            editButton.setOnLongClickListener(longClickListener);
 
             title.setClickable(false);
             convertView.setTag(new ViewHolder(cardView, title, imageOverlay, deleteButton, viewButton, editButton, sourceType, sourceData, sourceNum, sourceTime, sourceImage));

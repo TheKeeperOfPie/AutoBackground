@@ -31,8 +31,6 @@
         <item name="colorPrimary">@color/BLUE_OPAQUE</item>
         <item name="colorPrimaryDark">@color/DARK_BLUE_OPAQUE</item>
         <item name="colorAccent">@color/ACCENT_OPAQUE</item>
-        <!--<item name="android:statusBarColor">@color/DARK_BLUE_OPAQUE</item>-->
-        <!--<item name="navigationBarColor">@color/DARK_BLUE_OPAQUE</item>-->
         <item name="android:listSeparatorTextViewStyle">@style/ListSeparator</item>"
 
     </style>

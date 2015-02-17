@@ -28,6 +28,7 @@
     <color name="BLUE_OPAQUE">#FF0288D1</color>
     <color name="ACCENT_OPAQUE">#FFFF1744</color>
     <color name="DARK_BLUE_OPAQUE">#FF01579B</color>
+    <color name="DARK_BLUE_TRANSPARENT">#8801579B</color>
 
     <color name="LIGHT_THEME_STATUS_BAR">#FF757575</color>
     <color name="LIGHT_THEME_TOOLBAR">#FFE0E0E0</color>

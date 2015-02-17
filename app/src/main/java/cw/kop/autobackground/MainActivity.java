@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -35,7 +36,9 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -115,6 +118,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         }
 
         super.onCreate(savedInstanceState);
+
         Configuration configuration = getResources().getConfiguration();
 
         if (configuration.screenWidthDp >= 600 || AppSettings.forceMultiPane()) {
@@ -127,9 +131,13 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
             Fabric.with(getApplicationContext(), new Crashlytics());
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+        }
+
+
         fragmentList = getResources().getStringArray(R.array.fragment_titles);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
         navLayout = (LinearLayout) findViewById(R.id.navigation_drawer);
         navPicture = (ImageView) findViewById(R.id.nav_drawer_picture);
 
