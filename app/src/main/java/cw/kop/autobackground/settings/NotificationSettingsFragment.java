@@ -18,9 +18,7 @@ package cw.kop.autobackground.settings;
 
 import android.app.Activity;
 import android.app.AlarmManager;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.TypedArray;
@@ -45,7 +43,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -57,7 +54,6 @@ import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.util.ArrayList;
 
-import afzkl.development.colorpickerview.view.ColorPickerView;
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.OptionData;
@@ -65,7 +61,6 @@ import cw.kop.autobackground.OptionsListAdapter;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.RecyclerViewListClickListener;
 import cw.kop.autobackground.files.FileHandler;
-import cw.kop.autobackground.settings.AppSettings;
 
 public class NotificationSettingsFragment extends PreferenceFragment implements View.OnClickListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -114,7 +109,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.notification_settings_layout, container, false);
+        View view = inflater.inflate(R.layout.fragment_notification, container, false);
 
         preferenceList = (ListView) view.findViewById(android.R.id.list);
 
