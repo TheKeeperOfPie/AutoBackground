@@ -444,9 +444,11 @@ public class SourceInfoFragment extends PreferenceFragment {
             try {
                 dropboxAPI.getSession().finishAuthentication();
 
-                AppSettings.setUseDropboxAccount(true);
-                AppSettings.setDropboxAccountToken(dropboxAPI.getSession().getOAuth2AccessToken());
-                showDropboxFragment();
+                if (!AppSettings.useDropboxAccount()) {
+                    AppSettings.setUseDropboxAccount(true);
+                    AppSettings.setDropboxAccountToken(dropboxAPI.getSession().getOAuth2AccessToken());
+                    showDropboxFragment();
+                }
             }
             catch (IllegalStateException e) {
                 Log.i("DbAuthLog", "Error authenticating", e);
@@ -513,6 +515,10 @@ public class SourceInfoFragment extends PreferenceFragment {
         }
         if (data.equals("")) {
             Toast.makeText(appContext, "Data cannot be empty", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (sourceNum.getText().toString().equals("")) {
+            Toast.makeText(appContext, "# of images cannot be empty", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -653,7 +659,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             public void run() {
                 sourceTitle.setText(title);
                 sourceData.setText(SourceInfoFragment.this.type.equals(AppSettings.FOLDER) ? Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER)) : data);
-                sourceNum.setText("" + num);
+                sourceNum.setText(num >= 0 ? "" + num : "");
                 setDataWrappers();
             }
         });
@@ -739,6 +745,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                 break;
             case AppSettings.DROPBOX_FOLDER:
                 if (!AppSettings.useDropboxAccount() || AppSettings.getDropboxAccountToken().equals("") || !dropboxAPI.getSession().isLinked()) {
+                    AppSettings.setUseDropboxAccount(false);
+                    AppSettings.setDropboxAccountToken("");
                     dropboxAPI.getSession().startOAuth2Authentication(appContext);
                 }
                 else if (getFragmentManager().findFragmentByTag("folder_fragment") == null) {
@@ -1029,7 +1037,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             public void onUseDirectoryClick() {
                 Entry entry = adapter.getMainDir();
                 if (entry.isDir) {
-                    setData(AppSettings.DROPBOX_FOLDER, entry.fileName(), entry.path, 1);
+                    setData(AppSettings.DROPBOX_FOLDER, entry.fileName(), entry.path, -1);
                     adapter.setFinished(true);
                     getActivity().onBackPressed();
                 }
