@@ -434,40 +434,24 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         minutePaint.setStyle(Paint.Style.FILL_AND_STROKE);
         secondPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
-        if (AppSettings.getTimeType().equals(AppSettings.DIGITAL)) {
-            indicatorPaint.setColor(AppSettings.getSeparatorColor());
-            hourPaint.setColor(AppSettings.getHourColor());
-            minutePaint.setColor(AppSettings.getMinuteColor());
-            secondPaint.setColor(AppSettings.getSecondColor());
+        indicatorPaint.setColor(AppSettings.getSeparatorColor());
+        hourPaint.setColor(AppSettings.getHourColor());
+        minutePaint.setColor(AppSettings.getMinuteColor());
+        secondPaint.setColor(AppSettings.getSecondColor());
 
-            indicatorPaint.setShadowLayer(SHADOW_RADIUS,
-                    0f,
-                    0f,
-                    AppSettings.getSeparatorShadowColor());
-            hourPaint.setShadowLayer(SHADOW_RADIUS, 0f, 0f, AppSettings.getHourShadowColor());
-            minutePaint.setShadowLayer(SHADOW_RADIUS,
-                    0f,
-                    0f,
-                    AppSettings.getMinuteShadowColor());
-            secondPaint.setShadowLayer(SHADOW_RADIUS,
-                    0f,
-                    0f,
-                    AppSettings.getSecondShadowColor());
-        }
-        else {
-            hourPaint.setColor(AppSettings.getHourColor());
-            minutePaint.setColor(AppSettings.getMinuteColor());
-            secondPaint.setColor(AppSettings.getSecondColor());
-            hourPaint.setShadowLayer(SHADOW_RADIUS, 0f, 0f, AppSettings.getHourShadowColor());
-            minutePaint.setShadowLayer(SHADOW_RADIUS,
-                    0f,
-                    0f,
-                    AppSettings.getMinuteShadowColor());
-            secondPaint.setShadowLayer(SHADOW_RADIUS,
-                    0f,
-                    0f,
-                    AppSettings.getSecondShadowColor());
-        }
+        indicatorPaint.setShadowLayer(SHADOW_RADIUS,
+                0f,
+                0f,
+                AppSettings.getSeparatorShadowColor());
+        hourPaint.setShadowLayer(SHADOW_RADIUS, 0f, 0f, AppSettings.getHourShadowColor());
+        minutePaint.setShadowLayer(SHADOW_RADIUS,
+                0f,
+                0f,
+                AppSettings.getMinuteShadowColor());
+        secondPaint.setShadowLayer(SHADOW_RADIUS,
+                0f,
+                0f,
+                AppSettings.getSecondShadowColor());
 
         tickRadius = AppSettings.getTickLengthRatio();
         hourRadius = AppSettings.getHourLengthRatio();
@@ -507,6 +491,13 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         }
 
         separatorWidth = indicatorPaint.measureText(timeSeparator);
+
+        if (AppSettings.getTimeType().equals(AppSettings.DIGITAL)) {
+            indicatorPaint.setStrokeWidth(1.0f);
+        }
+        else {
+            indicatorPaint.setStrokeWidth(tickWidth);
+        }
     }
 
     private float getTimeWidth() {
@@ -680,13 +671,12 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
         for (int i = 0; i < 12; i++) {
             canvas.drawLine(
-                    (float) (centerX + (radius * tickRadius / 100f) * Math.cos(Math.toRadians(i * 30f))),
-                    (float) (centerY + (radius * tickRadius / 100f) * Math.sin(Math.toRadians(i * 30f))),
+                    (float) (centerX + (radius * (100f - tickRadius) / 100f) * Math.cos(Math.toRadians(i * 30f))),
+                    (float) (centerY + (radius * (100f - tickRadius) / 100f) * Math.sin(Math.toRadians(i * 30f))),
                     (float) (centerX + (radius) * Math.cos(Math.toRadians(i * 30f))),
                     (float) (centerY + (radius) * Math.sin(Math.toRadians(i * 30f))),
                     indicatorPaint);
         }
-
 
         // Draw clock hands
 
@@ -777,9 +767,11 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 dataMap.getDataMap().putInt(WearConstants.SECOND_SHADOW_COLOR,
                         AppSettings.getSecondShadowColor());
 
+                dataMap.getDataMap().putFloat(WearConstants.TICK_LENGTH_RATIO, AppSettings.getTickLengthRatio());
                 dataMap.getDataMap().putFloat(WearConstants.HOUR_LENGTH_RATIO, AppSettings.getHourLengthRatio());
                 dataMap.getDataMap().putFloat(WearConstants.MINUTE_LENGTH_RATIO, AppSettings.getMinuteLengthRatio());
                 dataMap.getDataMap().putFloat(WearConstants.SECOND_LENGTH_RATIO, AppSettings.getSecondLengthRatio());
+                dataMap.getDataMap().putFloat(WearConstants.TICK_WIDTH, AppSettings.getTickWidth());
                 dataMap.getDataMap().putFloat(WearConstants.HOUR_WIDTH, AppSettings.getHourWidth());
                 dataMap.getDataMap().putFloat(WearConstants.MINUTE_WIDTH, AppSettings.getMinuteWidth());
                 dataMap.getDataMap().putFloat(WearConstants.SECOND_WIDTH, AppSettings.getSecondWidth());
@@ -803,7 +795,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 float minuteWidth = minutePaint.measureText("00");
 
                 if (y > sideLength / 2) {
-                    showIndicatorOptions("Separator", 3);
+                    showIndicatorOptions();
                 }
                 else if (xOffset < x && x < xOffset + hourWidth) {
                     showHourOptions(2);
@@ -815,11 +807,17 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                     showSecondOptions(2);
                 }
                 else {
-                    showIndicatorOptions("Separator", 3);
+                    showIndicatorOptions();
                 }
             }
             else {
-                if (y < sideLength / 2 && x < sideLength - y) {
+
+                double touchRadius = Math.hypot(Math.abs(x - sideLength / 2), Math.abs(y - sideLength / 2));
+
+                if (touchRadius > 0.4 * sideLength) {
+                    showTickOptions();
+                }
+                else if (y < sideLength / 2 && x < sideLength - y) {
                     showMinuteOptions(4);
                 }
                 else if (x > sideLength / 2) {
@@ -838,22 +836,23 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         return false;
     }
 
-    private void showIndicatorOptions(String text, int numToShow) {
 
-        String[] titles = new String[] {"TYPE Color",
-                "TYPE Shadow Color",
-                "TYPE"};
-        String[] summaries = new String[] {"Color of TYPE",
-                "Color of TYPE shadow",
+    private void showIndicatorOptions() {
+
+        String[] titles = new String[] {"Separator Color",
+                "Separator Shadow Color",
+                "Separator"};
+        String[] summaries = new String[] {"Color of separator",
+                "Color of separator shadow",
                 "Text to separate time sections"};
         int[] icons = new int[] {R.drawable.ic_text_format_white_24dp,
                 R.drawable.ic_color_lens_white_24dp,
                 R.drawable.ic_color_lens_white_24dp};
         ArrayList<OptionData> optionsList = new ArrayList<>();
 
-        for (int index = 0; index < numToShow; index++) {
-            optionsList.add(new OptionData(titles[index].replaceAll("TYPE", text),
-                    summaries[index].replaceAll("TYPE", text.toLowerCase()),
+        for (int index = 0; index < titles.length; index++) {
+            optionsList.add(new OptionData(titles[index],
+                    summaries[index],
                     icons[index]));
         }
 
@@ -863,19 +862,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
                 switch (position) {
                     case 0:
-                        DialogFactory.InputDialogListener separatorTextDialogListener = new DialogFactory.InputDialogListener() {
-                            @Override
-                            public void onClickRight(View v) {
-                                AppSettings.setSeparatorText(getEditTextString());
-                                redraw();
-                                this.dismissDialog();
-                            }
-                        };
-
-                        DialogFactory.showInputDialog(appContext, "Enter separator text", "", AppSettings.getSeparatorText(), separatorTextDialogListener, -1, R.string.cancel_button, R.string.ok_button,
-                                InputType.TYPE_CLASS_TEXT);
-                        break;
-                    case 1:
                         DialogFactory.ColorDialogListener separatorColorDialogListener = new DialogFactory.ColorDialogListener() {
                             @Override
                             public void onClickRight(View v) {
@@ -893,7 +879,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                                 R.string.ok_button,
                                 AppSettings.getSeparatorColor());
                         break;
-                    case 2:
+                    case 1:
                         DialogFactory.ColorDialogListener separatorShadowColorDialogListener = new DialogFactory.ColorDialogListener() {
                             @Override
                             public void onClickRight(View v) {
@@ -910,6 +896,137 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                                 R.string.cancel_button,
                                 R.string.ok_button,
                                 AppSettings.getSeparatorShadowColor());
+                        break;
+                    case 2:
+                        DialogFactory.InputDialogListener separatorTextDialogListener = new DialogFactory.InputDialogListener() {
+                            @Override
+                            public void onClickRight(View v) {
+                                AppSettings.setSeparatorText(getEditTextString());
+                                redraw();
+                                this.dismissDialog();
+                            }
+                        };
+
+                        DialogFactory.showInputDialog(appContext,
+                                "Enter separator text",
+                                "",
+                                AppSettings.getSeparatorText(),
+                                separatorTextDialogListener,
+                                -1,
+                                R.string.cancel_button,
+                                R.string.ok_button,
+                                InputType.TYPE_CLASS_TEXT);
+                        break;
+                }
+
+            }
+        };
+
+        OptionsListAdapter titlesAdapter = new OptionsListAdapter(appContext,
+                optionsList,
+                -1,
+                listener);
+
+        recyclerView.setAdapter(titlesAdapter);
+    }
+
+
+    private void showTickOptions() {
+
+        String[] titles = new String[] {"Tick Marking Color",
+                "Tick Marking Shadow Color",
+                "Tick Marking Length",
+                "Tick Marking Width"};
+        String[] summaries = new String[] {"Color of marking",
+                "Color of marking shadow",
+                "Marking Length",
+                "Marking Width"};
+        ArrayList<OptionData> optionsList = new ArrayList<>();
+
+        for (int index = 0; index < titles.length; index++) {
+            optionsList.add(new OptionData(titles[index],
+                    summaries[index],
+                    R.drawable.ic_color_lens_white_24dp));
+        }
+
+        RecyclerViewListClickListener listener = new RecyclerViewListClickListener() {
+            @Override
+            public void onClick(int position, String title, int drawable) {
+
+                switch (position) {
+                    case 0:
+                        DialogFactory.ColorDialogListener minuteDialogListener = new DialogFactory.ColorDialogListener() {
+                            @Override
+                            public void onClickRight(View v) {
+                                AppSettings.setSeparatorColor(getColorPickerView().getColor());
+                                redraw();
+                                this.dismissDialog();
+                            }
+                        };
+
+                        DialogFactory.showColorPickerDialog(appContext,
+                                "Enter tick color:",
+                                minuteDialogListener,
+                                -1,
+                                R.string.cancel_button,
+                                R.string.ok_button,
+                                AppSettings.getSeparatorColor());
+                        break;
+                    case 1:
+                        DialogFactory.ColorDialogListener minuteShadowDialogListener = new DialogFactory.ColorDialogListener() {
+                            @Override
+                            public void onClickRight(View v) {
+                                AppSettings.setSeparatorShadowColor(getColorPickerView().getColor());
+                                redraw();
+                                this.dismissDialog();
+                            }
+                        };
+
+                        DialogFactory.showColorPickerDialog(appContext,
+                                "Enter tick shadow color:",
+                                minuteShadowDialogListener,
+                                -1,
+                                R.string.cancel_button,
+                                R.string.ok_button,
+                                AppSettings.getSeparatorShadowColor());
+                        break;
+                    case 2:
+                        DialogFactory.SeekBarDialogListener minuteLengthDialogListener = new DialogFactory.SeekBarDialogListener() {
+                            @Override
+                            public void onValueChanged(SeekBar seekBar,
+                                    int progress,
+                                    boolean fromUser) {
+                                setValueText("" + (progress / 10f));
+                            }
+
+                            @Override
+                            public void onClickRight(View v) {
+                                AppSettings.setTickLengthRatio(getValue() / 10f);
+                                redraw();
+                                this.dismissDialog();
+                            }
+                        };
+
+                        DialogFactory.showSeekBarDialog(appContext, "Tick marking length", "% of radius", minuteLengthDialogListener, 1000, Math.round(AppSettings.getTickLengthRatio() * 10f), -1, R.string.cancel_button, R.string.ok_button);
+                        break;
+                    case 3:
+                        DialogFactory.SeekBarDialogListener minuteWidthDialogListener = new DialogFactory.SeekBarDialogListener() {
+                            @Override
+                            public void onValueChanged(SeekBar seekBar,
+                                    int progress,
+                                    boolean fromUser) {
+                                setValueText("" + (progress / 10f));
+                            }
+
+                            @Override
+                            public void onClickRight(View v) {
+                                AppSettings.setTickWidth(getValue() / 10f);
+                                redraw();
+                                this.dismissDialog();
+                            }
+                        };
+
+                        DialogFactory.showSeekBarDialog(appContext, "Tick marking width", "dp", minuteWidthDialogListener, 200, Math.round(AppSettings.getTickWidth() * 10f), -1, R.string.cancel_button, R.string.ok_button);
                         break;
                 }
 
@@ -1011,7 +1128,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             }
                         };
 
-                        DialogFactory.showSeekBarDialog(appContext, "Minute hand width", "pixels", minuteWidthDialogListener, 200, Math.round(AppSettings.getMinuteWidth() * 10f), -1, R.string.cancel_button, R.string.ok_button);
+                        DialogFactory.showSeekBarDialog(appContext, "Minute hand width", "dp", minuteWidthDialogListener, 200, Math.round(AppSettings.getMinuteWidth() * 10f), -1, R.string.cancel_button, R.string.ok_button);
                         break;
                 }
 
@@ -1113,7 +1230,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             }
                         };
 
-                        DialogFactory.showSeekBarDialog(appContext, "Hour hand width", "pixels", hourWidthDialogListener, 200, Math.round(AppSettings.getHourWidth() * 10f), -1, R.string.cancel_button, R.string.ok_button);
+                        DialogFactory.showSeekBarDialog(appContext, "Hour hand width", "dp", hourWidthDialogListener, 200, Math.round(AppSettings.getHourWidth() * 10f), -1, R.string.cancel_button, R.string.ok_button);
                         break;
                 }
 
@@ -1215,7 +1332,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             }
                         };
 
-                        DialogFactory.showSeekBarDialog(appContext, "Second hand width", "pixels", secondWidthDialogListener, 200, Math.round(AppSettings.getSecondWidth() * 10f), -1, R.string.cancel_button, R.string.ok_button);
+                        DialogFactory.showSeekBarDialog(appContext, "Second hand width", "dp", secondWidthDialogListener, 200, Math.round(AppSettings.getSecondWidth() * 10f), -1, R.string.cancel_button, R.string.ok_button);
                         break;
                 }
 

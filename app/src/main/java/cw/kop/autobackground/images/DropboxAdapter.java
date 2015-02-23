@@ -47,9 +47,11 @@ public class DropboxAdapter extends BaseAdapter {
     private Entry topDir;
     private Entry mainDir;
     private boolean finished;
+    private int colorFilterInt;
 
     public DropboxAdapter(Activity activity) {
         this.inflater = activity.getLayoutInflater();
+        this.colorFilterInt = AppSettings.getColorFilterInt(activity);
     }
 
     public void setDirs(Entry topDir, Entry mainDir) {
@@ -82,7 +84,6 @@ public class DropboxAdapter extends BaseAdapter {
             TextView fileTitle;
             TextView fileSummary;
             ImageView fileImage;
-            ImageView fileImageFull;
 
             if (convertView == null) {
                 convertView = inflater.inflate(R.layout.file_row, parent, false);
@@ -90,31 +91,24 @@ public class DropboxAdapter extends BaseAdapter {
                 fileTitle = (TextView) convertView.findViewById(R.id.file_title);
                 fileSummary = (TextView) convertView.findViewById(R.id.file_summary);
                 fileImage = (ImageView) convertView.findViewById(R.id.file_image);
-                fileImageFull = (ImageView) convertView.findViewById(R.id.file_image_full);
 
-                convertView.setTag(new ViewHolder(fileTitle, fileSummary, fileImage, fileImageFull));
+                fileImage.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+
+                convertView.setTag(new ViewHolder(fileTitle, fileSummary, fileImage));
             }
 
             ViewHolder viewHolder = (ViewHolder) convertView.getTag();
             fileTitle = viewHolder.fileTitle;
             fileSummary = viewHolder.fileSummary;
             fileImage = viewHolder.fileImage;
-            fileImageFull = viewHolder.fileImageFull;
-
-            Drawable drawable;
 
             if (entry.isDir) {
-                drawable = parent.getResources().getDrawable(R.drawable.ic_folder_white_24dp);
-                drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
-                        PorterDuff.Mode.MULTIPLY);
+                fileImage.setImageResource(R.drawable.ic_folder_white_24dp);
             }
             else {
-                drawable = parent.getResources().getDrawable(R.drawable.ic_insert_drive_file_white_24dp);
-                drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
-                        PorterDuff.Mode.MULTIPLY);
+                fileImage.setImageResource(R.drawable.ic_insert_drive_file_white_24dp);
             }
 
-            fileImage.setImageDrawable(drawable);
             fileTitle.setText(entry.fileName());
             fileSummary.setText(entry.isDir ? "" : entry.size);
 
@@ -148,16 +142,13 @@ public class DropboxAdapter extends BaseAdapter {
         public final TextView fileTitle;
         public final TextView fileSummary;
         public final ImageView fileImage;
-        public final ImageView fileImageFull;
 
         public ViewHolder(TextView fileTitle,
                 TextView fileSummary,
-                ImageView fileImage,
-                ImageView fileImageFull) {
+                ImageView fileImage) {
             this.fileTitle = fileTitle;
             this.fileSummary = fileSummary;
             this.fileImage = fileImage;
-            this.fileImageFull = fileImageFull;
         }
     }
 

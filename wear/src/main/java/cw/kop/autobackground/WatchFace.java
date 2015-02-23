@@ -319,6 +319,13 @@ public class WatchFace extends CanvasWatchFaceService {
                     WearSettings.getSecondWidth(),
                     displayMetrics);
 
+            if (isDigital) {
+                indicatorPaint.setStrokeWidth(1.0f);
+            }
+            else {
+                indicatorPaint.setStrokeWidth(tickWidth);
+            }
+
             invalidate();
         }
 
@@ -429,16 +436,20 @@ public class WatchFace extends CanvasWatchFaceService {
 
             // Draw tick marks
 
-            for (int position = 0; position < 12; position++) {
-                for (int i = 0; i < NUM_DRAW_CALLS; i++) {
-                    canvas.drawLine(
-                            (float) (centerX + (radius * tickRadius / 100f) * Math.cos(Math.toRadians(
-                                    position * 30f))),
-                            (float) (centerY + (radius * tickRadius / 100f) * Math.sin(Math.toRadians(
-                                    position * 30f))),
-                            (float) (centerX + (radius) * Math.cos(Math.toRadians(position * 30f))),
-                            (float) (centerY + (radius) * Math.sin(Math.toRadians(position * 30f))),
-                            indicatorPaint);
+            if (!isInAmbientMode()) {
+                for (int position = 0; position < 12; position++) {
+                    for (int i = 0; i < NUM_DRAW_CALLS; i++) {
+                        canvas.drawLine(
+                                (float) (centerX + (radius * (100f - tickRadius) / 100f) * Math.cos(
+                                        Math.toRadians(
+                                                position * 30f))),
+                                (float) (centerY + (radius * (100f - tickRadius) / 100f) * Math.sin(
+                                        Math.toRadians(
+                                                position * 30f))),
+                                (float) (centerX + (radius) * Math.cos(Math.toRadians(position * 30f))),
+                                (float) (centerY + (radius) * Math.sin(Math.toRadians(position * 30f))),
+                                indicatorPaint);
+                    }
                 }
             }
 

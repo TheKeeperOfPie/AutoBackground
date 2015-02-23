@@ -47,10 +47,11 @@ public class ImageHistoryAdapter extends BaseAdapter {
 
     private LayoutInflater inflater;
     private ArrayList<HistoryItem> historyItems;
-    private int lastPosition = -1;
+    private int colorFilterInt;
 
     public ImageHistoryAdapter(Context activity) {
         inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        colorFilterInt = AppSettings.getColorFilterInt(activity);
 
         historyItems = new ArrayList<>();
         AppSettings.checkUsedLinksSize();
@@ -121,17 +122,14 @@ public class ImageHistoryAdapter extends BaseAdapter {
                     + historyItems.get(position).getTime() + ".png");
 
             if (thumbnailFile.exists() && thumbnailFile.isFile()) {
+                fileImage.clearColorFilter();
                 Picasso.with(parent.getContext())
                         .load(thumbnailFile)
                         .into(fileImage);
             }
             else {
-
-                Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_insert_drive_file_white_24dp);
-                drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
-                        PorterDuff.Mode.MULTIPLY);
-
-                fileImage.setImageDrawable(drawable);
+                fileImage.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+                fileImage.setImageResource(R.drawable.ic_insert_drive_file_white_24dp);
             }
 
             fileTitle.setText(DateFormat.getDateTimeInstance().format(new Date(historyItems.get(

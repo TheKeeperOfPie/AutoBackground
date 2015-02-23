@@ -49,6 +49,7 @@ public class LocalImageAdapter extends BaseAdapter {
     private ArrayList<File> listFiles;
     private LayoutInflater inflater;
     private boolean finish;
+    private int colorFilterInt;
 
     public LocalImageAdapter(Context activity, File topDir, File startDir) {
         listFiles = new ArrayList<>();
@@ -56,6 +57,7 @@ public class LocalImageAdapter extends BaseAdapter {
         this.startDir = startDir;
         this.topDir = topDir;
         setDirectory(startDir);
+        colorFilterInt = AppSettings.getColorFilterInt(activity);
     }
 
     @Override
@@ -110,6 +112,8 @@ public class LocalImageAdapter extends BaseAdapter {
                 fileSummary.setVisibility(View.GONE);
                 fileImage.setVisibility(View.GONE);
 
+                fileImage.clearColorFilter();
+
                 ViewGroup.LayoutParams params = fileImageFull.getLayoutParams();
                 params.height = (int) ((parent.getWidth() - 2f * parent.getResources().getDimensionPixelSize(
                         R.dimen.side_margin)) / 16f * 9);
@@ -127,19 +131,14 @@ public class LocalImageAdapter extends BaseAdapter {
                 fileTitle.setVisibility(View.VISIBLE);
                 fileSummary.setVisibility(View.VISIBLE);
                 fileImage.setVisibility(View.VISIBLE);
-                if (file.isDirectory()) {
-                    Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_folder_white_24dp);
-                    drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
-                            PorterDuff.Mode.MULTIPLY);
 
-                    fileImage.setImageDrawable(drawable);
+                fileImage.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+
+                if (file.isDirectory()) {
+                    fileImage.setImageResource(R.drawable.ic_folder_white_24dp);
                 }
                 else {
-                    Drawable drawable = parent.getResources().getDrawable(R.drawable.ic_insert_drive_file_white_24dp);
-                    drawable.setColorFilter(AppSettings.getColorFilterInt(parent.getContext()),
-                            PorterDuff.Mode.MULTIPLY);
-
-                    fileImage.setImageDrawable(drawable);
+                    fileImage.setImageResource(R.drawable.ic_insert_drive_file_white_24dp);
                 }
 
                 fileTitle.setText(file.getName());

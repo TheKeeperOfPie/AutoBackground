@@ -45,16 +45,7 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
         optionPosition = position;
         listClickListener = listener;
 
-        switch (AppSettings.getTheme()) {
-            default:
-            case AppSettings.APP_LIGHT_THEME:
-                colorFilterInt = context.getResources().getColor(R.color.DARK_GRAY_OPAQUE);
-                break;
-            case AppSettings.APP_DARK_THEME:
-            case AppSettings.APP_TRANSPARENT_THEME:
-                colorFilterInt = context.getResources().getColor(R.color.LIGHT_GRAY_OPAQUE);
-                break;
-        }
+        colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
     }
 
@@ -81,10 +72,7 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
         viewHolder.optionTitle.setText(optionData.getTitle());
         viewHolder.optionSummary.setText(optionData.getSummary());
 
-        Drawable iconDrawable = appContext.getResources().getDrawable(optionData.getDrawable());
-        iconDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-
-        viewHolder.optionIcon.setImageDrawable(iconDrawable);
+        viewHolder.optionIcon.setImageResource(optionData.getDrawable());
         viewHolder.optionPosition = optionPosition;
 
         viewHolder.rowLayout.setOnClickListener(new View.OnClickListener() {
@@ -116,6 +104,7 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
             optionIcon = (ImageView) rowLayout.findViewById(R.id.notification_list_icon);
             optionTitle = (TextView) rowLayout.findViewById(R.id.notification_list_title);
             optionSummary = (TextView) rowLayout.findViewById(R.id.notification_list_summary);
+            optionIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
         }
 
     }

@@ -134,11 +134,15 @@ public class SourceListAdapter extends BaseAdapter {
             viewButton.setOnLongClickListener(longClickListener);
             editButton.setOnLongClickListener(longClickListener);
 
+            downloadButton.setImageResource(R.drawable.ic_file_download_white_24dp);
+            deleteButton.setImageResource(R.drawable.ic_delete_white_24dp);
+            viewButton.setImageResource(R.drawable.ic_photo_white_24dp);
+            editButton.setImageResource(R.drawable.ic_edit_white_24dp);
+
             downloadButton.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
             deleteButton.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
             viewButton.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
             editButton.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-
 
             title.setClickable(false);
             convertView.setTag(new ViewHolder(cardView, title, imageOverlay, downloadButton, deleteButton, viewButton, editButton, sourceType, sourceData, sourceNum, sourceTime, sourceImage));
@@ -193,15 +197,12 @@ public class SourceListAdapter extends BaseAdapter {
             imageOverlay.setAlpha(OVERLAY_ALPHA);
         }
 
-        Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_24dp);
-        Drawable deleteDrawable = resources.getDrawable(R.drawable.ic_delete_white_24dp);
-        Drawable viewDrawable = resources.getDrawable(R.drawable.ic_photo_white_24dp);
-        Drawable editDrawable = resources.getDrawable(R.drawable.ic_edit_white_24dp);
-
-        downloadButton.setImageDrawable(downloadDrawable);
-        deleteButton.setImageDrawable(deleteDrawable);
-        viewButton.setImageDrawable(viewDrawable);
-        editButton.setImageDrawable(editDrawable);
+        if (listItem.getType().equals(AppSettings.FOLDER)) {
+            downloadButton.setVisibility(View.INVISIBLE);
+        }
+        else {
+            downloadButton.setVisibility(View.VISIBLE);
+        }
 
         downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override

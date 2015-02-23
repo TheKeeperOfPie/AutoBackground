@@ -72,7 +72,7 @@ public class WearSettings {
     }
 
     public static float getTickWidth() {
-        return prefs.getFloat(WearConstants.TICK_WIDTH, 5.0f);
+        return prefs.getFloat(WearConstants.TICK_WIDTH, 1.0f);
     }
 
     public static void setHourWidth(float width) {
@@ -104,7 +104,7 @@ public class WearSettings {
     }
 
     public static float getTickLengthRatio() {
-        return prefs.getFloat(WearConstants.TICK_LENGTH_RATIO, 80f);
+        return prefs.getFloat(WearConstants.TICK_LENGTH_RATIO, 20f);
     }
 
     public static void setHourLengthRatio(float length) {

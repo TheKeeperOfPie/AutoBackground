@@ -31,6 +31,8 @@ public class WearConstants {
     public static final String SEPARATOR_TEXT = "wear_separator_text";
     public static final String SEPARATOR_COLOR = "wear_separator_color";
     public static final String SEPARATOR_SHADOW_COLOR = "wear_separator_shadow_color";
+    public static final String MARKINGS_COLOR = "wear_markings_color";
+    public static final String MARKINGS_SHADOW_COLOR = "wear_markings_shadow_color";
     public static final String HOUR_COLOR = "wear_hour_color";
     public static final String HOUR_SHADOW_COLOR = "wear_hour_shadow_color";
     public static final String MINUTE_COLOR = "wear_minute_color";

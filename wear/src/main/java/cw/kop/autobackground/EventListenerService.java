@@ -142,6 +142,8 @@ public class EventListenerService extends WearableListenerService {
                         WearSettings.setSecondShadowColor(dataMap.getInt(WearConstants.SECOND_SHADOW_COLOR,
                                 0xFF000000));
 
+                        WearSettings.setTickLengthRatio(dataMap.getFloat(WearConstants.TICK_LENGTH_RATIO,
+                                10f));
                         WearSettings.setHourLengthRatio(dataMap.getFloat(WearConstants.HOUR_LENGTH_RATIO,
                                 50f));
                         WearSettings.setMinuteLengthRatio(dataMap.getFloat(WearConstants.
@@ -151,6 +153,7 @@ public class EventListenerService extends WearableListenerService {
                                         SECOND_LENGTH_RATIO,
                                 100f));
 
+                        WearSettings.setTickWidth(dataMap.getFloat(WearConstants.TICK_WIDTH, 1.0f));
                         WearSettings.setHourWidth(dataMap.getFloat(WearConstants.HOUR_WIDTH, 5.0f));
                         WearSettings.setMinuteWidth(dataMap.getFloat(WearConstants.MINUTE_WIDTH, 3.0f));
                         WearSettings.setSecondWidth(dataMap.getFloat(WearConstants.SECOND_WIDTH, 2.0f));

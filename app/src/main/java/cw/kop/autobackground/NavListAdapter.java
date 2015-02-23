@@ -53,17 +53,7 @@ public class NavListAdapter extends BaseAdapter {
         fragmentList = new ArrayList<>();
         Collections.addAll(fragmentList, nameArray);
         inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-        switch (AppSettings.getTheme()) {
-            default:
-            case AppSettings.APP_LIGHT_THEME:
-                colorFilterInt = activity.getResources().getColor(R.color.DARK_GRAY_OPAQUE);
-                break;
-            case AppSettings.APP_DARK_THEME:
-            case AppSettings.APP_TRANSPARENT_THEME:
-                colorFilterInt = activity.getResources().getColor(R.color.LIGHT_GRAY_OPAQUE);
-                break;
-        }
+        colorFilterInt = AppSettings.getColorFilterInt(activity);
     }
 
     @Override
@@ -93,6 +83,8 @@ public class NavListAdapter extends BaseAdapter {
             fragmentImage = (ImageView) convertView.findViewById(R.id.fragment_image);
             fragmentTitle = (TextView) convertView.findViewById(R.id.fragment_title);
 
+            fragmentImage.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+
             convertView.setTag(new ViewHolder(fragmentImage, fragmentTitle));
         }
 
@@ -100,9 +92,7 @@ public class NavListAdapter extends BaseAdapter {
         fragmentImage = viewHolder.fragmentImage;
         fragmentTitle = viewHolder.fragmentTitle;
 
-        Drawable iconDrawable = parent.getContext().getResources().getDrawable(iconImages[position]).mutate();
-        iconDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-        fragmentImage.setImageDrawable(iconDrawable);
+        fragmentImage.setImageResource(iconImages[position]);
 
         fragmentTitle.setText(fragmentList.get(position));
 
