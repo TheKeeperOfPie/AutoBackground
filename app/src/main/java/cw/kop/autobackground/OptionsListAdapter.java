@@ -70,11 +70,11 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
                 parent,
                 false);
 
-        return new ViewHolder(rowLayout, listClickListener);
+        return new ViewHolder(rowLayout);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, final int position) {
+    public void onBindViewHolder(final ViewHolder viewHolder, int position) {
 
         final OptionData optionData = optionsList.get(position);
 
@@ -85,13 +85,13 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
         iconDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
 
         viewHolder.optionIcon.setImageDrawable(iconDrawable);
-        viewHolder.position = optionPosition;
+        viewHolder.optionPosition = optionPosition;
 
         viewHolder.rowLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listClickListener.onClick(position, optionsList.get(position).getTitle(),
-                        optionsList.get(position).getDrawable());
+                listClickListener.onClick(viewHolder.getPosition(), optionsList.get(viewHolder.getPosition()).getTitle(),
+                        optionsList.get(viewHolder.getPosition()).getDrawable());
             }
         });
     }
@@ -108,9 +108,9 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
         public TextView optionSummary;
         public View rowLayout;
 
-        public int position;
+        public int optionPosition;
 
-        public ViewHolder(View rowLayout, final RecyclerViewListClickListener listClickListener) {
+        public ViewHolder(View rowLayout) {
             super(rowLayout);
             this.rowLayout = rowLayout;
             optionIcon = (ImageView) rowLayout.findViewById(R.id.notification_list_icon);

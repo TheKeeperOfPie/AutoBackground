@@ -66,6 +66,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
@@ -250,11 +251,60 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         setButton.setOnClickListener(this);
 
         final SourceListAdapter.CardClickListener listener = new SourceListAdapter.CardClickListener() {
+
+            @Override
+            public void onDownloadClick(View view, Source source) {
+
+                ArrayList<Source> sources = new ArrayList<>(1);
+                sources.add(source);
+
+                listAdapter.saveData();
+                if (FileHandler.isDownloading()) {
+
+                    DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
+
+                        @Override
+                        public void onClickRight(View v) {
+                            FileHandler.cancel(appContext);
+                            resetActionBarDownload();
+                            dismissDialog();
+                        }
+                    };
+
+                    DialogFactory.showActionDialog(appContext,
+                            "",
+                            "Cancel download?",
+                            listener,
+                            -1,
+                            R.string.cancel_button,
+                            R.string.ok_button);
+                }
+                else if (FileHandler.download(appContext, sources)) {
+                    Drawable drawable = getResources().getDrawable(R.drawable.ic_cancel_white_24dp);
+                    drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                            PorterDuff.Mode.MULTIPLY);
+                    toolbarMenu.getItem(1).setIcon(drawable);
+
+                    if (AppSettings.resetOnManualDownload() && AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
+                        Intent intent = new Intent();
+                        intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
+                        intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+                        PendingIntent pendingIntent = PendingIntent.getBroadcast(appContext, 0, intent, 0);
+                        AlarmManager alarmManager = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
+                        alarmManager.cancel(pendingIntent);
+                        alarmManager.setInexactRepeating(AlarmManager.RTC,
+                                System.currentTimeMillis() + AppSettings.getTimerDuration(),
+                                AppSettings.getTimerDuration(),
+                                pendingIntent);
+                    }
+                }
+            }
+
             @Override
             public void onDeleteClick(final View view, final int index) {
 
                 listAdapter.saveData();
-                if (FileHandler.isDownloading) {
+                if (FileHandler.isDownloading()) {
                     Toast.makeText(appContext,
                             "Cannot delete while downloading",
                             Toast.LENGTH_SHORT).show();
@@ -344,6 +394,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 @Override
                 public boolean onLongClick(View v) {
                     switch (v.getId()) {
+                        case R.id.source_download_button:
+                            Toast.makeText(appContext, getString(R.string.download), Toast.LENGTH_SHORT).show();
+                            return true;
                         case R.id.source_delete_button:
                             Toast.makeText(appContext, getString(R.string.delete), Toast.LENGTH_SHORT).show();
                             return true;
@@ -509,7 +562,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 startDownload();
                 break;
             case R.id.sort_sources:
-                if (FileHandler.isDownloading) {
+                if (FileHandler.isDownloading()) {
                     sendToast("Cannot sort while downloading");
                 }
                 else {
@@ -537,7 +590,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
      */
     private void startDownload() {
         listAdapter.saveData();
-        if (FileHandler.isDownloading) {
+        if (FileHandler.isDownloading()) {
 
             DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
 
@@ -605,11 +658,13 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final ImageView sourceImage = (ImageView) view.findViewById(R.id.source_image);
         final View imageOverlay = view.findViewById(R.id.source_image_overlay);
         final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
+        final ImageView downloadButton = (ImageView) view.findViewById(R.id.source_download_button);
         final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
         final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
         final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
         final LinearLayout sourceExpandContainer = (LinearLayout) view.findViewById(R.id.source_expand_container);
 
+        final boolean fadeView = directory.list() == null || directory.list().length == 0;
         final float viewStartHeight = sourceContainer.getHeight();
         final float viewStartY = view.getY();
         final float overlayStartAlpha = imageOverlay.getAlpha();
@@ -701,12 +756,16 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 params.height = (int) (viewStartHeight + (listHeight - viewStartHeight) * interpolatedTime);
                 sourceContainer.setLayoutParams(params);
                 view.setY(viewStartY - interpolatedTime * viewStartY);
+                downloadButton.setAlpha(1.0f - interpolatedTime);
                 deleteButton.setAlpha(1.0f - interpolatedTime);
                 viewButton.setAlpha(1.0f - interpolatedTime);
                 editButton.setAlpha(1.0f - interpolatedTime);
                 sourceTitle.setAlpha(1.0f - interpolatedTime);
                 imageOverlay.setAlpha(overlayStartAlpha - overlayStartAlpha * (1.0f - interpolatedTime));
                 sourceExpandContainer.setAlpha(1.0f - interpolatedTime);
+                if (fadeView) {
+                    sourceImage.setAlpha(1.0f - interpolatedTime);
+                }
             }
 
             @Override
@@ -785,7 +844,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         getFragmentManager().beginTransaction()
                 .add(R.id.content_frame,
                         sourceInfoFragment,
-                        "source_info_fragment")
+                        "sourceInfoFragment")
                 .addToBackStack(null)
                 .setTransition(FragmentTransaction.TRANSIT_NONE)
                 .commit();
@@ -1020,6 +1079,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final CardView sourceCard = (CardView) view.findViewById(R.id.source_card);
         final View imageOverlay = view.findViewById(R.id.source_image_overlay);
         final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
+        final ImageView downloadButton = (ImageView) view.findViewById(R.id.source_download_button);
         final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
         final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
         final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
@@ -1031,10 +1091,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final int viewStartPadding = view.getPaddingLeft();
         final float textStartX = sourceTitle.getX();
         final float textStartY = sourceTitle.getY();
-        final float textTranslationY = sourceTitle.getHeight(); /*+ TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                8,
-                getResources().getDisplayMetrics());*/
+        final float textTranslationY = sourceTitle.getHeight();
 
         Animation animation = new Animation() {
 
@@ -1048,7 +1105,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                     getFragmentManager().beginTransaction()
                             .add(R.id.content_frame,
                                     sourceInfoFragment,
-                                    "source_info_fragment")
+                                    "sourceInfoFragment")
                             .addToBackStack(null)
                             .setTransition(FragmentTransaction.TRANSIT_NONE)
                             .commit();
@@ -1067,6 +1124,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 sourceContainer.setLayoutParams(params);
                 sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
                 sourceTitle.setX(textStartX + viewStartPadding - newPadding);
+                downloadButton.setAlpha(1.0f - interpolatedTime);
                 deleteButton.setAlpha(1.0f - interpolatedTime);
                 viewButton.setAlpha(1.0f - interpolatedTime);
                 editButton.setAlpha(1.0f - interpolatedTime);
@@ -1208,7 +1266,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         resetAddButtonIcon();
 
         if (toolbarMenu != null) {
-            Drawable drawable = FileHandler.isDownloading ?
+            Drawable drawable = FileHandler.isDownloading() ?
                     getResources().getDrawable(R.drawable.ic_cancel_white_24dp) :
                     getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
             drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
@@ -1234,7 +1292,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 break;
             case SourceListAdapter.NEED_DOWNLOAD:
                 alertText.setText("No downloaded images");
-                if (!FileHandler.isDownloading && toolbarMenu != null) {
+                if (!FileHandler.isDownloading() && toolbarMenu != null) {
                     Drawable downloadDrawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp).mutate();
                     downloadDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
                             PorterDuff.Mode.MULTIPLY);

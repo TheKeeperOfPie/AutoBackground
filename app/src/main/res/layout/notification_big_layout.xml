@@ -41,7 +41,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="64dp"
-        android:layout_above="@+id/notification_buttons"
         android:layout_alignParentTop="true"
         android:layout_toEndOf="@id/notification_big_icon"
         android:layout_toRightOf="@id/notification_big_icon"
@@ -81,7 +80,7 @@
         android:id="@+id/notification_buttons"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@id/notification_big_header"
         android:orientation="horizontal"
         >
 

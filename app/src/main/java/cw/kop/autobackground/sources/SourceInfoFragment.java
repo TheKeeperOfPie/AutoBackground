@@ -542,7 +542,7 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         if (sourcePosition == -1) {
 
-            if (FileHandler.isDownloading) {
+            if (FileHandler.isDownloading()) {
                 Toast.makeText(appContext,
                         "Cannot add source while downloading",
                         Toast.LENGTH_SHORT).show();
@@ -558,7 +558,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                 FileHandler.renameFolder(getArguments().getString(Source.TITLE), title);
             }
 
-            if (FileHandler.isDownloading) {
+            if (FileHandler.isDownloading()) {
                 Toast.makeText(appContext,
                         "Cannot edit while downloading",
                         Toast.LENGTH_SHORT).show();

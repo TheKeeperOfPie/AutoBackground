@@ -472,6 +472,7 @@
         <item>Size of date display</item>
     </string-array>
 
+    <string name="download">Download</string>
     <string name="delete">Delete</string>
     <string name="view_images">View Images</string>
     <string name="edit">Edit</string>

@@ -45,7 +45,7 @@ public class FileHandler {
         }
     };
     public static final String DOWNLOAD_TERMINATED = "cw.kop.autobackground.files.FileHandler.DOWNLOAD_TERMINATED";
-    public static volatile boolean isDownloading = false;
+    private static volatile boolean isDownloading = false;
     private static final String TAG = "FileHandler";
     private static File currentWearFile = null;
     private static File currentBitmapFile = null;
@@ -57,7 +57,20 @@ public class FileHandler {
 
         if (!isDownloading) {
             isDownloading = true;
-            downloadThread = new DownloadThread(appContext);
+            downloadThread = new DownloadThread(appContext, AppSettings.getSources());
+            downloadThread.start();
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    public static boolean download(Context appContext, List<Source> sources) {
+
+        if (!isDownloading) {
+            isDownloading = true;
+            downloadThread = new DownloadThread(appContext, sources);
             downloadThread.start();
             return true;
         }
@@ -297,4 +310,7 @@ public class FileHandler {
         return filenameFilter;
     }
 
+    public static boolean isDownloading() {
+        return isDownloading;
+    }
 }

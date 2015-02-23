@@ -90,6 +90,7 @@ public class DownloadThread extends Thread {
     private static final int NOTIFICATION_ID = 1;
     private static final String TAG = DownloadThread.class.getCanonicalName();
     private final DropboxAPI<AndroidAuthSession> dropboxAPI;
+    private final List<Source> sources;
     private Context appContext;
     private Handler handler;
     private String imageDetails = "";
@@ -106,8 +107,9 @@ public class DownloadThread extends Thread {
     private boolean isLowResolution;
     private boolean isNotEnoughNew;
 
-    public DownloadThread(Context context) {
+    public DownloadThread(Context context, List<Source> sources) {
         appContext = context;
+        this.sources = sources;
         AppKeyPair appKeys = new AppKeyPair(ApiKeys.DROPBOX_KEY, ApiKeys.DROPBOX_SECRET);
         AndroidAuthSession session = new AndroidAuthSession(appKeys);
         dropboxAPI = new DropboxAPI<>(session);
@@ -181,10 +183,7 @@ public class DownloadThread extends Thread {
         }
 
         List<Source> validSources = new ArrayList<>();
-        for (int index = 0; index < AppSettings.getNumberSources(); index++) {
-
-            Source source = AppSettings.getSource(index);
-
+        for (Source source : sources) {
             if (!source.getType().equals(AppSettings.FOLDER) && source.isUse()) {
                 validSources.add(source);
                 progressMax += source.getNum();
@@ -1008,16 +1007,16 @@ public class DownloadThread extends Thread {
 
                 inboxStyle.addLine("Total images enabled: " + FileHandler.getBitmapList().size());
 
-                for (String detail : imageDetails.split(AppSettings.DATA_SPLITTER)) {
-                    inboxStyle.addLine(detail);
-                }
-
                 if (isAnyLowResolution) {
                     inboxStyle.addLine("Not enough suitable resolution images");
                 }
 
                 if (isNotEnoughNew) {
                     inboxStyle.addLine("Not enough new images");
+                }
+
+                for (String detail : imageDetails.split(AppSettings.DATA_SPLITTER)) {
+                    inboxStyle.addLine(detail);
                 }
 
                 notifyComplete.setStyle(inboxStyle);

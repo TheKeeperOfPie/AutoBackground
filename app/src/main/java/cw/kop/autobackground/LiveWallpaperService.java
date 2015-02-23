@@ -554,73 +554,77 @@ public class LiveWallpaperService extends GLWallpaperService {
                     return;
                 }
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            BitmapFactory.Options options = new BitmapFactory.Options();
-                            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                            options.inPreferQualityOverSpeed = true;
-                            options.inDither = true;
+                Picasso.with(LiveWallpaperService.this).load(FileHandler.getCurrentBitmapFile()).resizeDimen(android.R.dimen.notification_large_icon_width,
+                        android.R.dimen.notification_large_icon_height).centerCrop().into(
+                        targetIcon);
 
-                            if (AppSettings.useHighResolutionNotificationIcon()) {
-
-                                options.inJustDecodeBounds = true;
-                                BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(),
-                                        options);
-
-                                int bitWidth = options.outWidth;
-                                int bitHeight = options.outHeight;
-                                int minWidth = LiveWallpaperService.this.getResources().getDimensionPixelSize(
-                                        android.R.dimen.notification_large_icon_width);
-                                int minHeight = LiveWallpaperService.this.getResources().getDimensionPixelSize(
-                                        android.R.dimen.notification_large_icon_height);
-                                int sampleSize = 1;
-                                if (bitHeight > minHeight || bitWidth > minWidth) {
-
-                                    final int halfHeight = bitHeight / 2;
-                                    final int halfWidth = bitWidth / 2;
-                                    while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
-                                        sampleSize *= 2;
-                                    }
-                                }
-                                options.inJustDecodeBounds = false;
-                                options.inSampleSize = sampleSize;
-                            }
-                            else {
-                                options.inSampleSize = NOTIFICATION_ICON_SAMPLE_SIZE;
-                            }
-                            Log.i(TAG, "sampleSize: " + options.inSampleSize);
-                            Bitmap bitmap = BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(),
-                                    options);
-                            targetIcon.onBitmapLoaded(bitmap, null);
-                        }
-                        catch (OutOfMemoryError e) {
-                            if (AppSettings.useToast()) {
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(LiveWallpaperService.this,
-                                                "Out of memory error",
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        }
-                        catch (NullPointerException e) {
-                            if (AppSettings.useToast()) {
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(LiveWallpaperService.this,
-                                                "Null error",
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                            }
-                        }
-                    }
-                }).start();
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        try {
+//                            BitmapFactory.Options options = new BitmapFactory.Options();
+//                            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+//                            options.inPreferQualityOverSpeed = true;
+//                            options.inDither = true;
+//
+//                            if (AppSettings.useHighResolutionNotificationIcon()) {
+//
+//                                options.inJustDecodeBounds = true;
+//                                BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(),
+//                                        options);
+//
+//                                int bitWidth = options.outWidth;
+//                                int bitHeight = options.outHeight;
+//                                int minWidth = LiveWallpaperService.this.getResources().getDimensionPixelSize(
+//                                        android.R.dimen.notification_large_icon_width);
+//                                int minHeight = LiveWallpaperService.this.getResources().getDimensionPixelSize(
+//                                        android.R.dimen.notification_large_icon_height);
+//                                int sampleSize = 1;
+//                                if (bitHeight > minHeight || bitWidth > minWidth) {
+//
+//                                    final int halfHeight = bitHeight / 2;
+//                                    final int halfWidth = bitWidth / 2;
+//                                    while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
+//                                        sampleSize *= 2;
+//                                    }
+//                                }
+//                                options.inJustDecodeBounds = false;
+//                                options.inSampleSize = sampleSize;
+//                            }
+//                            else {
+//                                options.inSampleSize = NOTIFICATION_ICON_SAMPLE_SIZE;
+//                            }
+//                            Log.i(TAG, "sampleSize: " + options.inSampleSize);
+//                            Bitmap bitmap = BitmapFactory.decodeFile(FileHandler.getCurrentBitmapFile().getAbsolutePath(),
+//                                    options);
+//                            targetIcon.onBitmapLoaded(bitmap, null);
+//                        }
+//                        catch (OutOfMemoryError e) {
+//                            if (AppSettings.useToast()) {
+//                                handler.post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        Toast.makeText(LiveWallpaperService.this,
+//                                                "Out of memory error",
+//                                                Toast.LENGTH_SHORT).show();
+//                                    }
+//                                });
+//                            }
+//                        }
+//                        catch (NullPointerException e) {
+//                            if (AppSettings.useToast()) {
+//                                handler.post(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        Toast.makeText(LiveWallpaperService.this,
+//                                                "Null error",
+//                                                Toast.LENGTH_SHORT).show();
+//                                    }
+//                                });
+//                            }
+//                        }
+//                    }
+//                }).start();
             }
             else {
                 if (pinned && AppSettings.usePinIndicator()) {
@@ -1003,6 +1007,11 @@ public class LiveWallpaperService extends GLWallpaperService {
                         options.inPreferQualityOverSpeed = true;
                         options.inDither = true;
 
+                        int minWidth = LiveWallpaperService.this.getResources().getDimensionPixelSize(
+                                android.R.dimen.notification_large_icon_width);
+                        int minHeight = LiveWallpaperService.this.getResources().getDimensionPixelSize(
+                                android.R.dimen.notification_large_icon_height);
+
                         if (AppSettings.useHighResolutionNotificationIcon()) {
 
                             options.inJustDecodeBounds = true;
@@ -1011,10 +1020,6 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                             int bitWidth = options.outWidth;
                             int bitHeight = options.outHeight;
-                            int minWidth = LiveWallpaperService.this.getResources().getDimensionPixelSize(
-                                    android.R.dimen.notification_large_icon_width);
-                            int minHeight = LiveWallpaperService.this.getResources().getDimensionPixelSize(
-                                    android.R.dimen.notification_large_icon_height);
                             int sampleSize = 1;
                             if (bitHeight > minHeight || bitWidth > minWidth) {
 
@@ -1030,8 +1035,9 @@ public class LiveWallpaperService extends GLWallpaperService {
                         else {
                             options.inSampleSize = NOTIFICATION_ICON_SAMPLE_SIZE;
                         }
-                        Bitmap bitmap = BitmapFactory.decodeFile(files.get(index).getAbsolutePath(),
-                                options);
+
+                        Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(files.get(index).getAbsolutePath(),
+                                options), minWidth, minHeight, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
                         if (tileBitmaps.size() < NUM_TO_WIN) {
                             tileBitmaps.add(bitmap);
                         }
@@ -1485,11 +1491,18 @@ public class LiveWallpaperService extends GLWallpaperService {
         }
 
         private void loadNextImage(final float positionY) {
+
             if (pinReleaseTime > 0 && pinReleaseTime < System.currentTimeMillis()) {
                 pinned = false;
             }
 
             if (pinned) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(LiveWallpaperService.this, "Image is pinned", Toast.LENGTH_SHORT).show();
+                    }
+                });
                 return;
             }
 
@@ -1616,6 +1629,14 @@ public class LiveWallpaperService extends GLWallpaperService {
                         }
                         if (isVisible()) {
                             loadNextImage(-1);
+                        }
+                        else if (pinned) {
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(LiveWallpaperService.this, "Image is pinned", Toast.LENGTH_SHORT).show();
+                                }
+                            });
                         }
                         else {
                             new Thread(new Runnable() {

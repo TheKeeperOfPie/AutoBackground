@@ -60,6 +60,7 @@ public class SourceListAdapter extends BaseAdapter {
 
     private static final String TAG = SourceListAdapter.class.getCanonicalName();
     private static final float OVERLAY_ALPHA = 0.85f;
+    private final int colorFilterInt;
     private Activity mainActivity;
     private ArrayList<Source> listData;
     private HashSet<String> titles;
@@ -75,6 +76,7 @@ public class SourceListAdapter extends BaseAdapter {
         inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         cardClickListener = listener;
         this.longClickListener = longClickListener;
+        colorFilterInt = AppSettings.getColorFilterInt(activity);
     }
 
     @Override
@@ -99,6 +101,7 @@ public class SourceListAdapter extends BaseAdapter {
         CardView cardView;
         EditText title;
         View imageOverlay;
+        ImageView downloadButton;
         ImageView deleteButton;
         ImageView viewButton;
         ImageView editButton;
@@ -116,6 +119,7 @@ public class SourceListAdapter extends BaseAdapter {
             cardView = (CardView) convertView.findViewById(R.id.source_card);
             title = (EditText) convertView.findViewById(R.id.source_title);
             imageOverlay = convertView.findViewById(R.id.source_image_overlay);
+            downloadButton = (ImageView) convertView.findViewById(R.id.source_download_button);
             deleteButton = (ImageView) convertView.findViewById(R.id.source_delete_button);
             viewButton = (ImageView) convertView.findViewById(R.id.source_view_image_button);
             editButton = (ImageView) convertView.findViewById(R.id.source_edit_button);
@@ -125,12 +129,19 @@ public class SourceListAdapter extends BaseAdapter {
             sourceTime = (TextView) convertView.findViewById(R.id.source_time);
             sourceImage = (ImageView) convertView.findViewById(R.id.source_image);
 
+            downloadButton.setOnLongClickListener(longClickListener);
             deleteButton.setOnLongClickListener(longClickListener);
             viewButton.setOnLongClickListener(longClickListener);
             editButton.setOnLongClickListener(longClickListener);
 
+            downloadButton.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+            deleteButton.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+            viewButton.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+            editButton.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
+
+
             title.setClickable(false);
-            convertView.setTag(new ViewHolder(cardView, title, imageOverlay, deleteButton, viewButton, editButton, sourceType, sourceData, sourceNum, sourceTime, sourceImage));
+            convertView.setTag(new ViewHolder(cardView, title, imageOverlay, downloadButton, deleteButton, viewButton, editButton, sourceType, sourceData, sourceNum, sourceTime, sourceImage));
 
         }
 
@@ -138,6 +149,7 @@ public class SourceListAdapter extends BaseAdapter {
         cardView = viewHolder.cardView;
         title = viewHolder.title;
         imageOverlay = viewHolder.imageOverlay;
+        downloadButton = viewHolder.downloadButton;
         deleteButton = viewHolder.deleteButton;
         viewButton = viewHolder.viewButton;
         editButton = viewHolder.editButton;
@@ -148,7 +160,6 @@ public class SourceListAdapter extends BaseAdapter {
         sourceImage = viewHolder.sourceImage;
 
         Resources resources = parent.getContext().getResources();
-        int colorFilterInt = AppSettings.getColorFilterInt(parent.getContext());
         boolean use = listItem.isUse();
         boolean preview = listItem.isPreview();
 
@@ -182,18 +193,22 @@ public class SourceListAdapter extends BaseAdapter {
             imageOverlay.setAlpha(OVERLAY_ALPHA);
         }
 
+        Drawable downloadDrawable = resources.getDrawable(R.drawable.ic_file_download_white_24dp);
         Drawable deleteDrawable = resources.getDrawable(R.drawable.ic_delete_white_24dp);
         Drawable viewDrawable = resources.getDrawable(R.drawable.ic_photo_white_24dp);
         Drawable editDrawable = resources.getDrawable(R.drawable.ic_edit_white_24dp);
 
-        deleteDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-        viewDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-        editDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-
+        downloadButton.setImageDrawable(downloadDrawable);
         deleteButton.setImageDrawable(deleteDrawable);
         viewButton.setImageDrawable(viewDrawable);
         editButton.setImageDrawable(editDrawable);
 
+        downloadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                cardClickListener.onDownloadClick(finalConvertView, listData.get(position));
+            }
+        });
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -530,6 +545,7 @@ public class SourceListAdapter extends BaseAdapter {
         public final CardView cardView;
         public final EditText title;
         public final View imageOverlay;
+        public final ImageView downloadButton;
         public final ImageView deleteButton;
         public final ImageView viewButton;
         public final ImageView editButton;
@@ -542,6 +558,7 @@ public class SourceListAdapter extends BaseAdapter {
         public ViewHolder(CardView cardView,
                 EditText title,
                 View imageOverlay,
+                ImageView downloadButton,
                 ImageView deleteButton,
                 ImageView viewButton,
                 ImageView editButton,
@@ -550,6 +567,7 @@ public class SourceListAdapter extends BaseAdapter {
             this.cardView = cardView;
             this.title = title;
             this.imageOverlay = imageOverlay;
+            this.downloadButton = downloadButton;
             this.deleteButton = deleteButton;
             this.viewButton = viewButton;
             this.editButton = editButton;
@@ -562,6 +580,8 @@ public class SourceListAdapter extends BaseAdapter {
     }
 
     public interface CardClickListener {
+
+        void onDownloadClick(View view, Source source);
 
         void onDeleteClick(View view, int index);
 

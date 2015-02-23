@@ -755,6 +755,14 @@ public class AppSettings {
         prefs.edit().putInt("number_sources", listData.size()).commit();
     }
 
+    public static List<Source> getSources() {
+        List<Source> sources = new ArrayList<>();
+        for (int index = 0; index < AppSettings.getNumberSources(); index++) {
+            sources.add(AppSettings.getSource(index));
+        }
+        return sources;
+    }
+
     public static Source getSource(int index) {
 
         try {
@@ -1036,7 +1044,7 @@ public class AppSettings {
     }
 
     public static String getNotificationIconAction() {
-        return prefs.getString("notification_icon_action", "None");
+        return prefs.getString("notification_icon_action", "Game");
     }
 
     public static void setNotificationIconAction(String action) {
@@ -1045,7 +1053,7 @@ public class AppSettings {
 
     public static int getNotificationIconActionDrawable() {
 
-        String value = prefs.getString("notification_icon_action_drawable_string", "None");
+        String value = prefs.getString("notification_icon_action_drawable_string", "Game");
 
         switch (value) {
             case "Copy":
@@ -1071,7 +1079,7 @@ public class AppSettings {
 
     public static void setNotificationIconActionDrawable(int drawable) {
 
-        String value = "None";
+        String value = "Game";
 
         switch (drawable) {
             case R.drawable.ic_content_copy_white_24dp:

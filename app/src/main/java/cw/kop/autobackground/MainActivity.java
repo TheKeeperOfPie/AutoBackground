@@ -400,8 +400,8 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         else if (getFragmentManager().findFragmentByTag("album_fragment") != null) {
             getFragmentManager().popBackStack();
         }
-        else if (getFragmentManager().findFragmentByTag("source_info_fragment") != null) {
-            ((SourceInfoFragment) getFragmentManager().findFragmentByTag("source_info_fragment")).onBackPressed();
+        else if (getFragmentManager().findFragmentByTag("sourceInfoFragment") != null) {
+            ((SourceInfoFragment) getFragmentManager().findFragmentByTag("sourceInfoFragment")).onBackPressed();
         }
         else if (getFragmentManager().findFragmentByTag(("notification_fragment")) != null) {
             if (!((NotificationSettingsFragment) getFragmentManager().findFragmentByTag("notification_fragment")).onBackPressed()) {
