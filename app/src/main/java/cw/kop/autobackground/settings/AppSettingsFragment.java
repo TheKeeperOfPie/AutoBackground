@@ -317,9 +317,6 @@ public class AppSettingsFragment extends PreferenceFragment implements OnSharedP
                     case 1:
                         AppSettings.setTheme(R.style.AppDarkTheme);
                         break;
-                    case 2:
-                        AppSettings.setTheme(R.style.AppTransparentTheme);
-                        break;
                     default:
                 }
 

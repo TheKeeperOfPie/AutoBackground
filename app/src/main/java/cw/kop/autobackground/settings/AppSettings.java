@@ -62,7 +62,6 @@ public class AppSettings {
     // Themes are user readable to easier set indicator using theme String
     public static final String APP_LIGHT_THEME = "Light Theme";
     public static final String APP_DARK_THEME = "Dark Theme";
-    public static final String APP_TRANSPARENT_THEME = "Transparent Theme";
 
     private static final String TAG = AppSettings.class.getCanonicalName();
     private static final long DEFAULT_INTERVAL = 0;
@@ -288,10 +287,6 @@ public class AppSettings {
             case R.style.AppDarkTheme:
                 prefs.edit().putString("application_theme", AppSettings.APP_DARK_THEME).commit();
                 break;
-            case R.style.AppTransparentTheme:
-                prefs.edit().putString("application_theme",
-                        AppSettings.APP_TRANSPARENT_THEME).commit();
-                break;
             default:
                 break;
         }
@@ -315,7 +310,6 @@ public class AppSettings {
             case APP_LIGHT_THEME:
                 return context.getResources().getColor(R.color.DARK_GRAY_OPAQUE);
             case APP_DARK_THEME:
-            case APP_TRANSPARENT_THEME:
                 return context.getResources().getColor(R.color.LIGHT_GRAY_OPAQUE);
         }
 
@@ -328,7 +322,6 @@ public class AppSettings {
             case APP_LIGHT_THEME:
                 return context.getResources().getColor(R.color.LIGHT_GRAY_TRANSPARENT);
             case APP_DARK_THEME:
-            case APP_TRANSPARENT_THEME:
                 return context.getResources().getColor(R.color.DARK_GRAY_TRANSPARENT);
         }
 
@@ -341,7 +334,6 @@ public class AppSettings {
             case APP_LIGHT_THEME:
                 return context.getResources().getColor(R.color.LIGHT_THEME_DIALOG);
             case APP_DARK_THEME:
-            case APP_TRANSPARENT_THEME:
                 return context.getResources().getColor(R.color.DARK_THEME_DIALOG);
         }
 
@@ -354,7 +346,6 @@ public class AppSettings {
             case APP_LIGHT_THEME:
                 return R.color.LIGHT_THEME_BACKGROUND;
             case APP_DARK_THEME:
-            case APP_TRANSPARENT_THEME:
                 return R.color.DARK_THEME_BACKGROUND;
         }
 

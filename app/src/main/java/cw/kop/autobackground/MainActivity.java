@@ -225,10 +225,6 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
             navLayout.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
             toolbar.setTitleTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
         }
-        else if (AppSettings.getTheme().equals(AppSettings.APP_TRANSPARENT_THEME)) {
-            navLayout.setBackgroundColor(getResources().getColor(R.color.TRANSPARENT_BACKGROUND));
-            toolbar.setTitleTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-        }
 
         if (sourceListFragment == null) {
             sourceListFragment = new SourceListFragment();

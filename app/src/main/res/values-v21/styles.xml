@@ -17,13 +17,7 @@
 
 <resources>
 
-    <style name="AppBaseTheme" parent="@style/Theme.AppCompat.NoActionBar">
-        <!--
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-        -->
-
+    <style name="AppLightTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
         <item name="android:textAppearance">@style/TextAppearance.AppCompat.Title</item>
         <item name="colorPrimary">@color/BLUE_OPAQUE</item>
         <item name="colorPrimaryDark">@color/DARK_BLUE_OPAQUE</item>
@@ -33,7 +27,39 @@
         <item name="android:navigationBarColor">@color/BLUE_OPAQUE</item>
         <item name="android:titleTextStyle">@style/ToolbarTitle</item>
         <item name="toolbarStyle">@style/ToolbarTitle</item>
+        <item name="android:windowBackground">@color/LIGHT_THEME_BACKGROUND</item>
+        <item name="android:textColor">@color/DARK_GRAY_OPAQUE</item>
+        <item name="android:textColorSecondary">@color/DARK_GRAY_OPAQUE</item>
+        <item name="android:textColorHint">@color/DARK_GRAY_OPAQUE</item>
+        <item name="android:alertDialogTheme">@style/LightDialogTheme</item>
+        <item name="android:editTextStyle">@style/LightEditText</item>
+        <item name="android:popupMenuStyle">@style/LightPopup</item>
+        <item name="android:seekBarStyle">@style/LightSeekBar</item>
+        <!--<item name="android:listViewStyle">@style/LightListView</item>-->
+        <item name="android:actionBarWidgetTheme">@style/LightEditText</item>
+        <!--<item name="android:dropDownListViewStyle">@style/LightListView</item>-->
+    </style>
 
+    <style name="AppDarkTheme" parent="@style/Theme.AppCompat.NoActionBar">
+        <item name="android:textAppearance">@style/TextAppearance.AppCompat.Title</item>
+        <item name="colorPrimary">@color/BLUE_OPAQUE</item>
+        <item name="colorPrimaryDark">@color/DARK_BLUE_OPAQUE</item>
+        <item name="colorAccent">@color/ACCENT_OPAQUE</item>
+        <item name="android:listSeparatorTextViewStyle">@style/ListSeparator</item>"
+        <item name="android:statusBarColor">@color/DARK_BLUE_TRANSPARENT</item>
+        <item name="android:navigationBarColor">@color/BLUE_OPAQUE</item>
+        <item name="android:titleTextStyle">@style/ToolbarTitle</item>
+        <item name="toolbarStyle">@style/ToolbarTitle</item>
+        <item name="android:windowBackground">@color/DARK_THEME_BACKGROUND</item>
+        <item name="android:textColor">@color/LIGHT_GRAY_OPAQUE</item>
+        <item name="android:textColorSecondary">@color/LIGHT_GRAY_OPAQUE</item>
+        <item name="android:alertDialogTheme">@style/DarkDialogTheme</item>
+        <item name="android:editTextStyle">@style/DarkEditText</item>
+        <item name="android:popupMenuStyle">@style/DarkPopup</item>
+        <item name="android:seekBarStyle">@style/DarkSeekBar</item>
+        <item name="android:listViewStyle">@style/DarkListView</item>
+        <item name="android:actionBarWidgetTheme">@style/DarkEditText</item>
+        <item name="android:dropDownListViewStyle">@style/DarkListView</item>
     </style>
 
 </resources>
