@@ -59,7 +59,9 @@ public class DaydreamService extends DreamService {
 
                     @Override
                     public boolean onDoubleTap(MotionEvent e) {
-                        renderer.loadNext(FileHandler.getNextImage());
+                        if (AppSettings.useDoubleTap()) {
+                            renderer.loadNext(FileHandler.getNextImage());
+                        }
                         return super.onDoubleTap(e);
                     }
 

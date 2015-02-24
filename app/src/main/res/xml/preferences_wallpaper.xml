@@ -205,17 +205,17 @@
             android:title="@string/use_animation"
             />
 
+        <Preference
+            android:key="animation_speed"
+            android:summary="@string/animation_speed_description"
+            android:title="@string/animation_speed"
+            />
+
         <cw.kop.autobackground.CustomSwitchPreference
             android:defaultValue="true"
             android:key="use_animation_vertical"
             android:summary="@string/use_animation_vertical_description"
             android:title="@string/use_animation_vertical"
-            />
-
-        <Preference
-            android:key="animation_speed"
-            android:summary="@string/animation_speed_description"
-            android:title="@string/animation_speed"
             />
 
         <Preference
@@ -299,12 +299,12 @@
             android:title="@string/use_scale"
             />
 
-        <cw.kop.autobackground.CustomSwitchPreference
-            android:defaultValue="false"
-            android:key="extend_scale"
-            android:summary="@string/extend_scale_description"
-            android:title="@string/extend_scale"
-            />
+        <!--<cw.kop.autobackground.CustomSwitchPreference-->
+            <!--android:defaultValue="false"-->
+            <!--android:key="extend_scale"-->
+            <!--android:summary="@string/extend_scale_description"-->
+            <!--android:title="@string/extend_scale"-->
+            <!--/>-->
 
         <cw.kop.autobackground.CustomSwitchPreference
             android:defaultValue="true"

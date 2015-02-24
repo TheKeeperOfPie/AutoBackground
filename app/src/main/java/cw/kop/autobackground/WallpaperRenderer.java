@@ -19,13 +19,7 @@ package cw.kop.autobackground;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Matrix;
 import android.media.ThumbnailUtils;
-import android.media.effect.Effect;
-import android.media.effect.EffectContext;
-import android.media.effect.EffectFactory;
-import android.media.effect.EffectUpdateListener;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Handler;
@@ -34,15 +28,10 @@ import android.support.v8.renderscript.Element;
 import android.support.v8.renderscript.RenderScript;
 import android.support.v8.renderscript.ScriptIntrinsicBlur;
 import android.util.Log;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -286,24 +275,24 @@ class WallpaperRenderer implements GLSurfaceView.Renderer {
 
         if (positionY > renderScreenHeight / 2 && renderImagesBottom.size() > 0) {
             for (RenderImage image : renderImagesBottom) {
-                image.setScaleFactor(factor);
+                image.applyScaleFactor(factor);
             }
         }
         else if (renderImagesTop.size() > 0) {
             for (RenderImage image : renderImagesTop) {
-                image.setScaleFactor(factor);
+                image.applyScaleFactor(factor);
             }
         }
     }
 
     public void resetPosition() {
         for (RenderImage image : renderImagesTop) {
-            image.setScaleFactor(1.0f);
+            image.applyScaleFactor(0.0f);
             image.setRawOffsetX(rawOffsetX);
             image.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
         }
         for (RenderImage image : renderImagesBottom) {
-            image.setScaleFactor(1.0f);
+            image.applyScaleFactor(0.0f);
             image.setRawOffsetX(rawOffsetX);
             image.setAnimated(AppSettings.useAnimation() || AppSettings.useVerticalAnimation());
         }

@@ -538,7 +538,7 @@ public class AppSettings {
         int buffer = 250;
 
         try {
-            buffer = Integer.parseInt(prefs.getString("animation_safety_adv", "250"));
+            buffer = Integer.parseInt(prefs.getString("animation_safety_adv", "150"));
         }
         catch (NumberFormatException e) {
             setAnimationSafety("" + buffer);
@@ -705,7 +705,7 @@ public class AppSettings {
     }
 
     public static boolean extendScale() {
-        return prefs.getBoolean("extend_scale", false);
+        return false; //prefs.getBoolean("extend_scale", false);
     }
 
     public static boolean useLongPressReset() {

@@ -24,10 +24,6 @@ import android.media.effect.EffectContext;
 import android.media.effect.EffectFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
-import android.support.v8.renderscript.Allocation;
-import android.support.v8.renderscript.Element;
-import android.support.v8.renderscript.RenderScript;
-import android.support.v8.renderscript.ScriptIntrinsicBlur;
 import android.util.Log;
 import android.view.animation.OvershootInterpolator;
 
@@ -150,7 +146,7 @@ public class RenderImage {
     public void setDimensions(float width, float height) {
         renderScreenWidth = width;
         renderScreenHeight = height;
-        setScaleFactor(0.0f);
+        applyScaleFactor(0.0f);
     }
 
     public void resetMatrices() {
@@ -648,7 +644,7 @@ public class RenderImage {
 //        }
 //    }
 
-    public void setScaleFactor(float factor) {
+    public void applyScaleFactor(float factor) {
         scaleFactor *= factor;
 
         float minScaleFactor;
@@ -677,6 +673,8 @@ public class RenderImage {
                 minScaleFactor,
                 Math.min(scaleFactor,
                         5.0f));
+
+        Log.d(TAG, "new scaleFactor: " + scaleFactor);
     }
 
     private void checkGLError(String op) {
@@ -839,7 +837,7 @@ public class RenderImage {
             transitionEndtime = 0;
             angle = 0.0f;
             alpha = 1.0f;
-            setScaleFactor(1.0f);
+            applyScaleFactor(0.0f);
             eventListener.requestRender();
             inStartTransition = false;
             return;

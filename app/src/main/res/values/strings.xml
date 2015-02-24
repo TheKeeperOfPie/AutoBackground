@@ -106,16 +106,16 @@
     <string name="use_spin_out">Spin Out</string>
     <string name="use_spin_out_description">Rotate old image out</string>
     <string name="reverse_spin_out">Reverse Spin Out</string>
-    <string name="reverse_spin_out_description">Spin out counter-clockwise</string>
+    <string name="reverse_spin_out_description">Spin out clockwise</string>
     <string name="spin_out_angle">Spin Out Angle</string>
     <string name="spin_out_angle_description">Rotation angle for spin out</string>
 
     <string name="use_animation">Use Horizontal Animation</string>
     <string name="use_animation_description">Pan side to side animation</string>
-    <string name="use_animation_vertical">Use Vertical Animation</string>
-    <string name="use_animation_vertical_description">Pan up and down animation</string>
     <string name="animation_speed">Horizontal Speed</string>
     <string name="animation_speed_description">Horizontal animation speed</string>
+    <string name="use_animation_vertical">Use Vertical Animation</string>
+    <string name="use_animation_vertical_description">Pan up and down animation</string>
     <string name="animation_speed_vertical">Vertical Speed</string>
     <string name="animation_speed_vertical_description">Vertical animation speed</string>
     <string name="animation_speed_hint">pixels per frame</string>>
@@ -540,13 +540,14 @@
     </string-array>
 
     <string-array name="timer_entry_menu">
-        <item>1 Hour</item>
-        <item>2 Hours</item>
-        <item>6 Hours</item>
         <item>12 Hours</item>
         <item>1 Day</item>
         <item>2 Days</item>
+        <item>3 Days</item>
         <item>4 Days</item>
+        <item>5 Days</item>
+        <item>6 Days</item>
+        <item>1 Week</item>
     </string-array>
 
     <string-array name="pin_entry_menu">

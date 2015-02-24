@@ -142,10 +142,11 @@ public class LocalImageAdapter extends BaseAdapter {
                 }
 
                 fileTitle.setText(file.getName());
-                fileSummary.setText(file.isDirectory() ? file.list().length + " Files" : "" + (file.length() / BYTE_TO_MEBIBYTE) + " MiB");
+                fileSummary.setText((file.isDirectory() && file.list() != null )? file.list().length + " Files" : "" + (file.length() / BYTE_TO_MEBIBYTE) + " MiB");
             }
 
             return convertView;
+
         }
         return null;
     }

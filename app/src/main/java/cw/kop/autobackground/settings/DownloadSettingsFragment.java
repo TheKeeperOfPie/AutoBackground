@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
@@ -50,6 +51,7 @@ import cw.kop.autobackground.images.LocalImageAdapter;
 public class DownloadSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
     private final static long CONVERT_MILLES_TO_MIN = 60000;
+    private final static long CONVERT_MIN_TO_DAY = 1440;
     private final static int REQUEST_FILE_ID = 0;
     private SwitchPreference timerPref;
     private Preference startTimePref;
@@ -216,31 +218,35 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case 0:
-                        AppSettings.setTimerDuration(AlarmManager.INTERVAL_HOUR);
-                        break;
-                    case 1:
-                        AppSettings.setTimerDuration(2 * AlarmManager.INTERVAL_HOUR);
-                        break;
-                    case 2:
-                        AppSettings.setTimerDuration(6 * AlarmManager.INTERVAL_HOUR);
-                        break;
-                    case 3:
                         AppSettings.setTimerDuration(AlarmManager.INTERVAL_HALF_DAY);
                         break;
-                    case 4:
-                        AppSettings.setTimerDuration(AlarmManager.INTERVAL_DAY);
+                    case 1:
+                        AppSettings.setTimerDuration(1 * AlarmManager.INTERVAL_DAY);
                         break;
-                    case 5:
+                    case 2:
                         AppSettings.setTimerDuration(2 * AlarmManager.INTERVAL_DAY);
                         break;
-                    case 6:
+                    case 3:
+                        AppSettings.setTimerDuration(3 * AlarmManager.INTERVAL_DAY);
+                        break;
+                    case 4:
                         AppSettings.setTimerDuration(4 * AlarmManager.INTERVAL_DAY);
+                        break;
+                    case 5:
+                        AppSettings.setTimerDuration(5 * AlarmManager.INTERVAL_DAY);
+                        break;
+                    case 6:
+                        AppSettings.setTimerDuration(6 * AlarmManager.INTERVAL_DAY);
+                        break;
+                    case 7:
+                        AppSettings.setTimerDuration(7 * AlarmManager.INTERVAL_DAY);
                         break;
                     default:
                 }
 
                 if (AppSettings.getTimerDuration() > 0) {
-                    timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
+                    float days = (float) AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN / CONVERT_MIN_TO_DAY;
+                    timerPref.setSummary("Download every " + String.format("%.2f", days) + (days == 1 ? " day" : " days"));
                 }
 
                 setDownloadAlarm();
@@ -287,13 +293,14 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
                 long inputValue = Long.parseLong(value);
 
-                if (inputValue < 30000L) {
-                    inputValue = 30000L;
+                if (inputValue < 30L) {
+                    inputValue = 30L;
                 }
 
                 AppSettings.setTimerDuration(inputValue * CONVERT_MILLES_TO_MIN);
                 setDownloadAlarm();
-                timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
+                float days = (float) AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN / CONVERT_MIN_TO_DAY;
+                timerPref.setSummary("Download every " + String.format("%.2f", days) + (days == 1 ? " day" : " days"));
                 dismissDialog();
             }
 
@@ -410,7 +417,8 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
 
         if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
-            timerPref.setSummary("Download every " + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN) + " minutes");
+            float days = (float) AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN / CONVERT_MIN_TO_DAY;
+            timerPref.setSummary("Download every " + String.format("%.2f", days) + (days == 1 ? " day" : " days"));
         }
         startTimePref.setSummary("Time to begin download timer: " + AppSettings.getTimerHour() + ":" + String.format(
                 "%02d",
@@ -454,14 +462,18 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
             if (key.equals("use_download_path") && AppSettings.useDownloadPath()) {
 
-                File rootDir = new File(File.separator);
+                File rootDir = Environment.getExternalStorageDirectory();
+                if (!rootDir.exists() || !rootDir.canRead()) {
+                    rootDir = new File(File.separator);
+                }
                 final FolderFragment folderFragment = new FolderFragment();
                 Bundle arguments = new Bundle();
-                arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
                 arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
+                arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
                 final LocalImageAdapter adapter = new LocalImageAdapter(appContext, rootDir, rootDir);
                 folderFragment.setArguments(arguments);
                 folderFragment.setAdapter(adapter);
+                folderFragment.setStartingDirectoryText(rootDir.getAbsolutePath());
                 folderFragment.setListener(new FolderFragment.FolderEventListener() {
                     @Override
                     public void onUseDirectoryClick() {
@@ -469,6 +481,8 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                         Toast.makeText(appContext,
                                 "Download path set to: \n" + AppSettings.getDownloadPath(),
                                 Toast.LENGTH_SHORT).show();
+                        adapter.setFinished();
+                        getActivity().onBackPressed();
                     }
 
                     @Override

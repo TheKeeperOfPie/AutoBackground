@@ -146,6 +146,8 @@ public class ImageHistoryAdapter extends BaseAdapter {
 
         File historyDir = new File(AppSettings.getDownloadPath() + "/HistoryCache");
 
+        historyDir.mkdirs();
+
         FilenameFilter imageFilter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String filename) {
