@@ -12,6 +12,8 @@ A Google+ Community for this app is available here: https://plus.google.com/comm
 Explanation of Settings
 ==============
 
+Default settings are italized. Advanced settings are marked with a preceding "*". These settings can be revealed by activating Advanced Settings in the Application settings screen.
+
 Sources
 --------------
 
@@ -25,7 +27,7 @@ Sources
 Wallpaper
 --------------
 
-- Preserve Context:
+- *Preserve Context:
     - On: Saves OpenGL EGL context to prevent redrawing the wallpaper when it comes back into view
     - Off: Discards context on pause, clearing up more memory but requiring a decode and redraw when the wallpaper is visible again
 - Double Image:
@@ -34,9 +36,6 @@ Wallpaper
 - Shuffle Images:
     - On: Selects a random image from a compiled list of all usable images in sources
     - Off: Rotates through images in order at time of cycle, does not check for adjustment of images by other processes
-- Scale Images:
-    - On: Will resize bitmaps to screen dimensions if they're too small or large, uses less memory
-    - Off: Assuming bitmap size is not larger than the max supported texture resolution, bitmaps will be loaded at their actual resolution
 
 - Update Interval: Time between changing images, or to change on a return to the wallpaper
 - Force Interval:
@@ -53,6 +52,44 @@ Wallpaper
 - Fade:
     - On: Fades image alphas during transition
     - Off: New image will instantly replace old image
+- Horizontal Overshoot: Throws image in horizontally
+- *Reverse Horizontal Overshoot:
+    - On: Throws image in from right side
+    - Off: Throws image in from left side
+- *Horizontal Overshoot Intensity: Adjusts amount of horizontal overshoot
+- Vertical Overshoot: Throws image in vertically
+- *Reverse Vertical Overshoot:
+    - On: Throws image in from top
+    - Off: Throws image in from bottom
+- *Vertical Overshoot Intensity: Adjusts amount of vertical overshoot
+- Zoom In: Enlarge new image into view
+- Zoom Out: Shrink old image out of view
+- Spin In: Rotate new image in
+- *Reverse Spin In:
+    - On: Rotate in counter-clockwise
+    - Off: Rotate in clockwise
+- *Spin In Angle: Total angle to rotate in
+- Spin Out: Rotate old image out
+- *Reverse Spin Out:
+    - On: Rotate out clockwise
+    - Off: Rotate out counter-clockwise
+- *Spin Out Angle: Total angle to rotate out
+
+- Use Horizontal Animation: Side to side animation
+- *Horizontal Speed: Horizontal animation speed in number of pixels per animated frame
+- Use Vertical Animation: Up and down animation
+- *Vertical Speed: Vertical animation speed in number of pixels per animated frame
+- *Scale Speed: Adjust speed with zoom factor
+- *Frame Rate: Frames per second to render animation
+- *Animation Safety: Buffer in pixels required in image to allow animation, used to prevent animation shake
+
+- Double Tap Gesture: Cycle image when wallpaper is double tapped
+- Use Scrolling: Allow scrolling of wallpaper with launcher screens
+- Parallax Scrolling: Reverse direction wallpaper with launcher scrolling
+- Use Drag: Allow dragging of wallpaper with 2 fingers without moving launcher screens
+- Reverse Drag: Reverse direction image moves when dragged with 2 fingers
+- Use Zoom: Allow wallpaper to be zoomed with a pinch in/out gesture
+- Use Long Press Reset: Reset wallpaper zoom on long press
 
 Downloader
 --------------
