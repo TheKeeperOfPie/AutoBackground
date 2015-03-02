@@ -98,8 +98,8 @@ public class AlbumAdapter extends BaseAdapter {
 
     private static class ViewHolder {
 
-        public final ImageView icon;
-        public final TextView name;
+        protected final ImageView icon;
+        protected final TextView name;
 
         public ViewHolder(ImageView icon, TextView name) {
             this.icon = icon;

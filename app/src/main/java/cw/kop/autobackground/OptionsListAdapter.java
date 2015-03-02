@@ -73,7 +73,6 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
         viewHolder.optionSummary.setText(optionData.getSummary());
 
         viewHolder.optionIcon.setImageResource(optionData.getDrawable());
-        viewHolder.optionPosition = optionPosition;
 
         viewHolder.rowLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,12 +90,10 @@ public class OptionsListAdapter extends RecyclerView.Adapter<OptionsListAdapter.
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public ImageView optionIcon;
-        public TextView optionTitle;
-        public TextView optionSummary;
-        public View rowLayout;
-
-        public int optionPosition;
+        protected ImageView optionIcon;
+        protected TextView optionTitle;
+        protected TextView optionSummary;
+        protected View rowLayout;
 
         public ViewHolder(View rowLayout) {
             super(rowLayout);

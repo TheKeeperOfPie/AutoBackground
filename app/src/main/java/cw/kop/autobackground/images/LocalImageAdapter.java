@@ -18,7 +18,6 @@ package cw.kop.autobackground.images;
 
 import android.content.Context;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,8 +43,8 @@ public class LocalImageAdapter extends BaseAdapter {
 
     private static final String TAG = LocalImageAdapter.class.getCanonicalName();
     private static final int BYTE_TO_MEBIBYTE = 1048576;
+    private File currentDir;
     private File topDir;
-    private File startDir;
     private ArrayList<File> listFiles;
     private LayoutInflater inflater;
     private boolean finish;
@@ -54,8 +53,8 @@ public class LocalImageAdapter extends BaseAdapter {
     public LocalImageAdapter(Context activity, File topDir, File startDir) {
         listFiles = new ArrayList<>();
         inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        this.startDir = startDir;
         this.topDir = topDir;
+        this.currentDir = startDir;
         setDirectory(startDir);
         colorFilterInt = AppSettings.getColorFilterInt(activity);
     }
@@ -152,13 +151,13 @@ public class LocalImageAdapter extends BaseAdapter {
     }
 
     public File getDirectory() {
-        return topDir;
+        return currentDir;
     }
 
     public void setDirectory(File selectedFile) {
 
         if (selectedFile != null && selectedFile.isDirectory()) {
-            topDir = selectedFile;
+            currentDir = selectedFile;
 
             ArrayList<File> folders = new ArrayList<>();
             ArrayList<File> files = new ArrayList<>();
@@ -208,11 +207,11 @@ public class LocalImageAdapter extends BaseAdapter {
 
     public Boolean backDirectory() {
 
-        if (finish || topDir.getAbsolutePath().equals(startDir.getAbsolutePath())) {
+        if (finish || currentDir.getAbsolutePath().equals(topDir.getAbsolutePath())) {
             return true;
         }
 
-        File parentDir = topDir.getParentFile();
+        File parentDir = currentDir.getParentFile();
 
         if (parentDir != null && parentDir.exists() && parentDir.isDirectory()) {
             setDirectory(parentDir);
@@ -228,10 +227,10 @@ public class LocalImageAdapter extends BaseAdapter {
 
     private static class ViewHolder {
 
-        public final TextView fileTitle;
-        public final TextView fileSummary;
-        public final ImageView fileImage;
-        public final ImageView fileImageFull;
+        protected final TextView fileTitle;
+        protected final TextView fileSummary;
+        protected final ImageView fileImage;
+        protected final ImageView fileImageFull;
 
         public ViewHolder(TextView fileTitle,
                 TextView fileSummary,

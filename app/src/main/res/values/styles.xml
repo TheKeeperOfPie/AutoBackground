@@ -32,6 +32,7 @@
         <item name="android:editTextStyle">@style/LightEditText</item>
         <item name="android:popupMenuStyle">@style/LightPopup</item>
         <item name="android:seekBarStyle">@style/LightSeekBar</item>
+        <item name="android:windowActionModeOverlay">true</item>
         <!--<item name="android:listViewStyle">@style/LightListView</item>-->
         <item name="android:actionBarWidgetTheme">@style/LightEditText</item>
         <!--<item name="android:dropDownListViewStyle">@style/LightListView</item>-->
@@ -49,9 +50,10 @@
         <item name="android:editTextStyle">@style/DarkEditText</item>
         <item name="android:popupMenuStyle">@style/DarkPopup</item>
         <item name="android:seekBarStyle">@style/DarkSeekBar</item>
-        <item name="android:listViewStyle">@style/DarkListView</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <!--<item name="android:listViewStyle">@style/DarkListView</item>-->
         <item name="android:actionBarWidgetTheme">@style/DarkEditText</item>
-        <item name="android:dropDownListViewStyle">@style/DarkListView</item>
+        <!--<item name="android:dropDownListViewStyle">@style/DarkListView</item>-->
     </style>
 
     <style name="LightSwitch" parent="@android:style/TextAppearance.Holo.Small">

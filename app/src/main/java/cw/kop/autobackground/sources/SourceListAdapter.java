@@ -543,18 +543,18 @@ public class SourceListAdapter extends BaseAdapter {
 
     private static class ViewHolder {
 
-        public final CardView cardView;
-        public final EditText title;
-        public final View imageOverlay;
-        public final ImageView downloadButton;
-        public final ImageView deleteButton;
-        public final ImageView viewButton;
-        public final ImageView editButton;
-        public final TextView sourceType;
-        public final TextView sourceData;
-        public final TextView sourceNum;
-        public final TextView sourceTime;
-        public final ImageView sourceImage;
+        protected final CardView cardView;
+        protected final EditText title;
+        protected final View imageOverlay;
+        protected final ImageView downloadButton;
+        protected final ImageView deleteButton;
+        protected final ImageView viewButton;
+        protected final ImageView editButton;
+        protected final TextView sourceType;
+        protected final TextView sourceData;
+        protected final TextView sourceNum;
+        protected final TextView sourceTime;
+        protected final ImageView sourceImage;
 
         public ViewHolder(CardView cardView,
                 EditText title,

@@ -57,5 +57,4 @@ public class TutorialPagerAdapter extends FragmentStatePagerAdapter {
         return NUM_ITEMS;
     }
 
-
 }

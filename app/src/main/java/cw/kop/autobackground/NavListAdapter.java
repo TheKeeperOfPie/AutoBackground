@@ -101,8 +101,8 @@ public class NavListAdapter extends BaseAdapter {
 
     private static class ViewHolder {
 
-        public final ImageView fragmentImage;
-        public final TextView fragmentTitle;
+        protected final ImageView fragmentImage;
+        protected final TextView fragmentTitle;
 
         public ViewHolder(ImageView fragmentImage, TextView fragmentTitle) {
             this.fragmentImage = fragmentImage;

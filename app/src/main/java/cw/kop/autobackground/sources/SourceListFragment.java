@@ -242,6 +242,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         sourceList = (ListView) view.findViewById(R.id.source_list);
         sourceList.setEmptyView(emptyArrow);
+        sourceList.setDividerHeight(0);
         addButtonBackground = (ImageView) view.findViewById(R.id.floating_button);
         addButton = (ImageView) view.findViewById(R.id.floating_button_icon);
         addButton.setOnClickListener(this);

@@ -196,9 +196,9 @@ public class ImageHistoryAdapter extends BaseAdapter {
 
     private static class ViewHolder {
 
-        public final TextView fileTitle;
-        public final TextView fileSummary;
-        public final ImageView fileImage;
+        protected final TextView fileTitle;
+        protected final TextView fileSummary;
+        protected final ImageView fileImage;
 
         private ViewHolder(TextView fileTitle, TextView fileSummary, ImageView fileImage) {
             this.fileTitle = fileTitle;

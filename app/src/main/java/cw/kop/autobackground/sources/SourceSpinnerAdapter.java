@@ -83,7 +83,7 @@ public class SourceSpinnerAdapter extends ArrayAdapter<String> {
 
     private class ViewHolder {
 
-        public final TextView spinnerText;
+        protected final TextView spinnerText;
 
         public ViewHolder(TextView spinnerText) {
             this.spinnerText = spinnerText;
