@@ -89,8 +89,6 @@ public class FileHandler {
             Toast.makeText(appContext, "Stopping download...", Toast.LENGTH_SHORT).show();
             Intent closeDrawer = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
             appContext.sendBroadcast(closeDrawer);
-            Intent resetDownloadIntent = new Intent(FileHandler.DOWNLOAD_TERMINATED);
-            LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
         }
         isDownloading = false;
     }

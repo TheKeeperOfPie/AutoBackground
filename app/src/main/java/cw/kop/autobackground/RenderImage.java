@@ -673,8 +673,6 @@ public class RenderImage {
                 minScaleFactor,
                 Math.min(scaleFactor,
                         5.0f));
-
-        Log.d(TAG, "new scaleFactor: " + scaleFactor);
     }
 
     private void checkGLError(String op) {

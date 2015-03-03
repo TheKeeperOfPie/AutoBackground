@@ -106,6 +106,7 @@ public class DownloadThread extends Thread {
     private boolean isAnyLowResolution;
     private boolean isLowResolution;
     private boolean isNotEnoughNew;
+    private volatile boolean interrupted;
 
     public DownloadThread(Context context, List<Source> sources) {
         appContext = context;
@@ -212,7 +213,7 @@ public class DownloadThread extends Thread {
 
         for (Source source : validSources) {
 
-            if (isInterrupted()) {
+            if (isInterrupted() || interrupted) {
                 cancel();
                 return;
             }
@@ -258,6 +259,11 @@ public class DownloadThread extends Thread {
                         downloadDropbox(source);
                 }
 
+                if (isInterrupted() || interrupted) {
+                    cancel();
+                    return;
+                }
+
                 numTarget = 0;
                 totalTarget += source.getNum();
 
@@ -270,6 +276,13 @@ public class DownloadThread extends Thread {
             }
         }
         finish();
+    }
+
+    @Override
+    public void interrupt() {
+        super.interrupt();
+        interrupted = true;
+        Log.i(TAG, "DownloadThread interrupted");
     }
 
     private Set<String> compileImageLinks(Document doc, String tag, String attr) {
@@ -315,8 +328,9 @@ public class DownloadThread extends Thread {
         Set<File> downloadedFiles = new HashSet<>();
 
         for (int count = 0; numDownloaded < targetNum && count < links.size(); count++) {
-            if (isInterrupted()) {
-                break;
+            if (isInterrupted() || interrupted) {
+                removeExtras(dir, title, targetNum, downloadedFiles);
+                return;
             }
 
             String randLink = links.get(count);
@@ -328,7 +342,7 @@ public class DownloadThread extends Thread {
 
                 Bitmap bitmap = getImage(randLink);
 
-                if (bitmap != null) {
+                if (bitmap != null && !interrupted) {
                     long time = System.currentTimeMillis();
                     File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + " " + time + ".png");
 
@@ -395,7 +409,7 @@ public class DownloadThread extends Thread {
 
     private void downloadWebsite(Source source) throws IOException {
 
-        if (isInterrupted()) {
+        if (isInterrupted() || interrupted) {
             return;
         }
 
@@ -416,7 +430,7 @@ public class DownloadThread extends Thread {
 
     private void downloadImgurSubreddit(Source source) {
 
-        if (isInterrupted()) {
+        if (isInterrupted() || interrupted) {
             return;
         }
 
@@ -467,7 +481,7 @@ public class DownloadThread extends Thread {
 
     private void downloadImgurAlbum(Source source) {
 
-        if (isInterrupted()) {
+        if (isInterrupted() || interrupted) {
             return;
         }
 
@@ -515,7 +529,7 @@ public class DownloadThread extends Thread {
 
     private void downloadPicasa(Source source) {
 
-        if (isInterrupted()) {
+        if (isInterrupted() || interrupted) {
             return;
         }
 
@@ -552,7 +566,7 @@ public class DownloadThread extends Thread {
 
     private void downloadTumblrBlog(Source source) {
 
-        if (isInterrupted()) {
+        if (isInterrupted() || interrupted) {
             return;
         }
 
@@ -640,7 +654,7 @@ public class DownloadThread extends Thread {
     }
 
     private void downloadRedditSubreddit(Source source) {
-        if (isInterrupted()) {
+        if (isInterrupted() || interrupted) {
             return;
         }
 
@@ -823,12 +837,12 @@ public class DownloadThread extends Thread {
                 return bitmap;
 
             }
-            catch (InterruptedIOException e) {
-                this.interrupt();
+            catch (java.io.InterruptedIOException e) {
+                DownloadThread.this.interrupt();
                 Log.i(TAG, "Interrupted");
             }
             catch (OutOfMemoryError | IOException e) {
-                interrupt();
+                DownloadThread.this.interrupt();
                 e.printStackTrace();
             }
         }
@@ -984,10 +998,8 @@ public class DownloadThread extends Thread {
         Intent resetDownloadIntent = new Intent(FileHandler.DOWNLOAD_TERMINATED);
         LocalBroadcastManager.getInstance(appContext).sendBroadcast(resetDownloadIntent);
 
-        sendToast("Download cancelled");
-
-        AppSettings.checkUsedLinksSize();
         appContext = null;
+        AppSettings.checkUsedLinksSize();
         FileHandler.setIsDownloading(false);
     }
 

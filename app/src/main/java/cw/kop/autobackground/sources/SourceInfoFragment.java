@@ -331,6 +331,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             sourceSpinner.setVisibility(View.GONE);
 
             type = arguments.getString(Source.TYPE);
+            setFocusBlocks();
 
             folderData = arguments.getString(Source.DATA);
             String data = folderData;
@@ -340,10 +341,6 @@ public class SourceInfoFragment extends PreferenceFragment {
             suffix = AppSettings.getSourceDataSuffix(type);
 
             switch (type) {
-                case AppSettings.GOOGLE_ALBUM:
-                    sourceTitle.setFocusable(false);
-                    sourceData.setFocusable(false);
-                    sourceNum.setFocusable(false);
                 case AppSettings.FOLDER:
                     data = Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER));
                     break;
@@ -693,13 +690,10 @@ public class SourceInfoFragment extends PreferenceFragment {
 
     private void selectSource(String newType) {
 
-        boolean blockTitle = false;
-        boolean blockData = false;
-        boolean blockNum = false;
-
-        if (type.equals(AppSettings.FOLDER) ||
+        if (!type.equals(newType) &&
+                (type.equals(AppSettings.FOLDER) ||
                 type.equals(AppSettings.GOOGLE_ALBUM) ||
-                type.equals(AppSettings.DROPBOX_FOLDER)) {
+                type.equals(AppSettings.DROPBOX_FOLDER))) {
             sourceTitle.setText("");
             sourceData.setText("");
             sourceNum.setText("");
@@ -720,8 +714,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                         showImageFragment(new File(File.separator), new File(File.separator));
                     }
                 }
-                blockData = true;
-                blockNum = true;
                 break;
             case AppSettings.IMGUR_SUBREDDIT:
                 break;
@@ -735,7 +727,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                 else if (getFragmentManager().findFragmentByTag("folder_fragment") == null) {
                     new PicasaAlbumTask().execute();
                 }
-                blockData = true;
                 break;
             case AppSettings.TUMBLR_BLOG:
                 break;
@@ -752,7 +743,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                 else if (getFragmentManager().findFragmentByTag("folder_fragment") == null) {
                     showDropboxFragment();
                 }
-                blockData = true;
                 break;
             default:
         }
@@ -761,25 +751,27 @@ public class SourceInfoFragment extends PreferenceFragment {
         hint = AppSettings.getSourceDataHint(type);
         suffix = AppSettings.getSourceDataSuffix(type);
 
+        setFocusBlocks();
         setDataWrappers();
 
-        sourceTitle.setFocusable(true);
-        sourceTitle.setFocusableInTouchMode(true);
-        sourceData.setFocusable(true);
-        sourceData.setFocusableInTouchMode(true);
-        sourceNum.setFocusable(true);
-        sourceNum.setFocusableInTouchMode(true);
+    }
 
-        if (blockTitle) {
-            sourceTitle.setFocusable(false);
-        }
-        if (blockData) {
-            sourceData.setFocusable(false);
-        }
-        if (blockNum) {
-            sourceNum.setFocusable(false);
+    private void setFocusBlocks() {
+
+        boolean focusData = true;
+        boolean focusNum = true;
+
+        switch (type) {
+            case AppSettings.FOLDER:
+            case AppSettings.GOOGLE_ALBUM:
+                focusNum = false;
+            case AppSettings.DROPBOX_FOLDER:
+                focusData = false;
+                break;
         }
 
+        sourceData.setFocusableInTouchMode(focusData);
+        sourceNum.setFocusableInTouchMode(focusNum);
     }
 
     @Override
@@ -914,10 +906,12 @@ public class SourceInfoFragment extends PreferenceFragment {
                                 numImages += folderName.list(filenameFilter).length;
                             }
 
-                            setData(AppSettings.FOLDER,
-                                    dir.getName(),
-                                    stringBuilder.toString(),
-                                    numImages);
+                            if (isAdded()) {
+                                setData(AppSettings.FOLDER,
+                                        dir.getName(),
+                                        stringBuilder.toString(),
+                                        numImages);
+                            }
                         }
                     }).start();
                 }
@@ -938,9 +932,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                 File[] fileList = dir.listFiles();
 
                 if (fileList != null) {
-                    if (dir.listFiles(FileHandler.getImageFileNameFilter()).length > 0) {
-                        directoryList.add(dir);
-                    }
+                    directoryList.add(dir);
 
                     for (File folder : fileList) {
                         if (folder.isDirectory()) {
