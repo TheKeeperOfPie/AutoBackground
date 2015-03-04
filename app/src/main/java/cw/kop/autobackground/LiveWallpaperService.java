@@ -1459,9 +1459,8 @@ public class LiveWallpaperService extends GLWallpaperService {
                         return;
                     }
 
-                    File nextImage = previousBitmaps.get(0);
+                    File nextImage = previousBitmaps.remove(0);
                     if (nextImage == null || !nextImage.exists()) {
-                        previousBitmaps.remove(0);
                         return;
                     }
 
@@ -1479,8 +1478,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     if (!AppSettings.shuffleImages()) {
                         FileHandler.decreaseIndex();
                     }
-
-                    previousBitmaps.remove(0);
 
                     Intent loadNavPictureIntent = new Intent(MainActivity.LOAD_NAV_PICTURE);
                     LocalBroadcastManager.getInstance(LiveWallpaperService.this).sendBroadcast(
@@ -1507,6 +1504,9 @@ public class LiveWallpaperService extends GLWallpaperService {
             }
 
             previousBitmaps.add(0, FileHandler.getCurrentBitmapFile());
+            if (previousBitmaps.size() > AppSettings.getHistorySize()) {
+                previousBitmaps.remove(previousBitmaps.size() - 1);
+            }
 
             new Thread(new Runnable() {
                 @Override

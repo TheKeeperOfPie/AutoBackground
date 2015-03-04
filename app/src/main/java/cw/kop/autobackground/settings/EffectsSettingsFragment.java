@@ -47,7 +47,9 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
     private Context appContext;
 
-    private SwitchPreference randomPref, duotonePref;
+    private SwitchPreference randomPref;
+    private SwitchPreference duotonePref;
+    private SwitchPreference effectsPref;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -90,6 +92,8 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
         }
 
         duotonePref = (SwitchPreference) findPreference("effect_duotone_switch");
+
+        effectsPref = (SwitchPreference) findPreference("use_effects");
 
         Preference blurRadiusPref = findPreference("blur_radius");
         blurRadiusPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -223,7 +227,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String[] randomEffectsList = getResources().getStringArray(R.array.random_effects_entry_menu);
                 AppSettings.setRandomEffect(randomEffectsList[position]);
-                randomPref.setSummary("Effect: " + AppSettings.getRandomEffect());
+                effectsPref.setChecked(true);
                 this.dismissDialog();
             }
 
@@ -385,9 +389,13 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
 
         if (!((Activity) appContext).isFinishing()) {
 
-            if (!key.contains("switch") && key.contains("effect_")) {
+            if (findPreference(key) instanceof EffectPreference) {
                 EffectPreference effectPref = (EffectPreference) findPreference(key);
                 effectPref.setSummary(effectPref.getTitle() + ": " + AppSettings.getEffectValue(key) + "%");
+                effectsPref.setChecked(true);
+            }
+            else if (findPreference(key) instanceof SwitchPreference && key.contains("effect_")) {
+                effectsPref.setChecked(true);
             }
 
             if (key.equals("use_random_effects")) {

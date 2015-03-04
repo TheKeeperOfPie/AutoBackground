@@ -233,7 +233,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourceSpinner = (Spinner) headerView.findViewById(R.id.source_spinner);
 
         timePref = (CustomSwitchPreference) findPreference("source_time");
-        timePref.setChecked(arguments.getBoolean("use_time"));
+        timePref.setChecked(arguments.getBoolean(Source.USE_TIME));
         timePref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 
             @Override

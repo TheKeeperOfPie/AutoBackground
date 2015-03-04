@@ -718,7 +718,7 @@ public class AppSettings {
     }
 
     public static int getHistorySize() {
-        return Integer.parseInt(prefs.getString("history_size", "5"));
+        return Integer.parseInt(prefs.getString("history_size", "15"));
     }
 
     public static boolean useHighResolutionNotificationIcon() {
