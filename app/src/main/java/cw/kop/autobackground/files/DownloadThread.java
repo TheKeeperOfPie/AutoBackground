@@ -391,8 +391,11 @@ public class DownloadThread extends Thread {
 
         File mainDir = new File(dir + "/" + title + " " + AppSettings.getImagePrefix());
         FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
+        
+        File[] fileArray = mainDir.listFiles(filenameFilter);
+        fileArray = fileArray == null ? new File[1] : fileArray;
 
-        List<File> files = new ArrayList<>(Arrays.asList(mainDir.listFiles(filenameFilter)));
+        List<File> files = new ArrayList<>(Arrays.asList(fileArray));
         files.removeAll(downloadedFiles);
 
         if (!AppSettings.keepImages()) {

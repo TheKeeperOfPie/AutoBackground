@@ -24,6 +24,7 @@ import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.PendingIntent;
 import android.app.WallpaperManager;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -937,7 +938,13 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             intent.setAction(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER);
         }
 
-        startActivityForResult(intent, 0);
+        try {
+            startActivityForResult(intent, 0);
+        }
+        catch (ActivityNotFoundException e) {
+            sendToast("Error loading wallpaper chooser,\n" +
+                    "please set manually.");
+        }
     }
 
     @Override

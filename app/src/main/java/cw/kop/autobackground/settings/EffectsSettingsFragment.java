@@ -235,7 +235,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
                 randomPref.setSummary("Effect: " + AppSettings.getRandomEffect());
             }
         };
-
+        
         DialogFactory.showListDialog(appContext,
                 "Random Effect:",
                 clickListener,
@@ -259,7 +259,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
                 if (key.equals("effects_frequency")) {
                     AppSettings.setEffect(key, 100);
                 }
-                else if (!key.equals("reset_effects")) {
+                else if (findPreference(key) instanceof  SwitchPreference) {
                     ((SwitchPreference) findPreference(key)).setChecked(false);
                 }
             }
@@ -396,6 +396,7 @@ public class EffectsSettingsFragment extends PreferenceFragment implements OnSha
                 }
                 else {
                     AppSettings.setRandomEffect("None");
+                    randomPref.setSummary("Effect: " + AppSettings.getRandomEffect());
                 }
             }
 

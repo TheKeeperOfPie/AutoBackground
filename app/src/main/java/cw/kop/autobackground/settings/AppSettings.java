@@ -1223,7 +1223,7 @@ public class AppSettings {
     }
 
     public static String getRandomEffect() {
-        return prefs.getString("random_effect", null);
+        return prefs.getString("random_effect", "None");
     }
 
     public static void setRandomEffect(String value) {
