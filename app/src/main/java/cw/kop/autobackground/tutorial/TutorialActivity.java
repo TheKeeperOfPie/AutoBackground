@@ -59,7 +59,7 @@ public class TutorialActivity extends FragmentActivity {
 
         Button closeButton = (Button) findViewById(R.id.close_button);
         closeButton.setText("Close");
-        closeButton.setTextColor(AppSettings.getColorFilterInt(getApplicationContext()));
+        closeButton.setTextColor(AppSettings.getColorFilterInt(this));
         closeButton.setVisibility(View.VISIBLE);
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,7 +71,7 @@ public class TutorialActivity extends FragmentActivity {
 
         nextButton = (Button) findViewById(R.id.next_button);
         nextButton.setText("Next");
-        nextButton.setTextColor(AppSettings.getColorFilterInt(getApplicationContext()));
+        nextButton.setTextColor(AppSettings.getColorFilterInt(this));
         nextButton.setVisibility(View.VISIBLE);
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override

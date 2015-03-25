@@ -39,14 +39,12 @@ public class DaydreamService extends DreamService {
     private GestureDetector gestureDetector;
     private ScaleGestureDetector scaleGestureDetector;
     private int touchCount = 0;
-    private Context context;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        context = getApplicationContext();
-        AppSettings.initPrefs(getApplicationContext());
-        gestureDetector = new GestureDetector(getApplicationContext(),
+        AppSettings.initPrefs(this);
+        gestureDetector = new GestureDetector(this,
                 new GestureDetector.SimpleOnGestureListener() {
 
                     @Override
@@ -85,7 +83,7 @@ public class DaydreamService extends DreamService {
 
                 });
 
-        scaleGestureDetector = new ScaleGestureDetector(getApplicationContext(),
+        scaleGestureDetector = new ScaleGestureDetector(this,
                 new ScaleGestureDetector.SimpleOnScaleGestureListener() {
                     @Override
                     public boolean onScale(
@@ -100,7 +98,7 @@ public class DaydreamService extends DreamService {
                         return false;
                     }
                 });
-        glSurfaceView = new GLSurfaceView(getApplicationContext());
+        glSurfaceView = new GLSurfaceView(this);
     }
 
     @Override
@@ -110,7 +108,7 @@ public class DaydreamService extends DreamService {
         setInteractive(true);
         setFullscreen(true);
         glSurfaceView.setEGLContextClientVersion(2);
-        renderer = new WallpaperRenderer(getApplicationContext(),
+        renderer = new WallpaperRenderer(DaydreamService.this,
                 new WallpaperRenderer.Callback() {
 
                     @Override

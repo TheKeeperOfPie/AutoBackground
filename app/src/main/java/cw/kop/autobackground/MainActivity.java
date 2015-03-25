@@ -105,7 +105,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
     protected void onCreate(Bundle savedInstanceState) {
         Log.i("MP", "onCreate");
 
-        AppSettings.initPrefs(getApplicationContext());
+        AppSettings.initPrefs(this);
 
         switch (AppSettings.getTheme()) {
             default:
@@ -128,7 +128,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
             setContentView(R.layout.activity_layout);
         }
         if (AppSettings.useFabric()) {
-            Fabric.with(getApplicationContext(), new Crashlytics());
+            Fabric.with(this, new Crashlytics());
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -171,7 +171,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         drawerList.setDividerHeight(0);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitleTextAppearance(getApplicationContext(), R.style.ToolbarTitle);
+        toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle);
         try {
             setSupportActionBar(toolbar);
         }
@@ -277,7 +277,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (requestCode == TutorialActivity.TUTORIAL_REQUEST) {
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
         }
@@ -298,7 +298,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
     private void loadNavPicture() {
 
         if (Build.VERSION.SDK_INT >= 16 && navPicture != null && FileHandler.getCurrentBitmapFile() != null && FileHandler.getCurrentBitmapFile().exists()) {
-            Picasso.with(getApplicationContext()).load(FileHandler.getCurrentBitmapFile()).fit().centerCrop().into(
+            Picasso.with(this).load(FileHandler.getCurrentBitmapFile()).fit().centerCrop().into(
                     navPicture);
         }
     }

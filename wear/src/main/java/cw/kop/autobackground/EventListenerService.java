@@ -110,7 +110,7 @@ public class EventListenerService extends WearableListenerService {
 
                         if (currentBitmap != null) {
                             Intent intent = new Intent(LOAD_IMAGE);
-                            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+                            LocalBroadcastManager.getInstance(this).sendBroadcast(
                                     intent);
                             Log.i(TAG, "Bitmap received");
                         }
@@ -159,7 +159,7 @@ public class EventListenerService extends WearableListenerService {
                         WearSettings.setSecondWidth(dataMap.getFloat(WearConstants.SECOND_WIDTH, 2.0f));
 
                         Intent intent = new Intent(LOAD_SETTINGS);
-                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(
                                 intent);
                         Log.i(TAG, "Settings received");
                         break;

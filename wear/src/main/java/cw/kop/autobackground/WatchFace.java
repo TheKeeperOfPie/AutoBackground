@@ -53,7 +53,7 @@ public class WatchFace extends CanvasWatchFaceService {
     @Override
     public void onCreate() {
         super.onCreate();
-        WearSettings.initPrefs(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+        WearSettings.initPrefs(PreferenceManager.getDefaultSharedPreferences(this));
     }
 
     @Override
@@ -579,7 +579,7 @@ public class WatchFace extends CanvasWatchFaceService {
             if (registered) {
                 return;
             }
-            LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(
+            LocalBroadcastManager.getInstance(WatchFace.this).registerReceiver(
                     localBroadcastReceiver,
                     localIntentFilter);
             registerReceiver(timeZoneReceiver, timeZoneIntentFilter);
@@ -590,7 +590,7 @@ public class WatchFace extends CanvasWatchFaceService {
             if (!registered) {
                 return;
             }
-            LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(
+            LocalBroadcastManager.getInstance(WatchFace.this).unregisterReceiver(
                     localBroadcastReceiver);
             unregisterReceiver(timeZoneReceiver);
             registered = false;

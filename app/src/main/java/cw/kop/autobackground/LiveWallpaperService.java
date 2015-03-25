@@ -114,7 +114,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             switch (action) {
                 case STOP_DOWNLOAD:
-                    FileHandler.cancel(getApplicationContext());
+                    FileHandler.cancel(LiveWallpaperService.this);
                     break;
                 case UPDATE_NOTIFICATION:
                     startNotification(intent.getBooleanExtra("use", false));
@@ -296,7 +296,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         super.onCreate();
 
         handler = new Handler();
-        AppSettings.initPrefs(getApplicationContext());
+        AppSettings.initPrefs(this);
 
         AppSettings.resetVer1_30();
         AppSettings.resetVer1_40();
@@ -315,7 +315,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             startNotification(true);
         }
 
-        googleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+        googleApiClient = new GoogleApiClient.Builder(LiveWallpaperService.this)
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                     @Override
                     public void onConnected(Bundle connectionHint) {
@@ -418,7 +418,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
     private void startAlarms() {
         if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0 && PendingIntent.getBroadcast(
-                getApplicationContext(),
+                LiveWallpaperService.this,
                 0,
                 new Intent(LiveWallpaperService.DOWNLOAD_WALLPAPER),
                 PendingIntent.FLAG_NO_CREATE) != null) {
@@ -444,7 +444,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             }
         }
         if (AppSettings.useInterval() && AppSettings.getIntervalDuration() > 0 && PendingIntent.getBroadcast(
-                getApplicationContext(),
+                LiveWallpaperService.this,
                 0,
                 new Intent(LiveWallpaperService.UPDATE_WALLPAPER),
                 PendingIntent.FLAG_NO_CREATE) != null) {
@@ -1187,7 +1187,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         public GLWallpaperEngine() {
             super();
 
-            gestureDetector = new GestureDetector(getApplicationContext(),
+            gestureDetector = new GestureDetector(LiveWallpaperService.this,
                     new GestureDetector.SimpleOnGestureListener() {
 
                         @Override
@@ -1310,7 +1310,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             NetworkInfo mobile = connect.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
             if (wifi != null && wifi.isConnected() && AppSettings.useWifi()) {
-                FileHandler.download(getApplicationContext());
+                FileHandler.download(LiveWallpaperService.this);
                 if (downloadOnConnection) {
                     try {
                         unregisterReceiver(networkReceiver);
@@ -1320,7 +1320,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
             }
             else if (mobile != null && mobile.isConnected() && AppSettings.useMobile()) {
-                FileHandler.download(getApplicationContext());
+                FileHandler.download(LiveWallpaperService.this);
                 if (downloadOnConnection) {
                     try {
                         unregisterReceiver(networkReceiver);
