@@ -30,6 +30,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -285,7 +286,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
                 String value = getEditTextString();
 
-                if (value.equals("") || Long.parseLong(value) < 0) {
+                if (TextUtils.isEmpty(value) || Long.parseLong(value) < 0) {
                     timerPref.setChecked(false);
                     dismissDialog();
                     return;

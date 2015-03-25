@@ -27,11 +27,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,6 +37,7 @@ import java.util.Set;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.shared.WearConstants;
+import cw.kop.autobackground.sources.SortData;
 import cw.kop.autobackground.sources.Source;
 
 public class AppSettings {
@@ -827,6 +826,40 @@ public class AppSettings {
                 return "";
             case TUMBLR_BLOG:
                 return ".tumblr.com";
+        }
+    }
+
+    public static List<SortData> getSourceSortList(String type) {
+
+        List<SortData> sortData = new ArrayList<>();
+
+        switch (type) {
+            default:
+            case WEBSITE:
+            case FOLDER:
+            case GOOGLE_ALBUM:
+            case TUMBLR_TAG:
+            case IMGUR_ALBUM:
+            case TUMBLR_BLOG:
+                return null;
+            case IMGUR_SUBREDDIT:
+                sortData.add(new SortData("New", "time", ""));
+                sortData.add(new SortData("Top - Day", "top/day", ""));
+                sortData.add(new SortData("Top - Week", "top/week", ""));
+                sortData.add(new SortData("Top - Month", "top/month", ""));
+                sortData.add(new SortData("Top - Year", "top/year", ""));
+                sortData.add(new SortData("Top - All", "top/all", ""));
+                return sortData;
+            case REDDIT_SUBREDDIT:
+                sortData.add(new SortData("Hot", "hot", ""));
+                sortData.add(new SortData("New", "new", ""));
+                sortData.add(new SortData("Top - Hour", "top", "hour"));
+                sortData.add(new SortData("Top - Day", "top", "day"));
+                sortData.add(new SortData("Top - Week", "top", "week"));
+                sortData.add(new SortData("Top - Month", "top", "month"));
+                sortData.add(new SortData("Top - Year", "top", "year"));
+                sortData.add(new SortData("Top - All", "top", "all"));
+                return sortData;
         }
     }
 

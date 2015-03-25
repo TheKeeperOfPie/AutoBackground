@@ -20,7 +20,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.List;
@@ -31,18 +31,36 @@ import cw.kop.autobackground.settings.AppSettings;
 /**
  * Created by TheKeeperOfPie on 11/10/2014.
  */
-public class SourceSortSpinnerAdapter extends ArrayAdapter<String> {
+public class SourceSortSpinnerAdapter extends BaseAdapter {
 
-    private List<String> itemList;
+    private List<SortData> sortData;
     private LayoutInflater inflater;
     private int backgroundColor;
 
-    public SourceSortSpinnerAdapter(Context context, int resource, List<String> objects) {
-        super(context, resource, objects);
-
-        itemList = objects;
+    public SourceSortSpinnerAdapter(Context context, List<SortData> sortData) {
+        this.sortData = sortData;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         backgroundColor = context.getResources().getColor(AppSettings.getBackgroundColorResource());
+    }
+
+    public void setSortData(List<SortData> sortData) {
+        this.sortData = sortData;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public int getCount() {
+        return sortData.size();
+    }
+
+    @Override
+    public Object getItem(int position) {
+        return sortData.get(0);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
     }
 
     @Override
@@ -53,7 +71,7 @@ public class SourceSortSpinnerAdapter extends ArrayAdapter<String> {
         }
 
         TextView spinnerText = (TextView) convertView.findViewById(R.id.spinner_text);
-        spinnerText.setText(itemList.get(position));
+        spinnerText.setText(sortData.get(position).getTitle());
         spinnerText.setBackgroundColor(backgroundColor);
 
         return convertView;
@@ -68,6 +86,7 @@ public class SourceSortSpinnerAdapter extends ArrayAdapter<String> {
             convertView = inflater.inflate(R.layout.spinner_row, parent, false);
 
             spinnerText = (TextView) convertView.findViewById(R.id.spinner_text);
+            spinnerText.setBackgroundColor(backgroundColor);
 
             convertView.setTag(new ViewHolder(spinnerText));
         }
@@ -75,8 +94,7 @@ public class SourceSortSpinnerAdapter extends ArrayAdapter<String> {
         ViewHolder viewHolder = (ViewHolder) convertView.getTag();
         spinnerText = viewHolder.spinnerText;
 
-        spinnerText.setText(itemList.get(position));
-        spinnerText.setBackgroundColor(backgroundColor);
+        spinnerText.setText(sortData.get(position).getTitle());
 
         return convertView;
     }

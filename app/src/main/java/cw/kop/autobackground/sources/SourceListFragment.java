@@ -127,6 +127,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                     addSource.setPreview(intent.getBooleanExtra(Source.PREVIEW, true));
                     addSource.setUseTime(intent.getBooleanExtra(Source.USE_TIME, false));
                     addSource.setTime(intent.getStringExtra(Source.TIME));
+                    addSource.setSort(intent.getStringExtra(Source.SORT));
 
                     addEntry(addSource);
                     break;
@@ -141,6 +142,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                     setSource.setPreview(intent.getBooleanExtra(Source.PREVIEW, true));
                     setSource.setUseTime(intent.getBooleanExtra(Source.USE_TIME, false));
                     setSource.setTime(intent.getStringExtra(Source.TIME));
+                    setSource.setSort(intent.getStringExtra(Source.SORT));
 
                     setEntry(intent.getIntExtra(Source.POSITION, -1), setSource);
                     break;

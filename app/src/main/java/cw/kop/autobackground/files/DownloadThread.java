@@ -30,6 +30,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
 import android.widget.Toast;
@@ -51,6 +52,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -114,7 +116,7 @@ public class DownloadThread extends Thread {
         AppKeyPair appKeys = new AppKeyPair(ApiKeys.DROPBOX_KEY, ApiKeys.DROPBOX_SECRET);
         AndroidAuthSession session = new AndroidAuthSession(appKeys);
         dropboxAPI = new DropboxAPI<>(session);
-        if (AppSettings.useDropboxAccount() && !AppSettings.getDropboxAccountToken().equals("")) {
+        if (AppSettings.useDropboxAccount() && !TextUtils.isEmpty(AppSettings.getDropboxAccountToken())) {
             dropboxAPI.getSession().setOAuth2AccessToken(AppSettings.getDropboxAccountToken());
         }
     }
@@ -295,7 +297,7 @@ public class DownloadThread extends Thread {
             if (!url.contains("http")) {
                 url = "http:" + url;
             }
-            if (link.attr("width") != null && !link.attr("width").equals("")) {
+            if (link.attr("width") != null && !TextUtils.isEmpty(link.attr("width"))) {
                 try {
                     if (Integer.parseInt(link.attr("width")) < AppSettings.getImageWidth() || Integer.parseInt(
                             link.attr("height")) < AppSettings.getImageHeight()) {
@@ -463,7 +465,7 @@ public class DownloadThread extends Thread {
                 imageList.add(imageObject.getString("link"));
 
                 String subredditPage = imageObject.getString("reddit_comments");
-                if (subredditPage != null && !subredditPage.equals("")) {
+                if (subredditPage != null && !TextUtils.isEmpty(subredditPage)) {
                     imagePages.add("http://reddit.com" + subredditPage);
                 }
                 else {

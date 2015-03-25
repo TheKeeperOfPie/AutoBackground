@@ -29,6 +29,7 @@ import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -73,6 +74,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import cw.kop.autobackground.CustomSwitchPreference;
 import cw.kop.autobackground.DialogFactory;
@@ -107,6 +109,7 @@ public class SourceInfoFragment extends PreferenceFragment {
     private EditText sourceData;
     private EditText sourceSuffix;
     private EditText sourceNum;
+    private Spinner sourceSortSpinner;
     private Switch sourceUse;
     private Button cancelButton;
     private Button saveButton;
@@ -129,6 +132,7 @@ public class SourceInfoFragment extends PreferenceFragment {
     private String folderData;
 
     private DropboxAPI<AndroidAuthSession> dropboxAPI;
+    private SourceSortSpinnerAdapter sortAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -140,7 +144,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         AndroidAuthSession session = new AndroidAuthSession(appKeys);
         dropboxAPI = new DropboxAPI<>(session);
 
-        if (AppSettings.useDropboxAccount() && !AppSettings.getDropboxAccountToken().equals("")) {
+        if (AppSettings.useDropboxAccount() && !TextUtils.isEmpty(AppSettings.getDropboxAccountToken())) {
             dropboxAPI.getSession().setOAuth2AccessToken(AppSettings.getDropboxAccountToken());
         }
     }
@@ -177,6 +181,10 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourceData = (EditText) headerView.findViewById(R.id.source_data);
         sourceSuffix = (EditText) headerView.findViewById(R.id.source_data_suffix);
         sourceNum = (EditText) headerView.findViewById(R.id.source_num);
+        sourceSortSpinner = (Spinner) headerView.findViewById(R.id.source_data_sort_spinner);
+
+        sortAdapter = new SourceSortSpinnerAdapter(appContext, new ArrayList<SortData>());
+        sourceSortSpinner.setAdapter(sortAdapter);
 
         ViewGroup.LayoutParams params = sourceImage.getLayoutParams();
         params.height = (int) ((container.getWidth() - 2f * getResources().getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
@@ -506,15 +514,15 @@ public class SourceInfoFragment extends PreferenceFragment {
             data = folderData;
         }
 
-        if (title.equals("")) {
+        if (TextUtils.isEmpty(title)) {
             Toast.makeText(appContext, "Title cannot be empty", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (data.equals("")) {
+        if (TextUtils.isEmpty(data)) {
             Toast.makeText(appContext, "Data cannot be empty", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (sourceNum.getText().toString().equals("")) {
+        if (TextUtils.isEmpty(sourceNum.getText().toString())) {
             Toast.makeText(appContext, "# of images cannot be empty", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -576,6 +584,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourceIntent.putExtra(Source.USE_TIME, timePref.isChecked());
         sourceIntent.putExtra(Source.TIME, String.format("%02d:%02d - %02d:%02d",
                 startHour, startMinute, endHour, endMinute));
+        sourceIntent.putExtra(Source.SORT, sourceSortSpinner.getVisibility() == View.VISIBLE ? ((SortData) sourceSortSpinner.getSelectedItem()).getTitle() : "");
 
         try {
             InputMethodManager im = (InputMethodManager) appContext.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -698,7 +707,6 @@ public class SourceInfoFragment extends PreferenceFragment {
             sourceData.setText("");
             sourceNum.setText("");
         }
-
         type = newType;
 
         switch (type) {
@@ -720,7 +728,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             case AppSettings.IMGUR_ALBUM:
                 break;
             case AppSettings.GOOGLE_ALBUM:
-                if (AppSettings.getGoogleAccountName().equals("")) {
+                if (TextUtils.isEmpty(AppSettings.getGoogleAccountName())) {
                     startActivityForResult(GoogleAccount.getPickerIntent(),
                             GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
                 }
@@ -735,7 +743,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             case AppSettings.REDDIT_SUBREDDIT:
                 break;
             case AppSettings.DROPBOX_FOLDER:
-                if (!AppSettings.useDropboxAccount() || AppSettings.getDropboxAccountToken().equals("") || !dropboxAPI.getSession().isLinked()) {
+                if (!AppSettings.useDropboxAccount() || TextUtils.isEmpty(AppSettings.getDropboxAccountToken()) || !dropboxAPI.getSession().isLinked()) {
                     AppSettings.setUseDropboxAccount(false);
                     AppSettings.setDropboxAccountToken("");
                     dropboxAPI.getSession().startOAuth2Authentication(appContext);
@@ -750,6 +758,17 @@ public class SourceInfoFragment extends PreferenceFragment {
         prefix = AppSettings.getSourceDataPrefix(type);
         hint = AppSettings.getSourceDataHint(type);
         suffix = AppSettings.getSourceDataSuffix(type);
+
+        List<SortData> sortDataList = AppSettings.getSourceSortList(type);
+
+        if (sortDataList != null) {
+            sourceSortSpinner.setVisibility(View.VISIBLE);
+            sortAdapter.setSortData(sortDataList);
+        }
+        else {
+            sourceSortSpinner.setVisibility(View.GONE);
+            sortAdapter.setSortData(new ArrayList<SortData>());
+        }
 
         setFocusBlocks();
         setDataWrappers();

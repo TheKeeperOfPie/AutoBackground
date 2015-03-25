@@ -29,6 +29,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -506,7 +507,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
             public void onClickRight(View v) {
                 String value = getEditTextString();
 
-                if (value.equals("") || Long.parseLong(value) < 0) {
+                if (TextUtils.isEmpty(value) || Long.parseLong(value) < 0) {
                     intervalPref.setChecked(false);
                     dismissDialog();
                     return;
