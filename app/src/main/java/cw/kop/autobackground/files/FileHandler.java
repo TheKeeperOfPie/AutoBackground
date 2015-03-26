@@ -258,6 +258,7 @@ public class FileHandler {
         if (folder.exists() && folder.isDirectory()) {
             if (folder.listFiles().length > 0) {
                 for (File file : folder.listFiles()) {
+                    AppSettings.clearUrl(file.getName());
                     file.delete();
                 }
             }

@@ -201,6 +201,10 @@ public class LocalImageAdapter extends BaseAdapter {
 
     }
 
+    public boolean isFinished() {
+        return finish;
+    }
+
     public void setFinished() {
         finish = true;
     }

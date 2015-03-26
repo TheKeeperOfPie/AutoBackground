@@ -42,6 +42,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -101,6 +102,8 @@ public class SourceInfoFragment extends PreferenceFragment {
     private Drawable imageDrawable;
 
     private RelativeLayout settingsContainer;
+    private LinearLayout sortContainer;
+    private RelativeLayout numContainer;
     private TextView sourceSpinnerText;
     private Spinner sourceSpinner;
     private ImageView sourceImage;
@@ -108,7 +111,9 @@ public class SourceInfoFragment extends PreferenceFragment {
     private EditText sourcePrefix;
     private EditText sourceData;
     private EditText sourceSuffix;
+    private EditText sourceNumPrefix;
     private EditText sourceNum;
+    private TextView sourceSortText;
     private Spinner sourceSortSpinner;
     private Switch sourceUse;
     private Button cancelButton;
@@ -133,6 +138,7 @@ public class SourceInfoFragment extends PreferenceFragment {
 
     private DropboxAPI<AndroidAuthSession> dropboxAPI;
     private SourceSortSpinnerAdapter sortAdapter;
+    private Listener listener;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -153,11 +159,13 @@ public class SourceInfoFragment extends PreferenceFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         appContext = activity;
+        listener = (Listener) activity;
     }
 
     @Override
     public void onDetach() {
         appContext = null;
+        listener = null;
         super.onDetach();
     }
 
@@ -173,6 +181,8 @@ public class SourceInfoFragment extends PreferenceFragment {
         View view = inflater.inflate(R.layout.source_info_fragment, container, false);
         headerView = inflater.inflate(R.layout.source_info_header, null, false);
 
+        sortContainer = (LinearLayout) headerView.findViewById(R.id.source_sort_container);
+        numContainer = (RelativeLayout) headerView.findViewById(R.id.source_num_container);
         settingsContainer = (RelativeLayout) headerView.findViewById(R.id.source_settings_container);
 
         sourceImage = (ImageView) headerView.findViewById(R.id.source_image);
@@ -180,7 +190,9 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourcePrefix = (EditText) headerView.findViewById(R.id.source_data_prefix);
         sourceData = (EditText) headerView.findViewById(R.id.source_data);
         sourceSuffix = (EditText) headerView.findViewById(R.id.source_data_suffix);
+        sourceNumPrefix = (EditText) headerView.findViewById(R.id.source_num_prefix);
         sourceNum = (EditText) headerView.findViewById(R.id.source_num);
+        sourceSortText = (TextView) headerView.findViewById(R.id.source_data_sort_text);
         sourceSortSpinner = (Spinner) headerView.findViewById(R.id.source_data_sort_spinner);
 
         sortAdapter = new SourceSortSpinnerAdapter(appContext, new ArrayList<SortData>());
@@ -300,6 +312,9 @@ public class SourceInfoFragment extends PreferenceFragment {
             sourceImage.setVisibility(View.GONE);
             sourceSpinnerText.setVisibility(View.VISIBLE);
             sourceSpinner.setVisibility(View.VISIBLE);
+            sourceNumPrefix.setVisibility(View.GONE);
+
+            type = AppSettings.WEBSITE;
 
             SourceSpinnerAdapter adapter = new SourceSpinnerAdapter(appContext,
                     R.layout.spinner_row,
@@ -314,7 +329,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                         long id) {
 
                     selectSource(getTypeFromPosition(position));
-                    Log.i(TAG, "Spinner launched folder fragment");
                 }
 
                 @Override
@@ -323,48 +337,37 @@ public class SourceInfoFragment extends PreferenceFragment {
                 }
             });
 
-            type = AppSettings.WEBSITE;
-            prefix = AppSettings.getSourceDataPrefix(type);
-            hint = AppSettings.getSourceDataHint(type);
-            suffix = AppSettings.getSourceDataSuffix(type);
-
-            startHour = 0;
-            startMinute = 0;
-            endHour = 0;
-            endMinute = 0;
         }
         else {
             sourceImage.setVisibility(View.VISIBLE);
             sourceSpinnerText.setVisibility(View.GONE);
             sourceSpinner.setVisibility(View.GONE);
+            sourceSortText.setVisibility(View.VISIBLE);
+            sourceSortSpinner.setVisibility(View.VISIBLE);
+            sourceNumPrefix.setVisibility(View.VISIBLE);
 
             type = arguments.getString(Source.TYPE);
             setFocusBlocks();
 
+            List<SortData> sortDataList = AppSettings.getSourceSortList(type);
+            sortAdapter.setSortData(sortDataList);
+            if (!sortDataList.isEmpty()) {
+                int index = sortDataList.indexOf(new SortData(arguments.getString(Source.SORT, ""), "", ""));
+                if (index >= 0) {
+                    sourceSortSpinner.setSelection(index);
+                }
+            }
+
             folderData = arguments.getString(Source.DATA);
             String data = folderData;
-
-            hint = AppSettings.getSourceDataHint(type);
-            prefix = AppSettings.getSourceDataPrefix(type);
-            suffix = AppSettings.getSourceDataSuffix(type);
-
-            switch (type) {
-                case AppSettings.FOLDER:
-                    data = Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER));
-                    break;
-
+            if (type.equals(AppSettings.FOLDER)) {
+                data = Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER));
             }
 
             sourceTitle.setText(arguments.getString(Source.TITLE));
-
-            if (getArguments().getInt(Source.NUM, -1) >= 0) {
-                sourceNum.setText("" + arguments.getInt(Source.NUM));
-            }
             sourceData.setText(data);
-
-            if (imageDrawable != null) {
-                sourceImage.setImageDrawable(imageDrawable);
-            }
+            sourceNum.setText(getArguments().getInt(Source.NUM, -1) >= 0 ? "" + arguments.getInt(Source.NUM) : "");
+            sourceImage.setImageDrawable(imageDrawable);
 
             boolean showPreview = arguments.getBoolean(Source.PREVIEW);
             if (showPreview) {
@@ -390,6 +393,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                 endHour = 0;
                 endMinute = 0;
             }
+
+
 
         }
 
@@ -426,17 +431,15 @@ public class SourceInfoFragment extends PreferenceFragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-    }
-
-    @Override
     public void onSaveInstanceState(Bundle outState) {
 
         outState.putString(Source.TYPE, type);
         outState.putString(Source.TITLE, String.valueOf(sourceTitle.getText()));
         outState.putString(Source.DATA, String.valueOf(sourceData.getText()));
         outState.putString(Source.NUM, String.valueOf(sourceNum.getText()));
+        outState.putString(Source.SORT, sortAdapter.getCount() > 0 ?
+                ((SortData) sortAdapter.getItem(
+                        sourceSortSpinner.getSelectedItemPosition())).getTitle() : "");
 
         super.onSaveInstanceState(outState);
     }
@@ -480,6 +483,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                     sourceSpinner.setAlpha(interpolatedTime);
                     sourceTitle.setAlpha(interpolatedTime);
                     settingsContainer.setAlpha(interpolatedTime);
+                    sortContainer.setAlpha(interpolatedTime);
+                    numContainer.setAlpha(interpolatedTime);
                     sourceUse.setAlpha(interpolatedTime);
 
                 }
@@ -491,6 +496,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                 protected void applyTransformation(float interpolatedTime, Transformation t) {
 
                     settingsContainer.setAlpha(interpolatedTime);
+                    sortContainer.setAlpha(interpolatedTime);
+                    numContainer.setAlpha(interpolatedTime);
                     sourceUse.setAlpha(interpolatedTime);
 
                 }
@@ -505,7 +512,12 @@ public class SourceInfoFragment extends PreferenceFragment {
 
     private void saveSource() {
 
-        final Intent sourceIntent = new Intent();
+        if (FileHandler.isDownloading()) {
+            Toast.makeText(appContext,
+                    "Cannot add/edit source while downloading",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         String title = sourceTitle.getText().toString();
         String data = sourceData.getText().toString();
@@ -527,7 +539,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             return;
         }
 
-        int num = 0;
+        int num;
         try {
             num = Integer.parseInt(sourceNum.getText().toString());
         }
@@ -545,46 +557,39 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         }
 
-        if (sourcePosition == -1) {
+        Source source = new Source();
+        source.setType(type);
+        source.setTitle(sourceTitle.getText()
+                .toString());
+        source.setData(data);
+        source.setNum(num);
+        source.setUse(sourceUse.isChecked());
+        source.setPreview(
+                ((CustomSwitchPreference) findPreference("source_show_preview")).isChecked());
+        source.setUseTime(timePref.isChecked());
+        source.setTime(String.format("%02d:%02d - %02d:%02d",
+                startHour, startMinute, endHour, endMinute));
+        source.setSort(sourceSortSpinner.getCount() > 0 ?
+                ((SortData) sourceSortSpinner.getSelectedItem()).getTitle() : "");
+        Log.d(TAG, "Sort set to " + source.getSort());
 
-            if (FileHandler.isDownloading()) {
-                Toast.makeText(appContext,
-                        "Cannot add source while downloading",
-                        Toast.LENGTH_SHORT).show();
+        if (sourcePosition == -1) {
+            if (!listener.addSource(source)) {
+                listener.sendToast("Error: Title in use.\nPlease use a different title.");
                 return;
             }
-
-            sourceIntent.setAction(SourceListFragment.ADD_ENTRY);
-
         }
         else {
-
-            if (!getArguments().getString(Source.TITLE).equals(title)) {
-                FileHandler.renameFolder(getArguments().getString(Source.TITLE), title);
+            if (listener.saveSource(source, sourcePosition)) {
+                if (!getArguments().getString(Source.TITLE).equals(title)) {
+                    FileHandler.renameFolder(getArguments().getString(Source.TITLE), title);
+                }
             }
-
-            if (FileHandler.isDownloading()) {
-                Toast.makeText(appContext,
-                        "Cannot edit while downloading",
-                        Toast.LENGTH_SHORT).show();
+            else {
+                listener.sendToast("Error: Title in use.\nPlease use a different title.");
                 return;
             }
-
-            sourceIntent.setAction(SourceListFragment.SET_ENTRY);
         }
-
-        sourceIntent.putExtra(Source.TYPE, type);
-        sourceIntent.putExtra(Source.TITLE, sourceTitle.getText().toString());
-        sourceIntent.putExtra(Source.DATA, data);
-        sourceIntent.putExtra(Source.NUM, num);
-        sourceIntent.putExtra(Source.POSITION, sourcePosition);
-        sourceIntent.putExtra(Source.USE, sourceUse.isChecked());
-        sourceIntent.putExtra(Source.PREVIEW,
-                ((CustomSwitchPreference) findPreference("source_show_preview")).isChecked());
-        sourceIntent.putExtra(Source.USE_TIME, timePref.isChecked());
-        sourceIntent.putExtra(Source.TIME, String.format("%02d:%02d - %02d:%02d",
-                startHour, startMinute, endHour, endMinute));
-        sourceIntent.putExtra(Source.SORT, sourceSortSpinner.getVisibility() == View.VISIBLE ? ((SortData) sourceSortSpinner.getSelectedItem()).getTitle() : "");
 
         try {
             InputMethodManager im = (InputMethodManager) appContext.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -594,7 +599,6 @@ public class SourceInfoFragment extends PreferenceFragment {
         catch (Exception e) {
             e.printStackTrace();
         }
-
 
         final int screenHeight = getResources().getDisplayMetrics().heightPixels;
         final View fragmentView = getView();
@@ -623,7 +627,6 @@ public class SourceInfoFragment extends PreferenceFragment {
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    LocalBroadcastManager.getInstance(appContext).sendBroadcast(sourceIntent);
                     getFragmentManager().popBackStack();
                 }
 
@@ -635,9 +638,6 @@ public class SourceInfoFragment extends PreferenceFragment {
 
             animation.setDuration(SLIDE_EXIT_TIME);
             getView().startAnimation(animation);
-        }
-        else {
-            LocalBroadcastManager.getInstance(appContext).sendBroadcast(sourceIntent);
         }
 
     }
@@ -655,9 +655,6 @@ public class SourceInfoFragment extends PreferenceFragment {
             final int num) {
 
         this.type = type;
-        this.prefix = AppSettings.getSourceDataPrefix(type);
-        this.hint = AppSettings.getSourceDataHint(type);
-        this.suffix = AppSettings.getSourceDataSuffix(type);
         this.folderData = data;
 
         handler.post(new Runnable() {
@@ -673,6 +670,23 @@ public class SourceInfoFragment extends PreferenceFragment {
     }
 
     private void setDataWrappers() {
+
+        prefix = AppSettings.getSourceDataPrefix(type);
+        hint = AppSettings.getSourceDataHint(type);
+        suffix = AppSettings.getSourceDataSuffix(type);
+
+        List<SortData> sortDataList = AppSettings.getSourceSortList(type);
+        sortAdapter.setSortData(sortDataList);
+
+        if (sortDataList.isEmpty()) {
+            sourceSortText.setVisibility(View.GONE);
+            sourceSortSpinner.setVisibility(View.GONE);
+        }
+        else {
+            sourceSortText.setVisibility(View.VISIBLE);
+            sourceSortSpinner.setVisibility(View.VISIBLE);
+        }
+
         sourcePrefix.setText(prefix);
         sourceSuffix.setText(suffix);
         if (prefix.length() > 0) {
@@ -753,21 +767,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                 }
                 break;
             default:
-        }
-
-        prefix = AppSettings.getSourceDataPrefix(type);
-        hint = AppSettings.getSourceDataHint(type);
-        suffix = AppSettings.getSourceDataSuffix(type);
-
-        List<SortData> sortDataList = AppSettings.getSourceSortList(type);
-
-        if (sortDataList != null) {
-            sourceSortSpinner.setVisibility(View.VISIBLE);
-            sortAdapter.setSortData(sortDataList);
-        }
-        else {
-            sourceSortSpinner.setVisibility(View.GONE);
-            sortAdapter.setSortData(new ArrayList<SortData>());
         }
 
         setFocusBlocks();
@@ -1203,11 +1202,6 @@ public class SourceInfoFragment extends PreferenceFragment {
         }
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-    }
-
     class PicasaAlbumTask extends AsyncTask<Void, String, Void> {
 
         ArrayList<String> albumNames = new ArrayList<>();
@@ -1292,5 +1286,13 @@ public class SourceInfoFragment extends PreferenceFragment {
             }
         }
     }
+
+    public interface Listener {
+        boolean addSource(Source source);
+        boolean saveSource(Source source, int position);
+
+        void sendToast(String message);
+    }
+
 
 }

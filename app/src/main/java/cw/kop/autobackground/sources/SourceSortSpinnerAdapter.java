@@ -55,7 +55,7 @@ public class SourceSortSpinnerAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        return sortData.get(0);
+        return sortData.get(position);
     }
 
     @Override

@@ -24,6 +24,7 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.util.TypedValue;
@@ -52,27 +53,18 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListAdapter extends BaseAdapter {
 
-    public static final String NO_SOURCES = "NO_SOURCE";
-    public static final String NO_ACTIVE_SOURCES = "NO_ACTIVE_SOURCES";
-    public static final String NEED_DOWNLOAD = "NEED_DOWNLOAD";
-    public static final String NO_IMAGES = "NO_IMAGES";
-    public static final String OKAY = "OKAY";
-
     private static final String TAG = SourceListAdapter.class.getCanonicalName();
     private static final float OVERLAY_ALPHA = 0.85f;
     private final int colorFilterInt;
     private Activity mainActivity;
-    private ArrayList<Source> listData;
-    private HashSet<String> titles;
     private LayoutInflater inflater = null;
     private CardClickListener cardClickListener;
-    private boolean isRemoving = false;
     private View.OnLongClickListener longClickListener;
+    private ControllerSources controllerSources;
 
-    public SourceListAdapter(Activity activity, CardClickListener listener, View.OnLongClickListener longClickListener) {
+    public SourceListAdapter(Activity activity, CardClickListener listener, View.OnLongClickListener longClickListener, ControllerSources controllerSources) {
+        this.controllerSources = controllerSources;
         mainActivity = activity;
-        listData = new ArrayList<>();
-        titles = new HashSet<>();
         inflater = (LayoutInflater) mainActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         cardClickListener = listener;
         this.longClickListener = longClickListener;
@@ -81,11 +73,12 @@ public class SourceListAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return listData.size();
+        return controllerSources.size();
     }
 
+    @Override
     public Source getItem(int position) {
-        return listData.get(position);
+        return controllerSources.get(position);
     }
 
     @Override
@@ -96,7 +89,7 @@ public class SourceListAdapter extends BaseAdapter {
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
 
-        final Source listItem = listData.get(position);
+        final Source listItem = controllerSources.get(position);
 
         CardView cardView;
         EditText title;
@@ -108,6 +101,7 @@ public class SourceListAdapter extends BaseAdapter {
         TextView sourceType;
         TextView sourceData;
         TextView sourceNum;
+        TextView sourceSort;
         TextView sourceTime;
         ImageView sourceImage;
 
@@ -126,6 +120,7 @@ public class SourceListAdapter extends BaseAdapter {
             sourceType = (TextView) convertView.findViewById(R.id.source_type);
             sourceData = (TextView) convertView.findViewById(R.id.source_data);
             sourceNum = (TextView) convertView.findViewById(R.id.source_num);
+            sourceSort = (TextView) convertView.findViewById(R.id.source_sort);
             sourceTime = (TextView) convertView.findViewById(R.id.source_time);
             sourceImage = (ImageView) convertView.findViewById(R.id.source_image);
 
@@ -145,7 +140,7 @@ public class SourceListAdapter extends BaseAdapter {
             editButton.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
 
             title.setClickable(false);
-            convertView.setTag(new ViewHolder(cardView, title, imageOverlay, downloadButton, deleteButton, viewButton, editButton, sourceType, sourceData, sourceNum, sourceTime, sourceImage));
+            convertView.setTag(new ViewHolder(cardView, title, imageOverlay, downloadButton, deleteButton, viewButton, editButton, sourceType, sourceData, sourceNum, sourceSort, sourceTime, sourceImage));
 
         }
 
@@ -160,6 +155,7 @@ public class SourceListAdapter extends BaseAdapter {
         sourceType = viewHolder.sourceType;
         sourceData = viewHolder.sourceData;
         sourceNum = viewHolder.sourceNum;
+        sourceSort = viewHolder.sourceSort;
         sourceTime = viewHolder.sourceTime;
         sourceImage = viewHolder.sourceImage;
 
@@ -207,7 +203,7 @@ public class SourceListAdapter extends BaseAdapter {
         downloadButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cardClickListener.onDownloadClick(finalConvertView, listData.get(position));
+                cardClickListener.onDownloadClick(finalConvertView, controllerSources.get(position));
             }
         });
         deleteButton.setOnClickListener(new View.OnClickListener() {
@@ -307,6 +303,9 @@ public class SourceListAdapter extends BaseAdapter {
         SpannableString numPrefix = new SpannableString("Number of Images: ");
         numPrefix.setSpan(new ForegroundColorSpan(colorPrimary), 0, numPrefix.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        SpannableString sortPrefix = new SpannableString("Sort By: ");
+        sortPrefix.setSpan(new ForegroundColorSpan(colorPrimary), 0, sortPrefix.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         SpannableString timePrefix = new SpannableString("Active Time: ");
         timePrefix.setSpan(new ForegroundColorSpan(colorPrimary), 0, timePrefix.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -327,8 +326,17 @@ public class SourceListAdapter extends BaseAdapter {
         else {
             sourceNum.append(listItem.getNumStored() + " / " + listItem.getNum());
         }
-        sourceTime.setText(timePrefix);
 
+        if (TextUtils.isEmpty(listItem.getSort())) {
+            sourceSort.setVisibility(View.GONE);
+        }
+        else {
+            sourceSort.setVisibility(View.VISIBLE);
+            sourceSort.setText(sortPrefix);
+            sourceSort.append(listItem.getSort());
+        }
+
+        sourceTime.setText(timePrefix);
         if (listItem.isUseTime()) {
             sourceTime.append(listItem.getTime());
         }
@@ -337,207 +345,6 @@ public class SourceListAdapter extends BaseAdapter {
         }
 
         return finalConvertView;
-    }
-
-    public void setActivated(int position, boolean use) {
-        Source changedItem = listData.get(position);
-        changedItem.setUse(use);
-        listData.set(position, changedItem);
-        notifyDataSetChanged();
-    }
-
-    public boolean toggleActivated(int position) {
-        Source changedItem = listData.get(position);
-        changedItem.setUse(!changedItem.isUse());
-        listData.set(position, changedItem);
-
-        for (Source source : listData) {
-            if (source.isUse()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public boolean setItem(int position, Source source) {
-
-        Source oldSource = listData.get(position);
-
-        if (!oldSource.getTitle().equals(source.getTitle())) {
-            if (titles.contains(source.getTitle())) {
-                return false;
-            }
-        }
-        titles.remove(oldSource.getTitle());
-        File folder = new File(AppSettings.getDownloadPath() + "/" + source.getTitle() + " " + AppSettings.getImagePrefix());
-        if (folder.exists() && folder.isDirectory()) {
-            source.setNumStored(folder.listFiles(FileHandler.getImageFileNameFilter()).length);
-        }
-        else {
-            source.setNumStored(0);
-        }
-        listData.set(position, source);
-        titles.add(source.getTitle());
-        notifyDataSetChanged();
-        saveData();
-        return true;
-    }
-
-    public boolean addItem(Source source, boolean save) {
-
-        if (titles.contains(source.getTitle())) {
-            return false;
-        }
-
-        File folder = new File(AppSettings.getDownloadPath() + "/" + source.getTitle() + " " + AppSettings.getImagePrefix());
-        if (folder.exists() && folder.isDirectory()) {
-            source.setNumStored(folder.listFiles(FileHandler.getImageFileNameFilter()).length);
-        }
-        else {
-            source.setNumStored(0);
-        }
-
-        listData.add(source);
-        titles.add(source.getTitle());
-        notifyDataSetChanged();
-        if (save) {
-            saveData();
-        }
-        return true;
-    }
-
-    public void removeItem(final int position) {
-
-        titles.remove(listData.get(position).getTitle());
-        listData.remove(position);
-        notifyDataSetChanged();
-    }
-
-    public void updateNum() {
-
-        FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
-
-        String cacheDir = AppSettings.getDownloadPath();
-
-        if (listData != null) {
-            for (Source hashMap : listData) {
-                if (hashMap.getType().equals(AppSettings.FOLDER)) {
-
-                    int numImages = 0;
-
-                    for (String folderName : hashMap.getData().split(AppSettings.DATA_SPLITTER)) {
-                        File folder = new File(folderName);
-                        if (folder.exists() && folder.isDirectory()) {
-                            numImages += folder.listFiles(filenameFilter).length;
-                        }
-                    }
-
-                    hashMap.setNum(numImages);
-                }
-                else {
-                    File folder = new File(cacheDir + "/" + hashMap.getTitle() + " " + AppSettings.getImagePrefix());
-                    if (folder.exists() && folder.isDirectory()) {
-                        hashMap.setNumStored(folder.listFiles(filenameFilter).length);
-                    }
-                }
-            }
-            notifyDataSetChanged();
-        }
-    }
-
-    public String checkSources() {
-
-        if (listData.isEmpty()) {
-            return NO_SOURCES;
-        }
-
-        boolean noActive = true;
-        boolean needDownload = true;
-
-        for (int index = 0; (noActive || needDownload) && index < listData.size(); index++) {
-
-            boolean use = listData.get(index).isUse();
-
-            if (noActive && use) {
-                noActive = false;
-            }
-
-            if (needDownload && use && listData.get(index).getType().equals(AppSettings.FOLDER)) {
-                needDownload = false;
-                Log.i("SLA", "Type: " + listData.get(index).getType());
-            }
-
-        }
-
-        if (noActive) {
-            return NO_ACTIVE_SOURCES;
-        }
-
-        boolean noImages = FileHandler.hasImages();
-
-        if (noImages) {
-            if (needDownload) {
-                return NEED_DOWNLOAD;
-            }
-            return NO_IMAGES;
-        }
-
-        return OKAY;
-    }
-
-    public void sortData(final String key) {
-
-        ArrayList<Source> sortList = new ArrayList<Source>();
-        sortList.addAll(listData);
-
-        Collections.sort(sortList, new Comparator<Source>() {
-            @Override
-            public int compare(Source lhs, Source rhs) {
-
-                if (key.equals(Source.USE)) {
-                    boolean first = lhs.isUse();
-                    boolean second = rhs.isUse();
-
-                    if (first && second || (!first && !second)) {
-                        return lhs.getTitle().compareTo(rhs.getTitle());
-                    }
-
-                    return first ? -1 : 1;
-
-                }
-
-                if (key.equals(Source.NUM)) {
-                    return lhs.getNum() - rhs.getNum();
-                }
-
-                if (key.equals(Source.TITLE)) {
-                    return lhs.getTitle().compareTo(rhs.getTitle());
-                }
-
-                if (key.equals(Source.DATA)) {
-                    return lhs.getData().compareTo(rhs.getData());
-                }
-
-                return lhs.getTitle().compareTo(rhs.getTitle());
-            }
-        });
-
-        if (sortList.equals(listData)) {
-            Collections.reverse(sortList);
-        }
-        listData = sortList;
-
-        notifyDataSetChanged();
-
-    }
-
-    public void saveData() {
-
-        AppSettings.setSources(listData);
-
-        Log.i("WLA", "SavedListData" + listData.size());
-        Log.i("WLA", "Saved Data: " + AppSettings.getNumberSources());
     }
 
     private static class ViewHolder {
@@ -552,6 +359,7 @@ public class SourceListAdapter extends BaseAdapter {
         protected final TextView sourceType;
         protected final TextView sourceData;
         protected final TextView sourceNum;
+        protected final TextView sourceSort;
         protected final TextView sourceTime;
         protected final ImageView sourceImage;
 
@@ -563,7 +371,7 @@ public class SourceListAdapter extends BaseAdapter {
                 ImageView viewButton,
                 ImageView editButton,
                 TextView sourceType,
-                TextView sourceData, TextView sourceNum, TextView sourceTime, ImageView sourceImage) {
+                TextView sourceData, TextView sourceNum, TextView sourceSort, TextView sourceTime, ImageView sourceImage) {
             this.cardView = cardView;
             this.title = title;
             this.imageOverlay = imageOverlay;
@@ -574,6 +382,7 @@ public class SourceListAdapter extends BaseAdapter {
             this.sourceType = sourceType;
             this.sourceData = sourceData;
             this.sourceNum = sourceNum;
+            this.sourceSort = sourceSort;
             this.sourceTime = sourceTime;
             this.sourceImage = sourceImage;
         }

@@ -76,6 +76,7 @@ import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.SortData;
 import cw.kop.autobackground.sources.Source;
 
 /**
@@ -199,14 +200,14 @@ public class DownloadThread extends Thread {
         if (AppSettings.checkDuplicates()) {
             Set<String> rawLinks = AppSettings.getUsedLinks();
             for (String link : rawLinks) {
-                if (link.contains(DROPBOX_FILE_PREFIX)) {
-                    usedDropboxPaths.add(link.substring(link.indexOf(DROPBOX_FILE_PREFIX) + DROPBOX_FILE_PREFIX.length()));
-                }
-                else {
-                    if (link.lastIndexOf("Time:") > 0) {
-                        link = link.substring(0, link.lastIndexOf("Time:"));
+                int lastIndex = link.lastIndexOf("Time:");
+                if (lastIndex > 0) {
+                    if (link.startsWith(DROPBOX_FILE_PREFIX)) {
+                        usedDropboxPaths.add(link.substring(DROPBOX_FILE_PREFIX.length(), lastIndex));
                     }
-                    usedLinks.add(link);
+                    else {
+                        usedLinks.add(link.substring(0, lastIndex));
+                    }
                 }
             }
         }
@@ -234,6 +235,8 @@ public class DownloadThread extends Thread {
                 }
 
                 String sourceType = source.getType();
+
+                Log.d(TAG, "sourceSort: " + source.getSort());
 
                 switch (sourceType) {
                     case AppSettings.WEBSITE:
@@ -307,14 +310,12 @@ public class DownloadThread extends Thread {
                 catch (NumberFormatException e) {
                 }
             }
-            if (url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".jpeg")) {
+            if (AppSettings.checkIsImage(url)) {
                 links.add(url);
             }
             else if (AppSettings.forceDownload() && url.length() > 5 && (url.endsWith(".com") || url.endsWith(
                     ".org") || url.endsWith(".net"))) {
-                links.add(url + ".png");
-                links.add(url + ".jpg");
-                links.add(url);
+                links.add(url + AppSettings.JPG);
             }
         }
         return links;
@@ -395,13 +396,13 @@ public class DownloadThread extends Thread {
         FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
         
         File[] fileArray = mainDir.listFiles(filenameFilter);
-        fileArray = fileArray == null ? new File[1] : fileArray;
+        fileArray = fileArray == null ? new File[0] : fileArray;
 
         List<File> files = new ArrayList<>(Arrays.asList(fileArray));
         files.removeAll(downloadedFiles);
 
         if (!AppSettings.keepImages()) {
-            int extra = mainDir.list(filenameFilter).length - targetNum;
+            int extra = fileArray.length - targetNum;
             while (extra > 0 && files.size() > 0) {
                 File file = files.get(0);
                 AppSettings.clearUrl(file.getName());
@@ -441,12 +442,16 @@ public class DownloadThread extends Thread {
 
         String apiUrl = "https://api.imgur.com/3/gallery/r/" + source.getData();
 
+        if (!TextUtils.isEmpty(source.getSort())) {
+            apiUrl += "/" + AppSettings.getSourceSortParameter(source).getData();
+        }
+
         Log.i(TAG, "apiUrl: " + apiUrl);
 
         try {
             HttpGet httpGet = new HttpGet(apiUrl);
             httpGet.setHeader("Authorization", "Client-ID " + ApiKeys.IMGUR_CLIENT_ID);
-            httpGet.setHeader("Content-type", "application/json");
+            httpGet.setHeader("Content-Type", "application/json");
 
             String response = getResponse(httpGet);
             if (response == null) {
@@ -502,7 +507,7 @@ public class DownloadThread extends Thread {
         try {
             HttpGet httpGet = new HttpGet(apiUrl);
             httpGet.setHeader("Authorization", "Client-ID " + ApiKeys.IMGUR_CLIENT_ID);
-            httpGet.setHeader("Content-type", "application/json");
+            httpGet.setHeader("Content-Type", "application/json");
 
             String response = getResponse(httpGet);
             if (response == null) {
@@ -663,7 +668,20 @@ public class DownloadThread extends Thread {
             return;
         }
 
-        String apiUrl = "https://reddit.com/r/" + source.getData() + "/hot/.json?limit=100";
+        String apiUrl = "https://reddit.com/r/" + source.getData();
+
+        SortData sortData = AppSettings.getSourceSortParameter(source);
+
+        if (!TextUtils.isEmpty(source.getSort()) && sortData != null) {
+            apiUrl += "/" + sortData.getData();
+        }
+
+        apiUrl +=".json?limit=100";
+
+
+        if (!TextUtils.isEmpty(source.getSort()) && sortData != null) {
+            apiUrl += "&t=" + sortData.getQuery();
+        }
 
         Log.i(TAG, "apiUrl: " + apiUrl);
 
@@ -691,7 +709,11 @@ public class DownloadThread extends Thread {
                 if (i == 0) {
                     Log.i(TAG, "First object: " + linkObject.toString());
                 }
-                imageList.add(linkObject.getString("url"));
+                String url = linkObject.getString("url");
+                if (url.contains("imgur") && !AppSettings.checkIsImage(url)) {
+                    url += ".jpg";
+                }
+                imageList.add(url);
                 imagePages.add("https://reddit.com" + linkObject.getString("permalink"));
 
             }
@@ -718,12 +740,17 @@ public class DownloadThread extends Thread {
             List<String> imageData = new ArrayList<>();
 
             for (Entry entry : entries) {
+                Log.d(TAG, "usedDropboxPaths: " + usedDropboxPaths);
+
                 if (!entry.isDir &&
                         !usedDropboxPaths.contains(entry.path) &&
-                        (entry.path.contains(".jpg") || entry.path.contains(".jpeg") || entry.path.contains(
-                                ".png"))) {
+                        (AppSettings.checkIsImage(entry.path))) {
                     imageLinks.add(dropboxAPI.media(entry.path, true).url);
                     imageData.add(DROPBOX_FILE_PREFIX + entry.path);
+                    Log.d(TAG, "Added: " + DROPBOX_FILE_PREFIX + entry.path);
+                }
+                else {
+                    Log.d(TAG, "Not added: " + DROPBOX_FILE_PREFIX + entry.path);
                 }
             }
 
@@ -786,11 +813,6 @@ public class DownloadThread extends Thread {
                 connection.connect();
                 InputStream input = connection.getInputStream();
 
-                if (!connection.getHeaderField("Content-Type").startsWith("image/") && !AppSettings.forceDownload()) {
-                    Log.i(TAG, "Not an image: " + url);
-                    return null;
-                }
-
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inJustDecodeBounds = true;
                 options.inPreferredConfig = Bitmap.Config.ARGB_8888;
@@ -846,8 +868,10 @@ public class DownloadThread extends Thread {
                 DownloadThread.this.interrupt();
                 Log.i(TAG, "Interrupted");
             }
-            catch (OutOfMemoryError | IOException e) {
-                DownloadThread.this.interrupt();
+            catch (Throwable e) {
+                if (isInterrupted()) {
+                    DownloadThread.this.interrupt();
+                }
                 e.printStackTrace();
             }
         }

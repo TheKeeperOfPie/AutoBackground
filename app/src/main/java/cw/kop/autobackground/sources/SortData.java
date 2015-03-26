@@ -27,4 +27,24 @@ public class SortData {
         return query;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        SortData sortData = (SortData) o;
+
+        return !(getTitle() != null ? !getTitle().equals(sortData.getTitle()) :
+                sortData.getTitle() != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return getTitle() != null ? getTitle().hashCode() : 0;
+    }
 }

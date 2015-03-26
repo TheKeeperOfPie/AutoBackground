@@ -439,7 +439,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, final String key) {
 
 
         if (!((Activity) appContext).isFinishing()) {
@@ -463,46 +463,50 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
             if (key.equals("use_download_path") && AppSettings.useDownloadPath()) {
 
-                File rootDir = Environment.getExternalStorageDirectory();
-                if (!rootDir.exists() || !rootDir.canRead()) {
-                    rootDir = new File(File.separator);
-                }
+                File startDir = Environment.getExternalStorageDirectory();
                 final FolderFragment folderFragment = new FolderFragment();
                 Bundle arguments = new Bundle();
                 arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
                 arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
-                final LocalImageAdapter adapter = new LocalImageAdapter(appContext, rootDir, rootDir);
+                final LocalImageAdapter adapter = new LocalImageAdapter(appContext, new File(File.separator), startDir);
                 folderFragment.setArguments(arguments);
                 folderFragment.setAdapter(adapter);
-                folderFragment.setStartingDirectoryText(rootDir.getAbsolutePath());
+                folderFragment.setStartingDirectoryText(startDir.getAbsolutePath());
                 folderFragment.setListener(new FolderFragment.FolderEventListener() {
                     @Override
                     public void onUseDirectoryClick() {
-                        AppSettings.setDownloadPath(adapter.getDirectory().getAbsolutePath());
+                        AppSettings.setDownloadPath(adapter.getDirectory()
+                                .getAbsolutePath());
                         Toast.makeText(appContext,
                                 "Download path set to: \n" + AppSettings.getDownloadPath(),
-                                Toast.LENGTH_SHORT).show();
+                                Toast.LENGTH_SHORT)
+                                .show();
                         adapter.setFinished();
                         getActivity().onBackPressed();
                     }
 
                     @Override
                     public void onItemClick(AdapterView<?> parent,
-                            View view,
-                            int positionInList,
-                            long id) {
+                                            View view,
+                                            int positionInList,
+                                            long id) {
                         File selectedFile = adapter.getItem(positionInList);
 
                         if (selectedFile.exists() && selectedFile.isDirectory()) {
                             adapter.setDirectory(selectedFile);
-                            folderFragment.setDirectoryText(adapter.getDirectory().getAbsolutePath());
+                            folderFragment.setDirectoryText(adapter.getDirectory()
+                                    .getAbsolutePath());
                         }
                     }
 
                     @Override
                     public boolean onBackPressed() {
                         boolean endDirectory = adapter.backDirectory();
-                        folderFragment.setDirectoryText(adapter.getDirectory().getAbsolutePath());
+                        folderFragment.setDirectoryText(adapter.getDirectory()
+                                .getAbsolutePath());
+                        if (!adapter.isFinished()) {
+                            ((SwitchPreference) findPreference(key)).setChecked(false);
+                        }
 
                         return endDirectory;
                     }

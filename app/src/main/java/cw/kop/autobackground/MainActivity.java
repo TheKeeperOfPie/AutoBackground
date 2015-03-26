@@ -22,7 +22,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
@@ -36,12 +35,11 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.AdapterView;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.squareup.picasso.Picasso;
@@ -58,13 +56,16 @@ import cw.kop.autobackground.settings.EffectsSettingsFragment;
 import cw.kop.autobackground.settings.NotificationSettingsFragment;
 import cw.kop.autobackground.settings.WallpaperSettingsFragment;
 import cw.kop.autobackground.settings.WearSettingsFragment;
+import cw.kop.autobackground.sources.ControllerSources;
 import cw.kop.autobackground.sources.Source;
 import cw.kop.autobackground.sources.SourceInfoFragment;
 import cw.kop.autobackground.sources.SourceListFragment;
 import cw.kop.autobackground.tutorial.TutorialActivity;
 import io.fabric.sdk.android.Fabric;
 
-public class MainActivity extends ActionBarActivity implements AdapterView.OnItemClickListener {
+public class MainActivity extends ActionBarActivity implements AdapterView.OnItemClickListener,
+        SourceInfoFragment.Listener,
+        SourceListFragment.SourceListListener {
 
     public static final String DRAWER_OPENED = "cw.kop.autobackground.MainActivity.DRAWER_OPENED";
     public static final String DRAWER_CLOSED = "cw.kop.autobackground.MainActivity.DRAWER_CLOSED";
@@ -91,6 +92,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
     private IntentFilter entryFilter;
     private int currentPosition = -1;
     private int newPosition = -1;
+    private ControllerSources controllerSources;
 
     public MainActivity() {
     }
@@ -118,6 +120,10 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         }
 
         super.onCreate(savedInstanceState);
+
+        if (controllerSources == null) {
+            controllerSources = new ControllerSources();
+        }
 
         Configuration configuration = getResources().getConfiguration();
 
@@ -436,4 +442,32 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         }
     }
 
+    @Override
+    public boolean addSource(Source source) {
+        boolean returnValue = controllerSources.addItem(source);
+        controllerSources.recount();
+        return returnValue;
+    }
+
+    @Override
+    public void sendToast(String message) {
+        if (AppSettings.useToast()) {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public boolean saveSource(Source source, int position) {
+        boolean returnValue = controllerSources.setItem(source, position);
+        controllerSources.recount();
+        return returnValue;
+    }
+
+    @Override
+    public ControllerSources getControllerSources() {
+        if (controllerSources == null) {
+            controllerSources = new ControllerSources();
+        }
+        return controllerSources;
+    }
 }

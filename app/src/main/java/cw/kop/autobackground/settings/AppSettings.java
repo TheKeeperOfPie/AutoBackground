@@ -65,7 +65,18 @@ public class AppSettings {
     private static final String TAG = AppSettings.class.getCanonicalName();
     private static final long DEFAULT_INTERVAL = 0;
 
+    public static final String PNG = ".png";
+    public static final String JPG = ".jpg";
+    public static final String JPEG = ".jpeg";
+    public static final String WEBM = ".webm";
+
     private static SharedPreferences prefs;
+
+    public static boolean checkIsImage(String url) {
+        String lowercase = url.toLowerCase();
+
+        return lowercase.endsWith(PNG) || lowercase.endsWith(JPG) || lowercase.endsWith(JPEG) || lowercase.endsWith(WEBM);
+    }
 
     private static boolean isFirstRun() {
         return prefs.getBoolean("first_run", true);
@@ -249,7 +260,7 @@ public class AppSettings {
     }
 
     public static void clearUrl(String key) {
-        prefs.edit().putString(key, "").apply();
+        prefs.edit().remove(key).apply();
     }
 
     public static boolean useDownloadPath() {
@@ -778,8 +789,9 @@ public class AppSettings {
             case FOLDER:
             case GOOGLE_ALBUM:
             case TUMBLR_BLOG:
-            case TUMBLR_TAG:
                 return "";
+            case TUMBLR_TAG:
+                return "Tag: ";
             case IMGUR_SUBREDDIT:
                 return "imgur.com/r/";
             case IMGUR_ALBUM:
@@ -829,19 +841,56 @@ public class AppSettings {
         }
     }
 
+    public static SortData getSourceSortParameter(Source source) {
+
+        switch (source.getType()) {
+            case IMGUR_SUBREDDIT:
+                switch (source.getSort()) {
+                    default:
+                    case "New":
+                        return new SortData("New", "time", "");
+                    case "Top - Day":
+                        return new SortData("Top - Day", "top/day", "");
+                    case "Top - Week":
+                        return new SortData("Top - Week", "top/week", "");
+                    case "Top - Month":
+                        return new SortData("Top - Month", "top/month", "");
+                    case "Top - Year":
+                        return new SortData("Top - Year", "top/year", "");
+                    case "Top - All":
+                        return new SortData("Top - All", "top/all", "");
+                }
+            case REDDIT_SUBREDDIT:
+
+                switch (source.getSort()) {
+                    default:
+                    case "Hot":
+                        return new SortData("Hot", "hot", "");
+                    case "New":
+                        return new SortData("New", "new", "");
+                    case "Top - Hour":
+                        return new SortData("Top - Hour", "top", "hour");
+                    case "Top - Day":
+                        return new SortData("Top - Day", "top", "day");
+                    case "Top - Week":
+                        return new SortData("Top - Week", "top", "week");
+                    case "Top - Month":
+                        return new SortData("Top - Month", "top", "month");
+                    case "Top - Year":
+                        return new SortData("Top - Year", "top", "year");
+                    case "Top - All":
+                        return new SortData("Top - All", "top", "all");
+                }
+            default:
+        }
+        return null;
+    }
+
     public static List<SortData> getSourceSortList(String type) {
 
         List<SortData> sortData = new ArrayList<>();
 
         switch (type) {
-            default:
-            case WEBSITE:
-            case FOLDER:
-            case GOOGLE_ALBUM:
-            case TUMBLR_TAG:
-            case IMGUR_ALBUM:
-            case TUMBLR_BLOG:
-                return null;
             case IMGUR_SUBREDDIT:
                 sortData.add(new SortData("New", "time", ""));
                 sortData.add(new SortData("Top - Day", "top/day", ""));
@@ -849,7 +898,7 @@ public class AppSettings {
                 sortData.add(new SortData("Top - Month", "top/month", ""));
                 sortData.add(new SortData("Top - Year", "top/year", ""));
                 sortData.add(new SortData("Top - All", "top/all", ""));
-                return sortData;
+                break;
             case REDDIT_SUBREDDIT:
                 sortData.add(new SortData("Hot", "hot", ""));
                 sortData.add(new SortData("New", "new", ""));
@@ -859,8 +908,10 @@ public class AppSettings {
                 sortData.add(new SortData("Top - Month", "top", "month"));
                 sortData.add(new SortData("Top - Year", "top", "year"));
                 sortData.add(new SortData("Top - All", "top", "all"));
-                return sortData;
+                break;
+            default:
         }
+        return sortData;
     }
 
     public static int getSourceNum(int index) {

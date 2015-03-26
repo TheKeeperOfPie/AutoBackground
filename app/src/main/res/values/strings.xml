@@ -283,7 +283,7 @@
     <string name="change_theme">Change Theme</string>
     <string name="change_theme_description">Use different app theme</string>
     <string name="use_advanced">Advanced Settings</string>
-    <string name="use_advanced_description">Show advanced settings</string>
+    <string name="use_advanced_description">Show advanced settings (will change user input of internal values), do not enable unless you know what you\'re doing</string>
     <string name="export_sources">Export Sources</string>
     <string name="export_sources_description">Export source data to a file</string>
     <string name="import_sources">Import Sources</string>
@@ -476,6 +476,8 @@
     <string name="delete">Delete</string>
     <string name="view_images">View Images</string>
     <string name="edit">Edit</string>
+    <string name="source_sort">Sort by</string>
+    <string name="source_num_prefix"># of Images</string>
 
     <string-array name="fragment_titles">
         <item>Sources</item>

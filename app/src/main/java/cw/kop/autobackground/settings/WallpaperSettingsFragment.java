@@ -513,7 +513,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
                     return;
                 }
 
-                long inputValue = Long.parseLong(value);
+                long inputValue = Long.parseLong(value) * CONVERT_MINUTES_TO_MILLES;
 
                 if (inputValue < 3000L && inputValue > 0) {
                     inputValue = 3000L;
@@ -533,7 +533,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         DialogFactory.showInputDialog(appContext,
                 "Update Interval",
-                "Number of milliseconds",
+                "Number of minutes",
                 "",
                 listener,
                 -1,

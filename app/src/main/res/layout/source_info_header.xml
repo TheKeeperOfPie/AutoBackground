@@ -153,11 +153,11 @@
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@id/source_data"
             android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
             android:layout_marginLeft="0dp"
             android:layout_marginStart="0dp"
             android:layout_marginTop="0dp"
-            android:layout_toStartOf="@id/source_data_sort"
-            android:layout_toLeftOf="@id/source_data_sort"
             android:background="@drawable/edit_text_blank"
             android:focusable="false"
             android:focusableInTouchMode="false"
@@ -169,22 +169,75 @@
             android:textAppearance="?android:attr/textAppearanceMedium"
             />
 
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/source_sort_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/source_settings_container"
+        android:layout_marginStart="@dimen/side_margin"
+        android:layout_marginLeft="@dimen/side_margin"
+        android:layout_marginEnd="@dimen/side_margin"
+        android:layout_marginRight="@dimen/side_margin"
+        android:alpha="0"
+        >
+
+        <EditText
+            android:id="@+id/source_data_sort_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/edit_text_blank"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            android:paddingBottom="2dp"
+            android:text="@string/source_sort"
+            android:layout_gravity="center_vertical"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            />
+
         <Spinner
             android:id="@+id/source_data_sort_spinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@id/source_data"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
+            android:layout_gravity="center_vertical"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/source_num_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/source_sort_container"
+        android:layout_marginStart="@dimen/side_margin"
+        android:layout_marginLeft="@dimen/side_margin"
+        android:layout_marginEnd="@dimen/side_margin"
+        android:layout_marginRight="@dimen/side_margin"
+        android:alpha="0"
+        >
+
+        <EditText
+            android:id="@+id/source_num_prefix"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/source_num"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_marginLeft="0dp"
-            android:layout_marginStart="0dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginEnd="0dp"
+            android:layout_marginRight="0dp"
             android:layout_marginTop="0dp"
             android:background="@drawable/edit_text_blank"
             android:focusable="false"
             android:focusableInTouchMode="false"
             android:inputType="textNoSuggestions"
             android:paddingBottom="2dp"
+            android:paddingEnd="0dp"
+            android:paddingRight="0dp"
+            android:text="@string/source_num_prefix"
             android:textAppearance="?android:attr/textAppearanceMedium"
             />
 
@@ -192,13 +245,22 @@
             android:id="@+id/source_num"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/source_data"
+            android:layout_alignParentTop="true"
             android:layout_marginBottom="4dp"
+            android:layout_marginEnd="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginStart="0dp"
             android:layout_marginTop="4dp"
+            android:layout_toEndOf="@id/source_num_prefix"
+            android:layout_toRightOf="@id/source_num_prefix"
+            android:hint="@string/num_images"
             android:inputType="number"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@color/BLUE_OPAQUE"
-            android:hint="@string/num_images"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
             />
 
     </RelativeLayout>

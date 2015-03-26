@@ -34,7 +34,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -80,8 +79,8 @@ import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener {
 
-    public static final String ADD_ENTRY = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
-    public static final String SET_ENTRY = "cw.kop.autobackground.SourceListFragment.SET_ENTRY";
+//    public static final String ADD_ENTRY = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
+//    public static final String SET_ENTRY = "cw.kop.autobackground.SourceListFragment.SET_ENTRY";
 
     private static final String TAG = SourceListFragment.class.getCanonicalName();
     private static final int SCROLL_ANIMATION_TIME = 150;
@@ -116,44 +115,16 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             String action = intent.getAction();
             switch (action) {
-                case SourceListFragment.ADD_ENTRY:
-                    Source addSource = new Source();
-
-                    addSource.setType(intent.getStringExtra(Source.TYPE));
-                    addSource.setTitle(intent.getStringExtra(Source.TITLE));
-                    addSource.setData(intent.getStringExtra(Source.DATA));
-                    addSource.setNum(intent.getIntExtra(Source.NUM, 0));
-                    addSource.setUse(intent.getBooleanExtra(Source.USE, true));
-                    addSource.setPreview(intent.getBooleanExtra(Source.PREVIEW, true));
-                    addSource.setUseTime(intent.getBooleanExtra(Source.USE_TIME, false));
-                    addSource.setTime(intent.getStringExtra(Source.TIME));
-                    addSource.setSort(intent.getStringExtra(Source.SORT));
-
-                    addEntry(addSource);
-                    break;
-                case SourceListFragment.SET_ENTRY:
-                    Source setSource = new Source();
-
-                    setSource.setType(intent.getStringExtra(Source.TYPE));
-                    setSource.setTitle(intent.getStringExtra(Source.TITLE));
-                    setSource.setData(intent.getStringExtra(Source.DATA));
-                    setSource.setNum(intent.getIntExtra(Source.NUM, 0));
-                    setSource.setUse(intent.getBooleanExtra(Source.USE, true));
-                    setSource.setPreview(intent.getBooleanExtra(Source.PREVIEW, true));
-                    setSource.setUseTime(intent.getBooleanExtra(Source.USE_TIME, false));
-                    setSource.setTime(intent.getStringExtra(Source.TIME));
-                    setSource.setSort(intent.getStringExtra(Source.SORT));
-
-                    setEntry(intent.getIntExtra(Source.POSITION, -1), setSource);
-                    break;
                 case FileHandler.DOWNLOAD_TERMINATED:
-                    new ImageCountTask().execute();
+                    sourceListListener.getControllerSources().recount();
                     break;
                 default:
             }
 
         }
     };
+    private SourceListListener sourceListListener;
+    private boolean needsUpdate;
 
     public SourceListFragment() {
     }
@@ -191,13 +162,42 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         menu.getItem(2).setIcon(storageIcon);
 
         // Recounts images
-        new ImageCountTask().execute();
+        sourceListListener.getControllerSources().recount();
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         appContext = activity;
+        sourceListListener = (SourceListListener) activity;
+        sourceListListener.getControllerSources().setListener(
+                new ControllerSources.SourceListener() {
+                    @Override
+                    public void notifyDataSetChanged() {
+                        if (listAdapter != null) {
+                            sourceList.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    listAdapter.notifyDataSetChanged();
+                                }
+                            });
+                        }
+                        else {
+                            needsUpdate = true;
+                        }
+                    }
+
+                    @Override
+                    public void onChangeState() {
+                        alertText.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                setAlertText();
+                            }
+                        });
+                    }
+                });
+        needsUpdate = true;
     }
 
     @Override
@@ -221,6 +221,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     @Override
     public void onDetach() {
         appContext = null;
+        sourceListListener.getControllerSources().setListener(null);
+        sourceListListener = null;
         super.onDetach();
     }
 
@@ -262,7 +264,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 ArrayList<Source> sources = new ArrayList<>(1);
                 sources.add(source);
 
-                listAdapter.saveData();
+                sourceListListener.getControllerSources().saveData();
                 if (FileHandler.isDownloading()) {
 
                     DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
@@ -307,7 +309,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             @Override
             public void onDeleteClick(final View view, final int index) {
 
-                listAdapter.saveData();
+                sourceListListener.getControllerSources().saveData();
                 if (FileHandler.isDownloading()) {
                     Toast.makeText(appContext,
                             "Cannot delete while downloading",
@@ -323,8 +325,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
                         @Override
                         public void onClickRight(View v) {
-                            listAdapter.removeItem(index);
-                            new ImageCountTask().execute();
+                            sourceListListener.getControllerSources().removeItem(index);
+                            sourceListListener.getControllerSources().recount();
                             this.dismissDialog();
                         }
                     };
@@ -345,8 +347,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                         @Override
                         public void onClickMiddle(View v) {
                             this.dismissDialog();
-                            listAdapter.removeItem(index);
-                            new ImageCountTask().execute();
+                            sourceListListener.getControllerSources().removeItem(index);
+                            sourceListListener.getControllerSources().recount();
                         }
 
                         @Override
@@ -354,8 +356,8 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                             Source source = listAdapter.getItem(index);
                             FileHandler.deleteBitmaps(source);
                             sendToast("Deleting " + source.getTitle() + " images");
-                            listAdapter.removeItem(index);
-                            new ImageCountTask().execute();
+                            sourceListListener.getControllerSources().removeItem(index);
+                            sourceListListener.getControllerSources().recount();
                             this.dismissDialog();
                         }
 
@@ -413,15 +415,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                     }
                     return false;
                 }
-            });
-            for (int index = 0; index < AppSettings.getNumberSources(); index++) {
-
-                Source source = AppSettings.getSource(index);
-
-                listAdapter.addItem(source, false);
-                Log.i(TAG, "Added: " + source.getTitle());
-            }
+            }, sourceListListener.getControllerSources());
         }
+        listAdapter.notifyDataSetChanged();
         sourceList.setAdapter(listAdapter);
 
         return view;
@@ -582,7 +578,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
      * Saves data in list and sends Intent to cycle wallpaper
      */
     private void cycleWallpaper() {
-        listAdapter.saveData();
+        sourceListListener.getControllerSources().saveData();
         Intent intent = new Intent();
         intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
@@ -593,7 +589,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
      * Starts (or stops) download and sets download icon appropriately
      */
     private void startDownload() {
-        listAdapter.saveData();
+        sourceListListener.getControllerSources().saveData();
         if (FileHandler.isDownloading()) {
 
             DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
@@ -645,7 +641,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         sourceList.setOnItemClickListener(null);
         sourceList.setEnabled(false);
 
-        listAdapter.saveData();
+        sourceListListener.getControllerSources().saveData();
         Source item = listAdapter.getItem(index);
         String type = item.getType();
         File directory;
@@ -839,6 +835,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         arguments.putString(Source.TITLE, "");
         arguments.putString(Source.DATA, "");
         arguments.putInt(Source.NUM, -1);
+        arguments.putString(Source.SORT, "");
         arguments.putBoolean(Source.USE, true);
         arguments.putBoolean(Source.PREVIEW, true);
         arguments.putBoolean(Source.USE_TIME, false);
@@ -865,16 +862,16 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case 0:
-                        listAdapter.sortData(Source.USE);
+                        sourceListListener.getControllerSources().sortData(Source.USE);
                         break;
                     case 1:
-                        listAdapter.sortData(Source.DATA);
+                        sourceListListener.getControllerSources().sortData(Source.DATA);
                         break;
                     case 2:
-                        listAdapter.sortData(Source.TITLE);
+                        sourceListListener.getControllerSources().sortData(Source.TITLE);
                         break;
                     case 3:
-                        listAdapter.sortData(Source.NUM);
+                        sourceListListener.getControllerSources().sortData(Source.NUM);
                         break;
                     default:
                 }
@@ -886,34 +883,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 "Sort by:",
                 clickListener,
                 R.array.source_sort_menu);
-    }
-
-    /**
-     * Adds source to listAdapter
-     *
-     * @param source source
-     */
-    public void addEntry(Source source) {
-        if (!listAdapter.addItem(source, true)) {
-            sendToast("Error: Title in use.\nPlease use a different title.");
-        }
-        else {
-            new ImageCountTask().execute();
-        }
-
-    }
-
-    /**
-     * Changes entry in listAdapter
-     *
-     * @param position index
-     * @param source source
-     */
-    public void setEntry(int position,
-            Source source) {
-        if (!listAdapter.setItem(position, source)) {
-            sendToast("Error: Title in use.\nPlease use a different title.");
-        }
     }
 
     /**
@@ -965,13 +934,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         super.onResume();
 
         sourceList.setOnItemClickListener(this);
-        new ImageCountTask().execute();
+        sourceListListener.getControllerSources().recount();
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(FileHandler.DOWNLOAD_TERMINATED);
-        intentFilter.addAction(ADD_ENTRY);
-        intentFilter.addAction(SET_ENTRY);
-        LocalBroadcastManager.getInstance(appContext).registerReceiver(sourceListReceiver, intentFilter);
+        LocalBroadcastManager.getInstance(appContext).registerReceiver(sourceListReceiver,
+                intentFilter);
 
         if (isServiceRunning(LiveWallpaperService.class.getName())) {
             setButton.setVisibility(View.GONE);
@@ -979,12 +947,18 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         else {
             setButton.setVisibility(View.VISIBLE);
         }
+
+        if (needsUpdate) {
+            listAdapter.notifyDataSetChanged();
+            needsUpdate = false;
+        }
+
     }
 
     @Override
     public void onPause() {
         ((MainActivity) getActivity()).getSupportActionBar().show();
-        listAdapter.saveData();
+        sourceListListener.getControllerSources().saveData();
         LocalBroadcastManager.getInstance(appContext).unregisterReceiver(sourceListReceiver);
         super.onPause();
     }
@@ -1044,11 +1018,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     }
 
     public boolean onItemLongClick(int position) {
-        if (!listAdapter.toggleActivated(position)) {
-            setAlertText(SourceListAdapter.NO_ACTIVE_SOURCES);
-        }
-        else if (alertText.isShown()) {
-            new ImageCountTask().execute();
+        if (sourceListListener.getControllerSources().toggleActivated(position)) {
+            if (alertText.isShown()) {
+                sourceListListener.getControllerSources().recount();
+            }
         }
         int firstVisiblePosition = sourceList.getFirstVisiblePosition();
         View childView = sourceList.getChildAt(position - firstVisiblePosition);
@@ -1060,7 +1033,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     private void startEditFragment(final View view, final int position) {
         sourceList.setOnItemClickListener(null);
         sourceList.setEnabled(false);
-        listAdapter.saveData();
+        sourceListListener.getControllerSources().saveData();
 
         Source dataItem = listAdapter.getItem(position);
         final SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
@@ -1072,6 +1045,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         arguments.putString(Source.DATA, dataItem.getData());
         arguments.putInt(Source.NUM, dataItem.getNum());
         arguments.putBoolean(Source.USE, dataItem.isUse());
+        arguments.putString(Source.SORT, dataItem.getSort());
         arguments.putBoolean(Source.PREVIEW, dataItem.isPreview());
         if (dataItem.getImageFile() != null) {
             arguments.putString(Source.IMAGE_FILE, dataItem.getImageFile().getAbsolutePath());
@@ -1263,7 +1237,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     }
 
-    private void setAlertText(String sourceState) {
+    private void setAlertText() {
 
         Log.i("SLA", "ImageCountTask onPostExecute");
 
@@ -1271,7 +1245,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             return;
         }
 
-        listAdapter.updateNum();
+        String sourceState = sourceListListener.getControllerSources().getState();
+
+        sourceListListener.getControllerSources().updateNum();
 
         resetAddButtonIcon();
 
@@ -1284,23 +1260,23 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             toolbarMenu.getItem(1).setIcon(drawable);
         }
 
-        alertText.setVisibility(sourceState.equals(SourceListAdapter.OKAY) ?
+        alertText.setVisibility(sourceState.equals(ControllerSources.OKAY) ?
                 View.GONE :
                 View.VISIBLE);
 
         switch (sourceState) {
 
-            case SourceListAdapter.NO_SOURCES:
+            case ControllerSources.NO_SOURCES:
                 alertText.setText("Please add a source");
                 Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
                 addDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
                         PorterDuff.Mode.MULTIPLY);
                 addButtonBackground.setImageDrawable(addDrawable);
                 break;
-            case SourceListAdapter.NO_ACTIVE_SOURCES:
+            case ControllerSources.NO_ACTIVE_SOURCES:
                 alertText.setText("No active sources");
                 break;
-            case SourceListAdapter.NEED_DOWNLOAD:
+            case ControllerSources.NEED_DOWNLOAD:
                 alertText.setText("No downloaded images");
                 if (!FileHandler.isDownloading() && toolbarMenu != null) {
                     Drawable downloadDrawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp).mutate();
@@ -1309,26 +1285,17 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                     toolbarMenu.getItem(1).setIcon(downloadDrawable);
                 }
                 break;
-            case SourceListAdapter.NO_IMAGES:
+            case ControllerSources.NO_IMAGES:
                 alertText.setText("No images found");
                 break;
-            case SourceListAdapter.OKAY:
+            case ControllerSources.OKAY:
                 break;
 
         }
     }
 
-    class ImageCountTask extends AsyncTask<Void, String, String> {
-
-        @Override
-        protected String doInBackground(Void... params) {
-            return listAdapter.checkSources();
-        }
-
-        @Override
-        protected void onPostExecute(String sourceState) {
-            setAlertText(sourceState);
-        }
+    public interface SourceListListener {
+        ControllerSources getControllerSources();
     }
 
 }
