@@ -44,10 +44,10 @@ public class AppSettings {
 
     public static final String WEBSITE = "Website";
     public static final String FOLDER = "Folder";
-    //    public static final String IMGUR = "imgur";
     public static final String IMGUR_SUBREDDIT = "Imgur Subreddit";
     public static final String IMGUR_ALBUM = "Imgur Album";
-    public static final String GOOGLE_ALBUM = "Google+ Album";
+    public static final String GOOGLE_PLUS_ALBUM = "Google+ Album";
+    public static final String GOOGLE_DRIVE_ALBUM = "Google Drive Album";
     public static final String TUMBLR_BLOG = "Tumblr Blog";
     public static final String TUMBLR_TAG = "Tumblr Tag";
     public static final String REDDIT_SUBREDDIT = "Reddit Subreddit";
@@ -178,7 +178,7 @@ public class AppSettings {
                         newType = AppSettings.FOLDER;
                         break;
                     case "picasa":
-                        newType = AppSettings.GOOGLE_ALBUM;
+                        newType = AppSettings.GOOGLE_PLUS_ALBUM;
                         break;
                     case "tumblr_blog":
                         newType = AppSettings.TUMBLR_BLOG;
@@ -787,7 +787,8 @@ public class AppSettings {
             default:
             case WEBSITE:
             case FOLDER:
-            case GOOGLE_ALBUM:
+            case GOOGLE_PLUS_ALBUM:
+            case GOOGLE_DRIVE_ALBUM:
             case TUMBLR_BLOG:
                 return "";
             case TUMBLR_TAG:
@@ -807,7 +808,8 @@ public class AppSettings {
 
             default:
             case FOLDER:
-            case GOOGLE_ALBUM:
+            case GOOGLE_PLUS_ALBUM:
+            case GOOGLE_DRIVE_ALBUM:
                 return "";
             case AppSettings.WEBSITE:
                 return "URL";
@@ -830,7 +832,8 @@ public class AppSettings {
             default:
             case WEBSITE:
             case FOLDER:
-            case GOOGLE_ALBUM:
+            case GOOGLE_PLUS_ALBUM:
+            case GOOGLE_DRIVE_ALBUM:
             case TUMBLR_TAG:
             case IMGUR_SUBREDDIT:
             case IMGUR_ALBUM:

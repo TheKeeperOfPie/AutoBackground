@@ -137,7 +137,7 @@ public class DropboxAdapter extends BaseAdapter {
 
     }
 
-    private static class ViewHolder {
+    private class ViewHolder {
 
         protected final TextView fileTitle;
         protected final TextView fileSummary;

@@ -29,17 +29,17 @@ buildscript {
 }
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
 
     defaultConfig {
         applicationId "cw.kop.autobackground"
         minSdkVersion 14
-        targetSdkVersion 21
+        targetSdkVersion 22
         versionCode 71
         versionName "2.30.00"
 
-        renderscriptTargetApi 21
+        renderscriptTargetApi 22
         renderscriptSupportModeEnabled true
 
         resConfigs "en"

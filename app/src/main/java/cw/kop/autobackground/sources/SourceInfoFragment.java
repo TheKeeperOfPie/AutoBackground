@@ -28,7 +28,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -59,6 +58,14 @@ import com.dropbox.client2.session.AppKeyPair;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveApi;
+import com.google.android.gms.drive.DriveFolder;
+import com.google.android.gms.drive.DriveResource;
+import com.google.android.gms.drive.Metadata;
+import com.google.android.gms.drive.MetadataBuffer;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -83,6 +90,7 @@ import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.AlbumAdapter;
+import cw.kop.autobackground.images.DriveAdapter;
 import cw.kop.autobackground.images.DropboxAdapter;
 import cw.kop.autobackground.images.FolderFragment;
 import cw.kop.autobackground.images.LocalImageAdapter;
@@ -98,7 +106,7 @@ public class SourceInfoFragment extends PreferenceFragment {
     private static final int FADE_IN_TIME = 350;
     private static final int SLIDE_EXIT_TIME = 350;
 
-    private Context appContext;
+    private Activity appContext;
     private Drawable imageDrawable;
 
     private RelativeLayout settingsContainer;
@@ -139,6 +147,7 @@ public class SourceInfoFragment extends PreferenceFragment {
     private DropboxAPI<AndroidAuthSession> dropboxAPI;
     private SourceSortSpinnerAdapter sortAdapter;
     private Listener listener;
+    private GoogleApiClient googleApiClient;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -226,7 +235,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                 switch (type) {
 
                     case AppSettings.FOLDER:
-                    case AppSettings.GOOGLE_ALBUM:
+                    case AppSettings.GOOGLE_PLUS_ALBUM:
+                    case AppSettings.GOOGLE_DRIVE_ALBUM:
                     case AppSettings.DROPBOX_FOLDER:
                         selectSource(type);
                         break;
@@ -715,7 +725,8 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         if (!type.equals(newType) &&
                 (type.equals(AppSettings.FOLDER) ||
-                type.equals(AppSettings.GOOGLE_ALBUM) ||
+                type.equals(AppSettings.GOOGLE_PLUS_ALBUM) ||
+                type.equals(AppSettings.GOOGLE_DRIVE_ALBUM) ||
                 type.equals(AppSettings.DROPBOX_FOLDER))) {
             sourceTitle.setText("");
             sourceData.setText("");
@@ -741,7 +752,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                 break;
             case AppSettings.IMGUR_ALBUM:
                 break;
-            case AppSettings.GOOGLE_ALBUM:
+            case AppSettings.GOOGLE_PLUS_ALBUM:
                 if (TextUtils.isEmpty(AppSettings.getGoogleAccountName())) {
                     startActivityForResult(GoogleAccount.getPickerIntent(),
                             GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
@@ -749,6 +760,25 @@ public class SourceInfoFragment extends PreferenceFragment {
                 else if (getFragmentManager().findFragmentByTag("folder_fragment") == null) {
                     new PicasaAlbumTask().execute();
                 }
+                break;
+            case AppSettings.GOOGLE_DRIVE_ALBUM:
+                // TODO: Implement Drive folder support
+                googleApiClient = new GoogleApiClient.Builder(appContext)
+                        .addApi(Drive.API)
+                        .addScope(Drive.SCOPE_APPFOLDER)
+                        .addScope(Drive.SCOPE_FILE)
+                        .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                            @Override
+                            public void onConnected(Bundle bundle) {
+
+                            }
+
+                            @Override
+                            public void onConnectionSuspended(int i) {
+
+                            }
+                        })
+                        .build();
                 break;
             case AppSettings.TUMBLR_BLOG:
                 break;
@@ -781,7 +811,6 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         switch (type) {
             case AppSettings.FOLDER:
-            case AppSettings.GOOGLE_ALBUM:
                 focusNum = false;
             case AppSettings.DROPBOX_FOLDER:
                 focusData = false;
@@ -1026,6 +1055,127 @@ public class SourceInfoFragment extends PreferenceFragment {
                 .add(R.id.content_frame, folderFragment, "folder_fragment")
                 .addToBackStack(null)
                 .commit();
+    }
+
+    private void showDriveFragment() {
+
+        if (!type.equals(AppSettings.DROPBOX_FOLDER)) {
+            return;
+        }
+
+        final FolderFragment folderFragment = new FolderFragment();
+        Bundle arguments = new Bundle();
+        arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
+        arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
+
+        final DriveAdapter adapter = new DriveAdapter(appContext);
+        folderFragment.setArguments(arguments);
+        folderFragment.setListener(new FolderFragment.FolderEventListener() {
+
+            @Override
+            public void onUseDirectoryClick() {
+                DriveFolder driveFolder = adapter.getMainDir();
+
+                driveFolder.getMetadata(googleApiClient).setResultCallback(new ResultCallback<DriveResource.MetadataResult>() {
+                    @Override
+                    public void onResult(DriveResource.MetadataResult metadataResult) {
+
+                        // TODO: Add status checks
+
+                        Metadata metadata = metadataResult.getMetadata();
+                        setData(AppSettings.GOOGLE_DRIVE_ALBUM, metadata.getTitle(), metadata.getDriveId().encodeToString(), -1);
+                        adapter.setFinished(true);
+                        getActivity().onBackPressed();
+                    }
+                });
+            }
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+                final Metadata metadata = (Metadata) adapter.getItem(positionInList);
+                if (!metadata.isFolder()) {
+                    return;
+                }
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        DriveFolder folder = Drive.DriveApi.getFolder(googleApiClient, metadata.getDriveId());
+
+                        folder.listChildren(googleApiClient).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+                            @Override
+                            public void onResult(DriveApi.MetadataBufferResult metadataBufferResult) {
+                                final List<Metadata> newEntries = new ArrayList<>();
+                                MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
+                                for (int index = 0; index < metadataBuffer.getCount(); index++) {
+                                    newEntries.add(metadataBuffer.get(index));
+                                }
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        adapter.setDir(folder, newEntries);
+                                        folderFragment.setDirectoryText(metadata.getDescription());
+                                    }
+                                });
+                                metadataBuffer.release();
+                            }
+                        });
+                    }
+                }).start();
+
+            }
+
+            @Override
+            public boolean onBackPressed() {
+                if (adapter.backDirectory()) {
+                    return true;
+                }
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        DriveFolder driveFolder = adapter.getMainDir();
+                        driveFolder.listParents(googleApiClient).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+                            @Override
+                            public void onResult(DriveApi.MetadataBufferResult metadataBufferResult) {
+                                final DriveFolder parentFolder = Drive.DriveApi.getFolder(googleApiClient, metadataBufferResult.getMetadataBuffer().get(0).getDriveId());
+
+                                metadataBufferResult.getMetadataBuffer().release();
+
+                                parentFolder.getMetadata(googleApiClient).setResultCallback(new ResultCallback<DriveResource.MetadataResult>() {
+                                    @Override
+                                    public void onResult(DriveResource.MetadataResult metadataResult) {
+                                        final Metadata metadata = metadataResult.getMetadata();
+                                        parentFolder.listChildren(googleApiClient).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+                                            @Override
+                                            public void onResult(DriveApi.MetadataBufferResult metadataBufferResult) {
+                                                final List<Metadata> newEntries = new ArrayList<>();
+                                                MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
+                                                for (int index = 0; index < metadataBuffer.getCount(); index++) {
+                                                    newEntries.add(metadataBuffer.get(index));
+                                                }
+                                                handler.post(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        adapter.setDir(parentFolder, newEntries);
+                                                        folderFragment.setDirectoryText(metadata.getDescription());
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }).start();
+
+                return false;
+            }
+        });
+
+        Toast.makeText(appContext, "Loading Google Drive", Toast.LENGTH_SHORT).show();
     }
 
     private void showDropboxFragment() {
@@ -1278,7 +1428,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         protected void onPostExecute(Void aVoid) {
 
             if (isAdded()) {
-                showAlbumFragment(AppSettings.GOOGLE_ALBUM,
+                showAlbumFragment(AppSettings.GOOGLE_PLUS_ALBUM,
                         albumNames,
                         albumImageLinks,
                         albumLinks,

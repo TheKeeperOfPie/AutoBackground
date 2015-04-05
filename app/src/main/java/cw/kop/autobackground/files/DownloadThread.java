@@ -28,7 +28,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -40,6 +39,8 @@ import com.dropbox.client2.DropboxAPI.Entry;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.drive.Drive;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -52,7 +53,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -62,7 +62,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -110,6 +109,7 @@ public class DownloadThread extends Thread {
     private boolean isLowResolution;
     private boolean isNotEnoughNew;
     private volatile boolean interrupted;
+    private GoogleApiClient googleApiClient;
 
     public DownloadThread(Context context, List<Source> sources) {
         appContext = context;
@@ -120,6 +120,12 @@ public class DownloadThread extends Thread {
         if (AppSettings.useDropboxAccount() && !TextUtils.isEmpty(AppSettings.getDropboxAccountToken())) {
             dropboxAPI.getSession().setOAuth2AccessToken(AppSettings.getDropboxAccountToken());
         }
+        googleApiClient = new GoogleApiClient.Builder(context)
+                .addApi(Drive.API)
+                .addScope(Drive.SCOPE_APPFOLDER)
+                .addScope(Drive.SCOPE_FILE)
+                .build();
+        googleApiClient.connect();
     }
 
     @Override
@@ -248,8 +254,11 @@ public class DownloadThread extends Thread {
                     case AppSettings.IMGUR_ALBUM:
                         downloadImgurAlbum(source);
                         break;
-                    case AppSettings.GOOGLE_ALBUM:
+                    case AppSettings.GOOGLE_PLUS_ALBUM:
                         downloadPicasa(source);
+                        break;
+                    case AppSettings.GOOGLE_DRIVE_ALBUM:
+                        downloadDrive(source);
                         break;
                     case AppSettings.TUMBLR_BLOG:
                         downloadTumblrBlog(source);
@@ -571,6 +580,13 @@ public class DownloadThread extends Thread {
         }
 
         startDownload(imageList, imageList, source);
+
+    }
+
+    private void downloadDrive(Source source) {
+        // TODO: Implement Drive support
+
+
 
     }
 
