@@ -1,8 +1,6 @@
 ![](/app/src/main/res/drawable-xxhdpi/app_icon.png)
 
-AutoBackground
-
-https://play.google.com/store/apps/details?id=cw.kop.autobackground
+[AutoBackground](https://play.google.com/store/apps/details?id=cw.kop.autobackground)
 ==============
 
 Android application for automatically downloading images from websites and applying them as the system live wallpaper.
