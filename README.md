@@ -1,6 +1,9 @@
 ![](/app/src/main/res/drawable-xxhdpi/app_icon.png)
 
 AutoBackground
+
+https://play.google.com/store/apps/details?id=cw.kop.autobackground
+
 ==============
 
 Android application for automatically downloading images from websites and applying them as the system wallpaper
@@ -110,7 +113,7 @@ Downloader
     - Off: Will only download image files which are actually shown as images
 - *Custom Download Path:
     - On: Uses a user specified download path chosen through app directory browser
-    - Off: Uses default internal app cache to store images, /data/data/cw.kop.autobackground/cache is default on a Nexus 5\
+    - Off: Uses default internal app cache to store images, /data/data/cw.kop.autobackground/cache is default on a Nexus 5
 - *Image History: Store a history of previous links to attempt to prevent duplicates
 - *Image History Size: Max number of links to store
 - *Cache Thumbnails: Save a separate thumbnail of image for history purposes
