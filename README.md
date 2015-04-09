@@ -3,12 +3,9 @@
 AutoBackground
 
 https://play.google.com/store/apps/details?id=cw.kop.autobackground
-
 ==============
 
-Android application for automatically downloading images from websites and applying them as the system wallpaper
-
-Sorry about the fairly messy and undocumented code. My first app, and really my first meaningful program in Java at all.
+Android application for automatically downloading images from websites and applying them as the system live wallpaper.
 
 A Google+ Community for this app is available here: https://plus.google.com/communities/100246478573973585215
 
