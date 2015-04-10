@@ -19,6 +19,7 @@ package cw.kop.autobackground.images;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,6 +46,7 @@ import cw.kop.autobackground.settings.AppSettings;
  */
 public class ImageHistoryAdapter extends BaseAdapter {
 
+    private static final String TAG = ImageHistoryAdapter.class.getCanonicalName();
     private LayoutInflater inflater;
     private ArrayList<HistoryItem> historyItems;
     private int colorFilterInt;
@@ -57,6 +59,8 @@ public class ImageHistoryAdapter extends BaseAdapter {
         AppSettings.checkUsedLinksSize();
         Set<String> usedLinks = AppSettings.getUsedLinks();
 
+        Log.d(TAG, "usedLinks size: " + usedLinks.size());
+
         for (String link : usedLinks) {
 
             long time = 0;
@@ -67,6 +71,7 @@ public class ImageHistoryAdapter extends BaseAdapter {
                 time = Long.parseLong(link.substring(link.lastIndexOf("Time:") + 5));
             }
             catch (Exception e) {
+                e.printStackTrace();
             }
 
             historyItems.add(new HistoryItem(time,
@@ -76,6 +81,10 @@ public class ImageHistoryAdapter extends BaseAdapter {
         }
 
         Collections.sort(historyItems);
+        Log.d(TAG, "historyItems size: " + historyItems.size());
+        for (HistoryItem item : historyItems) {
+            Log.d(TAG, "HistoryItem: " + item.toString());
+        }
 
     }
 

@@ -417,7 +417,7 @@ public class LiveWallpaperService extends GLWallpaperService {
     }
 
     private void startAlarms() {
-        if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0 && PendingIntent.getBroadcast(
+        if (AppSettings.useTimer() && PendingIntent.getBroadcast(
                 LiveWallpaperService.this,
                 0,
                 new Intent(LiveWallpaperService.DOWNLOAD_WALLPAPER),
@@ -429,6 +429,17 @@ public class LiveWallpaperService extends GLWallpaperService {
             calendar.set(Calendar.MINUTE, AppSettings.getTimerMinute());
 
             alarmManager.cancel(pendingDownloadIntent);
+
+            if (AppSettings.getLastDownloadTime() > 0) {
+
+                long targetTime = AppSettings.getLastDownloadTime() + AppSettings.getTimerDuration();
+                if (System.currentTimeMillis() < targetTime) {
+                    calendar.setTimeInMillis(targetTime);
+                    calendar.set(Calendar.HOUR_OF_DAY, AppSettings.getTimerHour());
+                    calendar.set(Calendar.MINUTE, AppSettings.getTimerMinute());
+                }
+
+            }
 
             if (calendar.getTimeInMillis() > System.currentTimeMillis()) {
                 alarmManager.setInexactRepeating(AlarmManager.RTC,
@@ -1610,6 +1621,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 switch (action) {
                     case LiveWallpaperService.DOWNLOAD_WALLPAPER:
+                        AppSettings.setLastDownloadTime(System.currentTimeMillis());
                         getNewImages();
                         break;
                     case LiveWallpaperService.CYCLE_IMAGE:

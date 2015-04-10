@@ -67,6 +67,7 @@ import com.squareup.picasso.Picasso;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
@@ -291,7 +292,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                             PorterDuff.Mode.MULTIPLY);
                     toolbarMenu.getItem(1).setIcon(drawable);
 
-                    if (AppSettings.resetOnManualDownload() && AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
+                    if (AppSettings.resetOnManualDownload() && AppSettings.useTimer()) {
                         Intent intent = new Intent();
                         intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
                         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
@@ -612,21 +613,38 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         }
         else if (FileHandler.download(appContext)) {
             Drawable drawable = getResources().getDrawable(R.drawable.ic_cancel_white_24dp);
-            drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                    PorterDuff.Mode.MULTIPLY);
+            if (drawable != null) {
+                drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                        PorterDuff.Mode.MULTIPLY);
+            }
             toolbarMenu.getItem(1).setIcon(drawable);
 
-            if (AppSettings.resetOnManualDownload() && AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
+            if (AppSettings.resetOnManualDownload() && AppSettings.useTimer()) {
                 Intent intent = new Intent();
                 intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
                 intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(appContext, 0, intent, 0);
+
                 AlarmManager alarmManager = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
                 alarmManager.cancel(pendingIntent);
-                alarmManager.setInexactRepeating(AlarmManager.RTC,
-                        System.currentTimeMillis() + AppSettings.getTimerDuration(),
-                        AppSettings.getTimerDuration(),
-                        pendingIntent);
+
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(System.currentTimeMillis());
+                calendar.set(Calendar.HOUR_OF_DAY, AppSettings.getTimerHour());
+                calendar.set(Calendar.MINUTE, AppSettings.getTimerMinute());
+
+                if (calendar.getTimeInMillis() > System.currentTimeMillis()) {
+                    alarmManager.setInexactRepeating(AlarmManager.RTC,
+                            calendar.getTimeInMillis(),
+                            AppSettings.getTimerDuration(),
+                            pendingIntent);
+                }
+                else {
+                    alarmManager.setInexactRepeating(AlarmManager.RTC,
+                            calendar.getTimeInMillis() + AlarmManager.INTERVAL_DAY,
+                            AppSettings.getTimerDuration(),
+                            pendingIntent);
+                }
             }
         }
     }

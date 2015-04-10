@@ -731,6 +731,10 @@ public class AppSettings {
         return Integer.parseInt(prefs.getString("history_size", "15"));
     }
 
+    public static void setHistorySize(int size) {
+        prefs.edit().putString("history_size", String.valueOf(size)).apply();
+    }
+
     public static boolean useHighResolutionNotificationIcon() {
         return prefs.getBoolean("high_resolution_notification_icon", false);
     }
@@ -961,11 +965,19 @@ public class AppSettings {
     }
 
     public static int getImageHistorySize() {
-        return Integer.parseInt(prefs.getString("image_history_size", "250"));
+        return Integer.parseInt(prefs.getString("image_history_size", "500"));
+    }
+
+    public static void setImageHistorySize(int size) {
+        prefs.edit().putString("image_history_size", "" + size).apply();
     }
 
     public static boolean cacheThumbnails() {
         return prefs.getBoolean("use_thumbnails", true);
+    }
+
+    public static void setThumbnailSize(int size) {
+        prefs.edit().putString("thumbnail_size", String.valueOf(size)).apply();
     }
 
     public static int getThumbnailSize() {
@@ -983,6 +995,8 @@ public class AppSettings {
     public static void addUsedLink(String link, long time) {
         HashSet<String> set = getUsedLinks();
         set.add(link + "Time:" + time);
+
+        Log.d(TAG, "addUsedLink: " + (link + "Time:" + time));
 
         prefs.edit().putStringSet("used_history_links", set).commit();
     }
@@ -1006,21 +1020,32 @@ public class AppSettings {
                 public int compare(String lhs, String rhs) {
 
                     try {
-                        long first = Long.parseLong(lhs.substring(lhs.lastIndexOf("Time:")));
-                        long second = Long.parseLong(rhs.substring(lhs.lastIndexOf("Time:")));
+                        long first = Long.parseLong(lhs.substring(lhs.lastIndexOf("Time:") + 5));
+                        long second = Long.parseLong(rhs.substring(rhs.lastIndexOf("Time:") + 5));
 
                         return (int) (first - second);
                     }
                     catch (Exception e) {
-
+                        e.printStackTrace();
                     }
 
                     return 0;
                 }
             });
 
+            Log.d(TAG, "checkUsedLinksSize");
+            for (String link : linkList) {
+                Log.d(TAG, "Link: " + link);
+            }
+
             for (int i = 0; i < iterations; i++) {
+                Log.d(TAG, "Remove: " + linkList.get(0));
                 linkList.remove(0);
+            }
+
+            Log.d(TAG, "After remove");
+            for (String link : linkList) {
+                Log.d(TAG, "Link: " + link);
             }
 
             HashSet<String> newSet = new HashSet<String>(linkList);
@@ -1092,7 +1117,8 @@ public class AppSettings {
 
         }
 
-        prefs.edit().putString("notification_icon_string", value).apply();
+        prefs.edit().putString("notification_icon_string", value)
+                .apply();
     }
 
     public static void setUseNotificationIconFile(boolean value) {
@@ -1202,7 +1228,8 @@ public class AppSettings {
     }
 
     public static void setNotificationSummaryColor(int color) {
-        prefs.edit().putInt("notification_summary_color", color).apply();
+        prefs.edit().putInt("notification_summary_color", color)
+                .apply();
     }
 
     public static void setNotificationOptionTitle(int position, String title) {
@@ -1638,4 +1665,11 @@ public class AppSettings {
         return prefs.getInt(WearConstants.SECOND_SHADOW_COLOR, 0xFF000000);
     }
 
+    public static long getLastDownloadTime() {
+        return prefs.getLong("last_download_time", -1);
+    }
+
+    public static void setLastDownloadTime(long timeMillis) {
+        prefs.edit().putLong("last_download_time", timeMillis).apply();
+    }
 }

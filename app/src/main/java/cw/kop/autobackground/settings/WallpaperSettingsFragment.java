@@ -534,7 +534,7 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
         DialogFactory.showInputDialog(appContext,
                 "Update Interval",
                 "Number of minutes",
-                "",
+                "" + (AppSettings.getIntervalDuration() / CONVERT_MINUTES_TO_MILLES),
                 listener,
                 -1,
                 R.string.cancel_button,

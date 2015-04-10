@@ -1200,45 +1200,40 @@ public class SourceInfoFragment extends PreferenceFragment {
         });
 
         Toast.makeText(appContext, "Loading Google Drive", Toast.LENGTH_SHORT).show();
-
-        new Thread(new Runnable() {
+        final DriveFolder driveFolder = Drive.DriveApi.getRootFolder(googleApiClient);
+        driveFolder.getMetadata(googleApiClient).setResultCallback(new ResultCallback<DriveResource.MetadataResult>() {
             @Override
-            public void run() {
-
-                final DriveFolder driveFolder = Drive.DriveApi.getRootFolder(googleApiClient);
-
-                driveFolder.getMetadata(googleApiClient).setResultCallback(new ResultCallback<DriveResource.MetadataResult>() {
-                    @Override
-                    public void onResult(final DriveResource.MetadataResult metadataResult) {
-                        listener.sendToast(metadataResult.getMetadata().toString());
-                        driveFolder.listChildren(googleApiClient).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+            public void onResult(final DriveResource.MetadataResult metadataResult) {
+                Log.d(TAG, "Metadata: " + metadataResult.getMetadata().toString());
+                driveFolder.listChildren(googleApiClient).setResultCallback(
+                        new ResultCallback<DriveApi.MetadataBufferResult>() {
                             @Override
                             public void onResult(DriveApi.MetadataBufferResult metadataBufferResult) {
+
+                                Log.d(TAG, "Status: " + metadataBufferResult.getStatus().toString());
+
                                 final List<Metadata> newEntries = new ArrayList<>();
                                 MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
                                 for (int index = 0; index < metadataBuffer.getCount(); index++) {
                                     newEntries.add(metadataBuffer.get(index));
                                 }
-                                listener.sendToast("newEntries: " + newEntries.toString());
-                                handler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        adapter.setDirs(driveFolder, driveFolder, newEntries);
-                                        folderFragment.setAdapter(adapter);
-                                        folderFragment.setStartingDirectoryText(metadataResult.getMetadata().getDescription());
-                                        getFragmentManager().beginTransaction()
-                                                .add(R.id.content_frame, folderFragment, "folder_fragment")
-                                                .addToBackStack(null)
-                                                .commit();
-                                    }
-                                });
+                                Log.d(TAG, "newEntries: " + newEntries.toString());
+                                adapter.setDirs(driveFolder, driveFolder,
+                                        newEntries);
+                                folderFragment.setAdapter(adapter);
+                                folderFragment.setStartingDirectoryText(
+                                        metadataResult.getMetadata()
+                                                .getDescription());
+                                getFragmentManager().beginTransaction()
+                                        .add(R.id.content_frame, folderFragment,
+                                                "folder_fragment")
+                                        .addToBackStack(null)
+                                        .commit();
                                 metadataBuffer.release();
                             }
                         });
-                    }
-                });
             }
-        }).start();
+        });
     }
 
     private void showDropboxFragment() {

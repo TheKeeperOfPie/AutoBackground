@@ -46,6 +46,15 @@ public class HistoryItem implements Comparable<HistoryItem> {
     }
 
     @Override
+    public String toString() {
+        return "HistoryItem{" +
+                "time=" + time +
+                ", url='" + url + '\'' +
+                ", image=" + image +
+                '}';
+    }
+
+    @Override
     public int compareTo(HistoryItem another) {
 
         long time = another.getTime() - this.getTime();
