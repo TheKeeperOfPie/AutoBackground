@@ -39,9 +39,11 @@ public class DriveAdapter extends BaseAdapter {
         colorFilterInt = AppSettings.getColorFilterInt(activity);
     }
 
-    public void setDirs(DriveFolder topDir, DriveFolder mainDir) {
+    public void setDirs(DriveFolder topDir, DriveFolder mainDir, List<Metadata> entries) {
         this.topDir = topDir;
         this.mainDir = mainDir;
+        this.entries = entries;
+        notifyDataSetChanged();
     }
 
     @Override

@@ -18,8 +18,10 @@ package cw.kop.autobackground.sources;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -58,6 +60,7 @@ import com.dropbox.client2.session.AppKeyPair;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
@@ -105,6 +108,7 @@ public class SourceInfoFragment extends PreferenceFragment {
     private static final String TAG = SourceInfoFragment.class.getCanonicalName();
     private static final int FADE_IN_TIME = 350;
     private static final int SLIDE_EXIT_TIME = 350;
+    private static final int DRIVE_RESOLVE_REQUEST_CODE = 9005;
 
     private Activity appContext;
     private Drawable imageDrawable;
@@ -763,22 +767,37 @@ public class SourceInfoFragment extends PreferenceFragment {
                 break;
             case AppSettings.GOOGLE_DRIVE_ALBUM:
                 // TODO: Implement Drive folder support
-                googleApiClient = new GoogleApiClient.Builder(appContext)
-                        .addApi(Drive.API)
-                        .addScope(Drive.SCOPE_APPFOLDER)
-                        .addScope(Drive.SCOPE_FILE)
-                        .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
-                            @Override
-                            public void onConnected(Bundle bundle) {
+                if (googleApiClient == null) {
+                    googleApiClient = new GoogleApiClient.Builder(appContext)
+                            .addApi(Drive.API)
+                            .addScope(Drive.SCOPE_APPFOLDER)
+                            .addScope(Drive.SCOPE_FILE)
+                            .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                                @Override
+                                public void onConnected(Bundle bundle) {
+                                    listener.sendToast("onConnected");
+                                    showDriveFragment();
+                                }
 
-                            }
+                                @Override
+                                public void onConnectionSuspended(int i) {
 
-                            @Override
-                            public void onConnectionSuspended(int i) {
-
-                            }
-                        })
-                        .build();
+                                }
+                            })
+                            .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+                                @Override
+                                public void onConnectionFailed(ConnectionResult connectionResult) {
+                                    try {
+                                        connectionResult.startResolutionForResult(appContext, DRIVE_RESOLVE_REQUEST_CODE);
+                                    }
+                                    catch (IntentSender.SendIntentException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            })
+                            .build();
+                }
+                googleApiClient.connect();
                 break;
             case AppSettings.TUMBLR_BLOG:
                 break;
@@ -824,6 +843,11 @@ public class SourceInfoFragment extends PreferenceFragment {
     @Override
     public void onActivityResult(int requestCode, int responseCode, Intent intent) {
 
+        if (requestCode == DRIVE_RESOLVE_REQUEST_CODE) {
+            if (intent != null && responseCode == Activity.RESULT_OK) {
+                googleApiClient.connect();
+            }
+        }
         if (requestCode == GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN) {
             if (intent != null && responseCode == Activity.RESULT_OK) {
                 final String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
@@ -1059,7 +1083,7 @@ public class SourceInfoFragment extends PreferenceFragment {
 
     private void showDriveFragment() {
 
-        if (!type.equals(AppSettings.DROPBOX_FOLDER)) {
+        if (!type.equals(AppSettings.GOOGLE_DRIVE_ALBUM)) {
             return;
         }
 
@@ -1100,7 +1124,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                     @Override
                     public void run() {
 
-                        DriveFolder folder = Drive.DriveApi.getFolder(googleApiClient, metadata.getDriveId());
+                        final DriveFolder folder = Drive.DriveApi.getFolder(googleApiClient, metadata.getDriveId());
 
                         folder.listChildren(googleApiClient).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
                             @Override
@@ -1176,6 +1200,45 @@ public class SourceInfoFragment extends PreferenceFragment {
         });
 
         Toast.makeText(appContext, "Loading Google Drive", Toast.LENGTH_SHORT).show();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                final DriveFolder driveFolder = Drive.DriveApi.getRootFolder(googleApiClient);
+
+                driveFolder.getMetadata(googleApiClient).setResultCallback(new ResultCallback<DriveResource.MetadataResult>() {
+                    @Override
+                    public void onResult(final DriveResource.MetadataResult metadataResult) {
+                        listener.sendToast(metadataResult.getMetadata().toString());
+                        driveFolder.listChildren(googleApiClient).setResultCallback(new ResultCallback<DriveApi.MetadataBufferResult>() {
+                            @Override
+                            public void onResult(DriveApi.MetadataBufferResult metadataBufferResult) {
+                                final List<Metadata> newEntries = new ArrayList<>();
+                                MetadataBuffer metadataBuffer = metadataBufferResult.getMetadataBuffer();
+                                for (int index = 0; index < metadataBuffer.getCount(); index++) {
+                                    newEntries.add(metadataBuffer.get(index));
+                                }
+                                listener.sendToast("newEntries: " + newEntries.toString());
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        adapter.setDirs(driveFolder, driveFolder, newEntries);
+                                        folderFragment.setAdapter(adapter);
+                                        folderFragment.setStartingDirectoryText(metadataResult.getMetadata().getDescription());
+                                        getFragmentManager().beginTransaction()
+                                                .add(R.id.content_frame, folderFragment, "folder_fragment")
+                                                .addToBackStack(null)
+                                                .commit();
+                                    }
+                                });
+                                metadataBuffer.release();
+                            }
+                        });
+                    }
+                });
+            }
+        }).start();
     }
 
     private void showDropboxFragment() {
