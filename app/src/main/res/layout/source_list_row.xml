@@ -26,7 +26,7 @@
         android:layout_alignRight="@id/source_image"
         android:layout_alignStart="@id/source_image"
         android:layout_alignTop="@id/source_image"
-        android:alpha="0"
+        android:alpha="0.85"
         android:background="@color/LIGHT_GRAY_OPAQUE"
         />
 
@@ -107,64 +107,14 @@
 
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/source_download_button"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_alignBottom="@+id/source_edit_button"
-        android:layout_toLeftOf="@+id/source_delete_button"
-        android:layout_toStartOf="@+id/source_delete_button"
-        android:background="@drawable/button"
-        android:paddingBottom="12dp"
-        android:paddingEnd="12dp"
-        android:paddingLeft="12dp"
-        android:paddingRight="12dp"
-        android:paddingTop="12dp"
-        />
-
-    <ImageView
-        android:id="@+id/source_delete_button"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_alignBottom="@+id/source_edit_button"
-        android:layout_toLeftOf="@+id/source_view_image_button"
-        android:layout_toStartOf="@+id/source_view_image_button"
-        android:background="@drawable/button"
-        android:paddingBottom="12dp"
-        android:paddingEnd="12dp"
-        android:paddingLeft="12dp"
-        android:paddingRight="12dp"
-        android:paddingTop="12dp"
-        />
-
-    <ImageView
-        android:id="@+id/source_view_image_button"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_alignBottom="@+id/source_edit_button"
-        android:layout_toLeftOf="@+id/source_edit_button"
-        android:layout_toStartOf="@+id/source_edit_button"
-        android:background="@drawable/button"
-        android:paddingBottom="12dp"
-        android:paddingEnd="12dp"
-        android:paddingLeft="12dp"
-        android:paddingRight="12dp"
-        android:paddingTop="12dp"
-        />
-
-    <ImageView
-        android:id="@+id/source_edit_button"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/source_expand_container"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:background="@drawable/button"
-        android:paddingBottom="12dp"
-        android:paddingEnd="12dp"
-        android:paddingLeft="12dp"
-        android:paddingRight="12dp"
-        android:paddingTop="12dp"
         />
 
 </RelativeLayout>

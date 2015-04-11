@@ -35,7 +35,6 @@ import android.widget.TimePicker;
 import java.util.Calendar;
 
 import afzkl.development.colorpickerview.view.ColorPickerView;
-import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.settings.AppSettings;
 
 /**

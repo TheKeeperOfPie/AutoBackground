@@ -17,7 +17,6 @@
 package cw.kop.autobackground;
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.service.dreams.DreamService;

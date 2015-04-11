@@ -46,8 +46,8 @@ import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
+import cw.kop.autobackground.images.AdapterImages;
 import cw.kop.autobackground.images.FolderFragment;
-import cw.kop.autobackground.images.LocalImageAdapter;
 
 public class DownloadSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
@@ -56,7 +56,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     private final static int REQUEST_FILE_ID = 0;
     private SwitchPreference timerPref;
     private Preference startTimePref;
-    private Context appContext;
+    private Activity activity;
     private PendingIntent pendingIntent;
     private AlarmManager alarmManager;
     private Preference imageHistorySizePref;
@@ -71,21 +71,21 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        appContext = getActivity();
+        this.activity = getActivity();
 
         Intent intent = new Intent();
         intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-        pendingIntent = PendingIntent.getBroadcast(appContext, 0, intent, 0);
+        pendingIntent = PendingIntent.getBroadcast(this.activity, 0, intent, 0);
 
-        alarmManager = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
+        alarmManager = (AlarmManager) this.activity.getSystemService(Context.ALARM_SERVICE);
 
         Log.i("DSF", "onAttach");
     }
 
     @Override
     public void onDetach() {
-        appContext = null;
+        activity = null;
         super.onDetach();
     }
 
@@ -106,7 +106,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     @Override
                     public void onClickRight(View v) {
                         FileHandler.deleteAllBitmaps();
-                        Toast.makeText(appContext,
+                        Toast.makeText(activity,
                                 "Deleted images with prefix\n" + AppSettings.getImagePrefix(),
                                 Toast.LENGTH_SHORT).show();
                         this.dismissDialog();
@@ -114,7 +114,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
                 };
 
-                DialogFactory.showActionDialog(appContext,
+                DialogFactory.showActionDialog(activity,
                         "Are you sure you want to delete all images?",
                         "This cannot be undone.",
                         clickListener,
@@ -141,7 +141,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     }
                 };
 
-                DialogFactory.showInputDialog(appContext,
+                DialogFactory.showInputDialog(activity,
                         "Image Prefix",
                         "",
                         "" + AppSettings.getImagePrefix(),
@@ -176,7 +176,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     }
                 };
 
-                DialogFactory.showTimeDialog(appContext,
+                DialogFactory.showTimeDialog(activity,
                         "Time to start download:",
                         listener,
                         AppSettings.getTimerHour(),
@@ -280,7 +280,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             }
         };
 
-        DialogFactory.showListDialog(appContext,
+        DialogFactory.showListDialog(activity,
                 "Download Interval:",
                 clickListener,
                 R.array.timer_entry_menu);
@@ -331,7 +331,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         };
 
-        DialogFactory.showInputDialog(appContext,
+        DialogFactory.showInputDialog(activity,
                 "Download Interval",
                 "Number of minutes",
                 "" + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN),
@@ -372,7 +372,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         };
 
-        DialogFactory.showInputDialog(appContext,
+        DialogFactory.showInputDialog(activity,
                 "Image History Size",
                 "Number of images in history",
                 "" + AppSettings.getImageHistorySize(),
@@ -412,7 +412,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         };
 
-        DialogFactory.showInputDialog(appContext,
+        DialogFactory.showInputDialog(activity,
                 "Thumbnail Size",
                 "Max size in pixels",
                 "" + AppSettings.getThumbnailSize(),
@@ -472,7 +472,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     }
                 };
 
-                DialogFactory.showInputDialog(appContext,
+                DialogFactory.showInputDialog(activity,
                         "Minimum Width of Image:",
                         "Width in pixels",
                         "" + AppSettings.getImageWidth(),
@@ -500,7 +500,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     }
                 };
 
-                DialogFactory.showInputDialog(appContext,
+                DialogFactory.showInputDialog(activity,
                         "Minimum Height of Image:",
                         "Height in pixels",
                         "" + AppSettings.getImageHeight(),
@@ -540,7 +540,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, final String key) {
 
 
-        if (!((Activity) appContext).isFinishing()) {
+        if (!((Activity) activity).isFinishing()) {
 
             if (key.equals("use_timer")) {
                 if (AppSettings.useTimer()) {
@@ -566,7 +566,8 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 Bundle arguments = new Bundle();
                 arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
                 arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
-                final LocalImageAdapter adapter = new LocalImageAdapter(appContext, new File(File.separator), startDir);
+                final AdapterImages adapter = new AdapterImages(activity,
+                        new File(File.separator), startDir, folderFragment);
                 folderFragment.setArguments(arguments);
                 folderFragment.setAdapter(adapter);
                 folderFragment.setStartingDirectoryText(startDir.getAbsolutePath());
@@ -575,7 +576,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     public void onUseDirectoryClick() {
                         AppSettings.setDownloadPath(adapter.getDirectory()
                                 .getAbsolutePath());
-                        Toast.makeText(appContext,
+                        Toast.makeText(activity,
                                 "Download path set to: \n" + AppSettings.getDownloadPath(),
                                 Toast.LENGTH_SHORT)
                                 .show();
@@ -584,10 +585,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     }
 
                     @Override
-                    public void onItemClick(AdapterView<?> parent,
-                                            View view,
-                                            int positionInList,
-                                            long id) {
+                    public void onItemClick(int positionInList) {
                         File selectedFile = adapter.getItem(positionInList);
 
                         if (selectedFile.exists() && selectedFile.isDirectory()) {

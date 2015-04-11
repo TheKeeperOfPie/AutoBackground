@@ -478,6 +478,11 @@
     <string name="edit">Edit</string>
     <string name="source_sort">Sort by</string>
     <string name="source_num_prefix"># of Images</string>
+    <string name="item_download">Download source</string>
+    <string name="item_delete">Delete source</string>
+    <string name="item_view">View images</string>
+    <string name="item_edit">Edit source</string>
+    <string name="empty_directory">Directory is empty</string>
 
     <string-array name="fragment_titles">
         <item>Sources</item>

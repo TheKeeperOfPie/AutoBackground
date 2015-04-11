@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+
+    <item
+        android:id="@+id/item_download"
+        android:title="@string/item_download"
+        android:icon="@drawable/ic_file_download_white_24dp"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        />
+
+    <item
+        android:id="@+id/item_delete"
+        android:title="@string/item_delete"
+        android:icon="@drawable/ic_delete_white_24dp"
+        android:orderInCategory="200"
+        app:showAsAction="always"
+        />
+
+    <item
+        android:id="@+id/item_view"
+        android:title="@string/item_view"
+        android:icon="@drawable/ic_photo_white_24dp"
+        android:orderInCategory="300"
+        app:showAsAction="always"
+        />
+
+    <item
+        android:id="@+id/item_edit"
+        android:title="@string/item_edit"
+        android:icon="@drawable/ic_edit_white_24dp"
+        android:orderInCategory="400"
+        app:actionProviderClass="com.winsonchiu.reader.CustomShareActionProvider"
+        app:showAsAction="always"
+        />
+
+</menu>

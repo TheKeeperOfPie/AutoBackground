@@ -38,14 +38,26 @@
         android:visibility="gone"
         />
 
-
-    <ListView
-        android:id="@+id/image_listview"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_files"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/directory_text"
         android:paddingBottom="54dp"
         android:clipToPadding="false"
+        />
+
+    <TextView
+        android:id="@+id/empty_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/recycler_files"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:padding="@dimen/side_margin"
+        android:textSize="22sp"
+        android:visibility="gone"
+        android:text="@string/empty_directory"
         />
 
     <Button

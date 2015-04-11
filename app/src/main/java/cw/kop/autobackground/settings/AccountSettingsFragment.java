@@ -42,7 +42,6 @@ import java.io.IOException;
 
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
-import cw.kop.autobackground.settings.AppSettings;
 
 public class AccountSettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 

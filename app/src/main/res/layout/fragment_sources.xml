@@ -34,7 +34,7 @@
         android:visibility="gone"
         />
 
-    <ListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/source_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -44,17 +44,6 @@
         android:dividerHeight="0px"
         android:paddingBottom="85dp"
         android:paddingTop="0dp"
-        />
-
-    <TextView
-        android:id="@+id/empty_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/set_button"
-        android:layout_alignParentTop="true"
-        android:visibility="gone"
-        android:padding="16dp"
-        android:textAppearance="?android:textAppearanceLarge"
         />
 
     <ImageView

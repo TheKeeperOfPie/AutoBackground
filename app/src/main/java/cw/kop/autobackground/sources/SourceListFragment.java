@@ -41,6 +41,10 @@ import android.os.Parcelable;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -56,7 +60,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -74,8 +77,8 @@ import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
+import cw.kop.autobackground.images.AdapterImages;
 import cw.kop.autobackground.images.FolderFragment;
-import cw.kop.autobackground.images.LocalImageAdapter;
 import cw.kop.autobackground.settings.AppSettings;
 
 public class SourceListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener {
@@ -90,9 +93,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     private static final long EXIT_ANIMATION_TIME = 200l;
 
     private TextView alertText;
-    private ListView sourceList;
-    private SourceListAdapter listAdapter;
-    private Context appContext;
+    private RecyclerView recyclerSources;
+    private RecyclerView.LayoutManager layoutManager;
+    private AdapterSources adapterSources;
+    private Activity appContext;
     private Handler handler;
     private Button setButton;
     private ImageView addButtonBackground;
@@ -155,12 +159,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         // Sets correct colors of toolbar icons
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
-        Drawable refreshIcon = getResources().getDrawable(R.drawable.ic_refresh_white_24dp);
-        Drawable storageIcon = getResources().getDrawable(R.drawable.ic_sort_white_24dp);
-        refreshIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-        storageIcon.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-        menu.getItem(0).setIcon(refreshIcon);
-        menu.getItem(2).setIcon(storageIcon);
+        menu.findItem(R.id.item_cycle).getIcon().setColorFilter(colorFilterInt,
+                PorterDuff.Mode.MULTIPLY);
+        menu.findItem(R.id.item_sort).getIcon().setColorFilter(colorFilterInt,
+                PorterDuff.Mode.MULTIPLY);
 
         // Recounts images
         sourceListListener.getControllerSources().recount();
@@ -175,11 +177,11 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 new ControllerSources.SourceListener() {
                     @Override
                     public void notifyDataSetChanged() {
-                        if (listAdapter != null) {
-                            sourceList.post(new Runnable() {
+                        if (adapterSources != null) {
+                            recyclerSources.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    listAdapter.notifyDataSetChanged();
+                                    adapterSources.notifyDataSetChanged();
                                 }
                             });
                         }
@@ -233,22 +235,21 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         View view = inflater.inflate(R.layout.fragment_sources, container, false);
 
-
         final ImageView emptyArrow = (ImageView) view.findViewById(R.id.empty_arrow);
-        final TextView emptyText = (TextView) view.findViewById(R.id.empty_text);
-        emptyText.setText("Try hitting the + and adding some sources");
-        emptyArrow.setOnSystemUiVisibilityChangeListener(new View.OnSystemUiVisibilityChangeListener() {
-            @Override
-            public void onSystemUiVisibilityChange(int visibility) {
-                emptyText.setVisibility(visibility);
-            }
-        });
 
         alertText = (TextView) view.findViewById(R.id.source_alert_text);
 
-        sourceList = (ListView) view.findViewById(R.id.source_list);
-        sourceList.setEmptyView(emptyArrow);
-        sourceList.setDividerHeight(0);
+        if (screenHeight > screenWidth) {
+            layoutManager = new LinearLayoutManager(appContext, LinearLayoutManager.VERTICAL,
+                    false);
+        }
+        else {
+            layoutManager = new GridLayoutManager(appContext, 2, LinearLayoutManager.VERTICAL, false);
+        }
+
+        recyclerSources = (RecyclerView) view.findViewById(R.id.source_list);
+        recyclerSources.setLayoutManager(layoutManager);
+        recyclerSources.setHasFixedSize(true);
         addButtonBackground = (ImageView) view.findViewById(R.id.floating_button);
         addButton = (ImageView) view.findViewById(R.id.floating_button_icon);
         addButton.setOnClickListener(this);
@@ -257,7 +258,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         setButton = (Button) view.findViewById(R.id.set_button);
         setButton.setOnClickListener(this);
 
-        final SourceListAdapter.CardClickListener listener = new SourceListAdapter.CardClickListener() {
+        final AdapterSources.AdapterSourceListener listener = new AdapterSources.AdapterSourceListener() {
 
             @Override
             public void onDownloadClick(View view, Source source) {
@@ -287,10 +288,11 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                             R.string.ok_button);
                 }
                 else if (FileHandler.download(appContext, sources)) {
-                    Drawable drawable = getResources().getDrawable(R.drawable.ic_cancel_white_24dp);
-                    drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                            PorterDuff.Mode.MULTIPLY);
-                    toolbarMenu.getItem(1).setIcon(drawable);
+                    toolbarMenu.findItem(R.id.item_download).setIcon(
+                            R.drawable.ic_cancel_white_24dp);
+                    toolbarMenu.findItem(R.id.item_download).getIcon()
+                            .setColorFilter(AppSettings.getColorFilterInt(appContext),
+                                    PorterDuff.Mode.MULTIPLY);
 
                     if (AppSettings.resetOnManualDownload() && AppSettings.useTimer()) {
                         Intent intent = new Intent();
@@ -318,7 +320,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                     return;
                 }
 
-                Source item = listAdapter.getItem(index);
+                Source item = sourceListListener.getControllerSources().get(index);
                 String type = item.getType();
                 if (type.equals(AppSettings.FOLDER)) {
 
@@ -354,7 +356,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
                         @Override
                         public void onClickRight(View v) {
-                            Source source = listAdapter.getItem(index);
+                            Source source = sourceListListener.getControllerSources().get(index);
                             FileHandler.deleteBitmaps(source);
                             sendToast("Deleting " + source.getTitle() + " images");
                             sourceListListener.getControllerSources().removeItem(index);
@@ -382,7 +384,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             @Override
             public void onEditClick(View view, int index) {
-                startEditFragment(view, index);
+                showSourceEditFragment(view, index);
             }
 
             @Override
@@ -394,32 +396,32 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             public void onLongClick(int position) {
                 onItemLongClick(position);
             }
+
+            @Override
+            public Activity getActivity() {
+                return appContext;
+            }
+
+            @Override
+            public void setEmptyArrowVisibility(int visibility) {
+                emptyArrow.setVisibility(visibility);
+            }
+
+            @Override
+            public float getItemWidth() {
+                if (layoutManager instanceof GridLayoutManager) {
+                    return recyclerSources.getWidth() / ((GridLayoutManager) layoutManager).getSpanCount();
+                }
+                return recyclerSources.getWidth();
+            }
         };
 
-        if (listAdapter == null) {
-            listAdapter = new SourceListAdapter(getActivity(), listener, new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    switch (v.getId()) {
-                        case R.id.source_download_button:
-                            Toast.makeText(appContext, getString(R.string.download), Toast.LENGTH_SHORT).show();
-                            return true;
-                        case R.id.source_delete_button:
-                            Toast.makeText(appContext, getString(R.string.delete), Toast.LENGTH_SHORT).show();
-                            return true;
-                        case R.id.source_view_image_button:
-                            Toast.makeText(appContext, getString(R.string.view_images), Toast.LENGTH_SHORT).show();
-                            return true;
-                        case R.id.source_edit_button:
-                            Toast.makeText(appContext, getString(R.string.edit), Toast.LENGTH_SHORT).show();
-                            return true;
-                    }
-                    return false;
-                }
-            }, sourceListListener.getControllerSources());
+        if (adapterSources == null) {
+            adapterSources = new AdapterSources(getActivity(),
+                    sourceListListener.getControllerSources(), listener);
         }
-        listAdapter.notifyDataSetChanged();
-        sourceList.setAdapter(listAdapter);
+        adapterSources.notifyDataSetChanged();
+        recyclerSources.setAdapter(adapterSources);
 
         return view;
     }
@@ -555,20 +557,15 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-            case R.id.cycle_wallpaper:
+            case R.id.item_cycle:
                 cycleWallpaper();
                 sendToast("Cycling wallpaper...");
                 break;
-            case R.id.download_wallpaper:
+            case R.id.item_download:
                 startDownload();
                 break;
-            case R.id.sort_sources:
-                if (FileHandler.isDownloading()) {
-                    sendToast("Cannot sort while downloading");
-                }
-                else {
-                    showSourceSortMenu();
-                }
+            case R.id.item_sort:
+                showSourceSortMenu();
                 break;
         }
 
@@ -612,12 +609,11 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                     R.string.ok_button);
         }
         else if (FileHandler.download(appContext)) {
-            Drawable drawable = getResources().getDrawable(R.drawable.ic_cancel_white_24dp);
-            if (drawable != null) {
-                drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
-                        PorterDuff.Mode.MULTIPLY);
-            }
-            toolbarMenu.getItem(1).setIcon(drawable);
+            toolbarMenu.findItem(R.id.item_download).setIcon(R.drawable.ic_cancel_white_24dp);
+            toolbarMenu.findItem(R.id.item_download)
+                    .getIcon()
+                    .setColorFilter(AppSettings.getColorFilterInt(appContext),
+                            PorterDuff.Mode.MULTIPLY);
 
             if (AppSettings.resetOnManualDownload() && AppSettings.useTimer()) {
                 Intent intent = new Intent();
@@ -653,14 +649,14 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
      * Shows LocalImageFragment to view images
      *
      * @param view  source card which was selected
-     * @param index position of source in listAdapter
+     * @param index position of source in adapterSources
      */
     private void showViewImageFragment(final View view, final int index) {
-        sourceList.setOnItemClickListener(null);
-        sourceList.setEnabled(false);
+        recyclerSources.setClickable(false);
+        recyclerSources.setEnabled(false);
 
         sourceListListener.getControllerSources().saveData();
-        Source item = listAdapter.getItem(index);
+        Source item = sourceListListener.getControllerSources().get(index);
         String type = item.getType();
         File directory;
         if (type.equals(AppSettings.FOLDER)) {
@@ -676,17 +672,14 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final ImageView sourceImage = (ImageView) view.findViewById(R.id.source_image);
         final View imageOverlay = view.findViewById(R.id.source_image_overlay);
         final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
-        final ImageView downloadButton = (ImageView) view.findViewById(R.id.source_download_button);
-        final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
-        final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
-        final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
+        final Toolbar toolbarActions = (Toolbar) view.findViewById(R.id.toolbar_actions);
         final LinearLayout sourceExpandContainer = (LinearLayout) view.findViewById(R.id.source_expand_container);
 
         final boolean fadeView = directory.list() == null || directory.list().length == 0;
         final float viewStartHeight = sourceContainer.getHeight();
         final float viewStartY = view.getY();
         final float overlayStartAlpha = imageOverlay.getAlpha();
-        final float listHeight = sourceList.getHeight();
+        final float listHeight = recyclerSources.getHeight();
         Log.i(TAG, "listHeight: " + listHeight);
         Log.i(TAG, "viewStartHeight: " + viewStartHeight);
 
@@ -694,17 +687,19 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         Bundle arguments = new Bundle();
         arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, false);
         arguments.putBoolean(FolderFragment.USE_DIRECTORY, false);
-        final LocalImageAdapter adapter = new LocalImageAdapter(appContext, directory, directory);
+        final AdapterImages adapter = new AdapterImages(appContext, directory, directory, folderFragment);
         folderFragment.setArguments(arguments);
         folderFragment.setAdapter(adapter);
         folderFragment.setListener(new FolderFragment.FolderEventListener() {
+
             @Override
             public void onUseDirectoryClick() {
                 // Not implemented
             }
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, final int positionInList, long id) {
+            public void onItemClick(final int positionInList) {
+
                 File selectedFile = adapter.getItem(positionInList);
 
                 if (selectedFile.exists() && selectedFile.isDirectory()) {
@@ -774,10 +769,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 params.height = (int) (viewStartHeight + (listHeight - viewStartHeight) * interpolatedTime);
                 sourceContainer.setLayoutParams(params);
                 view.setY(viewStartY - interpolatedTime * viewStartY);
-                downloadButton.setAlpha(1.0f - interpolatedTime);
-                deleteButton.setAlpha(1.0f - interpolatedTime);
-                viewButton.setAlpha(1.0f - interpolatedTime);
-                editButton.setAlpha(1.0f - interpolatedTime);
+                toolbarActions.setAlpha(1.0f - interpolatedTime);
                 sourceTitle.setAlpha(1.0f - interpolatedTime);
                 imageOverlay.setAlpha(overlayStartAlpha - overlayStartAlpha * (1.0f - interpolatedTime));
                 sourceExpandContainer.setAlpha(1.0f - interpolatedTime);
@@ -800,12 +792,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             @Override
             public void onAnimationEnd(Animation animation) {
                 if (needsListReset) {
-                    Parcelable state = sourceList.onSaveInstanceState();
-                    sourceList.setAdapter(null);
-                    sourceList.setAdapter(listAdapter);
-                    sourceList.onRestoreInstanceState(state);
-                    sourceList.setOnItemClickListener(SourceListFragment.this);
-                    sourceList.setEnabled(true);
+                    Parcelable state = layoutManager.onSaveInstanceState();
+                    recyclerSources.setAdapter(null);
+                    recyclerSources.setAdapter(adapterSources);
+                    layoutManager.onRestoreInstanceState(state);
+                    recyclerSources.setClickable(true);
+                    recyclerSources.setEnabled(true);
                     needsListReset = false;
                 }
             }
@@ -904,7 +896,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     }
 
     /**
-     * Sets up sourceList behavior
+     * Sets up recyclerSources behavior
      *
      * @param savedInstanceState
      */
@@ -943,7 +935,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
     @Override
     public void onDestroyView() {
-        sourceList.setAdapter(null);
+        recyclerSources.setAdapter(null);
         super.onDestroyView();
     }
 
@@ -951,7 +943,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
     public void onResume() {
         super.onResume();
 
-        sourceList.setOnItemClickListener(this);
         sourceListListener.getControllerSources().recount();
 
         IntentFilter intentFilter = new IntentFilter();
@@ -967,7 +958,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         }
 
         if (needsUpdate) {
-            listAdapter.notifyDataSetChanged();
+            adapterSources.notifyDataSetChanged();
             needsUpdate = false;
         }
 
@@ -999,10 +990,11 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Drawable drawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
-                        drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+                        toolbarMenu.findItem(R.id.item_download).setIcon(
+                                R.drawable.ic_file_download_white_24dp);
+                        toolbarMenu.findItem(R.id.item_download).getIcon().setColorFilter(
+                                AppSettings.getColorFilterInt(appContext),
                                 PorterDuff.Mode.MULTIPLY);
-                        toolbarMenu.getItem(1).setIcon(drawable);
                     }
                 });
             }
@@ -1028,9 +1020,11 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         }
         else {
             expandedView.setVisibility(View.VISIBLE);
-            sourceList.smoothScrollToPositionFromTop(position,
-                    (int) (sourceList.getHeight() / 2 - view.getHeight() / 2 - addButtonBackground.getHeight() * 1.5),
-                    SCROLL_ANIMATION_TIME);
+            recyclerSources.smoothScrollToPosition(position);
+            // TODO: Check scrolling on expand
+//            recyclerSources.smoothScrollToPosition(position,
+//                    (int) (recyclerSources.getHeight() / 2 - view.getHeight() / 2 - addButtonBackground.getHeight() * 1.5),
+//                    SCROLL_ANIMATION_TIME);
         }
 
     }
@@ -1041,19 +1035,17 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 sourceListListener.getControllerSources().recount();
             }
         }
-        int firstVisiblePosition = sourceList.getFirstVisiblePosition();
-        View childView = sourceList.getChildAt(position - firstVisiblePosition);
-        sourceList.getAdapter().getView(position, childView, sourceList);
+        adapterSources.notifyItemChanged(position);
 
         return true;
     }
 
-    private void startEditFragment(final View view, final int position) {
-        sourceList.setOnItemClickListener(null);
-        sourceList.setEnabled(false);
+    private void showSourceEditFragment(final View view, final int position) {
+        recyclerSources.setClickable(false);
+        recyclerSources.setEnabled(false);
         sourceListListener.getControllerSources().saveData();
 
-        Source dataItem = listAdapter.getItem(position);
+        Source dataItem = sourceListListener.getControllerSources().get(position);
         final SourceInfoFragment sourceInfoFragment = new SourceInfoFragment();
         sourceInfoFragment.setImageDrawable(((ImageView) view.findViewById(R.id.source_image)).getDrawable());
         Bundle arguments = new Bundle();
@@ -1065,6 +1057,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         arguments.putBoolean(Source.USE, dataItem.isUse());
         arguments.putString(Source.SORT, dataItem.getSort());
         arguments.putBoolean(Source.PREVIEW, dataItem.isPreview());
+        // TODO: Check position in grid, loading index 1 if necessary
         if (dataItem.getImageFile() != null) {
             arguments.putString(Source.IMAGE_FILE, dataItem.getImageFile().getAbsolutePath());
         }
@@ -1081,10 +1074,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final CardView sourceCard = (CardView) view.findViewById(R.id.source_card);
         final View imageOverlay = view.findViewById(R.id.source_image_overlay);
         final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
-        final ImageView downloadButton = (ImageView) view.findViewById(R.id.source_download_button);
-        final ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
-        final ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
-        final ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
+        final Toolbar toolbarActions = (Toolbar) view.findViewById(R.id.toolbar_actions);
         final LinearLayout sourceExpandContainer = (LinearLayout) view.findViewById(R.id.source_expand_container);
 
         final float cardStartShadow = sourceCard.getPaddingLeft();
@@ -1126,10 +1116,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 sourceContainer.setLayoutParams(params);
                 sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
                 sourceTitle.setX(textStartX + viewStartPadding - newPadding);
-                downloadButton.setAlpha(1.0f - interpolatedTime);
-                deleteButton.setAlpha(1.0f - interpolatedTime);
-                viewButton.setAlpha(1.0f - interpolatedTime);
-                editButton.setAlpha(1.0f - interpolatedTime);
+                toolbarActions.setAlpha(1.0f - interpolatedTime);
                 sourceExpandContainer.setAlpha(1.0f - interpolatedTime);
             }
 
@@ -1148,12 +1135,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             @Override
             public void onAnimationEnd(Animation animation) {
                 if (needsListReset) {
-                    Parcelable state = sourceList.onSaveInstanceState();
-                    sourceList.setAdapter(null);
-                    sourceList.setAdapter(listAdapter);
-                    sourceList.onRestoreInstanceState(state);
-                    sourceList.setOnItemClickListener(SourceListFragment.this);
-                    sourceList.setEnabled(true);
+                    Parcelable state = layoutManager.onSaveInstanceState();
+                    recyclerSources.setAdapter(null);
+                    recyclerSources.setAdapter(adapterSources);
+                    layoutManager.onRestoreInstanceState(state);
+                    recyclerSources.setClickable(true);;
+                    recyclerSources.setEnabled(true);
                     needsListReset = false;
                 }
             }
@@ -1229,12 +1216,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             @Override
             public void run() {
                 if (needsListReset) {
-                    Parcelable state = sourceList.onSaveInstanceState();
-                    sourceList.setAdapter(null);
-                    sourceList.setAdapter(listAdapter);
-                    sourceList.onRestoreInstanceState(state);
-                    sourceList.setOnItemClickListener(SourceListFragment.this);
-                    sourceList.setEnabled(true);
+                    Parcelable state = layoutManager.onSaveInstanceState();
+                    recyclerSources.setAdapter(null);
+                    recyclerSources.setAdapter(adapterSources);
+                    layoutManager.onRestoreInstanceState(state);
+                    recyclerSources.setClickable(true);
+                    recyclerSources.setEnabled(true);
                     needsListReset = false;
                 }
             }
@@ -1270,12 +1257,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         resetAddButtonIcon();
 
         if (toolbarMenu != null) {
-            Drawable drawable = FileHandler.isDownloading() ?
-                    getResources().getDrawable(R.drawable.ic_cancel_white_24dp) :
-                    getResources().getDrawable(R.drawable.ic_file_download_white_24dp);
-            drawable.setColorFilter(AppSettings.getColorFilterInt(appContext),
+            toolbarMenu.findItem(R.id.item_download).setIcon(FileHandler.isDownloading() ?
+                    R.drawable.ic_cancel_white_24dp :
+                    R.drawable.ic_file_download_white_24dp);
+            toolbarMenu.findItem(R.id.item_download).getIcon().setColorFilter(
+                    AppSettings.getColorFilterInt(appContext),
                     PorterDuff.Mode.MULTIPLY);
-            toolbarMenu.getItem(1).setIcon(drawable);
         }
 
         alertText.setVisibility(sourceState.equals(ControllerSources.OKAY) ?
@@ -1297,10 +1284,11 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             case ControllerSources.NEED_DOWNLOAD:
                 alertText.setText("No downloaded images");
                 if (!FileHandler.isDownloading() && toolbarMenu != null) {
-                    Drawable downloadDrawable = getResources().getDrawable(R.drawable.ic_file_download_white_24dp).mutate();
-                    downloadDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
-                            PorterDuff.Mode.MULTIPLY);
-                    toolbarMenu.getItem(1).setIcon(downloadDrawable);
+                    toolbarMenu.findItem(R.id.item_download).setIcon(
+                            R.drawable.ic_file_download_white_24dp);
+                    toolbarMenu.findItem(R.id.item_download).getIcon()
+                            .setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
+                                    PorterDuff.Mode.MULTIPLY);
                 }
                 break;
             case ControllerSources.NO_IMAGES:

@@ -18,7 +18,6 @@ package cw.kop.autobackground.sources;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -92,11 +91,11 @@ import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.files.FileHandler;
-import cw.kop.autobackground.images.AlbumAdapter;
-import cw.kop.autobackground.images.DriveAdapter;
-import cw.kop.autobackground.images.DropboxAdapter;
+import cw.kop.autobackground.images.AdapterAlbum;
+import cw.kop.autobackground.images.AdapterDrive;
+import cw.kop.autobackground.images.AdapterDropbox;
+import cw.kop.autobackground.images.AdapterImages;
 import cw.kop.autobackground.images.FolderFragment;
-import cw.kop.autobackground.images.LocalImageAdapter;
 import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -923,7 +922,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         Bundle arguments = new Bundle();
         arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
         arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
-        final LocalImageAdapter adapter = new LocalImageAdapter(appContext, topDir, startDir);
+        final AdapterImages adapter = new AdapterImages(appContext, topDir, startDir, folderFragment);
         folderFragment.setArguments(arguments);
         folderFragment.setAdapter(adapter);
         folderFragment.setStartingDirectoryText(startDir.getAbsolutePath());
@@ -951,6 +950,16 @@ public class SourceInfoFragment extends PreferenceFragment {
                         R.string.cancel_button,
                         R.string.no_button,
                         R.string.yes_button);
+            }
+
+            @Override
+            public void onItemClick(int positionInList) {
+                File selectedFile = adapter.getItem(positionInList);
+
+                if (selectedFile.exists() && selectedFile.isDirectory()) {
+                    adapter.setDirectory(selectedFile);
+                    folderFragment.setDirectoryText(adapter.getDirectory().getAbsolutePath());
+                }
             }
 
             private void setAppDirectory(boolean useSubdirectories) {
@@ -1017,16 +1026,6 @@ public class SourceInfoFragment extends PreferenceFragment {
             }
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
-                File selectedFile = adapter.getItem(positionInList);
-
-                if (selectedFile.exists() && selectedFile.isDirectory()) {
-                    adapter.setDirectory(selectedFile);
-                    folderFragment.setDirectoryText(adapter.getDirectory().getAbsolutePath());
-                }
-            }
-
-            @Override
             public boolean onBackPressed() {
 
                 boolean endDirectory = adapter.backDirectory();
@@ -1050,7 +1049,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         Bundle arguments = new Bundle();
         arguments.putBoolean(FolderFragment.USE_DIRECTORY, false);
         arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, false);
-        final AlbumAdapter adapter = new AlbumAdapter(appContext, names, images, links);
+        final AdapterAlbum adapter = new AdapterAlbum(appContext, names, images, links, folderFragment);
         folderFragment.setArguments(arguments);
         folderFragment.setAdapter(adapter);
         folderFragment.setListener(new FolderFragment.FolderEventListener() {
@@ -1060,7 +1059,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             }
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+            public void onItemClick(int positionInList) {
                 setData(type,
                         names.get(positionInList),
                         links.get(positionInList),
@@ -1092,7 +1091,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
         arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
 
-        final DriveAdapter adapter = new DriveAdapter(appContext);
+        final AdapterDrive adapter = new AdapterDrive(appContext, folderFragment);
         folderFragment.setArguments(arguments);
         folderFragment.setListener(new FolderFragment.FolderEventListener() {
 
@@ -1100,22 +1099,26 @@ public class SourceInfoFragment extends PreferenceFragment {
             public void onUseDirectoryClick() {
                 DriveFolder driveFolder = adapter.getMainDir();
 
-                driveFolder.getMetadata(googleApiClient).setResultCallback(new ResultCallback<DriveResource.MetadataResult>() {
-                    @Override
-                    public void onResult(DriveResource.MetadataResult metadataResult) {
+                driveFolder.getMetadata(googleApiClient).setResultCallback(
+                        new ResultCallback<DriveResource.MetadataResult>() {
+                            @Override
+                            public void onResult(DriveResource.MetadataResult metadataResult) {
 
-                        // TODO: Add status checks
+                                // TODO: Add status checks
 
-                        Metadata metadata = metadataResult.getMetadata();
-                        setData(AppSettings.GOOGLE_DRIVE_ALBUM, metadata.getTitle(), metadata.getDriveId().encodeToString(), -1);
-                        adapter.setFinished(true);
-                        getActivity().onBackPressed();
-                    }
-                });
+                                Metadata metadata = metadataResult.getMetadata();
+                                setData(AppSettings.GOOGLE_DRIVE_ALBUM, metadata.getTitle(),
+                                        metadata.getDriveId()
+                                                .encodeToString(), -1);
+                                adapter.setFinished(true);
+                                getActivity().onBackPressed();
+                            }
+                        });
             }
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+            public void onItemClick(int positionInList) {
+
                 final Metadata metadata = (Metadata) adapter.getItem(positionInList);
                 if (!metadata.isFolder()) {
                     return;
@@ -1146,7 +1149,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                         });
                     }
                 }).start();
-
             }
 
             @Override
@@ -1247,7 +1249,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
         arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
 
-        final DropboxAdapter adapter = new DropboxAdapter((Activity) appContext);
+        final AdapterDropbox adapter = new AdapterDropbox(appContext, folderFragment);
         folderFragment.setArguments(arguments);
         folderFragment.setListener(new FolderFragment.FolderEventListener() {
 
@@ -1262,7 +1264,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             }
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+            public void onItemClick(int positionInList) {
                 final Entry entry = adapter.getItem(positionInList);
                 if (!entry.isDir) {
                     return;
@@ -1292,7 +1294,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                         }
                     }
                 }).start();
-
             }
 
             @Override
