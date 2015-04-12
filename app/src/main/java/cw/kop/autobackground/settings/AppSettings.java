@@ -348,6 +348,17 @@ public class AppSettings {
         }
 
     }
+    public static int getDialogColorResource() {
+
+        switch (getTheme()) {
+            default:
+            case APP_LIGHT_THEME:
+                return R.color.LIGHT_THEME_DIALOG;
+            case APP_DARK_THEME:
+                return R.color.DARK_THEME_DIALOG;
+        }
+
+    }
 
     public static int getBackgroundColorResource() {
 
@@ -1671,5 +1682,13 @@ public class AppSettings {
 
     public static void setLastDownloadTime(long timeMillis) {
         prefs.edit().putLong("last_download_time", timeMillis).apply();
+    }
+
+    public static void setDriveAccountName(String accountName) {
+        prefs.edit().putString("drive_account_name", accountName).commit();
+    }
+
+    public static String getDriveAccountName() {
+        return prefs.getString("drive_account_name", "");
     }
 }

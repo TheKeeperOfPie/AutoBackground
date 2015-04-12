@@ -102,10 +102,17 @@ public class AdapterSources extends RecyclerView.Adapter<AdapterSources.ViewHold
                             FileHandler.getImageFileNameFilter());
 
                     if (files != null && files.length > 0) {
-                        source.setImageFile(files[0]);
+                        File file;
+                        if (files.length > 1 && adapterSourceListener.getSpanForPosition(position) == 1) {
+                            file = files[1];
+                        }
+                        else {
+                            file = files[0];
+                        }
+                        source.setImageFile(file);
                         holder.sourceImage.clearColorFilter();
                         Picasso.with(adapterSourceListener.getActivity())
-                                .load(files[0])
+                                .load(file)
                                 .fit()
                                 .centerCrop()
                                 .into(
@@ -124,10 +131,20 @@ public class AdapterSources extends RecyclerView.Adapter<AdapterSources.ViewHold
                     File[] files = folder.listFiles(FileHandler.getImageFileNameFilter());
 
                     if (files != null && files.length > 0) {
-                        source.setImageFile(files[0]);
+                        File file;
+                        if (files.length > 1 && adapterSourceListener.getSpanForPosition(position) == 1) {
+                            file = files[1];
+                        }
+                        else {
+                            file = files[0];
+                        }
+                        source.setImageFile(file);
                         holder.sourceImage.clearColorFilter();
-                        Picasso.with(adapterSourceListener.getActivity()).load(files[0]).fit().centerCrop().into(
-                                holder.sourceImage);
+                        Picasso.with(adapterSourceListener.getActivity())
+                                .load(file)
+                                .fit()
+                                .centerCrop()
+                                .into(holder.sourceImage);
                     }
                 }
             }
@@ -300,6 +317,7 @@ public class AdapterSources extends RecyclerView.Adapter<AdapterSources.ViewHold
         Context getActivity();
         void setEmptyArrowVisibility(int visibility);
         float getItemWidth();
+        int getSpanForPosition(int position);
     }
 
 }

@@ -7,6 +7,5 @@ public interface FolderCallback {
 
     float getItemWidth();
     void onItemClick(int position);
-    void setEmptyTextVisibility(int visibility);
 
 }

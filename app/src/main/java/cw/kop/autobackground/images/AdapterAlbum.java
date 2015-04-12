@@ -57,7 +57,6 @@ public class AdapterAlbum extends RecyclerView.Adapter<AdapterAlbum.ViewHolder> 
 
     @Override
     public int getItemCount() {
-        folderCallback.setEmptyTextVisibility(albumLinks.size() == 0 ? View.VISIBLE : View.INVISIBLE);
         return albumLinks.size();
     }
 

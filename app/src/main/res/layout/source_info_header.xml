@@ -19,16 +19,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-
-
     <TextView
         android:id="@+id/source_spinner_text"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_margin="@dimen/side_margin"
+        android:layout_marginStart="@dimen/side_margin"
+        android:layout_marginLeft="@dimen/side_margin"
+        android:layout_marginEnd="@dimen/side_margin"
+        android:layout_marginRight="@dimen/side_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_alignBaseline="@+id/source_spinner"
         android:gravity="center_vertical"
         android:text="@string/source_type"
         android:textAppearance="?android:attr/textAppearanceLarge"
@@ -36,12 +40,14 @@
 
     <Spinner
         android:id="@+id/source_spinner"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_margin="@dimen/side_margin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/side_margin"
+        android:layout_marginRight="@dimen/side_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:layout_toEndOf="@id/source_spinner_text"
         android:layout_toRightOf="@id/source_spinner_text"
-        android:dropDownSelector="@color/ACCENT_OPAQUE"
         android:textAppearance="?android:attr/textAppearanceLarge"
         />
 

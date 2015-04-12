@@ -9,9 +9,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.drive.DriveFolder;
-import com.google.android.gms.drive.Metadata;
+import com.google.api.services.drive.model.File;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import cw.kop.autobackground.R;
@@ -22,9 +23,9 @@ import cw.kop.autobackground.settings.AppSettings;
  */
 public class AdapterDrive extends RecyclerView.Adapter<AdapterDrive.ViewHolder> {
 
-    private List<Metadata> entries;
-    private DriveFolder mainDir;
-    private DriveFolder topDir;
+    private List<File> entries;
+    private File mainDir;
+    private File topDir;
     private int colorFilterInt;
     private boolean finished;
     private FolderCallback folderCallback;
@@ -34,13 +35,6 @@ public class AdapterDrive extends RecyclerView.Adapter<AdapterDrive.ViewHolder> 
         colorFilterInt = AppSettings.getColorFilterInt(activity);
     }
 
-    public void setDirs(DriveFolder topDir, DriveFolder mainDir, List<Metadata> entries) {
-        this.topDir = topDir;
-        this.mainDir = mainDir;
-        this.entries = entries;
-        notifyDataSetChanged();
-    }
-
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.file_row, parent, false));
@@ -48,32 +42,55 @@ public class AdapterDrive extends RecyclerView.Adapter<AdapterDrive.ViewHolder> 
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        Metadata metadata = entries.get(position);
+        File file = entries.get(position);
 
-        if (metadata.isFolder()) {
+        if (file.getMimeType().equals("application/vnd.google-apps.folder")) {
             holder.fileImage.setImageResource(R.drawable.ic_folder_white_24dp);
         }
         else {
             holder.fileImage.setImageResource(R.drawable.ic_insert_drive_file_white_24dp);
         }
 
-        holder.fileTitle.setText(metadata.getTitle());
-        holder.fileSummary.setText(metadata.isFolder() ? "" : "" + metadata.getFileSize());
+        holder.fileTitle.setText(file.getTitle());
+        holder.fileSummary.setText(String.valueOf(file.getFileSize()));
     }
 
     @Override
     public int getItemCount() {
-        folderCallback.setEmptyTextVisibility(entries.size() == 0 ? View.VISIBLE : View.INVISIBLE);
         return entries.size();
     }
 
-    public DriveFolder getMainDir() {
+    public File getMainDir() {
         return mainDir;
     }
 
-    public void setDir(DriveFolder mainDir, List<Metadata> entries) {
+
+    public void setDirs(File topDir, File mainDir, List<File> entries) {
+        this.topDir = topDir;
+        setDir(mainDir, entries);
+    }
+
+    public void setDir(File mainDir, List<File> entries) {
         this.mainDir = mainDir;
         this.entries = entries;
+        Collections.sort(entries,
+                new Comparator<File>() {
+                    @Override
+                    public int compare(com.google.api.services.drive.model.File lhs,
+                                       com.google.api.services.drive.model.File rhs) {
+
+                        if (lhs.getMimeType()
+                                .equals("application/vnd.google-apps.folder") ^
+                                rhs.getMimeType()
+                                        .equals("application/vnd.google-apps.folder")) {
+                            return lhs.getMimeType()
+                                    .equals("application/vnd.google-apps.folder") ? -1 : 1;
+                        }
+
+                        return lhs.getTitle()
+                                .compareTo(rhs.getTitle());
+                    }
+                });
         notifyDataSetChanged();
     }
 
@@ -82,10 +99,10 @@ public class AdapterDrive extends RecyclerView.Adapter<AdapterDrive.ViewHolder> 
     }
 
     public Boolean backDirectory() {
-        return finished || topDir.getDriveId().equals(mainDir.getDriveId());
+        return finished || topDir.getId().equals(mainDir.getId());
     }
 
-    public Metadata getItem(int positionInList) {
+    public File getItem(int positionInList) {
         return entries.get(positionInList);
     }
 

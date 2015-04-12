@@ -540,7 +540,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, final String key) {
 
 
-        if (!((Activity) activity).isFinishing()) {
+        if (!(activity).isFinishing()) {
 
             if (key.equals("use_timer")) {
                 if (AppSettings.useTimer()) {
@@ -609,6 +609,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 });
 
                 getFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.animator.none, R.animator.slide_to_bottom, R.animator.none, R.animator.slide_to_bottom)
                         .add(R.id.content_frame, folderFragment, "folder_fragment")
                         .addToBackStack(null)
                         .commit();

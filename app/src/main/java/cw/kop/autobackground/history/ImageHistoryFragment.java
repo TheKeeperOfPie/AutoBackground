@@ -14,26 +14,25 @@
  * limitations under the License.
  */
 
-package cw.kop.autobackground.images;
+package cw.kop.autobackground.history;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.TypedValue;
-import android.view.Gravity;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +47,7 @@ import java.util.Date;
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.DownloadThread;
+import cw.kop.autobackground.images.HistoryItem;
 import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -56,28 +56,31 @@ import cw.kop.autobackground.settings.AppSettings;
  */
 public class ImageHistoryFragment extends Fragment {
 
-    private Context appContext;
-    private ListView historyListView;
-    private ImageHistoryAdapter historyAdapter;
+    private Activity activity;
+    private RecyclerView recyclerHistory;
+    private AdapterHistory adapterHistory;
     private DropboxAPI<AndroidAuthSession> dropboxAPI;
     private Handler handler;
+    private TextView emptyText;
+    private RecyclerView.AdapterDataObserver adapterDataObserver;
+    private RecyclerView.LayoutManager layoutManager;
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        appContext = activity;
+        this.activity = activity;
     }
 
     @Override
     public void onDetach() {
-        appContext = null;
+        activity = null;
         super.onDetach();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        handler = new Handler(appContext.getMainLooper());
+        handler = new Handler(activity.getMainLooper());
         AppKeyPair appKeys = new AppKeyPair(ApiKeys.DROPBOX_KEY, ApiKeys.DROPBOX_SECRET);
         AndroidAuthSession session = new AndroidAuthSession(appKeys);
         dropboxAPI = new DropboxAPI<>(session);
@@ -94,27 +97,27 @@ public class ImageHistoryFragment extends Fragment {
         View view = inflater.inflate(R.layout.image_history_layout, container, false);
         view.setBackgroundResource(AppSettings.getBackgroundColorResource());
 
-        historyListView = (ListView) view.findViewById(R.id.history_listview);
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        if (displayMetrics.heightPixels > displayMetrics.widthPixels) {
+            layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL,
+                    false);
+        }
+        else {
+            layoutManager = new GridLayoutManager(activity, 2, LinearLayoutManager.VERTICAL, false);
+        }
 
-        TextView emptyText = new TextView(appContext);
-        emptyText.setText("History is empty");
-        emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-        emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
+        recyclerHistory = (RecyclerView) view.findViewById(R.id.recycler_history);
+        recyclerHistory.setHasFixedSize(true);
+        recyclerHistory.setLayoutManager(layoutManager);
 
-        LinearLayout emptyLayout = new LinearLayout(appContext);
-        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-        emptyLayout.setGravity(Gravity.TOP);
-        emptyLayout.addView(emptyText);
+        emptyText = (TextView) view.findViewById(R.id.empty_text);
 
 //        if (AppSettings.getTheme() == R.style.AppLightTheme) {
-//            historyListView.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
+//            recyclerHistory.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
 //            emptyLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
 //        }
 //        else {
-//            historyListView.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
+//            recyclerHistory.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
 //            emptyLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
 //        }
 
@@ -127,21 +130,24 @@ public class ImageHistoryFragment extends Fragment {
         });
 
 
-        ((ViewGroup) historyListView.getParent()).addView(emptyLayout, 0);
-
-        historyListView.setEmptyView(emptyLayout);
-
-        if (historyAdapter == null) {
-            historyAdapter = new ImageHistoryAdapter(appContext);
+        if (adapterHistory == null) {
+            adapterHistory = new AdapterHistory(activity,
+                    new AdapterHistory.HistoryItemClickListener() {
+                        @Override
+                        public void onItemClick(int position) {
+                            showHistoryItemDialog(adapterHistory.getItem(position));
+                        }
+                    });
+            adapterDataObserver = new RecyclerView.AdapterDataObserver() {
+                @Override
+                public void onChanged() {
+                    super.onChanged();
+                    emptyText.setVisibility(adapterHistory.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+                }
+            };
         }
 
-        historyListView.setAdapter(historyAdapter);
-        historyListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                showHistoryItemDialog(historyAdapter.getItem(position));
-            }
-        });
+        recyclerHistory.setAdapter(adapterHistory);
 
         return view;
     }
@@ -149,11 +155,13 @@ public class ImageHistoryFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        adapterHistory.registerAdapterDataObserver(adapterDataObserver);
     }
 
     @Override
     public void onPause() {
-        historyAdapter.saveHistory();
+        adapterHistory.unregisterAdapterDataObserver(adapterDataObserver);
+        adapterHistory.saveHistory();
         super.onPause();
     }
 
@@ -163,12 +171,12 @@ public class ImageHistoryFragment extends Fragment {
             @Override
             public void onClickRight(View v) {
                 AppSettings.clearUsedLinks();
-                historyAdapter.clearHistory();
+                adapterHistory.clearHistory();
                 this.dismissDialog();
             }
         };
 
-        DialogFactory.showActionDialog(appContext,
+        DialogFactory.showActionDialog(activity,
                 "Clear History?",
                 "This cannot be undone.",
                 clickListener,
@@ -190,6 +198,7 @@ public class ImageHistoryFragment extends Fragment {
                         if (item.getUrl().contains(DownloadThread.DROPBOX_FILE_PREFIX)) {
 
                             if (!dropboxAPI.getSession().isLinked()) {
+                                Toast.makeText(activity, "Dropbox isn't connected", Toast.LENGTH_SHORT).show();
                                 return;
                             }
 
@@ -200,13 +209,13 @@ public class ImageHistoryFragment extends Fragment {
                                         Intent dropboxIntent = new Intent(Intent.ACTION_VIEW);
                                         String url = dropboxAPI.media(item.getUrl().substring(DownloadThread.DROPBOX_FILE_PREFIX.length()), true).url;
                                         dropboxIntent.setData(Uri.parse(url));
-                                        appContext.startActivity(dropboxIntent);
+                                        activity.startActivity(dropboxIntent);
                                     }
                                     catch (DropboxException e) {
                                         handler.post(new Runnable() {
                                             @Override
                                             public void run() {
-                                                Toast.makeText(appContext, "Error loading Dropbox link", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(activity, "Error loading Dropbox link", Toast.LENGTH_LONG).show();
                                             }
                                         });
                                     }
@@ -215,11 +224,11 @@ public class ImageHistoryFragment extends Fragment {
                         }
                         else {
                             intent.setData(Uri.parse(item.getUrl()));
-                            appContext.startActivity(intent);
+                            activity.startActivity(intent);
                         }
                         break;
                     case 1:
-                        historyAdapter.removeItem(item);
+                        adapterHistory.removeItem(item);
                         break;
                     default:
                 }
@@ -227,7 +236,7 @@ public class ImageHistoryFragment extends Fragment {
             }
         };
 
-        DialogFactory.showListDialog(appContext,
+        DialogFactory.showListDialog(activity,
                 DateFormat.getDateTimeInstance().format(new Date(item.getTime())),
                 clickListener,
                 R.array.history_menu);

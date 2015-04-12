@@ -15,19 +15,12 @@
   ~ limitations under the License.
   -->
 
-<RelativeLayout
+<TextView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/spinner_text"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    >
-
-    <TextView
-        android:id="@+id/spinner_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:padding="@dimen/side_margin"
-        android:textColor="@color/ACCENT_OPAQUE"
-        />
-
-</RelativeLayout>
+    android:layout_centerVertical="true"
+    android:padding="@dimen/side_margin"
+    android:textColor="@color/ACCENT_OPAQUE"
+    />

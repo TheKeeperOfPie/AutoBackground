@@ -101,7 +101,6 @@ public class AdapterImages extends RecyclerView.Adapter<AdapterImages.ViewHolder
 
     @Override
     public int getItemCount() {
-        folderCallback.setEmptyTextVisibility(listFiles.size() == 0 ? View.VISIBLE : View.INVISIBLE);
         return listFiles.size();
     }
 

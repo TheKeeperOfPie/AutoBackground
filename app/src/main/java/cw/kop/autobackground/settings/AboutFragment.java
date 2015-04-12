@@ -31,6 +31,8 @@ import android.view.ViewGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.google.android.gms.common.GooglePlayServicesUtil;
+
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.R;
 
@@ -59,6 +61,26 @@ public class AboutFragment extends PreferenceFragment implements Preference.OnPr
 
                 TextView textView = new TextView(appContext);
                 textView.setText(appContext.getResources().getString(R.string.about_copyright_text));
+
+                ScrollView scrollView = new ScrollView(appContext);
+                scrollView.addView(textView);
+
+                dialog.setContentView(scrollView);
+
+                dialog.show();
+
+                return false;
+            }
+        });
+
+        Preference playServicesPref = findPreference("about_library_google_play_services");
+        playServicesPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                Dialog dialog = DialogFactory.getDialog(appContext);
+
+                TextView textView = new TextView(appContext);
+                textView.setText(GooglePlayServicesUtil.getOpenSourceSoftwareLicenseInfo(appContext));
 
                 ScrollView scrollView = new ScrollView(appContext);
                 scrollView.addView(textView);

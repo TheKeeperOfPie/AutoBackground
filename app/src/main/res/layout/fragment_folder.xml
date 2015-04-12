@@ -47,16 +47,11 @@
         android:clipToPadding="false"
         />
 
-    <TextView
-        android:id="@+id/empty_text"
+    <include
+        layout="@layout/text_empty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/recycler_files"
-        android:layout_centerHorizontal="true"
-        android:gravity="center"
-        android:padding="@dimen/side_margin"
-        android:textSize="22sp"
-        android:visibility="gone"
         android:text="@string/empty_directory"
         />
 

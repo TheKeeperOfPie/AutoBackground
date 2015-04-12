@@ -23,12 +23,20 @@
     android:orientation="vertical"
     >
 
-    <ListView
-        android:id="@+id/history_listview"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_history"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingBottom="54dp"
         android:clipToPadding="false"
+        />
+
+    <include
+        layout="@layout/text_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/recycler_files"
+        android:text="@string/empty_history"
         />
 
     <Button

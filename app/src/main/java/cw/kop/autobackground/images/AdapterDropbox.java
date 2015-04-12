@@ -63,7 +63,6 @@ public class AdapterDropbox extends RecyclerView.Adapter<AdapterDropbox.ViewHold
 
     @Override
     public int getItemCount() {
-        folderCallback.setEmptyTextVisibility(entries.size() == 0 ? View.VISIBLE : View.INVISIBLE);
         return entries.size();
     }
 

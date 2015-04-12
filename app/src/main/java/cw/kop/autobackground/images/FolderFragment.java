@@ -26,6 +26,8 @@ import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -36,6 +38,7 @@ public class FolderFragment extends Fragment implements FolderCallback {
 
     public static final String USE_DIRECTORY = "useDirectory";
     public static final String SHOW_DIRECTORY_TEXT = "showDirectoryText";
+    private static final int SLIDE_EXIT_TIME = 350;
 
     private Activity activity;
 
@@ -47,6 +50,7 @@ public class FolderFragment extends Fragment implements FolderCallback {
     private RecyclerView.Adapter adapter;
     private String directory;
     private TextView emptyText;
+    private RecyclerView.AdapterDataObserver adapterDataObserver;
 
     public FolderFragment() {
         // Required empty public constructor
@@ -72,7 +76,6 @@ public class FolderFragment extends Fragment implements FolderCallback {
 
         View view = inflater.inflate(R.layout.fragment_folder, container, false);
 
-
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         if (displayMetrics.heightPixels > displayMetrics.widthPixels) {
             layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL,
@@ -85,8 +88,8 @@ public class FolderFragment extends Fragment implements FolderCallback {
         view.setBackgroundResource(AppSettings.getBackgroundColorResource());
 
         recyclerFiles = (RecyclerView) view.findViewById(R.id.recycler_files);
-        recyclerFiles.setLayoutManager(layoutManager);
         recyclerFiles.setHasFixedSize(true);
+        recyclerFiles.setLayoutManager(layoutManager);
 
         emptyText = (TextView) view.findViewById(R.id.empty_text);
 
@@ -124,9 +127,30 @@ public class FolderFragment extends Fragment implements FolderCallback {
             }
         }
 
+        adapterDataObserver = new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                emptyText.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+            }
+        };
+
         recyclerFiles.setAdapter(adapter);
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        adapter.registerAdapterDataObserver(adapterDataObserver);
+        emptyText.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void onPause() {
+        adapter.unregisterAdapterDataObserver(adapterDataObserver);
+        super.onPause();
     }
 
     @Override
@@ -141,8 +165,51 @@ public class FolderFragment extends Fragment implements FolderCallback {
         activity = null;
     }
 
-    public boolean onBackPressed() {
-        return listener.onBackPressed();
+    public void onBackPressed() {
+        if (listener.onBackPressed()) {
+
+            final int screenHeight = getResources().getDisplayMetrics().heightPixels;
+            final View fragmentView = getView();
+
+            if (fragmentView != null) {
+                final float viewStartY = getView().getY();
+
+                Animation animation = new Animation() {
+                    @Override
+                    protected void applyTransformation(float interpolatedTime, Transformation t) {
+                        fragmentView.setY((screenHeight - viewStartY) * interpolatedTime + viewStartY);
+                    }
+
+                    @Override
+                    public boolean willChangeBounds() {
+                        return true;
+                    }
+                };
+
+                animation.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        getFragmentManager().popBackStack();
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+
+                animation.setDuration(SLIDE_EXIT_TIME);
+                getView().startAnimation(animation);
+            }
+            else {
+                getFragmentManager().popBackStack();
+            }
+        }
     }
 
     public void setStartingDirectoryText(String text) {
@@ -165,11 +232,6 @@ public class FolderFragment extends Fragment implements FolderCallback {
     @Override
     public void onItemClick(int position) {
         listener.onItemClick(position);
-    }
-
-    @Override
-    public void setEmptyTextVisibility(int visibility) {
-        emptyText.setVisibility(visibility);
     }
 
     public interface FolderEventListener {

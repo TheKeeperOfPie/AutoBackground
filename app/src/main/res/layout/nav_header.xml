@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cw.kop.autobackground.CustomRelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/nav_drawer_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+
+    <ImageView
+        android:id="@+id/image_header"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:minHeight="48dp"
+        android:src="@color/BLUE_OPAQUE"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="@dimen/side_margin"
+        android:layout_marginStart="@dimen/side_margin"
+        android:background="@android:color/transparent"
+        android:gravity="center_vertical"
+        android:shadowColor="@color/DARK_GRAY_OPAQUE"
+        android:shadowRadius="4"
+        android:text="@string/app_name"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:textColor="@color/WHITE_OPAQUE"
+        android:textSize="18sp"
+        />
+
+</cw.kop.autobackground.CustomRelativeLayout>

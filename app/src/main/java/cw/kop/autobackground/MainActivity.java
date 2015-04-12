@@ -28,6 +28,8 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.TypedValue;
@@ -35,18 +37,13 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
-import com.squareup.picasso.Picasso;
 
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.images.FolderFragment;
-import cw.kop.autobackground.images.ImageHistoryFragment;
+import cw.kop.autobackground.history.ImageHistoryFragment;
 import cw.kop.autobackground.settings.AboutFragment;
 import cw.kop.autobackground.settings.AccountSettingsFragment;
 import cw.kop.autobackground.settings.AppSettings;
@@ -63,8 +60,7 @@ import cw.kop.autobackground.sources.SourceListFragment;
 import cw.kop.autobackground.tutorial.TutorialActivity;
 import io.fabric.sdk.android.Fabric;
 
-public class MainActivity extends ActionBarActivity implements AdapterView.OnItemClickListener,
-        SourceInfoFragment.Listener,
+public class MainActivity extends ActionBarActivity implements SourceInfoFragment.Listener,
         SourceListFragment.SourceListListener {
 
     public static final String DRAWER_OPENED = "cw.kop.autobackground.MainActivity.DRAWER_OPENED";
@@ -86,13 +82,13 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
     private ActionBarDrawerToggle drawerToggle;
     private String[] fragmentList;
     private DrawerLayout drawerLayout;
-    private LinearLayout navLayout;
-    private ImageView navPicture;
-    private ListView drawerList;
+    private RecyclerView recyclerNavigation;
+    private AdapterNavigation adapterNavigation;
     private IntentFilter entryFilter;
     private int currentPosition = -1;
     private int newPosition = -1;
     private ControllerSources controllerSources;
+    private LinearLayoutManager layoutManager;
 
     public MainActivity() {
     }
@@ -141,41 +137,6 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         }
 
-
-        fragmentList = getResources().getStringArray(R.array.fragment_titles);
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        navLayout = (LinearLayout) findViewById(R.id.navigation_drawer);
-        navPicture = (ImageView) findViewById(R.id.nav_drawer_picture);
-
-        navLayout.getLayoutParams().width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                Math.min(320, configuration.screenWidthDp - 56),
-                getResources().getDisplayMetrics()));
-
-        CustomRelativeLayout navHeader = (CustomRelativeLayout) findViewById(R.id.nav_drawer_header);
-        navHeader.getLayoutParams().height = Math.round(TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                Math.min(180, (configuration.screenWidthDp - 56) / 16f * 9),
-                getResources().getDisplayMetrics()));
-        navHeader.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LiveWallpaperService.OPEN_IMAGE);
-                sendBroadcast(intent);
-            }
-        });
-
-        drawerList = (ListView) findViewById(R.id.nav_list);
-        drawerList.setAdapter(new NavListAdapter(this, fragmentList));
-        drawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                getFragmentManager().popBackStack();
-                selectItem(position, true);
-            }
-        });
-
-        drawerList.setDividerHeight(0);
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitleTextAppearance(this, R.style.ToolbarTitle);
         try {
@@ -185,52 +146,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
 
         }
 
-        if (drawerLayout != null) {
-            drawerList.setOnItemClickListener(this);
-            drawerToggle = new ActionBarDrawerToggle(
-                    this,
-                    drawerLayout,
-                    toolbar,
-                    R.string.drawer_open,
-                    R.string.drawer_close) {
-
-                public void onDrawerClosed(View view) {
-                    super.onDrawerClosed(view);
-                    selectItem(newPosition, true);
-                    Intent closedIntent = new Intent(MainActivity.DRAWER_CLOSED);
-                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(closedIntent);
-                }
-
-                public void onDrawerOpened(View drawerView) {
-                    super.onDrawerOpened(drawerView);
-                    getFragmentManager().popBackStack();
-                    Intent openedIntent = new Intent(MainActivity.DRAWER_OPENED);
-                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(openedIntent);
-                }
-
-                @Override
-                public void onDrawerSlide(View drawerView, float slideOffset) {
-                    super.onDrawerSlide(drawerView, 0);
-                }
-
-            };
-
-            drawerLayout.setDrawerListener(drawerToggle);
-            drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
-        }
-        else {
-            getSupportActionBar().setHomeButtonEnabled(true);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-
-        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
-            navLayout.setBackgroundColor(getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
-            toolbar.setTitleTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
-        }
-        else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)) {
-            navLayout.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
-            toolbar.setTitleTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
-        }
+        setUpNavigationDrawer(toolbar);
 
         if (sourceListFragment == null) {
             sourceListFragment = new SourceListFragment();
@@ -258,6 +174,108 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
         entryFilter = new IntentFilter();
         entryFilter.addAction(MainActivity.LOAD_NAV_PICTURE);
 
+    }
+
+    private void setUpNavigationDrawer(Toolbar toolbar) {
+
+        Configuration configuration = getResources().getConfiguration();
+
+        fragmentList = getResources().getStringArray(R.array.fragment_titles);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        AdapterNavigation.NavigationClickListener navigationClickListener;
+
+        if (drawerLayout == null) {
+            navigationClickListener = new AdapterNavigation.NavigationClickListener() {
+                @Override
+                public void onItemClick(int position) {
+                    getFragmentManager().popBackStack();
+                    selectItem(position, true);
+                }
+
+                @Override
+                public void sendIntent(Intent intent) {
+                    sendBroadcast(intent);
+                }
+            };
+        }
+        else {
+            navigationClickListener = new AdapterNavigation.NavigationClickListener() {
+                @Override
+                public void onItemClick(int position) {
+                    newPosition = position;
+                    if (drawerLayout != null) {
+                        drawerLayout.closeDrawer(recyclerNavigation);
+                    }
+                }
+
+                @Override
+                public void sendIntent(Intent intent) {
+                    sendBroadcast(intent);
+                }
+            };
+        }
+
+        if (adapterNavigation == null) {
+            adapterNavigation = new AdapterNavigation(this, fragmentList, navigationClickListener);
+        }
+
+        layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        recyclerNavigation = (RecyclerView) findViewById(R.id.recycler_navigation);
+        recyclerNavigation.setHasFixedSize(true);
+        recyclerNavigation.setLayoutManager(layoutManager);
+        recyclerNavigation.setAdapter(adapterNavigation);
+
+        recyclerNavigation.getLayoutParams().width = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                Math.min(320, configuration.screenWidthDp - 56),
+                getResources().getDisplayMetrics()));
+
+        if (drawerLayout != null) {
+            drawerToggle = new ActionBarDrawerToggle(
+                    this,
+                    drawerLayout,
+                    toolbar,
+                    R.string.drawer_open,
+                    R.string.drawer_close) {
+
+                public void onDrawerClosed(View view) {
+                    super.onDrawerClosed(view);
+                    selectItem(newPosition, true);
+                    Intent closedIntent = new Intent(MainActivity.DRAWER_CLOSED);
+                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(closedIntent);
+                }
+
+                public void onDrawerOpened(View drawerView) {
+                    super.onDrawerOpened(drawerView);
+                    getFragmentManager().popBackStack();
+                    Intent openedIntent = new Intent(MainActivity.DRAWER_OPENED);
+                    LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(openedIntent);
+                }
+
+                @Override
+                public void onDrawerSlide(View drawerView, float slideOffset) {
+                    // Removes navigation animation to back arrow
+                    super.onDrawerSlide(drawerView, 0);
+                }
+
+            };
+
+            drawerLayout.setDrawerListener(drawerToggle);
+            drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, Gravity.START);
+        }
+        else {
+            getSupportActionBar().setHomeButtonEnabled(true);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
+        if (AppSettings.getTheme().equals(AppSettings.APP_LIGHT_THEME)) {
+            recyclerNavigation.setBackgroundColor(getResources().getColor(R.color.LIGHT_THEME_BACKGROUND));
+            toolbar.setTitleTextColor(getResources().getColor(R.color.DARK_GRAY_OPAQUE));
+        }
+        else if (AppSettings.getTheme().equals(AppSettings.APP_DARK_THEME)) {
+            recyclerNavigation.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
+            toolbar.setTitleTextColor(getResources().getColor(R.color.LIGHT_GRAY_OPAQUE));
+        }
     }
 
     @Override
@@ -303,9 +321,8 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
 
     private void loadNavPicture() {
 
-        if (Build.VERSION.SDK_INT >= 16 && navPicture != null && FileHandler.getCurrentBitmapFile() != null && FileHandler.getCurrentBitmapFile().exists()) {
-            Picasso.with(this).load(FileHandler.getCurrentBitmapFile()).fit().centerCrop().into(
-                    navPicture);
+        if (Build.VERSION.SDK_INT >= 16 && FileHandler.getCurrentBitmapFile() != null && FileHandler.getCurrentBitmapFile().exists()) {
+            adapterNavigation.loadNavPicture();
         }
     }
 
@@ -394,10 +411,7 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
     public void onBackPressed() {
 
         if (getFragmentManager().findFragmentByTag("folder_fragment") != null) {
-            Log.i("MP", "Back directory");
-            if (((FolderFragment) getFragmentManager().findFragmentByTag("folder_fragment")).onBackPressed()) {
-                getFragmentManager().popBackStack();
-            }
+            ((FolderFragment) getFragmentManager().findFragmentByTag("folder_fragment")).onBackPressed();
         }
         else if (getFragmentManager().findFragmentByTag("album_fragment") != null) {
             getFragmentManager().popBackStack();
@@ -431,15 +445,6 @@ public class MainActivity extends ActionBarActivity implements AdapterView.OnIte
     protected void onPause() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(activityReceiver);
         super.onPause();
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        newPosition = position;
-        drawerList.setItemChecked(position, true);
-        if (drawerLayout != null) {
-            drawerLayout.closeDrawer(navLayout);
-        }
     }
 
     @Override

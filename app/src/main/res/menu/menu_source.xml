@@ -33,7 +33,6 @@
         android:title="@string/item_edit"
         android:icon="@drawable/ic_edit_white_24dp"
         android:orderInCategory="400"
-        app:actionProviderClass="com.winsonchiu.reader.CustomShareActionProvider"
         app:showAsAction="always"
         />
 

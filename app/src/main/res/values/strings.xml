@@ -329,6 +329,8 @@
     <string name="about_library_picasso_description">Used to efficiently load some of the images.\nCopyright 2013 Square, Inc.</string>
     <string name="about_library_colorpickerview">ColorPickerView Library</string>
     <string name="about_library_colorpickerview_description">Used to provide color options.\nCopyright © 2010 Daniel Nilsson</string>
+    <string name="about_library_google_play_services">Google Play Services Library</string>
+    <string name="about_library_google_play_services_description">Used to provide access to various Google services</string>
 
     <string name="about_self_copyright">Copyright © 2014 Winson Chiu</string>
     <string name="about_self_copyright_description">Copyright © 2014 Winson Chiu</string>
@@ -483,6 +485,11 @@
     <string name="item_view">View images</string>
     <string name="item_edit">Edit source</string>
     <string name="empty_directory">Directory is empty</string>
+    <string name="empty_history">History is empty</string>
+    <string name="item_sort_activated">Activated</string>
+    <string name="item_sort_location">Location</string>
+    <string name="item_sort_name">Name</string>
+    <string name="item_sort_number"># of Images</string>
 
     <string-array name="fragment_titles">
         <item>Sources</item>
