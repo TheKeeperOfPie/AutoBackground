@@ -210,8 +210,10 @@
     <string name="use_experimental_downloader">Experimental Downloader</string>
     <string name="use_experimental_downloader_description">Include JavaScript generated websites</string>
 
-    <string name="use_google_account">Google Account</string>
-    <string name="use_google_account_description">Connect a Google account</string>
+    <string name="use_google_account">Google+ Account</string>
+    <string name="use_google_account_description">Connect a Google+ account</string>
+    <string name="use_google_drive_account">Google Drive</string>
+    <string name="use_google_drive_account_description">Connect a Google Drive account</string>
     <string name="use_dropbox_account">Dropbox Account</string>
     <string name="use_dropbox_account_description">Connect a Dropbox account</string>
 

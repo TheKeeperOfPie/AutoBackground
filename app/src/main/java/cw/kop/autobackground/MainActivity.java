@@ -123,7 +123,7 @@ public class MainActivity extends ActionBarActivity implements SourceInfoFragmen
 
         Configuration configuration = getResources().getConfiguration();
 
-        if (configuration.screenWidthDp >= 600 || AppSettings.forceMultiPane()) {
+        if (configuration.screenWidthDp >= 820 || AppSettings.forceMultiPane()) {
             setContentView(R.layout.activity_layout_multi_pane);
         }
         else {

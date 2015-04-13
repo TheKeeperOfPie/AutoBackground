@@ -20,9 +20,12 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,6 +34,7 @@ import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -85,7 +89,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import cw.kop.autobackground.BuildConfig;
@@ -112,6 +115,8 @@ public class SourceInfoFragment extends PreferenceFragment {
     private static final int SLIDE_EXIT_TIME = 350;
     private static final int DRIVE_RESOLVE_REQUEST_CODE = 9005;
     private static final int REQUEST_DRIVE_ACCOUNT = 9005;
+    private static final int REQUEST_DRIVE_AUTH = 9006;
+    public static final String LAYOUT_LANDSCAPE = "layoutLandscape";
 
     private Activity appContext;
     private Drawable imageDrawable;
@@ -146,7 +151,6 @@ public class SourceInfoFragment extends PreferenceFragment {
     private int endMinute;
     private CustomSwitchPreference timePref;
     private Handler handler;
-    private Bundle oldState;
     private View headerView;
 
     private String folderData;
@@ -156,13 +160,13 @@ public class SourceInfoFragment extends PreferenceFragment {
     private Listener listener;
     private Drive drive;
     private GoogleAccountCredential driveCredential;
+    private boolean needsRecycle;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_source);
         handler = new Handler();
-        setRetainInstance(true);
         AppKeyPair appKeys = new AppKeyPair(ApiKeys.DROPBOX_KEY, ApiKeys.DROPBOX_SECRET);
         AndroidAuthSession session = new AndroidAuthSession(appKeys);
         dropboxAPI = new DropboxAPI<>(session);
@@ -191,12 +195,40 @@ public class SourceInfoFragment extends PreferenceFragment {
             ViewGroup container,
             Bundle savedInstanceState) {
 
+        int screenHeight = container.getHeight();
+        int screenWidth = container.getWidth();
+
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+
+        if (screenWidth < 1 || screenHeight < 1) {
+            screenWidth = displayMetrics.widthPixels;
+            screenHeight = displayMetrics.heightPixels;
+        }
+
         Bundle arguments = getArguments();
         sourcePosition = (Integer) arguments.get(Source.POSITION);
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
-        View view = inflater.inflate(R.layout.source_info_fragment, container, false);
-        headerView = inflater.inflate(R.layout.source_info_header, null, false);
+        int layout;
+
+        if (screenHeight > screenWidth) {
+            layout = R.layout.fragment_source_info_portrait;
+        }
+        else {
+            layout = arguments.getInt(LAYOUT_LANDSCAPE, R.layout.fragment_source_info_portrait);
+        }
+
+        View view = inflater.inflate(layout, container, false);
+        ListView listView = (ListView) view.findViewById(android.R.id.list);
+
+        if (layout == R.layout.fragment_source_info_portrait) {
+            headerView = inflater.inflate(R.layout.source_info_header, null, false);
+            listView.addHeaderView(headerView);
+        }
+        else {
+            headerView = view.findViewById(R.id.source_info_header);
+            screenWidth /= 2;
+        }
 
         sortContainer = (LinearLayout) headerView.findViewById(R.id.source_sort_container);
         numContainer = (RelativeLayout) headerView.findViewById(R.id.source_num_container);
@@ -216,7 +248,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourceSortSpinner.setAdapter(sortAdapter);
 
         ViewGroup.LayoutParams params = sourceImage.getLayoutParams();
-        params.height = (int) ((container.getWidth() - 2f * getResources().getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
+        params.height = (int) ((headerView.getWidth() - 2f * getResources().getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
         sourceImage.setLayoutParams(params);
 
         cancelButton = (Button) view.findViewById(R.id.cancel_button);
@@ -387,7 +419,17 @@ public class SourceInfoFragment extends PreferenceFragment {
             sourceTitle.setText(arguments.getString(Source.TITLE));
             sourceData.setText(data);
             sourceNum.setText(getArguments().getInt(Source.NUM, -1) >= 0 ? "" + arguments.getInt(Source.NUM) : "");
-            sourceImage.setImageDrawable(imageDrawable);
+
+            if (imageDrawable != null) {
+                sourceImage.setImageDrawable(imageDrawable);
+            }
+            else if (arguments.containsKey(Source.IMAGE_FILE)) {
+                needsRecycle = true;
+                sourceImage.setImageBitmap(ThumbnailUtils.extractThumbnail(
+                        BitmapFactory.decodeFile(arguments.getString(Source.IMAGE_FILE)),
+                        screenWidth, (int) (screenWidth / 16f * 9f),
+                        ThumbnailUtils.OPTIONS_RECYCLE_INPUT));
+            }
 
             boolean showPreview = arguments.getBoolean(Source.PREVIEW);
             if (showPreview) {
@@ -416,6 +458,9 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         }
 
+        sourceImage.getLayoutParams().height = (int) (screenWidth / 16f * 9f);
+        sourceImage.requestLayout();
+
         setDataWrappers();
 
         sourceUse = (Switch) headerView.findViewById(R.id.source_use_switch);
@@ -427,9 +472,6 @@ public class SourceInfoFragment extends PreferenceFragment {
         else {
             view.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
         }
-
-        ListView listView = (ListView) view.findViewById(android.R.id.list);
-        listView.addHeaderView(headerView);
 
         if (savedInstanceState != null) {
             if (arguments.getString(Source.TYPE, "").length() > 0) {
@@ -526,6 +568,18 @@ public class SourceInfoFragment extends PreferenceFragment {
         animation.setInterpolator(new DecelerateInterpolator(3.0f));
         settingsContainer.startAnimation(animation);
 
+    }
+
+
+
+    @Override
+    public void onStop() {
+
+        if (needsRecycle && sourceImage.getDrawable() instanceof BitmapDrawable) {
+            ((BitmapDrawable) sourceImage.getDrawable()).getBitmap().recycle();
+        }
+
+        super.onStop();
     }
 
     private void saveSource() {
@@ -661,7 +715,7 @@ public class SourceInfoFragment extends PreferenceFragment {
     }
 
     public void setImageDrawable(Drawable drawable) {
-        imageDrawable = drawable;
+        imageDrawable = drawable.mutate();
         if (sourceImage != null) {
             sourceImage.setImageDrawable(imageDrawable);
         }
@@ -771,22 +825,29 @@ public class SourceInfoFragment extends PreferenceFragment {
                 }
                 break;
             case AppSettings.GOOGLE_DRIVE_ALBUM:
-                // TODO: Implement Drive folder support
                 if (drive == null) {
                     driveCredential = GoogleAccountCredential.usingOAuth2(
                             appContext,
                             Collections.singleton(DriveScopes.DRIVE));
-                    if (!TextUtils.isEmpty(AppSettings.getDriveAccountName())) {
-                        driveCredential.setSelectedAccountName(AppSettings.getDriveAccountName());
-                    }
-                    drive = new Drive.Builder(AndroidHttp.newCompatibleTransport(), GsonFactory.getDefaultInstance(), driveCredential)
-                            .setApplicationName(appContext.getResources().getString(R.string.app_name) + "/" + BuildConfig.VERSION_NAME)
+                    drive = new Drive.Builder(AndroidHttp.newCompatibleTransport(),
+                            GsonFactory.getDefaultInstance(), driveCredential)
+                            .setApplicationName(appContext.getResources()
+                                    .getString(R.string.app_name) + "/" + BuildConfig.VERSION_NAME)
                             .build();
+                }
+                if (TextUtils.isEmpty(AppSettings.getDriveAccountName())) {
+                    startActivityForResult(driveCredential.newChooseAccountIntent(), REQUEST_DRIVE_ACCOUNT);
+                }
+                else {
+                    driveCredential.setSelectedAccountName(AppSettings.getDriveAccountName());
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                Log.d(TAG, "root: " + drive.about().get().execute().getRootFolderId());
+                                Log.d(TAG, "root: " + drive.about()
+                                        .get()
+                                        .execute()
+                                        .getRootFolderId());
                                 handler.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -795,18 +856,13 @@ public class SourceInfoFragment extends PreferenceFragment {
                                 });
                             }
                             catch (UserRecoverableAuthIOException e) {
-                                startActivityForResult(e.getIntent(), REQUEST_DRIVE_ACCOUNT);
-                                return;
+                                startActivityForResult(e.getIntent(), REQUEST_DRIVE_AUTH);
                             }
                             catch (IOException e) {
                                 e.printStackTrace();
-                                return;
                             }
                         }
                     }).start();
-                }
-                else {
-                    showDriveFragment();
                 }
                 break;
             case AppSettings.TUMBLR_BLOG:
@@ -841,6 +897,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         switch (type) {
             case AppSettings.FOLDER:
                 focusNum = false;
+            case AppSettings.GOOGLE_DRIVE_ALBUM:
             case AppSettings.DROPBOX_FOLDER:
                 focusData = false;
                 break;
@@ -853,11 +910,60 @@ public class SourceInfoFragment extends PreferenceFragment {
     @Override
     public void onActivityResult(int requestCode, int responseCode, Intent intent) {
 
-        if (requestCode == REQUEST_DRIVE_ACCOUNT && responseCode == Activity.RESULT_OK) {
+        if (requestCode == REQUEST_DRIVE_AUTH && responseCode == Activity.RESULT_OK) {
             String accountName = intent.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
             if (!TextUtils.isEmpty(accountName)) {
                 AppSettings.setDriveAccountName(accountName);
+                AppSettings.setUseGoogleDriveAccount(true);
                 driveCredential.setSelectedAccountName(accountName);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Log.d(TAG, "root: " + drive.about().get().execute().getRootFolderId());
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showDriveFragment();
+                                }
+                            });
+                        }
+                        catch (UserRecoverableAuthIOException e) {
+                            startActivityForResult(e.getIntent(), REQUEST_DRIVE_AUTH);
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
+        }
+        else if (requestCode == REQUEST_DRIVE_ACCOUNT && responseCode == Activity.RESULT_OK) {
+            String accountName = intent.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
+            if (!TextUtils.isEmpty(accountName)) {
+                AppSettings.setDriveAccountName(accountName);
+                AppSettings.setUseGoogleDriveAccount(true);
+                driveCredential.setSelectedAccountName(accountName);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Log.d(TAG, "root: " + drive.about().get().execute().getRootFolderId());
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showDriveFragment();
+                                }
+                            });
+                        }
+                        catch (UserRecoverableAuthIOException e) {
+                            startActivityForResult(e.getIntent(), REQUEST_DRIVE_AUTH);
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
             }
         }
 

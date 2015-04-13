@@ -166,6 +166,10 @@ public class FolderFragment extends Fragment implements FolderCallback {
     }
 
     public void onBackPressed() {
+        if (listener == null) {
+            getFragmentManager().popBackStack();
+        }
+
         if (listener.onBackPressed()) {
 
             final int screenHeight = getResources().getDisplayMetrics().heightPixels;

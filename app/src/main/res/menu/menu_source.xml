@@ -5,7 +5,7 @@
     >
 
     <item
-        android:id="@+id/item_download"
+        android:id="@+id/item_source_download"
         android:title="@string/item_download"
         android:icon="@drawable/ic_file_download_white_24dp"
         android:orderInCategory="100"
@@ -13,7 +13,7 @@
         />
 
     <item
-        android:id="@+id/item_delete"
+        android:id="@+id/item_source_delete"
         android:title="@string/item_delete"
         android:icon="@drawable/ic_delete_white_24dp"
         android:orderInCategory="200"
@@ -21,7 +21,7 @@
         />
 
     <item
-        android:id="@+id/item_view"
+        android:id="@+id/item_source_view"
         android:title="@string/item_view"
         android:icon="@drawable/ic_photo_white_24dp"
         android:orderInCategory="300"
@@ -29,7 +29,7 @@
         />
 
     <item
-        android:id="@+id/item_edit"
+        android:id="@+id/item_source_edit"
         android:title="@string/item_edit"
         android:icon="@drawable/ic_edit_white_24dp"
         android:orderInCategory="400"

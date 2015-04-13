@@ -53,7 +53,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.Asset;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.squareup.picasso.Picasso;
@@ -1582,11 +1584,11 @@ public class LiveWallpaperService extends GLWallpaperService {
                 int bitHeight = options.outHeight;
                 int sampleSize = 1;
 
-                if (bitWidth > 280 || bitHeight > 280) {
+                if (bitWidth > 512 || bitHeight > 512) {
 
                     final int halfHeight = bitHeight / 2;
                     final int halfWidth = bitWidth / 2;
-                    while ((halfHeight / sampleSize) > 280 && (halfWidth / sampleSize) > 280) {
+                    while ((halfHeight / sampleSize) > 512 && (halfWidth / sampleSize) > 512) {
                         sampleSize *= 2;
                     }
                 }
@@ -1595,7 +1597,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 options.inScaled = true;
                 options.inDither = true;
                 Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(file.getAbsolutePath(),
-                        options), 280, 280);
+                        options), 512, 512, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
 
                 if (bitmap == null) {
                     return;

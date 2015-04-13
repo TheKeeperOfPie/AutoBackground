@@ -156,6 +156,7 @@ public class ImageHistoryFragment extends Fragment {
     public void onResume() {
         super.onResume();
         adapterHistory.registerAdapterDataObserver(adapterDataObserver);
+        emptyText.setVisibility(adapterHistory.getItemCount() == 0 ? View.VISIBLE : View.GONE);
     }
 
     @Override

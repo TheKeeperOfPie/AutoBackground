@@ -20,30 +20,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/sync_button"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_alignBottom="@+id/watch_face_background"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/button"
-        android:minWidth="64dp"
-        android:paddingBottom="6dp"
-        android:paddingEnd="48dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:paddingTop="6dp"
-        android:textAllCaps="true"
-        android:textAppearance="?android:textAppearanceMedium"
-        android:textColor="@color/ACCENT_OPAQUE"
-        />
-
     <RelativeLayout
         android:id="@+id/watch_face_container"
         android:layout_width="wrap_content"
@@ -104,6 +80,33 @@
         android:layout_alignTop="@id/watch_options_list"
         android:layout_toEndOf="@id/list_border"
         android:layout_toRightOf="@id/list_border"
+        />
+
+    <Button
+        android:id="@+id/sync_button"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_alignBottom="@id/watch_face_background"
+        android:layout_alignStart="@id/watch_face_container"
+        android:layout_alignLeft="@id/watch_face_container"
+        android:layout_alignEnd="@id/watch_face_container"
+        android:layout_alignRight="@id/watch_face_container"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:minWidth="64dp"
+        android:paddingBottom="6dp"
+        android:paddingEnd="48dp"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="6dp"
+        android:textAllCaps="true"
+        android:textAppearance="?android:textAppearanceMedium"
+        android:textColor="@color/ACCENT_OPAQUE"
         />
 
 </cw.kop.autobackground.CustomRelativeLayout>

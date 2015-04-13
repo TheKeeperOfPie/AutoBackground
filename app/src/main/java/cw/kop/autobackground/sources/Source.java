@@ -52,6 +52,7 @@ public class Source {
     private String time;
     private File imageFile;
     private String sort;
+    private boolean expanded;
 
     public String getType() {
         return type;
@@ -160,7 +161,8 @@ public class Source {
     public static Source fromJson(JSONObject object) throws JSONException {
         Source source = new Source();
         source.setType(object.has(TYPE) ? object.getString(TYPE) : AppSettings.WEBSITE);
-        source.setTitle(object.has(TITLE) ? object.getString(TITLE) : "" + System.currentTimeMillis());
+        source.setTitle(
+                object.has(TITLE) ? object.getString(TITLE) : "" + System.currentTimeMillis());
         source.setData(object.has(DATA) ? object.getString(DATA) : "Error loading data");
         source.setNum(object.has(NUM) ? object.getInt(NUM) : 1);
         source.setNumStored(object.has(NUM_STORED) ? object.getInt(NUM_STORED) : 0);
@@ -182,5 +184,13 @@ public class Source {
             e.printStackTrace();
         }
         return super.toString();
+    }
+
+    public void setExpanded(boolean expanded) {
+        this.expanded = expanded;
+    }
+
+    public boolean isExpanded() {
+        return expanded;
     }
 }

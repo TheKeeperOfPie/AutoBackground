@@ -31,7 +31,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -83,7 +86,7 @@ import cw.kop.autobackground.images.AdapterImages;
 import cw.kop.autobackground.images.FolderFragment;
 import cw.kop.autobackground.settings.AppSettings;
 
-public class SourceListFragment extends Fragment implements AdapterView.OnItemClickListener, View.OnClickListener {
+public class SourceListFragment extends Fragment implements View.OnClickListener {
 
 //    public static final String ADD_ENTRY = "cw.kop.autobackground.SourceListFragment.ADD_ENTRY";
 //    public static final String SET_ENTRY = "cw.kop.autobackground.SourceListFragment.SET_ENTRY";
@@ -388,11 +391,6 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             @Override
             public void onEditClick(View view, int index) {
                 showSourceEditFragment(view, index);
-            }
-
-            @Override
-            public void onExpandClick(View view, int position) {
-                onItemClick(null, view, position, 0);
             }
 
             @Override
@@ -779,31 +777,16 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         final View viewAdjacent;
         final RelativeLayout sourceContainerAdjacent;
-        final ImageView sourceImageAdjacent;
-        final View imageOverlayAdjacent;
-        final EditText sourceTitleAdjacent;
-        final Toolbar toolbarActionsAdjacent;
-        final LinearLayout sourceExpandContainerAdjacent;
 
-        if (!(index % 2 == 1 && adapter.getItemCount() == index - 1) && layoutManager instanceof GridLayoutManager) {
+        if (!(index % 2 == 1 && adapterSources.getItemCount() == index - 1) && layoutManager instanceof GridLayoutManager) {
             animateSideBySide = true;
             viewAdjacent = recyclerSources.findViewHolderForPosition(index % 2 == 0 ? index + 1 : index - 1).itemView;
 
             sourceContainerAdjacent = (RelativeLayout) viewAdjacent.findViewById(R.id.source_container);
-            sourceImageAdjacent = (ImageView) viewAdjacent.findViewById(R.id.source_image);
-            imageOverlayAdjacent = viewAdjacent.findViewById(R.id.source_image_overlay);
-            sourceTitleAdjacent = (EditText) viewAdjacent.findViewById(R.id.source_title);
-            toolbarActionsAdjacent = (Toolbar) viewAdjacent.findViewById(R.id.toolbar_actions);
-            sourceExpandContainerAdjacent = (LinearLayout) viewAdjacent.findViewById(R.id.source_expand_container);
         }
         else {
             viewAdjacent = null;
             sourceContainerAdjacent = null;
-            sourceImageAdjacent = null;
-            imageOverlayAdjacent = null;
-            sourceTitleAdjacent = null;
-            toolbarActionsAdjacent = null;
-            sourceExpandContainerAdjacent = null;
             animateSideBySide = false;
         }
 
@@ -827,26 +810,17 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 view.setY(viewStartY - interpolatedTime * viewStartY);
                 toolbarActions.setAlpha(1.0f - interpolatedTime);
                 sourceTitle.setAlpha(1.0f - interpolatedTime);
-                imageOverlay.setAlpha(overlayStartAlpha - overlayStartAlpha * (1.0f - interpolatedTime));
                 sourceExpandContainer.setAlpha(1.0f - interpolatedTime);
 
                 if (fadeView) {
                     sourceImage.setAlpha(1.0f - interpolatedTime);
                 }
 
-                view.requestLayout();
-
                 if (animateSideBySide) {
-                    sourceContainerAdjacent.getLayoutParams().height = (int) (viewStartHeight + (listHeight - viewStartHeight) * interpolatedTime);
-                    sourceContainerAdjacent.requestLayout();
-                    viewAdjacent.setY(viewStartY - interpolatedTime * viewStartY);
-                    toolbarActionsAdjacent.setAlpha(1.0f - interpolatedTime);
-                    sourceTitleAdjacent.setAlpha(1.0f - interpolatedTime);
-                    imageOverlayAdjacent.setAlpha(overlayStartAlpha - overlayStartAlpha * (1.0f - interpolatedTime));
-                    sourceExpandContainerAdjacent.setAlpha(1.0f - interpolatedTime);
-                    sourceImageAdjacent.setAlpha(1.0f - interpolatedTime);
+                    viewAdjacent.setAlpha(1.0f - interpolatedTime);
                     viewAdjacent.requestLayout();
                 }
+                view.requestLayout();
             }
 
             @Override
@@ -862,15 +836,20 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                if (needsListReset) {
-                    Parcelable state = layoutManager.onSaveInstanceState();
-                    recyclerSources.setAdapter(null);
-                    recyclerSources.setAdapter(adapterSources);
-                    layoutManager.onRestoreInstanceState(state);
-                    recyclerSources.setClickable(true);
-                    recyclerSources.setEnabled(true);
-                    needsListReset = false;
-                }
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (needsListReset) {
+                            Parcelable state = layoutManager.onSaveInstanceState();
+                            recyclerSources.setAdapter(null);
+                            recyclerSources.setAdapter(adapterSources);
+                            layoutManager.onRestoreInstanceState(state);
+                            recyclerSources.setClickable(true);
+                            recyclerSources.setEnabled(true);
+                            needsListReset = false;
+                        }
+                    }
+                }, (long) INFO_ANIMATION_TIME / 5);
             }
 
             @Override
@@ -895,15 +874,46 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
         });
 
+        ValueAnimator imageOverlayAlphaAnimation = ValueAnimator.ofFloat(imageOverlay.getAlpha(),
+                0f);
+        imageOverlayAlphaAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                imageOverlay.setAlpha((Float) animation.getAnimatedValue());
+            }
+        });
+
         DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(1.5f);
 
         animation.setDuration(INFO_ANIMATION_TIME);
         cardColorAnimation.setDuration(INFO_ANIMATION_TIME);
+        imageOverlayAlphaAnimation.setDuration(INFO_ANIMATION_TIME);
 
         animation.setInterpolator(decelerateInterpolator);
         cardColorAnimation.setInterpolator(decelerateInterpolator);
+        imageOverlayAlphaAnimation.setInterpolator(decelerateInterpolator);
+
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (needsListReset) {
+                    Parcelable state = layoutManager.onSaveInstanceState();
+                    recyclerSources.setAdapter(null);
+                    recyclerSources.setAdapter(adapterSources);
+                    layoutManager.onRestoreInstanceState(state);
+                    recyclerSources.setClickable(true);
+                    recyclerSources.setEnabled(true);
+                    needsListReset = false;
+                }
+            }
+        }, (long) (INFO_ANIMATION_TIME * 1.1f));
 
         needsListReset = true;
+
+        if (imageOverlay.getAlpha() > 0) {
+            imageOverlayAlphaAnimation.start();
+        }
+
         cardColorAnimation.start();
         view.startAnimation(animation);
 
@@ -925,6 +935,7 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         arguments.putBoolean(Source.PREVIEW, true);
         arguments.putBoolean(Source.USE_TIME, false);
         arguments.putString(Source.TIME, "00:00 - 00:00");
+        arguments.putInt(SourceInfoFragment.LAYOUT_LANDSCAPE, R.layout.fragment_source_info_landscape_left);
         sourceInfoFragment.setArguments(arguments);
 
         getFragmentManager().beginTransaction()
@@ -1053,96 +1064,10 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         return false;
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-
-        LinearLayout expandedView = (LinearLayout) view.findViewById(R.id.source_expand_container);
-        expandedView.setVisibility(expandedView.isShown() ? View.GONE : View.VISIBLE);
-        recyclerSources.smoothScrollToPosition(position);
-
-//        final View expandedView = view.findViewById(R.id.source_expand_container);
-//        expandedView.measure(View.MeasureSpec.AT_MOST, View.MeasureSpec.AT_MOST);
-//
-//        final int height = expandedView.getMeasuredHeight();
-//
-//        Toast.makeText(appContext, "Expand target height: " + height, Toast.LENGTH_SHORT).show();
-//
-//        Animation animation;
-//        if (expandedView.getVisibility() == View.VISIBLE) {
-//            animation = new Animation() {
-//                @Override
-//                protected void applyTransformation(float interpolatedTime, Transformation t) {
-//                    expandedView.getLayoutParams().height = (int) (height * (1.0f - interpolatedTime));
-//                    expandedView.requestLayout();
-//                }
-//
-//                @Override
-//                public boolean willChangeBounds() {
-//                    return true;
-//                }
-//            };
-//            animation.setAnimationListener(new Animation.AnimationListener() {
-//                @Override
-//                public void onAnimationStart(Animation animation) {
-//
-//                }
-//
-//                @Override
-//                public void onAnimationEnd(Animation animation) {
-//                    expandedView.setVisibility(View.GONE);
-//                }
-//
-//                @Override
-//                public void onAnimationRepeat(Animation animation) {
-//
-//                }
-//            });
-//        }
-//        else {
-//            animation = new Animation() {
-//                @Override
-//                protected void applyTransformation(float interpolatedTime, Transformation t) {
-//                    expandedView.getLayoutParams().height = (int) (interpolatedTime * height);
-//                    expandedView.requestLayout();
-//                }
-//
-//                @Override
-//                public boolean willChangeBounds() {
-//                    return true;
-//                }
-//            };
-//            animation.setAnimationListener(new Animation.AnimationListener() {
-//                @Override
-//                public void onAnimationStart(Animation animation) {
-//
-//                }
-//
-//                @Override
-//                public void onAnimationEnd(Animation animation) {
-//                    recyclerSources.smoothScrollToPosition(position);
-//                }
-//
-//                @Override
-//                public void onAnimationRepeat(Animation animation) {
-//
-//                }
-//            });
-//            expandedView.getLayoutParams().height = 0;
-//            expandedView.requestLayout();
-//            expandedView.setVisibility(View.VISIBLE);
-//        }
-//        animation.setDuration(EXPAND_ACTION_DURATION);
-//        animation.setInterpolator(new DecelerateInterpolator());
-//        expandedView.startAnimation(animation);
-//        expandedView.requestLayout();
-
-    }
-
     public boolean onItemLongClick(int position) {
-        if (sourceListListener.getControllerSources().toggleActivated(position)) {
-            if (alertText.isShown()) {
-                sourceListListener.getControllerSources().recount();
-            }
+        sourceListListener.getControllerSources().toggleActivated(position);
+        if (alertText.isShown()) {
+            sourceListListener.getControllerSources().recount();
         }
         adapterSources.notifyItemChanged(position);
 
@@ -1176,6 +1101,13 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         arguments.putBoolean(Source.USE_TIME, dataItem.isUseTime());
         arguments.putString(Source.TIME, dataItem.getTime());
 
+        if (layoutManager instanceof GridLayoutManager) {
+            arguments.putInt(SourceInfoFragment.LAYOUT_LANDSCAPE, position % 2 == 1 ? R.layout.fragment_source_info_landscape_right : R.layout.fragment_source_info_landscape_left);
+        }
+        else {
+            arguments.putInt(SourceInfoFragment.LAYOUT_LANDSCAPE, R.layout.fragment_source_info_landscape_left);
+        }
+
         sourceInfoFragment.setArguments(arguments);
 
         final RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);
@@ -1192,6 +1124,22 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
         final float textStartX = sourceTitle.getX();
         final float textStartY = sourceTitle.getY();
         final float textTranslationY = sourceTitle.getHeight();
+
+        final boolean animateSideBySide;
+        final View viewAdjacent;
+        final RelativeLayout sourceContainerAdjacent;
+
+        if (!(position % 2 == 1 && adapterSources.getItemCount() == position - 1) && layoutManager instanceof GridLayoutManager) {
+            animateSideBySide = true;
+            viewAdjacent = recyclerSources.findViewHolderForPosition(position % 2 == 0 ? position + 1 : position - 1).itemView;
+            sourceContainerAdjacent = (RelativeLayout) viewAdjacent.findViewById(R.id.source_container);
+        }
+        else {
+            viewAdjacent = null;
+            sourceContainerAdjacent = null;
+            animateSideBySide = false;
+        }
+
 
         Animation animation = new Animation() {
 
@@ -1226,6 +1174,12 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                 sourceTitle.setX(textStartX + viewStartPadding - newPadding);
                 toolbarActions.setAlpha(1.0f - interpolatedTime);
                 sourceExpandContainer.setAlpha(1.0f - interpolatedTime);
+
+                if (animateSideBySide) {
+                    viewAdjacent.setAlpha(1.0f - interpolatedTime);
+                }
+
+                view.requestLayout();
             }
 
             @Override
@@ -1242,15 +1196,20 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                if (needsListReset) {
-                    Parcelable state = layoutManager.onSaveInstanceState();
-                    recyclerSources.setAdapter(null);
-                    recyclerSources.setAdapter(adapterSources);
-                    layoutManager.onRestoreInstanceState(state);
-                    recyclerSources.setClickable(true);;
-                    recyclerSources.setEnabled(true);
-                    needsListReset = false;
-                }
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (needsListReset) {
+                            Parcelable state = layoutManager.onSaveInstanceState();
+                            recyclerSources.setAdapter(null);
+                            recyclerSources.setAdapter(adapterSources);
+                            layoutManager.onRestoreInstanceState(state);
+                            recyclerSources.setClickable(true);
+                            recyclerSources.setEnabled(true);
+                            needsListReset = false;
+                        }
+                    }
+                }, (long) INFO_ANIMATION_TIME / 5);
             }
 
             @Override
@@ -1267,6 +1226,9 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 sourceContainer.setBackgroundColor((Integer) animation.getAnimatedValue());
+                if (animateSideBySide) {
+                    sourceContainerAdjacent.setBackgroundColor((Integer) animation.getAnimatedValue());
+                }
             }
 
         });
@@ -1302,24 +1264,19 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
             }
         });
 
-        int transitionTime = INFO_ANIMATION_TIME;
-
         DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(1.5f);
 
-        animation.setDuration(transitionTime);
-        cardColorAnimation.setDuration(transitionTime);
-        titleColorAnimation.setDuration(transitionTime);
-        titleShadowAlphaAnimation.setDuration(transitionTime);
+        animation.setDuration(INFO_ANIMATION_TIME);
+        cardColorAnimation.setDuration(INFO_ANIMATION_TIME);
+        titleColorAnimation.setDuration(INFO_ANIMATION_TIME);
+        titleShadowAlphaAnimation.setDuration(INFO_ANIMATION_TIME);
+        imageOverlayAlphaAnimation.setDuration(INFO_ANIMATION_TIME);
 
         animation.setInterpolator(decelerateInterpolator);
         cardColorAnimation.setInterpolator(decelerateInterpolator);
         titleColorAnimation.setInterpolator(decelerateInterpolator);
         titleShadowAlphaAnimation.setInterpolator(decelerateInterpolator);
-
-        if (imageOverlay.getAlpha() > 0) {
-            imageOverlayAlphaAnimation.start();
-        }
-
+        imageOverlayAlphaAnimation.setInterpolator(decelerateInterpolator);
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -1333,9 +1290,13 @@ public class SourceListFragment extends Fragment implements AdapterView.OnItemCl
                     needsListReset = false;
                 }
             }
-        }, (long) (transitionTime * 1.1f));
+        }, (long) (INFO_ANIMATION_TIME * 1.1f));
 
         needsListReset = true;
+
+        if (imageOverlay.getAlpha() > 0) {
+            imageOverlayAlphaAnimation.start();
+        }
         view.startAnimation(animation);
         cardColorAnimation.start();
         titleColorAnimation.start();

@@ -1516,6 +1516,14 @@ public class AppSettings {
         prefs.edit().putString("dropbox_account_token", token).commit();
     }
 
+    public static boolean useGoogleDriveAccount() {
+        return prefs.getBoolean("use_google_drive_account", false);
+    }
+
+    public static void setUseGoogleDriveAccount(boolean use) {
+        prefs.edit().putBoolean("use_google_drive_account", use).commit();
+    }
+
     public static void setTimeType(String type) {
         prefs.edit().putString(WearConstants.TIME_TYPE, type).apply();
     }

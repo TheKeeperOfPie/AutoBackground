@@ -60,7 +60,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -74,6 +76,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -117,6 +120,7 @@ public class DownloadThread extends Thread {
     private boolean isAnyLowResolution;
     private boolean isLowResolution;
     private boolean isNotEnoughNew;
+    private boolean isNotAuthenticated;
     private volatile boolean interrupted;
     private Drive drive;
 
@@ -248,8 +252,6 @@ public class DownloadThread extends Thread {
                 }
 
                 String sourceType = source.getType();
-
-                Log.d(TAG, "sourceSort: " + source.getSort());
 
                 switch (sourceType) {
                     case AppSettings.WEBSITE:
@@ -591,15 +593,22 @@ public class DownloadThread extends Thread {
     }
 
     private void downloadDrive(Source source) {
-        // TODO: Implement Drive support
 
-        Log.d(TAG, "downloadDrive");
+        String dir = AppSettings.getDownloadPath();
+        String title = source.getTitle();
+        int targetNum = source.getNum();
+        int numDownloaded = 0;
 
         if (drive == null) {
             GoogleAccountCredential driveCredential = GoogleAccountCredential.usingOAuth2(
                     appContext,
                     Collections.singleton(DriveScopes.DRIVE));
-            if (!TextUtils.isEmpty(AppSettings.getDriveAccountName())) {
+            if (TextUtils.isEmpty(AppSettings.getDriveAccountName())) {
+                isNotAuthenticated = true;
+                imageDetails += title + ": " + numDownloaded + " / " + targetNum + " images" + AppSettings.DATA_SPLITTER;
+                return;
+            }
+            else {
                 driveCredential.setSelectedAccountName(AppSettings.getDriveAccountName());
             }
             drive = new Drive.Builder(
@@ -616,8 +625,6 @@ public class DownloadThread extends Thread {
                     "'" + source.getData() + "' in parents and trashed=false").execute();
             final List<com.google.api.services.drive.model.File> fileList = files.getItems();
 
-            Log.d(TAG, "fileList: " + fileList.toString());
-
             List<com.google.api.services.drive.model.File> imageFiles = new ArrayList<>();
             List<String> imageData = new ArrayList<>();
 
@@ -631,18 +638,13 @@ public class DownloadThread extends Thread {
 
             }
 
-            String dir = AppSettings.getDownloadPath();
-            String title = source.getTitle();
-            int targetNum = source.getNum();
-            int numDownloaded = 0;
-
             isLowResolution = false;
             Set<File> downloadedFiles = new HashSet<>();
 
             for (int count = 0; numDownloaded < targetNum && count < imageFiles.size(); count++) {
                 if (isInterrupted() || interrupted) {
                     removeExtras(dir, title, targetNum, downloadedFiles);
-                    return;
+                    break;
                 }
 
                 com.google.api.services.drive.model.File imageFile = imageFiles.get(count);
@@ -654,13 +656,13 @@ public class DownloadThread extends Thread {
 
                     Bitmap bitmap = null;
 
+                    FlushedInputStream flushed = null;
+
                     try {
                         int minWidth = AppSettings.getImageWidth();
                         int minHeight = AppSettings.getImageHeight();
-                        Log.d(TAG, "imageFile: " + drive.files().get(imageFile.getId()).executeMedia().getHeaders());
-//                        InputStream input = drive.files().get(imageFile.getId()).executeMedia().getContent();
-                        FlushedInputStream input = new FlushedInputStream(drive.files().get(imageFile.getId()).executeMedia().getContent());
-//                        InputStream input = drive.files().get(imageFile.getId()).executeMediaAsInputStream();
+
+                        flushed = new FlushedInputStream(drive.files().get(imageFile.getId()).executeMediaAsInputStream());
 
                         BitmapFactory.Options options = new BitmapFactory.Options();
                         options.inJustDecodeBounds = true;
@@ -668,9 +670,9 @@ public class DownloadThread extends Thread {
                         options.inPreferQualityOverSpeed = true;
                         options.inDither = true;
 
-                        BitmapFactory.decodeStream(input, null, options);
+                        BitmapFactory.decodeStream(flushed, null, options);
 
-                        input.close();
+                        flushed.close();
 
                         int bitWidth = options.outWidth;
                         int bitHeight = options.outHeight;
@@ -682,29 +684,45 @@ public class DownloadThread extends Thread {
                             isLowResolution = true;
                             bitmap = null;
                         }
+                        else {
 
-                        int sampleSize = 1;
+                            int sampleSize = 1;
 
-                        if (!AppSettings.useFullResolution()) {
+                            if (!AppSettings.useFullResolution()) {
 
-                            if (bitHeight > minHeight || bitWidth > minWidth) {
+                                if (bitHeight > minHeight || bitWidth > minWidth) {
 
-                                final int halfHeight = bitHeight / 2;
-                                final int halfWidth = bitWidth / 2;
-                                while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
-                                    sampleSize *= 2;
+                                    final int halfHeight = bitHeight / 2;
+                                    final int halfWidth = bitWidth / 2;
+                                    while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
+                                        sampleSize *= 2;
+                                    }
                                 }
                             }
+
+                            options.inSampleSize = sampleSize;
+
+                            imageFile.setMimeType("image/png");
+                            drive.files()
+                                    .patch(imageFile.getId(), imageFile)
+                                    .execute();
+
+                            flushed = new FlushedInputStream(drive.files()
+                                    .get(imageFile.getId())
+                                    .executeMediaAsInputStream());
+
+                            int len;
+                            int size = 1024;
+                            byte[] buffer;
+                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                            buffer = new byte[size];
+                            while ((len = flushed.read(buffer, 0, size)) != -1) {
+                                outputStream.write(buffer, 0, len);
+                            }
+                            byte[] bytes = outputStream.toByteArray();
+                            bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+
                         }
-
-                        options.inSampleSize = sampleSize;
-
-                        imageFile.setMimeType("image/png");
-                        drive.files().patch(imageFile.getId(), imageFile).execute();
-
-                        input = new FlushedInputStream(drive.files().get(imageFile.getId()).executeMedia().getContent());
-
-                        bitmap = BitmapFactory.decodeStream(input, null, options);
 
                     }
                     catch (java.io.InterruptedIOException e) {
@@ -716,6 +734,11 @@ public class DownloadThread extends Thread {
                             DownloadThread.this.interrupt();
                         }
                         e.printStackTrace();
+                    }
+                    finally {
+                        if (flushed != null) {
+                            flushed.close();
+                        }
                     }
 
                     if (bitmap != null && !interrupted) {
@@ -760,7 +783,7 @@ public class DownloadThread extends Thread {
             totalDownloaded += numDownloaded;
 
         }
-        catch (IOException e) {
+        catch (IllegalArgumentException | IOException e) {
             e.printStackTrace();
         }
 
@@ -992,13 +1015,14 @@ public class DownloadThread extends Thread {
     private Bitmap getImage(String url) {
 
         if (Patterns.WEB_URL.matcher(url).matches()) {
+            InputStream input = null;
             try {
                 int minWidth = AppSettings.getImageWidth();
                 int minHeight = AppSettings.getImageHeight();
                 URL imageUrl = new URL(url);
                 HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
                 connection.connect();
-                InputStream input = connection.getInputStream();
+                input = connection.getInputStream();
 
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inJustDecodeBounds = true;
@@ -1042,7 +1066,17 @@ public class DownloadThread extends Thread {
                 connection.connect();
                 input = connection.getInputStream();
 
-                Bitmap bitmap = BitmapFactory.decodeStream(input, null, options);
+                int len;
+                int size = 1024;
+                byte[] buffer;
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                buffer = new byte[size];
+                while ((len = input.read(buffer, 0, size)) != -1) {
+                    outputStream.write(buffer, 0, len);
+                }
+                byte[] bytes = outputStream.toByteArray();
+                input.close();
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
                 if (bitmap == null) {
                     Log.i(TAG, "Null bitmap");
@@ -1060,6 +1094,16 @@ public class DownloadThread extends Thread {
                     DownloadThread.this.interrupt();
                 }
                 e.printStackTrace();
+            }
+            finally {
+                if (input != null) {
+                    try {
+                        input.close();
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
         Log.i(TAG, "Possible malformed URL");
@@ -1241,6 +1285,10 @@ public class DownloadThread extends Thread {
 
                 if (isNotEnoughNew) {
                     inboxStyle.addLine("Not enough new images");
+                }
+
+                if (isNotAuthenticated) {
+                    inboxStyle.addLine("Account authentication denied");
                 }
 
                 for (String detail : imageDetails.split(AppSettings.DATA_SPLITTER)) {

@@ -23,6 +23,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -62,25 +63,18 @@ public class ButtonFragment extends Fragment {
                 inflater.inflate(R.layout.tutorial_button_fragment_dark, container, false);
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
-        ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
-        ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
-        ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
+        Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar_actions);
 
-        Drawable deleteDrawable = getResources().getDrawable(R.drawable.ic_delete_white_24dp);
-        Drawable viewDrawable = getResources().getDrawable(R.drawable.ic_photo_white_24dp);
-        Drawable editDrawable = getResources().getDrawable(R.drawable.ic_edit_white_24dp);
-
-        deleteDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-        viewDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-        editDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-
-        deleteButton.setImageDrawable(deleteDrawable);
-        viewButton.setImageDrawable(viewDrawable);
-        editButton.setImageDrawable(editDrawable);
-
-        deleteButton.setOnClickListener(null);
-        viewButton.setOnClickListener(null);
-        editButton.setOnClickListener(null);
+        toolbar.inflateMenu(R.menu.menu_source);
+        toolbar.getMenu().findItem(R.id.item_source_download).getIcon().setColorFilter(
+                colorFilterInt,
+                PorterDuff.Mode.MULTIPLY);
+        toolbar.getMenu().findItem(R.id.item_source_delete).getIcon().setColorFilter(colorFilterInt,
+                PorterDuff.Mode.MULTIPLY);
+        toolbar.getMenu().findItem(R.id.item_source_view).getIcon().setColorFilter(colorFilterInt,
+                PorterDuff.Mode.MULTIPLY);
+        toolbar.getMenu().findItem(R.id.item_source_edit).getIcon().setColorFilter(colorFilterInt,
+                PorterDuff.Mode.MULTIPLY);
 
         TextView addTitleText = (TextView) view.findViewById(R.id.add_title_text);
         addTitleText.setTextColor(colorFilterInt);
@@ -96,7 +90,7 @@ public class ButtonFragment extends Fragment {
 
         TextView buttonTutorialText = (TextView) view.findViewById(R.id.button_tutorial_text);
         buttonTutorialText.setTextColor(colorFilterInt);
-        buttonTutorialText.setText("Delete, view, and edit each source.");
+        buttonTutorialText.setText("Download, delete, view, and edit each source.");
 
         return view;
     }

@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -78,18 +79,17 @@ public class AdapterSources extends RecyclerView.Adapter<AdapterSources.ViewHold
         holder.title.setText(source.getTitle());
 
         holder.imageOverlay.setVisibility(use ? View.INVISIBLE : View.VISIBLE);
+        holder.sourceExpandContainer.setVisibility(source.isExpanded() ? View.VISIBLE : View.GONE);
 
         if (source.getType().equals(AppSettings.FOLDER)) {
-            holder.toolbar.getMenu().findItem(R.id.item_download).setEnabled(false);
+            holder.toolbar.getMenu().findItem(R.id.item_source_download).setEnabled(false);
         }
         else {
-            holder.toolbar.getMenu().findItem(R.id.item_download).setEnabled(true);
+            holder.toolbar.getMenu().findItem(R.id.item_source_download).setEnabled(true);
         }
 
         if (preview) {
             holder.sourceImage.getLayoutParams().height = (int) ((adapterSourceListener.getItemWidth() - 2f * sideMarginPixels) / 16f * 9);
-            Log.d(TAG, "target height: " + ((int) ((adapterSourceListener.getItemWidth() - 2f * sideMarginPixels) / 16f * 9)));
-            Log.d(TAG, "image height: " + holder.sourceImage.getHeight());
             holder.sourceImage.setImageResource(R.drawable.ic_file_download_white_48dp);
             holder.sourceImage.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
             holder.sourceImage.requestLayout();
@@ -230,6 +230,7 @@ public class AdapterSources extends RecyclerView.Adapter<AdapterSources.ViewHold
         protected final TextView sourceSort;
         protected final TextView sourceTime;
         protected final ImageView sourceImage;
+        protected final LinearLayout sourceExpandContainer;
         protected final Toolbar toolbar;
 
         public ViewHolder(View itemView) {
@@ -243,34 +244,35 @@ public class AdapterSources extends RecyclerView.Adapter<AdapterSources.ViewHold
             sourceSort = (TextView) itemView.findViewById(R.id.source_sort);
             sourceTime = (TextView) itemView.findViewById(R.id.source_time);
             sourceImage = (ImageView) itemView.findViewById(R.id.source_image);
+            sourceExpandContainer = (LinearLayout) itemView.findViewById(R.id.source_expand_container);
             toolbar = (Toolbar) itemView.findViewById(R.id.toolbar_actions);
 
             toolbar.inflateMenu(R.menu.menu_source);
-            toolbar.getMenu().findItem(R.id.item_download).getIcon().setColorFilter(colorFilterInt,
+            toolbar.getMenu().findItem(R.id.item_source_download).getIcon().setColorFilter(colorFilterInt,
                     PorterDuff.Mode.MULTIPLY);
-            toolbar.getMenu().findItem(R.id.item_delete).getIcon().setColorFilter(colorFilterInt,
+            toolbar.getMenu().findItem(R.id.item_source_delete).getIcon().setColorFilter(colorFilterInt,
                     PorterDuff.Mode.MULTIPLY);
-            toolbar.getMenu().findItem(R.id.item_view).getIcon().setColorFilter(colorFilterInt,
+            toolbar.getMenu().findItem(R.id.item_source_view).getIcon().setColorFilter(colorFilterInt,
                     PorterDuff.Mode.MULTIPLY);
-            toolbar.getMenu().findItem(R.id.item_edit).getIcon().setColorFilter(colorFilterInt,
+            toolbar.getMenu().findItem(R.id.item_source_edit).getIcon().setColorFilter(colorFilterInt,
                     PorterDuff.Mode.MULTIPLY);
             toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
                     switch (menuItem.getItemId()) {
-                        case R.id.item_download:
+                        case R.id.item_source_download:
                             adapterSourceListener.onDownloadClick(ViewHolder.this.itemView,
                                     controllerSources.get(getPosition()));
                             break;
-                        case R.id.item_delete:
+                        case R.id.item_source_delete:
                             adapterSourceListener.onDeleteClick(ViewHolder.this.itemView,
                                     getPosition());
                             break;
-                        case R.id.item_view:
+                        case R.id.item_source_view:
                             adapterSourceListener.onViewImageClick(ViewHolder.this.itemView,
                                     getPosition());
                             break;
-                        case R.id.item_edit:
+                        case R.id.item_source_edit:
                             adapterSourceListener.onEditClick(ViewHolder.this.itemView,
                                     getPosition());
                             break;
@@ -297,7 +299,8 @@ public class AdapterSources extends RecyclerView.Adapter<AdapterSources.ViewHold
             View.OnClickListener clickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    adapterSourceListener.onExpandClick(ViewHolder.this.itemView, getPosition());
+                    controllerSources.get(getPosition()).setExpanded(!sourceExpandContainer.isShown());
+                    sourceExpandContainer.setVisibility(sourceExpandContainer.isShown() ? View.GONE : View.VISIBLE);
                 }
             };
 
@@ -312,7 +315,6 @@ public class AdapterSources extends RecyclerView.Adapter<AdapterSources.ViewHold
         void onDeleteClick(View view, int index);
         void onViewImageClick(View view, int index);
         void onEditClick(View view, int index);
-        void onExpandClick(View view, int position);
         void onLongClick(int position);
         Context getActivity();
         void setEmptyArrowVisibility(int visibility);
