@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -121,14 +122,20 @@ public class ImageHistoryFragment extends Fragment {
 //            emptyLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
 //        }
 
-        Button clearHistoryButton = (Button) view.findViewById(R.id.clear_history_button);
+        ImageView clearHistoryButton = (ImageView) view.findViewById(R.id.clear_history_button);
         clearHistoryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showClearHistoryDialog();
             }
         });
-
+        clearHistoryButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                Toast.makeText(activity, "Clear history", Toast.LENGTH_LONG).show();
+                return true;
+            }
+        });
 
         if (adapterHistory == null) {
             adapterHistory = new AdapterHistory(activity,

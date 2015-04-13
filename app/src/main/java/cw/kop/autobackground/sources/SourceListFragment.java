@@ -778,10 +778,14 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
         final View viewAdjacent;
         final RelativeLayout sourceContainerAdjacent;
 
-        if (!(index % 2 == 1 && adapterSources.getItemCount() == index - 1) && layoutManager instanceof GridLayoutManager) {
+        if (layoutManager instanceof GridLayoutManager && !(index % 2 == 1 && adapterSources.getItemCount() == index - 1)) {
             animateSideBySide = true;
             viewAdjacent = recyclerSources.findViewHolderForPosition(index % 2 == 0 ? index + 1 : index - 1).itemView;
-
+            sourceContainerAdjacent = (RelativeLayout) viewAdjacent.findViewById(R.id.source_container);
+        }
+        else if (index > 0) {
+            animateSideBySide = true;
+            viewAdjacent = recyclerSources.findViewHolderForPosition(index - 1).itemView;
             sourceContainerAdjacent = (RelativeLayout) viewAdjacent.findViewById(R.id.source_container);
         }
         else {
@@ -1112,6 +1116,7 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
 
         final RelativeLayout sourceContainer = (RelativeLayout) view.findViewById(R.id.source_container);
         final CardView sourceCard = (CardView) view.findViewById(R.id.source_card);
+        final ImageView sourceImage = (ImageView) view.findViewById(R.id.source_image);
         final View imageOverlay = view.findViewById(R.id.source_image_overlay);
         final EditText sourceTitle = (EditText) view.findViewById(R.id.source_title);
         final Toolbar toolbarActions = (Toolbar) view.findViewById(R.id.toolbar_actions);
@@ -1120,7 +1125,9 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
         final float cardStartShadow = sourceCard.getPaddingLeft();
         final float viewStartHeight = sourceContainer.getHeight();
         final float viewStartY = view.getY();
-        final int viewStartPadding = view.getPaddingLeft();
+        final int imageStartHeight = sourceImage.getHeight();
+        final int viewStartPaddingHorizontal = view.getPaddingLeft();
+        final int viewStartPaddingVertical = view.getPaddingTop();
         final float textStartX = sourceTitle.getX();
         final float textStartY = sourceTitle.getY();
         final float textTranslationY = sourceTitle.getHeight();
@@ -1148,7 +1155,7 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
 
-                if (needsFragment && interpolatedTime >= 1) {
+                if (needsFragment && interpolatedTime >= 0.99f) {
                     needsFragment = false;
                     getFragmentManager().beginTransaction()
                             .add(R.id.content_frame,
@@ -1158,28 +1165,23 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
                             .setTransition(FragmentTransaction.TRANSIT_NONE)
                             .commit();
                 }
-                int newPadding = Math.round(viewStartPadding * (1 - interpolatedTime));
-                int newShadowPadding = (int) (cardStartShadow * (1.0f - interpolatedTime));
-                sourceCard.setShadowPadding(newShadowPadding, 0, newShadowPadding, 0);
-                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).topMargin = newShadowPadding;
-                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).bottomMargin = newShadowPadding;
-                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).leftMargin = newShadowPadding;
-                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).rightMargin = newShadowPadding;
-                view.setPadding(newPadding, 0, newPadding, 0);
+                int newPaddingHorizontal = Math.round(viewStartPaddingHorizontal * (1 - interpolatedTime));
+                int newPaddingVertical = Math.round(viewStartPaddingVertical * (1 - interpolatedTime));
+                view.setPadding(newPaddingHorizontal, newPaddingVertical, newPaddingHorizontal, view.getPaddingBottom());
                 view.setY(viewStartY - interpolatedTime * viewStartY);
-                ViewGroup.LayoutParams params = sourceContainer.getLayoutParams();
-                params.height = (int) (viewStartHeight + (screenHeight - viewStartHeight) * interpolatedTime);
-                sourceContainer.setLayoutParams(params);
-                sourceTitle.setY(textStartY + interpolatedTime * textTranslationY);
-                sourceTitle.setX(textStartX + viewStartPadding - newPadding);
+                sourceContainer.getLayoutParams().height = (int) (viewStartHeight + (screenHeight - viewStartHeight) * interpolatedTime);
+                sourceImage.getLayoutParams().height = imageStartHeight + 2 * (viewStartPaddingVertical - newPaddingVertical);
+                sourceTitle.setY(textStartY + interpolatedTime * (textTranslationY + 2 * (viewStartPaddingVertical - newPaddingVertical)));
+                sourceTitle.setX(textStartX + viewStartPaddingHorizontal - newPaddingHorizontal);
                 toolbarActions.setAlpha(1.0f - interpolatedTime);
                 sourceExpandContainer.setAlpha(1.0f - interpolatedTime);
+                sourceContainer.requestLayout();
+                sourceImage.requestLayout();
+                view.requestLayout();
 
                 if (animateSideBySide) {
                     viewAdjacent.setAlpha(1.0f - interpolatedTime);
                 }
-
-                view.requestLayout();
             }
 
             @Override
@@ -1277,6 +1279,7 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
         titleColorAnimation.setInterpolator(decelerateInterpolator);
         titleShadowAlphaAnimation.setInterpolator(decelerateInterpolator);
         imageOverlayAlphaAnimation.setInterpolator(decelerateInterpolator);
+
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {

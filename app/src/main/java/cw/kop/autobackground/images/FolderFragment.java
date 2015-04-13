@@ -29,7 +29,9 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
@@ -45,7 +47,7 @@ public class FolderFragment extends Fragment implements FolderCallback {
     private RecyclerView recyclerFiles;
     private RecyclerView.LayoutManager layoutManager;
     private TextView directoryText;
-    private Button useDirectoryButton;
+    private ImageView useDirectoryButton;
     private FolderEventListener listener;
     private RecyclerView.Adapter adapter;
     private String directory;
@@ -110,7 +112,7 @@ public class FolderFragment extends Fragment implements FolderCallback {
         directoryText.setBackgroundColor(backgroundColor);
         recyclerFiles.setBackgroundColor(backgroundColor);
 
-        useDirectoryButton = (Button) view.findViewById(R.id.use_directory_button);
+        useDirectoryButton = (ImageView) view.findViewById(R.id.use_directory_button);
 
         if (getArguments() != null) {
             if (getArguments().getBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true)) {
@@ -123,6 +125,14 @@ public class FolderFragment extends Fragment implements FolderCallback {
                         listener.onUseDirectoryClick();
                     }
                 });
+                useDirectoryButton.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        Toast.makeText(activity, "Use this directory", Toast.LENGTH_LONG).show();
+                        return true;
+                    }
+                });
+                view.findViewById(R.id.floating_button).setVisibility(View.VISIBLE);
                 useDirectoryButton.setVisibility(View.VISIBLE);
             }
         }

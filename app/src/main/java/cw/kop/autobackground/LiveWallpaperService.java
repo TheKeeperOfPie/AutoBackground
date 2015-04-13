@@ -344,51 +344,25 @@ public class LiveWallpaperService extends GLWallpaperService {
         Log.i(TAG, "onCreateService");
     }
 
+    private PendingIntent getBroadcastPendingIntent(String action) {
+        return PendingIntent.getBroadcast(this, 0, new Intent(action), 0);
+    }
+
     private void setIntents() {
         Intent downloadIntent = new Intent(LiveWallpaperService.DOWNLOAD_WALLPAPER);
         downloadIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
         pendingDownloadIntent = PendingIntent.getBroadcast(this, 0, downloadIntent, 0);
 
-        pendingIntervalIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.UPDATE_WALLPAPER),
-                0);
-        pendingToastIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.TOAST_LOCATION),
-                0);
-        pendingCopyIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.COPY_IMAGE),
-                0);
-        pendingCycleIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.CYCLE_IMAGE),
-                0);
-        pendingDeleteIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.DELETE_IMAGE),
-                0);
-        pendingOpenIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.OPEN_IMAGE),
-                0);
-        pendingPinIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.PIN_IMAGE),
-                0);
-        pendingPreviousIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.PREVIOUS_IMAGE),
-                0);
-        pendingShareIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.SHARE_IMAGE),
-                0);
-        pendingGameIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.TOGGLE_GAME),
-                0);
+        pendingIntervalIntent = getBroadcastPendingIntent(LiveWallpaperService.UPDATE_WALLPAPER);
+        pendingToastIntent = getBroadcastPendingIntent(LiveWallpaperService.TOAST_LOCATION);
+        pendingCopyIntent = getBroadcastPendingIntent(LiveWallpaperService.COPY_IMAGE);
+        pendingCycleIntent = getBroadcastPendingIntent(LiveWallpaperService.CYCLE_IMAGE);
+        pendingDeleteIntent = getBroadcastPendingIntent(LiveWallpaperService.DELETE_IMAGE);
+        pendingOpenIntent = getBroadcastPendingIntent(LiveWallpaperService.OPEN_IMAGE);
+        pendingPinIntent = getBroadcastPendingIntent(LiveWallpaperService.PIN_IMAGE);
+        pendingPreviousIntent = getBroadcastPendingIntent(LiveWallpaperService.PREVIOUS_IMAGE);
+        pendingShareIntent = getBroadcastPendingIntent(LiveWallpaperService.SHARE_IMAGE);
+        pendingGameIntent = getBroadcastPendingIntent(LiveWallpaperService.TOGGLE_GAME);
         pendingAppIntent = PendingIntent.getActivity(this,
                 0,
                 new Intent(this, MainActivity.class),

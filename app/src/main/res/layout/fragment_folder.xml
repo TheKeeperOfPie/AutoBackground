@@ -43,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/directory_text"
-        android:paddingBottom="54dp"
+        android:paddingBottom="80dp"
         android:clipToPadding="false"
         />
 
@@ -60,22 +60,35 @@
         android:text="@string/empty_directory"
         />
 
-    <Button
-        android:id="@+id/use_directory_button"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
+    <ImageView
+        android:id="@+id/floating_button"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="6dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="6dp"
-        android:minWidth="64dp"
-        android:text="@string/use_directory_button"
-        android:textAllCaps="true"
-        android:textColor="@color/ACCENT_OPAQUE"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginRight="24dp"
+        android:layout_marginTop="0dp"
+        android:background="@drawable/floating_button_circle"
+        android:contentDescription="@string/floating_add_button_content_description"
+        android:visibility="gone"
+        />
+
+    <ImageView
+        android:id="@+id/use_directory_button"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_alignBottom="@+id/floating_button"
+        android:layout_alignEnd="@+id/floating_button"
+        android:layout_alignLeft="@+id/floating_button"
+        android:layout_alignRight="@+id/floating_button"
+        android:layout_alignStart="@+id/floating_button"
+        android:layout_alignTop="@+id/floating_button"
+        android:padding="16dp"
+        android:src="@drawable/ic_check_white_48dp"
         android:visibility="gone"
         />
 

@@ -200,6 +200,7 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
                     @Override
                     public void run() {
                         try {
+                            // Send an about request to check if app is authenticated
                             drive.about().get().execute();
                         }
                         catch (UserRecoverableAuthIOException e) {
@@ -222,6 +223,7 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
                     @Override
                     public void run() {
                         try {
+                            // Send an about request to check if app is authenticated
                             drive.about().get().execute();
                         }
                         catch (UserRecoverableAuthIOException e) {

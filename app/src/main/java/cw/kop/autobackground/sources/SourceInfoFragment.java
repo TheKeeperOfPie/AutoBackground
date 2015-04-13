@@ -458,7 +458,7 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         }
 
-        sourceImage.getLayoutParams().height = (int) (screenWidth / 16f * 9f);
+        sourceImage.getLayoutParams().height = (int) (screenWidth / 16 * 9);
         sourceImage.requestLayout();
 
         setDataWrappers();
@@ -715,7 +715,7 @@ public class SourceInfoFragment extends PreferenceFragment {
     }
 
     public void setImageDrawable(Drawable drawable) {
-        imageDrawable = drawable.mutate();
+        imageDrawable = drawable;
         if (sourceImage != null) {
             sourceImage.setImageDrawable(imageDrawable);
         }
@@ -920,7 +920,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                     @Override
                     public void run() {
                         try {
-                            Log.d(TAG, "root: " + drive.about().get().execute().getRootFolderId());
+                            // Send an about request to check if app is authenticated
+                            drive.about().get().execute();
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -948,7 +949,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                     @Override
                     public void run() {
                         try {
-                            Log.d(TAG, "root: " + drive.about().get().execute().getRootFolderId());
+                            // Send an about request to check if app is authenticated
+                            drive.about().get().execute().getRootFolderId();
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
