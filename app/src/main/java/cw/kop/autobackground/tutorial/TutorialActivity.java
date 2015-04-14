@@ -22,6 +22,7 @@ import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.widget.Button;
 
+import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -64,8 +65,23 @@ public class TutorialActivity extends FragmentActivity {
         closeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
-                AppSettings.setUseTutorial(false);
+
+                DialogFactory.ActionDialogListener clickListener = new DialogFactory.ActionDialogListener() {
+                    @Override
+                    public void onClickRight(View v) {
+                        AppSettings.setUseTutorial(false);
+                        finish();
+                        this.dismissDialog();
+                    }
+                };
+
+                DialogFactory.showActionDialog(TutorialActivity.this,
+                        "Skip tutorial?",
+                        "",
+                        clickListener,
+                        -1,
+                        R.string.cancel_button,
+                        R.string.ok_button);
             }
         });
 

@@ -33,8 +33,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import cw.kop.autobackground.DividerItemDecoration;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.SourceInfoFragment;
 
 public class FolderFragment extends Fragment implements FolderCallback {
 
@@ -91,6 +93,7 @@ public class FolderFragment extends Fragment implements FolderCallback {
 
         recyclerFiles = (RecyclerView) view.findViewById(R.id.recycler_files);
         recyclerFiles.setHasFixedSize(true);
+        recyclerFiles.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL_LIST));
         recyclerFiles.setLayoutManager(layoutManager);
 
         emptyText = (TextView) view.findViewById(R.id.empty_text);
@@ -167,6 +170,7 @@ public class FolderFragment extends Fragment implements FolderCallback {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         this.activity = activity;
+        listener.setActivity(activity);
     }
 
     @Override
@@ -253,7 +257,7 @@ public class FolderFragment extends Fragment implements FolderCallback {
         void onUseDirectoryClick();
         void onItemClick(int positionInList);
         boolean onBackPressed();
-
+        void setActivity(Activity activity);
     }
 
 }

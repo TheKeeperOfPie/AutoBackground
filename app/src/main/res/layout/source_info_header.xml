@@ -77,7 +77,7 @@
         android:layout_toStartOf="@+id/source_use_switch"
         android:hint="@string/source_title"
         android:inputType="textNoSuggestions"
-        android:nextFocusDown="@id/source_data"
+        android:nextFocusDown="@+id/source_data"
         android:textColor="@color/BLUE_OPAQUE"
         android:textSize="28sp"
         />
@@ -148,7 +148,7 @@
             android:layout_toLeftOf="@id/source_data_suffix"
             android:hint="@string/source_data"
             android:inputType="textUri|textNoSuggestions"
-            android:nextFocusDown="@id/source_num"
+            android:nextFocusDown="@+id/source_num"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@color/BLUE_OPAQUE"
             android:marqueeRepeatLimit="marquee_forever"

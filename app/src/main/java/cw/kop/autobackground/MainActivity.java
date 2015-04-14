@@ -189,7 +189,6 @@ public class MainActivity extends ActionBarActivity implements SourceInfoFragmen
             navigationClickListener = new AdapterNavigation.NavigationClickListener() {
                 @Override
                 public void onItemClick(int position) {
-                    getFragmentManager().popBackStack();
                     selectItem(position, true);
                 }
 
@@ -247,7 +246,6 @@ public class MainActivity extends ActionBarActivity implements SourceInfoFragmen
 
                 public void onDrawerOpened(View drawerView) {
                     super.onDrawerOpened(drawerView);
-                    getFragmentManager().popBackStack();
                     Intent openedIntent = new Intent(MainActivity.DRAWER_OPENED);
                     LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(openedIntent);
                 }
@@ -330,6 +328,10 @@ public class MainActivity extends ActionBarActivity implements SourceInfoFragmen
 
         if (position == currentPosition || position < 0) {
             return;
+        }
+
+        for (int num = 0; num < getFragmentManager().getBackStackEntryCount(); num++) {
+            getFragmentManager().popBackStack();
         }
 
         currentPosition = position;

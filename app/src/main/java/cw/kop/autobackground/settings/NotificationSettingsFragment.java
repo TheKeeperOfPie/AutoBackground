@@ -56,6 +56,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import cw.kop.autobackground.DialogFactory;
+import cw.kop.autobackground.DividerItemDecoration;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.OptionData;
 import cw.kop.autobackground.OptionsListAdapter;
@@ -171,7 +172,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.addItemDecoration(new DividerItemDecoration(appContext, DividerItemDecoration.VERTICAL_LIST));
 
         Preference iconActionPref = findPreference("notification_icon_action");
         iconActionPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {

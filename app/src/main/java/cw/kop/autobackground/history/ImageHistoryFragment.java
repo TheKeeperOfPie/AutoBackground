@@ -46,6 +46,7 @@ import java.text.DateFormat;
 import java.util.Date;
 
 import cw.kop.autobackground.DialogFactory;
+import cw.kop.autobackground.DividerItemDecoration;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.DownloadThread;
 import cw.kop.autobackground.images.HistoryItem;
@@ -109,18 +110,11 @@ public class ImageHistoryFragment extends Fragment {
 
         recyclerHistory = (RecyclerView) view.findViewById(R.id.recycler_history);
         recyclerHistory.setHasFixedSize(true);
+        recyclerHistory.addItemDecoration(
+                new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL_LIST));
         recyclerHistory.setLayoutManager(layoutManager);
 
         emptyText = (TextView) view.findViewById(R.id.empty_text);
-
-//        if (AppSettings.getTheme() == R.style.AppLightTheme) {
-//            recyclerHistory.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
-//            emptyLayout.setBackgroundColor(getResources().getColor(R.color.WHITE_OPAQUE));
-//        }
-//        else {
-//            recyclerHistory.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
-//            emptyLayout.setBackgroundColor(getResources().getColor(R.color.BLACK_OPAQUE));
-//        }
 
         ImageView clearHistoryButton = (ImageView) view.findViewById(R.id.clear_history_button);
         clearHistoryButton.setOnClickListener(new View.OnClickListener() {
@@ -190,7 +184,7 @@ public class ImageHistoryFragment extends Fragment {
                 clickListener,
                 -1,
                 R.string.cancel_button,
-                R.string.ok_button);
+                R.string.yes_button);
 
     }
 

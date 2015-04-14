@@ -3,6 +3,7 @@ package cw.kop.autobackground.images;
 import android.app.Activity;
 import android.graphics.PorterDuff;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,8 @@ import cw.kop.autobackground.settings.AppSettings;
  */
 public class AdapterDrive extends RecyclerView.Adapter<AdapterDrive.ViewHolder> {
 
+    private static final int BYTE_TO_MEBIBYTE = 1048576;
+    private static final String TAG = AdapterDrive.class.getCanonicalName();
     private List<File> entries;
     private File mainDir;
     private File topDir;
@@ -46,13 +49,14 @@ public class AdapterDrive extends RecyclerView.Adapter<AdapterDrive.ViewHolder> 
 
         if (file.getMimeType().equals("application/vnd.google-apps.folder")) {
             holder.fileImage.setImageResource(R.drawable.ic_folder_white_24dp);
+            holder.fileSummary.setText(file.getDescription());
         }
         else {
             holder.fileImage.setImageResource(R.drawable.ic_insert_drive_file_white_24dp);
+            holder.fileSummary.setText(file.getFileSize() != null ? String.valueOf(file.getFileSize() / BYTE_TO_MEBIBYTE) + " MiB" : null);
         }
 
         holder.fileTitle.setText(file.getTitle());
-        holder.fileSummary.setText(String.valueOf(file.getFileSize()));
     }
 
     @Override

@@ -40,8 +40,8 @@ android {
         applicationId "cw.kop.autobackground"
         minSdkVersion 16
         targetSdkVersion 22
-        versionCode 72
-        versionName "2.40.00"
+        versionCode 73
+        versionName "2.40.10"
 
         renderscriptTargetApi 22
         renderscriptSupportModeEnabled true

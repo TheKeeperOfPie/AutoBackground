@@ -161,6 +161,11 @@ public class SourceInfoFragment extends PreferenceFragment {
     private Drive drive;
     private GoogleAccountCredential driveCredential;
     private boolean needsRecycle;
+    private boolean resumed;
+
+    public SourceInfoFragment() {
+
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -372,22 +377,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                     R.layout.spinner_row,
                     Arrays.asList(getResources().getStringArray(R.array.source_menu)));
             sourceSpinner.setAdapter(adapter);
-            sourceSpinner.setSelection(0);
-            sourceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent,
-                        View view,
-                        int position,
-                        long id) {
-
-                    selectSource(getTypeFromPosition(position));
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-
-                }
-            });
 
         }
         else {
@@ -483,6 +472,25 @@ public class SourceInfoFragment extends PreferenceFragment {
             sourceNum.setText(savedInstanceState.getString(Source.NUM, ""));
         }
 
+        sourceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent,
+                                       View view,
+                                       int position,
+                                       long id) {
+
+                Log.d(TAG, "onItemSelected: " + position);
+                if (resumed) {
+                    selectSource(getTypeFromPosition(position));
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
         return view;
     }
 
@@ -507,6 +515,8 @@ public class SourceInfoFragment extends PreferenceFragment {
     @Override
     public void onResume() {
         super.onResume();
+
+        resumed = true;
 
         if (dropboxAPI.getSession().authenticationSuccessful()) {
             try {
@@ -844,10 +854,9 @@ public class SourceInfoFragment extends PreferenceFragment {
                         @Override
                         public void run() {
                             try {
-                                Log.d(TAG, "root: " + drive.about()
+                                drive.about()
                                         .get()
-                                        .execute()
-                                        .getRootFolderId());
+                                        .execute();
                                 handler.post(new Runnable() {
                                     @Override
                                     public void run() {
@@ -950,7 +959,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                     public void run() {
                         try {
                             // Send an about request to check if app is authenticated
-                            drive.about().get().execute().getRootFolderId();
+                            drive.about().get().execute();
                             handler.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -1049,6 +1058,8 @@ public class SourceInfoFragment extends PreferenceFragment {
         folderFragment.setAdapter(adapter);
         folderFragment.setStartingDirectoryText(startDir.getAbsolutePath());
         folderFragment.setListener(new FolderFragment.FolderEventListener() {
+            private Activity dialogActivity;
+
             @Override
             public void onUseDirectoryClick() {
                 DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
@@ -1065,7 +1076,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                     }
                 };
 
-                DialogFactory.showActionDialog(appContext,
+                DialogFactory.showActionDialog(dialogActivity,
                         "",
                         "Include subdirectories?",
                         listener,
@@ -1093,7 +1104,7 @@ public class SourceInfoFragment extends PreferenceFragment {
 
                 if (useSubdirectories) {
 
-                    Toast.makeText(appContext, "Loading subdirectories...", Toast.LENGTH_SHORT)
+                    Toast.makeText(dialogActivity, "Loading subdirectories...", Toast.LENGTH_SHORT)
                             .show();
 
                     new Thread(new Runnable() {
@@ -1111,23 +1122,36 @@ public class SourceInfoFragment extends PreferenceFragment {
                             }
 
                             if (isAdded()) {
-                                setData(AppSettings.FOLDER,
-                                        dir.getName(),
-                                        stringBuilder.toString(),
-                                        numImages);
+
+                                SourceInfoFragment sourceInfoFragment = (SourceInfoFragment) dialogActivity.getFragmentManager().findFragmentByTag("sourceInfoFragment");
+
+                                if (sourceInfoFragment != null) {
+                                    sourceInfoFragment.setData(AppSettings.FOLDER,
+                                            dir.getName(),
+                                            stringBuilder.toString(),
+                                            numImages);
+                                }
+                                dialogActivity = null;
                             }
                         }
                     }).start();
+                    adapter.setFinished();
+                    dialogActivity.onBackPressed();
                 }
                 else {
-                    setData(AppSettings.FOLDER,
-                            dir.getName(),
-                            dir.getAbsolutePath(),
-                            dir.listFiles(filenameFilter) != null ?
-                                    dir.listFiles(filenameFilter).length : 0);
+                    SourceInfoFragment sourceInfoFragment = (SourceInfoFragment) dialogActivity.getFragmentManager().findFragmentByTag("sourceInfoFragment");
+
+                    if (sourceInfoFragment != null) {
+                        sourceInfoFragment.setData(AppSettings.FOLDER,
+                                dir.getName(),
+                                dir.getAbsolutePath(),
+                                dir.listFiles(filenameFilter) != null ?
+                                        dir.listFiles(filenameFilter).length : 0);
+                    }
+                    adapter.setFinished();
+                    dialogActivity.onBackPressed();
+                    dialogActivity = null;
                 }
-                adapter.setFinished();
-                getActivity().onBackPressed();
             }
 
             private ArrayList<File> getAllDirectories(File dir) {
@@ -1159,6 +1183,11 @@ public class SourceInfoFragment extends PreferenceFragment {
 
                 return endDirectory;
             }
+
+            @Override
+            public void setActivity(Activity activity) {
+                this.dialogActivity = activity;
+            }
         });
 
         getFragmentManager().beginTransaction()
@@ -1180,6 +1209,8 @@ public class SourceInfoFragment extends PreferenceFragment {
         folderFragment.setArguments(arguments);
         folderFragment.setAdapter(adapter);
         folderFragment.setListener(new FolderFragment.FolderEventListener() {
+            public Activity dialogActivity;
+
             @Override
             public void onUseDirectoryClick() {
                 // Not implemented
@@ -1187,17 +1218,29 @@ public class SourceInfoFragment extends PreferenceFragment {
 
             @Override
             public void onItemClick(int positionInList) {
-                setData(type,
-                        names.get(positionInList),
-                        links.get(positionInList),
-                        Integer.parseInt(nums.get(positionInList)));
 
-                getActivity().onBackPressed();
+
+                SourceInfoFragment sourceInfoFragment = (SourceInfoFragment) dialogActivity.getFragmentManager().findFragmentByTag("sourceInfoFragment");
+
+                if (sourceInfoFragment != null) {
+                    sourceInfoFragment.setData(type,
+                            names.get(positionInList),
+                            links.get(positionInList),
+                            Integer.parseInt(nums.get(positionInList)));
+                }
+
+                dialogActivity.onBackPressed();
+                dialogActivity = null;
             }
 
             @Override
             public boolean onBackPressed() {
                 return true;
+            }
+
+            @Override
+            public void setActivity(Activity activity) {
+                this.dialogActivity = activity;
             }
         });
 
@@ -1223,12 +1266,19 @@ public class SourceInfoFragment extends PreferenceFragment {
         folderFragment.setArguments(arguments);
         folderFragment.setListener(new FolderFragment.FolderEventListener() {
 
+            public Activity dialogActivity;
+
             @Override
             public void onUseDirectoryClick() {
                 com.google.api.services.drive.model.File file = adapter.getMainDir();
-                setData(AppSettings.GOOGLE_DRIVE_ALBUM, file.getTitle(), file.getId(), -1);
+                SourceInfoFragment sourceInfoFragment = (SourceInfoFragment) dialogActivity.getFragmentManager().findFragmentByTag("sourceInfoFragment");
+
+                if (sourceInfoFragment != null) {
+                    sourceInfoFragment.setData(AppSettings.GOOGLE_DRIVE_ALBUM, file.getTitle(), file.getId(), -1);
+                }
                 adapter.setFinished(true);
-                getActivity().onBackPressed();
+                dialogActivity.onBackPressed();
+                dialogActivity = null;
             }
 
             @Override
@@ -1295,6 +1345,11 @@ public class SourceInfoFragment extends PreferenceFragment {
 
                 return false;
             }
+
+            @Override
+            public void setActivity(Activity activity) {
+                this.dialogActivity = activity;
+            }
         });
 
         Toast.makeText(appContext, "Loading Google Drive", Toast.LENGTH_SHORT).show();
@@ -1339,13 +1394,21 @@ public class SourceInfoFragment extends PreferenceFragment {
         folderFragment.setArguments(arguments);
         folderFragment.setListener(new FolderFragment.FolderEventListener() {
 
+            public Activity dialogActivity;
+
             @Override
             public void onUseDirectoryClick() {
                 Entry entry = adapter.getMainDir();
                 if (entry.isDir) {
-                    setData(AppSettings.DROPBOX_FOLDER, entry.fileName(), entry.path, -1);
+                    SourceInfoFragment sourceInfoFragment = (SourceInfoFragment) dialogActivity.getFragmentManager().findFragmentByTag("sourceInfoFragment");
+
+                    if (sourceInfoFragment != null) {
+                        sourceInfoFragment.setData(AppSettings.DROPBOX_FOLDER, entry.fileName(),
+                                entry.path, -1);
+                    }
                     adapter.setFinished(true);
-                    getActivity().onBackPressed();
+                    dialogActivity.onBackPressed();
+                    dialogActivity = null;
                 }
             }
 
@@ -1415,6 +1478,11 @@ public class SourceInfoFragment extends PreferenceFragment {
                 }).start();
 
                 return false;
+            }
+
+            @Override
+            public void setActivity(Activity activity) {
+                this.dialogActivity = activity;
             }
         });
 

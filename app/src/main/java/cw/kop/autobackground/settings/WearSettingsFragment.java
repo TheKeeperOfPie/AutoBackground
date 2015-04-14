@@ -247,7 +247,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                             Math.round(height * 0.23f),
                             Math.round(height * 0.278f),
                             Math.round(height * 0.33f));
-                    watchContainer.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    watchContainer.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     redraw();
                 }
             });
@@ -262,29 +262,31 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                     ViewGroup.LayoutParams watchContainerParams = watchBackground.getLayoutParams();
                     watchContainerParams.width = watchBackground.getHeight();
                     watchBackground.setLayoutParams(watchContainerParams);
-                    watchBackground.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    watchBackground.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 }
             });
         }
         else {
             view = inflater.inflate(R.layout.wear_settings_layout, container, false);
             watchContainer = (RelativeLayout) view.findViewById(R.id.watch_face_container);
-            watchContainer.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    int width = displayMetrics.widthPixels;
-                    ViewGroup.LayoutParams watchContainerParams = watchContainer.getLayoutParams();
-                    watchContainerParams.height = width;
-                    watchContainerParams.width = width;
-                    watchContainer.setLayoutParams(watchContainerParams);
-                    watchContainer.setPadding(Math.round(width * 0.278f),
-                            Math.round(width * 0.23f),
-                            Math.round(width * 0.278f),
-                            Math.round(width * 0.33f));
-                    watchContainer.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-                    redraw();
-                }
-            });
+            watchContainer.getViewTreeObserver().addOnGlobalLayoutListener(
+                    new ViewTreeObserver.OnGlobalLayoutListener() {
+                        @Override
+                        public void onGlobalLayout() {
+                            int width = displayMetrics.widthPixels;
+                            ViewGroup.LayoutParams watchContainerParams = watchContainer.getLayoutParams();
+                            watchContainerParams.height = width;
+                            watchContainerParams.width = width;
+                            watchContainer.setLayoutParams(watchContainerParams);
+                            watchContainer.setPadding(Math.round(width * 0.278f),
+                                    Math.round(width * 0.23f),
+                                    Math.round(width * 0.278f),
+                                    Math.round(width * 0.33f));
+                            watchContainer.getViewTreeObserver()
+                                    .removeOnGlobalLayoutListener(this);
+                            redraw();
+                        }
+                    });
             watchContainer.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -303,7 +305,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                     ViewGroup.LayoutParams watchContainerParams = watchBackground.getLayoutParams();
                     watchContainerParams.height = watchBackground.getWidth();
                     watchBackground.setLayoutParams(watchContainerParams);
-                    watchBackground.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                    watchBackground.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 }
             });
         }
@@ -471,6 +473,8 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
                 AppSettings.getSecondWidth(),
                 displayMetrics);
 
+        Log.d(TAG, "surfaceView width: " + surfaceView.getWidth() + " surfaceView height: " + surfaceView.getHeight());
+
         float textSize = surfaceView.getHeight() / 4;
         float radius = surfaceView.getWidth() / 2;
         float width = (float) Math.sqrt(Math.pow(radius, 2f) - Math.pow(textSize, 2f)) * 2f;
@@ -481,8 +485,15 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         hourPaint.setTextSize(textSize);
         minutePaint.setTextSize(textSize);
         secondPaint.setTextSize(textSize);
+        indicatorPaint.setTextScaleX(textScale);
+        hourPaint.setTextScaleX(textScale);
+        minutePaint.setTextScaleX(textScale);
+        secondPaint.setTextScaleX(textScale);
 
         while (getTimeWidth() > width) {
+            Log.d(TAG, "getTimeWidth: " + getTimeWidth());
+            Log.d(TAG, "width: " + width);
+
             textScale -= 0.05f;
             indicatorPaint.setTextScaleX(textScale);
             hourPaint.setTextScaleX(textScale);
@@ -582,6 +593,8 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
             return;
         }
 
+        canvas.drawColor(0xFFFF0000);
+
         setPaints();
 
         Time time = new Time();
@@ -651,6 +664,8 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         if (canvas == null) {
             return;
         }
+
+        canvas.drawColor(0xFFFF0000);
 
         setPaints();
 

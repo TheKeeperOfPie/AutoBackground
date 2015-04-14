@@ -37,6 +37,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -56,6 +57,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.ScaleAnimation;
@@ -132,6 +134,22 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
                 default:
             }
 
+        }
+    };
+    private Runnable resetRecyclerAnimation = new Runnable() {
+        @Override
+        public void run() {
+            if (needsListReset) {
+                Parcelable state = layoutManager.onSaveInstanceState();
+                recyclerSources.setAdapter(null);
+                recyclerSources.setAdapter(adapterSources);
+                layoutManager.onRestoreInstanceState(state);
+                recyclerSources.setClickable(true);
+                recyclerSources.setEnabled(true);
+                needsListReset = false;
+                addButton.clearAnimation();
+                addButtonBackground.clearAnimation();
+            }
         }
     };
     private SourceListListener sourceListListener;
@@ -444,10 +462,10 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
                 setWallpaper();
                 break;
             case R.id.floating_button_icon:
-                final GradientDrawable circleDrawable = (GradientDrawable) getResources().getDrawable(
+                final LayerDrawable circleDrawable = (LayerDrawable) getResources().getDrawable(
                         R.drawable.floating_button_circle);
                 final float scale = (float) ((Math.hypot(addButtonBackground.getX(),
-                        addButtonBackground.getY()) + addButtonBackground.getWidth()) / addButtonBackground.getWidth() * 2);
+                        addButtonBackground.getY()) + addButtonBackground.getWidth() / 0.62f) / addButtonBackground.getWidth() / 0.62f * 2);
 
                 Animation animation = new Animation() {
 
@@ -488,7 +506,8 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
                 animation.setAnimationListener(new Animation.AnimationListener() {
                     @Override
                     public void onAnimationStart(Animation animation) {
-                        circleDrawable.setColor(getResources().getColor(R.color.ACCENT_OPAQUE));
+                        ((GradientDrawable) circleDrawable.getDrawable(1)).setColor(
+                                getResources().getColor(R.color.ACCENT_OPAQUE));
                         addButtonBackground.setImageDrawable(circleDrawable);
                     }
 
@@ -502,7 +521,7 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
                                     addButtonBackground.setScaleX(1.0f);
                                     addButtonBackground.setScaleY(1.0f);
                                     addButtonBackground.clearAnimation();
-                                    circleDrawable.setColor(
+                                    ((GradientDrawable) circleDrawable.getDrawable(1)).setColor(
                                             getResources().getColor(R.color.ACCENT_OPAQUE));
                                     addButtonBackground.setImageDrawable(circleDrawable);
                                     addButton.setVisibility(View.VISIBLE);
@@ -525,7 +544,8 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
 
                     @Override
                     public void onAnimationUpdate(ValueAnimator animation) {
-                        circleDrawable.setColor((Integer) animation.getAnimatedValue());
+                        ((GradientDrawable) circleDrawable.getDrawable(1)).setColor(
+                                (Integer) animation.getAnimatedValue());
                         addButtonBackground.setImageDrawable(circleDrawable);
                     }
 
@@ -546,7 +566,8 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
                             addButtonBackground.setScaleX(1.0f);
                             addButtonBackground.setScaleY(1.0f);
                             addButtonBackground.clearAnimation();
-                            circleDrawable.setColor(getResources().getColor(R.color.ACCENT_OPAQUE));
+                            ((GradientDrawable) circleDrawable.getDrawable(1)).setColor(
+                                    getResources().getColor(R.color.ACCENT_OPAQUE));
                             addButtonBackground.setImageDrawable(circleDrawable);
                             addButton.setVisibility(View.VISIBLE);
                             needsButtonReset = false;
@@ -715,6 +736,8 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
         folderFragment.setAdapter(adapter);
         folderFragment.setListener(new FolderFragment.FolderEventListener() {
 
+            public Activity dialogActivity;
+
             @Override
             public void onUseDirectoryClick() {
                 // Not implemented
@@ -740,7 +763,7 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
                                             positionInList)), "image/*");
                                     galleryIntent = Intent.createChooser(galleryIntent, "Open Image");
                                     galleryIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                    appContext.startActivity(galleryIntent);
+                                    dialogActivity.startActivity(galleryIntent);
                                     break;
                                 case 1:
                                     File file = adapter.getItem(positionInList);
@@ -750,7 +773,7 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
                                             Intent intent = new Intent();
                                             intent.setAction(LiveWallpaperService.CYCLE_IMAGE);
                                             intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-                                            appContext.sendBroadcast(intent);
+                                            dialogActivity.sendBroadcast(intent);
                                         }
                                         file.delete();
                                         adapter.remove(positionInList);
@@ -771,6 +794,11 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
             public boolean onBackPressed() {
                 return adapter.backDirectory();
             }
+
+            @Override
+            public void setActivity(Activity activity) {
+                this.dialogActivity = activity;
+            }
         });
 
         final boolean animateSideBySide;
@@ -778,15 +806,26 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
         final View viewAdjacent;
         final RelativeLayout sourceContainerAdjacent;
 
-        if (layoutManager instanceof GridLayoutManager && !(index % 2 == 1 && adapterSources.getItemCount() == index - 1)) {
+        int indexAdjacent = index % 2 == 0 ? index + 1 : index - 1;
+
+        if (indexAdjacent >=0 && indexAdjacent < adapterSources.getItemCount() && layoutManager instanceof GridLayoutManager) {
             animateSideBySide = true;
-            viewAdjacent = recyclerSources.findViewHolderForPosition(index % 2 == 0 ? index + 1 : index - 1).itemView;
+            viewAdjacent = recyclerSources.findViewHolderForPosition(indexAdjacent).itemView;
             sourceContainerAdjacent = (RelativeLayout) viewAdjacent.findViewById(R.id.source_container);
         }
         else if (index > 0) {
-            animateSideBySide = true;
-            viewAdjacent = recyclerSources.findViewHolderForPosition(index - 1).itemView;
-            sourceContainerAdjacent = (RelativeLayout) viewAdjacent.findViewById(R.id.source_container);
+            RecyclerView.ViewHolder viewHolder = recyclerSources.findViewHolderForPosition(index - 1);
+            if (viewHolder == null) {
+                viewAdjacent = null;
+                sourceContainerAdjacent = null;
+                animateSideBySide = false;
+            }
+            else {
+                animateSideBySide = true;
+                viewAdjacent = viewHolder.itemView;
+                sourceContainerAdjacent = (RelativeLayout) viewAdjacent.findViewById(
+                        R.id.source_container);
+            }
         }
         else {
             viewAdjacent = null;
@@ -812,9 +851,10 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
                 sourceContainer.getLayoutParams().height = (int) (viewStartHeight + (listHeight - viewStartHeight) * interpolatedTime);
                 sourceContainer.requestLayout();
                 view.setY(viewStartY - interpolatedTime * viewStartY);
-                toolbarActions.setAlpha(1.0f - interpolatedTime);
-                sourceTitle.setAlpha(1.0f - interpolatedTime);
-                sourceExpandContainer.setAlpha(1.0f - interpolatedTime);
+                float newAlpha = 1.0f - interpolatedTime;
+                toolbarActions.setAlpha(newAlpha);
+                sourceTitle.setAlpha(newAlpha);
+                sourceExpandContainer.setAlpha(newAlpha);
 
                 if (fadeView) {
                     sourceImage.setAlpha(1.0f - interpolatedTime);
@@ -840,20 +880,7 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (needsListReset) {
-                            Parcelable state = layoutManager.onSaveInstanceState();
-                            recyclerSources.setAdapter(null);
-                            recyclerSources.setAdapter(adapterSources);
-                            layoutManager.onRestoreInstanceState(state);
-                            recyclerSources.setClickable(true);
-                            recyclerSources.setEnabled(true);
-                            needsListReset = false;
-                        }
-                    }
-                }, (long) INFO_ANIMATION_TIME / 5);
+                handler.postDelayed(resetRecyclerAnimation, (long) INFO_ANIMATION_TIME / 5);
             }
 
             @Override
@@ -887,30 +914,21 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
             }
         });
 
+        Animation buttonAlphaAnimation = new AlphaAnimation(1.0f, 0.0f);
+
         DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(1.5f);
 
         animation.setDuration(INFO_ANIMATION_TIME);
         cardColorAnimation.setDuration(INFO_ANIMATION_TIME);
         imageOverlayAlphaAnimation.setDuration(INFO_ANIMATION_TIME);
+        buttonAlphaAnimation.setDuration(INFO_ANIMATION_TIME);
 
         animation.setInterpolator(decelerateInterpolator);
         cardColorAnimation.setInterpolator(decelerateInterpolator);
         imageOverlayAlphaAnimation.setInterpolator(decelerateInterpolator);
+        buttonAlphaAnimation.setInterpolator(decelerateInterpolator);
 
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (needsListReset) {
-                    Parcelable state = layoutManager.onSaveInstanceState();
-                    recyclerSources.setAdapter(null);
-                    recyclerSources.setAdapter(adapterSources);
-                    layoutManager.onRestoreInstanceState(state);
-                    recyclerSources.setClickable(true);
-                    recyclerSources.setEnabled(true);
-                    needsListReset = false;
-                }
-            }
-        }, (long) (INFO_ANIMATION_TIME * 1.1f));
+        handler.postDelayed(resetRecyclerAnimation, (long) (INFO_ANIMATION_TIME * 1.1f));
 
         needsListReset = true;
 
@@ -920,6 +938,8 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
 
         cardColorAnimation.start();
         view.startAnimation(animation);
+        addButton.startAnimation(buttonAlphaAnimation);
+        addButtonBackground.startAnimation(buttonAlphaAnimation);
 
     }
 
@@ -999,6 +1019,9 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
     @Override
     public void onResume() {
         super.onResume();
+
+        addButton.setAlpha(1.0f);
+        addButtonBackground.setAlpha(1.0f);
 
         sourceListListener.getControllerSources().recount();
 
@@ -1122,7 +1145,8 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
         final Toolbar toolbarActions = (Toolbar) view.findViewById(R.id.toolbar_actions);
         final LinearLayout sourceExpandContainer = (LinearLayout) view.findViewById(R.id.source_expand_container);
 
-        final float cardStartShadow = sourceCard.getPaddingLeft();
+        final int cardStartMarginVertical = ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).topMargin;
+        final int cardStartMarginHorizontal = ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).leftMargin;
         final float viewStartHeight = sourceContainer.getHeight();
         final float viewStartY = view.getY();
         final int imageStartHeight = sourceImage.getHeight();
@@ -1136,17 +1160,27 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
         final View viewAdjacent;
         final RelativeLayout sourceContainerAdjacent;
 
-        if (!(position % 2 == 1 && adapterSources.getItemCount() == position - 1) && layoutManager instanceof GridLayoutManager) {
-            animateSideBySide = true;
-            viewAdjacent = recyclerSources.findViewHolderForPosition(position % 2 == 0 ? position + 1 : position - 1).itemView;
-            sourceContainerAdjacent = (RelativeLayout) viewAdjacent.findViewById(R.id.source_container);
+        int positionAdjacent = position % 2 == 0 ? position + 1 : position - 1;
+
+        if (positionAdjacent >=0 && positionAdjacent < adapterSources.getItemCount() && layoutManager instanceof GridLayoutManager) {
+            RecyclerView.ViewHolder viewHolder = recyclerSources.findViewHolderForPosition(positionAdjacent);
+            if (viewHolder == null) {
+                viewAdjacent = null;
+                sourceContainerAdjacent = null;
+                animateSideBySide = false;
+            }
+            else {
+                animateSideBySide = true;
+                viewAdjacent = viewHolder.itemView;
+                sourceContainerAdjacent = (RelativeLayout) viewAdjacent.findViewById(
+                        R.id.source_container);
+            }
         }
         else {
             viewAdjacent = null;
             sourceContainerAdjacent = null;
             animateSideBySide = false;
         }
-
 
         Animation animation = new Animation() {
 
@@ -1167,20 +1201,29 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
                 }
                 int newPaddingHorizontal = Math.round(viewStartPaddingHorizontal * (1 - interpolatedTime));
                 int newPaddingVertical = Math.round(viewStartPaddingVertical * (1 - interpolatedTime));
-                view.setPadding(newPaddingHorizontal, newPaddingVertical, newPaddingHorizontal, view.getPaddingBottom());
+                int newCardMarginVertical = Math.round(cardStartMarginVertical * (1 - interpolatedTime));
+                int newCardMarginHorizontal = Math.round(cardStartMarginHorizontal * (1 - interpolatedTime));
+                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).topMargin = newCardMarginVertical;
+                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).bottomMargin = newCardMarginVertical;
+                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).leftMargin = newCardMarginHorizontal;
+                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).rightMargin = newCardMarginHorizontal;
+                view.setPadding(newPaddingHorizontal, newPaddingVertical, newPaddingHorizontal,
+                        view.getPaddingBottom());
                 view.setY(viewStartY - interpolatedTime * viewStartY);
                 sourceContainer.getLayoutParams().height = (int) (viewStartHeight + (screenHeight - viewStartHeight) * interpolatedTime);
-                sourceImage.getLayoutParams().height = imageStartHeight + 2 * (viewStartPaddingVertical - newPaddingVertical);
-                sourceTitle.setY(textStartY + interpolatedTime * (textTranslationY + 2 * (viewStartPaddingVertical - newPaddingVertical)));
+                sourceImage.getLayoutParams().height = imageStartHeight + 2 * (viewStartPaddingVertical - newPaddingVertical + cardStartMarginVertical - newCardMarginVertical);
+                sourceTitle.setY(
+                        textStartY + interpolatedTime * (textTranslationY + 2 * (viewStartPaddingVertical - newPaddingVertical + cardStartMarginVertical - newCardMarginVertical)));
                 sourceTitle.setX(textStartX + viewStartPaddingHorizontal - newPaddingHorizontal);
-                toolbarActions.setAlpha(1.0f - interpolatedTime);
-                sourceExpandContainer.setAlpha(1.0f - interpolatedTime);
+                float newAlpha = 1.0f - interpolatedTime;
+                toolbarActions.setAlpha(newAlpha);
+                sourceExpandContainer.setAlpha(newAlpha);
                 sourceContainer.requestLayout();
                 sourceImage.requestLayout();
                 view.requestLayout();
 
                 if (animateSideBySide) {
-                    viewAdjacent.setAlpha(1.0f - interpolatedTime);
+                    viewAdjacent.setAlpha(newAlpha);
                 }
             }
 
@@ -1198,20 +1241,7 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (needsListReset) {
-                            Parcelable state = layoutManager.onSaveInstanceState();
-                            recyclerSources.setAdapter(null);
-                            recyclerSources.setAdapter(adapterSources);
-                            layoutManager.onRestoreInstanceState(state);
-                            recyclerSources.setClickable(true);
-                            recyclerSources.setEnabled(true);
-                            needsListReset = false;
-                        }
-                    }
-                }, (long) INFO_ANIMATION_TIME / 5);
+                handler.postDelayed(resetRecyclerAnimation, (long) INFO_ANIMATION_TIME / 5);
             }
 
             @Override
@@ -1266,6 +1296,8 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
             }
         });
 
+        Animation buttonAlphaAnimation = new AlphaAnimation(1.0f, 0.0f);
+
         DecelerateInterpolator decelerateInterpolator = new DecelerateInterpolator(1.5f);
 
         animation.setDuration(INFO_ANIMATION_TIME);
@@ -1273,27 +1305,16 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
         titleColorAnimation.setDuration(INFO_ANIMATION_TIME);
         titleShadowAlphaAnimation.setDuration(INFO_ANIMATION_TIME);
         imageOverlayAlphaAnimation.setDuration(INFO_ANIMATION_TIME);
+        buttonAlphaAnimation.setDuration(INFO_ANIMATION_TIME);
 
         animation.setInterpolator(decelerateInterpolator);
         cardColorAnimation.setInterpolator(decelerateInterpolator);
         titleColorAnimation.setInterpolator(decelerateInterpolator);
         titleShadowAlphaAnimation.setInterpolator(decelerateInterpolator);
         imageOverlayAlphaAnimation.setInterpolator(decelerateInterpolator);
+        buttonAlphaAnimation.setInterpolator(decelerateInterpolator);
 
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (needsListReset) {
-                    Parcelable state = layoutManager.onSaveInstanceState();
-                    recyclerSources.setAdapter(null);
-                    recyclerSources.setAdapter(adapterSources);
-                    layoutManager.onRestoreInstanceState(state);
-                    recyclerSources.setClickable(true);
-                    recyclerSources.setEnabled(true);
-                    needsListReset = false;
-                }
-            }
-        }, (long) (INFO_ANIMATION_TIME * 1.1f));
+        handler.postDelayed(resetRecyclerAnimation, (long) (INFO_ANIMATION_TIME * 1.1f));
 
         needsListReset = true;
 
@@ -1301,6 +1322,8 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
             imageOverlayAlphaAnimation.start();
         }
         view.startAnimation(animation);
+        addButton.startAnimation(buttonAlphaAnimation);
+        addButtonBackground.startAnimation(buttonAlphaAnimation);
         cardColorAnimation.start();
         titleColorAnimation.start();
         titleShadowAlphaAnimation.start();
@@ -1345,10 +1368,6 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
 
             case ControllerSources.NO_SOURCES:
                 alertText.setText("Please add a source");
-                Drawable addDrawable = getResources().getDrawable(R.drawable.floating_button_white);
-                addDrawable.setColorFilter(getResources().getColor(R.color.ALERT_TEXT),
-                        PorterDuff.Mode.MULTIPLY);
-                addButtonBackground.setImageDrawable(addDrawable);
                 break;
             case ControllerSources.NO_ACTIVE_SOURCES:
                 alertText.setText("No active sources");

@@ -321,9 +321,6 @@ public class LiveWallpaperService extends GLWallpaperService {
                     @Override
                     public void onConnected(Bundle connectionHint) {
                         isWearConnected = true;
-                        if (AppSettings.useToast()) {
-                            Toast.makeText(LiveWallpaperService.this, "Connected to Wear device", Toast.LENGTH_LONG).show();
-                        }
                     }
                     @Override
                     public void onConnectionSuspended(int cause) {
@@ -428,6 +425,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                         AppSettings.getTimerDuration(),
                         pendingDownloadIntent);
             }
+
         }
         if (AppSettings.useInterval() && AppSettings.getIntervalDuration() > 0 && PendingIntent.getBroadcast(
                 LiveWallpaperService.this,

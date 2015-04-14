@@ -62,16 +62,12 @@
 
     <ImageView
         android:id="@+id/floating_button"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginRight="24dp"
-        android:layout_marginTop="0dp"
         android:background="@drawable/floating_button_circle"
         android:contentDescription="@string/floating_add_button_content_description"
         android:visibility="gone"
@@ -79,16 +75,16 @@
 
     <ImageView
         android:id="@+id/use_directory_button"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
         android:layout_alignBottom="@+id/floating_button"
         android:layout_alignEnd="@+id/floating_button"
         android:layout_alignLeft="@+id/floating_button"
         android:layout_alignRight="@+id/floating_button"
         android:layout_alignStart="@+id/floating_button"
         android:layout_alignTop="@+id/floating_button"
-        android:padding="16dp"
-        android:src="@drawable/ic_check_white_48dp"
+        android:padding="30dp"
+        android:src="@drawable/ic_check_white_24dp"
         android:visibility="gone"
         />
 

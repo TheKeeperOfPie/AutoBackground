@@ -572,16 +572,18 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 folderFragment.setAdapter(adapter);
                 folderFragment.setStartingDirectoryText(startDir.getAbsolutePath());
                 folderFragment.setListener(new FolderFragment.FolderEventListener() {
+                    public Activity dialogActivity;
+
                     @Override
                     public void onUseDirectoryClick() {
                         AppSettings.setDownloadPath(adapter.getDirectory()
                                 .getAbsolutePath());
-                        Toast.makeText(activity,
+                        Toast.makeText(dialogActivity,
                                 "Download path set to: \n" + AppSettings.getDownloadPath(),
                                 Toast.LENGTH_SHORT)
                                 .show();
                         adapter.setFinished();
-                        getActivity().onBackPressed();
+                        dialogActivity.onBackPressed();
                     }
 
                     @Override
@@ -605,6 +607,11 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                         }
 
                         return endDirectory;
+                    }
+
+                    @Override
+                    public void setActivity(Activity activity) {
+                        this.dialogActivity = activity;
                     }
                 });
 

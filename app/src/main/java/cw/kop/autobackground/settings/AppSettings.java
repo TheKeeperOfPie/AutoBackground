@@ -315,6 +315,10 @@ public class AppSettings {
 
     public static int getColorFilterInt(Context context) {
 
+        if (context == null) {
+            return 0xFFDEDEDE;
+        }
+
         switch (getTheme()) {
             default:
             case APP_LIGHT_THEME:
