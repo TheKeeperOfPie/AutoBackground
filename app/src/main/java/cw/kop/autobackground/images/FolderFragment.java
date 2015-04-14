@@ -17,40 +17,44 @@
 package cw.kop.autobackground.images;
 
 import android.app.Activity;
-import android.content.Context;
-import android.net.Uri;
-import android.os.Bundle;
 import android.app.Fragment;
-import android.util.TypedValue;
-import android.view.Gravity;
+import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ListAdapter;
-import android.widget.ListView;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import cw.kop.autobackground.DividerItemDecoration;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.SourceInfoFragment;
 
-public class FolderFragment extends Fragment {
+public class FolderFragment extends Fragment implements FolderCallback {
 
     public static final String USE_DIRECTORY = "useDirectory";
     public static final String SHOW_DIRECTORY_TEXT = "showDirectoryText";
+    private static final int SLIDE_EXIT_TIME = 350;
 
-    private Context context;
+    private Activity activity;
 
-    private ListView fileListView;
+    private RecyclerView recyclerFiles;
+    private RecyclerView.LayoutManager layoutManager;
     private TextView directoryText;
-    private Button useDirectoryButton;
+    private ImageView useDirectoryButton;
     private FolderEventListener listener;
-    private BaseAdapter adapter;
-    private String startDirectoryText;
+    private RecyclerView.Adapter adapter;
+    private String directory;
+    private TextView emptyText;
+    private RecyclerView.AdapterDataObserver adapterDataObserver;
 
     public FolderFragment() {
         // Required empty public constructor
@@ -60,13 +64,14 @@ public class FolderFragment extends Fragment {
         this.listener = listener;
     }
 
-    public void setAdapter(BaseAdapter adapter) {
+    public void setAdapter(RecyclerView.Adapter adapter) {
         this.adapter = adapter;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
     }
 
     @Override
@@ -75,27 +80,27 @@ public class FolderFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_folder, container, false);
 
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        if (displayMetrics.heightPixels > displayMetrics.widthPixels) {
+            layoutManager = new LinearLayoutManager(activity, LinearLayoutManager.VERTICAL,
+                    false);
+        }
+        else {
+            layoutManager = new GridLayoutManager(activity, 2, LinearLayoutManager.VERTICAL, false);
+        }
 
         view.setBackgroundResource(AppSettings.getBackgroundColorResource());
 
-        fileListView = (ListView) view.findViewById(R.id.image_listview);
+        recyclerFiles = (RecyclerView) view.findViewById(R.id.recycler_files);
+        recyclerFiles.setHasFixedSize(true);
+        recyclerFiles.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL_LIST));
+        recyclerFiles.setLayoutManager(layoutManager);
 
-        TextView emptyText = new TextView(context);
-        emptyText.setText("Directory is empty");
-        emptyText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-        emptyText.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-        emptyText.setGravity(Gravity.CENTER_HORIZONTAL);
-
-        LinearLayout emptyLayout = new LinearLayout(context);
-        emptyLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-        emptyLayout.setGravity(Gravity.TOP);
-        emptyLayout.addView(emptyText);
+        emptyText = (TextView) view.findViewById(R.id.empty_text);
 
         directoryText = (TextView) view.findViewById(R.id.directory_text);
-        directoryText.setTextColor(AppSettings.getColorFilterInt(context));
-        directoryText.setText(startDirectoryText);
+        directoryText.setTextColor(AppSettings.getColorFilterInt(activity));
+        directoryText.setText(directory);
         directoryText.setSelected(true);
 
         int backgroundColor;
@@ -108,13 +113,9 @@ public class FolderFragment extends Fragment {
         }
 
         directoryText.setBackgroundColor(backgroundColor);
-        fileListView.setBackgroundColor(backgroundColor);
-        emptyLayout.setBackgroundColor(backgroundColor);
+        recyclerFiles.setBackgroundColor(backgroundColor);
 
-        ((ViewGroup) fileListView.getParent()).addView(emptyLayout, 0);
-        fileListView.setEmptyView(emptyLayout);
-
-        useDirectoryButton = (Button) view.findViewById(R.id.use_directory_button);
+        useDirectoryButton = (ImageView) view.findViewById(R.id.use_directory_button);
 
         if (getArguments() != null) {
             if (getArguments().getBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true)) {
@@ -127,46 +128,136 @@ public class FolderFragment extends Fragment {
                         listener.onUseDirectoryClick();
                     }
                 });
+                useDirectoryButton.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        Toast.makeText(activity, "Use this directory", Toast.LENGTH_LONG).show();
+                        return true;
+                    }
+                });
+                view.findViewById(R.id.floating_button).setVisibility(View.VISIBLE);
                 useDirectoryButton.setVisibility(View.VISIBLE);
             }
         }
 
-        fileListView.setAdapter(adapter);
-        fileListView.setOnItemClickListener(listener);
+        adapterDataObserver = new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                emptyText.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+            }
+        };
+
+        recyclerFiles.setAdapter(adapter);
 
         return view;
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        adapter.registerAdapterDataObserver(adapterDataObserver);
+        emptyText.setVisibility(adapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+    }
+
+    @Override
+    public void onPause() {
+        adapter.unregisterAdapterDataObserver(adapterDataObserver);
+        super.onPause();
+    }
+
+    @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        context = activity;
+        this.activity = activity;
+        listener.setActivity(activity);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        context = null;
+        activity = null;
     }
 
-    public boolean onBackPressed() {
-        return listener.onBackPressed();
+    public void onBackPressed() {
+        if (listener == null) {
+            getFragmentManager().popBackStack();
+        }
+
+        if (listener.onBackPressed()) {
+
+            final int screenHeight = getResources().getDisplayMetrics().heightPixels;
+            final View fragmentView = getView();
+
+            if (fragmentView != null) {
+                final float viewStartY = getView().getY();
+
+                Animation animation = new Animation() {
+                    @Override
+                    protected void applyTransformation(float interpolatedTime, Transformation t) {
+                        fragmentView.setY((screenHeight - viewStartY) * interpolatedTime + viewStartY);
+                    }
+
+                    @Override
+                    public boolean willChangeBounds() {
+                        return true;
+                    }
+                };
+
+                animation.setAnimationListener(new Animation.AnimationListener() {
+                    @Override
+                    public void onAnimationStart(Animation animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        getFragmentManager().popBackStack();
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {
+
+                    }
+                });
+
+                animation.setDuration(SLIDE_EXIT_TIME);
+                getView().startAnimation(animation);
+            }
+            else {
+                getFragmentManager().popBackStack();
+            }
+        }
     }
 
     public void setStartingDirectoryText(String text) {
-        startDirectoryText = text;
+        directory = text;
     }
 
     public void setDirectoryText(String text) {
+        directory = text;
         directoryText.setText(text);
     }
 
-    public interface FolderEventListener extends AdapterView.OnItemClickListener {
+    @Override
+    public float getItemWidth() {
+        if (layoutManager instanceof GridLayoutManager) {
+            return recyclerFiles.getWidth() / ((GridLayoutManager) layoutManager).getSpanCount();
+        }
+        return recyclerFiles.getWidth();
+    }
+
+    @Override
+    public void onItemClick(int position) {
+        listener.onItemClick(position);
+    }
+
+    public interface FolderEventListener {
 
         void onUseDirectoryClick();
-        void onItemClick(AdapterView<?> parent, View view, int positionInList, long id);
+        void onItemClick(int positionInList);
         boolean onBackPressed();
-
+        void setActivity(Activity activity);
     }
 
 }

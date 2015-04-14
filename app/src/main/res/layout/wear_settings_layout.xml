@@ -21,63 +21,62 @@
     android:layout_height="match_parent"
     >
 
-    <Button
-        android:id="@+id/sync_button"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_alignBottom="@+id/watch_face_background"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/button"
-        android:minWidth="64dp"
-        android:paddingBottom="6dp"
-        android:paddingEnd="48dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:paddingTop="6dp"
-        android:textAllCaps="true"
-        android:textAppearance="?android:textAppearanceMedium"
-        android:textColor="@color/ACCENT_OPAQUE"
-        />
-
-    <RelativeLayout
-        android:id="@+id/watch_face_container"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/watch_face_background"
-        android:layout_alignBottom="@+id/watch_face_background"
-        android:layout_alignStart="@+id/watch_face_background"
-        android:layout_alignLeft="@+id/watch_face_background"
-        android:layout_alignEnd="@+id/watch_face_background"
-        android:layout_alignRight="@+id/watch_face_background"
-        >
-
-        <SurfaceView
-            android:id="@+id/surface_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
-
-    </RelativeLayout>
-
-    <ImageView
-        android:id="@+id/watch_face_background"
+    <FrameLayout
+        android:id="@+id/watch_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:src="@drawable/watch_face_square"
-        />
+        >
+
+        <ImageView
+            android:id="@+id/watch_face_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/watch_face_square"
+            />
+
+        <Button
+            android:id="@+id/sync_button"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:minWidth="64dp"
+            android:paddingBottom="6dp"
+            android:paddingEnd="48dp"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="6dp"
+            android:textAllCaps="true"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textColor="@color/ACCENT_OPAQUE"
+            />
+
+        <RelativeLayout
+            android:id="@+id/watch_face_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+
+            <SurfaceView
+                android:id="@+id/surface_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+
+        </RelativeLayout>
+
+    </FrameLayout>
 
     <View
         android:id="@+id/list_border"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_below="@id/watch_face_background"
+        android:layout_below="@id/watch_container"
         android:minHeight="1px"
         android:background="@color/DARK_BLUE_OPAQUE"
         />
@@ -102,5 +101,9 @@
         android:layout_alignTop="@id/watch_options_list"
         android:layout_below="@id/list_border"
         />
+
+    <!-- TODO: Add sync_button and background to separate container to make button wrap_content in width properly, removing the aligns-->
+
+
 
 </cw.kop.autobackground.CustomRelativeLayout>

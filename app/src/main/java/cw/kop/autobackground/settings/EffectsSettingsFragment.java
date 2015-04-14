@@ -41,7 +41,6 @@ import cw.kop.autobackground.CustomNumberPicker;
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.EffectPreference;
 import cw.kop.autobackground.R;
-import cw.kop.autobackground.settings.AppSettings;
 
 public class EffectsSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
 

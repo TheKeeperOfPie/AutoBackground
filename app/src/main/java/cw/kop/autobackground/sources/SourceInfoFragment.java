@@ -20,15 +20,21 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +47,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -57,6 +64,14 @@ import com.dropbox.client2.session.AppKeyPair;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.ParentReference;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -73,16 +88,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
+import cw.kop.autobackground.BuildConfig;
 import cw.kop.autobackground.CustomSwitchPreference;
 import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
 import cw.kop.autobackground.files.FileHandler;
-import cw.kop.autobackground.images.AlbumAdapter;
-import cw.kop.autobackground.images.DropboxAdapter;
+import cw.kop.autobackground.images.AdapterAlbum;
+import cw.kop.autobackground.images.AdapterDrive;
+import cw.kop.autobackground.images.AdapterDropbox;
+import cw.kop.autobackground.images.AdapterImages;
 import cw.kop.autobackground.images.FolderFragment;
-import cw.kop.autobackground.images.LocalImageAdapter;
 import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
 
@@ -94,11 +113,17 @@ public class SourceInfoFragment extends PreferenceFragment {
     private static final String TAG = SourceInfoFragment.class.getCanonicalName();
     private static final int FADE_IN_TIME = 350;
     private static final int SLIDE_EXIT_TIME = 350;
+    private static final int DRIVE_RESOLVE_REQUEST_CODE = 9005;
+    private static final int REQUEST_DRIVE_ACCOUNT = 9005;
+    private static final int REQUEST_DRIVE_AUTH = 9006;
+    public static final String LAYOUT_LANDSCAPE = "layoutLandscape";
 
-    private Context appContext;
+    private Activity appContext;
     private Drawable imageDrawable;
 
     private RelativeLayout settingsContainer;
+    private LinearLayout sortContainer;
+    private RelativeLayout numContainer;
     private TextView sourceSpinnerText;
     private Spinner sourceSpinner;
     private ImageView sourceImage;
@@ -106,7 +131,10 @@ public class SourceInfoFragment extends PreferenceFragment {
     private EditText sourcePrefix;
     private EditText sourceData;
     private EditText sourceSuffix;
+    private EditText sourceNumPrefix;
     private EditText sourceNum;
+    private TextView sourceSortText;
+    private Spinner sourceSortSpinner;
     private Switch sourceUse;
     private Button cancelButton;
     private Button saveButton;
@@ -123,24 +151,32 @@ public class SourceInfoFragment extends PreferenceFragment {
     private int endMinute;
     private CustomSwitchPreference timePref;
     private Handler handler;
-    private Bundle oldState;
     private View headerView;
 
     private String folderData;
 
     private DropboxAPI<AndroidAuthSession> dropboxAPI;
+    private SourceSortSpinnerAdapter sortAdapter;
+    private Listener listener;
+    private Drive drive;
+    private GoogleAccountCredential driveCredential;
+    private boolean needsRecycle;
+    private boolean resumed;
+
+    public SourceInfoFragment() {
+
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences_source);
         handler = new Handler();
-        setRetainInstance(true);
         AppKeyPair appKeys = new AppKeyPair(ApiKeys.DROPBOX_KEY, ApiKeys.DROPBOX_SECRET);
         AndroidAuthSession session = new AndroidAuthSession(appKeys);
         dropboxAPI = new DropboxAPI<>(session);
 
-        if (AppSettings.useDropboxAccount() && !AppSettings.getDropboxAccountToken().equals("")) {
+        if (AppSettings.useDropboxAccount() && !TextUtils.isEmpty(AppSettings.getDropboxAccountToken())) {
             dropboxAPI.getSession().setOAuth2AccessToken(AppSettings.getDropboxAccountToken());
         }
     }
@@ -149,11 +185,13 @@ public class SourceInfoFragment extends PreferenceFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         appContext = activity;
+        listener = (Listener) activity;
     }
 
     @Override
     public void onDetach() {
         appContext = null;
+        listener = null;
         super.onDetach();
     }
 
@@ -162,13 +200,43 @@ public class SourceInfoFragment extends PreferenceFragment {
             ViewGroup container,
             Bundle savedInstanceState) {
 
+        int screenHeight = container.getHeight();
+        int screenWidth = container.getWidth();
+
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+
+        if (screenWidth < 1 || screenHeight < 1) {
+            screenWidth = displayMetrics.widthPixels;
+            screenHeight = displayMetrics.heightPixels;
+        }
+
         Bundle arguments = getArguments();
         sourcePosition = (Integer) arguments.get(Source.POSITION);
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
-        View view = inflater.inflate(R.layout.source_info_fragment, container, false);
-        headerView = inflater.inflate(R.layout.source_info_header, null, false);
+        int layout;
 
+        if (screenHeight > screenWidth) {
+            layout = R.layout.fragment_source_info_portrait;
+        }
+        else {
+            layout = arguments.getInt(LAYOUT_LANDSCAPE, R.layout.fragment_source_info_portrait);
+        }
+
+        View view = inflater.inflate(layout, container, false);
+        ListView listView = (ListView) view.findViewById(android.R.id.list);
+
+        if (layout == R.layout.fragment_source_info_portrait) {
+            headerView = inflater.inflate(R.layout.source_info_header, null, false);
+            listView.addHeaderView(headerView);
+        }
+        else {
+            headerView = view.findViewById(R.id.source_info_header);
+            screenWidth /= 2;
+        }
+
+        sortContainer = (LinearLayout) headerView.findViewById(R.id.source_sort_container);
+        numContainer = (RelativeLayout) headerView.findViewById(R.id.source_num_container);
         settingsContainer = (RelativeLayout) headerView.findViewById(R.id.source_settings_container);
 
         sourceImage = (ImageView) headerView.findViewById(R.id.source_image);
@@ -176,10 +244,16 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourcePrefix = (EditText) headerView.findViewById(R.id.source_data_prefix);
         sourceData = (EditText) headerView.findViewById(R.id.source_data);
         sourceSuffix = (EditText) headerView.findViewById(R.id.source_data_suffix);
+        sourceNumPrefix = (EditText) headerView.findViewById(R.id.source_num_prefix);
         sourceNum = (EditText) headerView.findViewById(R.id.source_num);
+        sourceSortText = (TextView) headerView.findViewById(R.id.source_data_sort_text);
+        sourceSortSpinner = (Spinner) headerView.findViewById(R.id.source_data_sort_spinner);
+
+        sortAdapter = new SourceSortSpinnerAdapter(appContext, new ArrayList<SortData>());
+        sourceSortSpinner.setAdapter(sortAdapter);
 
         ViewGroup.LayoutParams params = sourceImage.getLayoutParams();
-        params.height = (int) ((container.getWidth() - 2f * getResources().getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
+        params.height = (int) ((headerView.getWidth() - 2f * getResources().getDimensionPixelSize(R.dimen.side_margin)) / 16f * 9);
         sourceImage.setLayoutParams(params);
 
         cancelButton = (Button) view.findViewById(R.id.cancel_button);
@@ -206,7 +280,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                 switch (type) {
 
                     case AppSettings.FOLDER:
-                    case AppSettings.GOOGLE_ALBUM:
+                    case AppSettings.GOOGLE_PLUS_ALBUM:
+                    case AppSettings.GOOGLE_DRIVE_ALBUM:
                     case AppSettings.DROPBOX_FOLDER:
                         selectSource(type);
                         break;
@@ -232,6 +307,10 @@ public class SourceInfoFragment extends PreferenceFragment {
         sourceSpinnerText = (TextView) headerView.findViewById(R.id.source_spinner_text);
         sourceSpinner = (Spinner) headerView.findViewById(R.id.source_spinner);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            sourceSpinner.setPopupBackgroundResource(AppSettings.getDialogColorResource());
+        }
+
         timePref = (CustomSwitchPreference) findPreference("source_time");
         timePref.setChecked(arguments.getBoolean(Source.USE_TIME));
         timePref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -244,8 +323,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                 }
 
                 DialogFactory.TimeDialogListener startTimeListener = new DialogFactory.TimeDialogListener() {
-
-
 
                     @Override
                     public void onTimeSet(TimePicker view, int hour, int minute) {
@@ -292,70 +369,55 @@ public class SourceInfoFragment extends PreferenceFragment {
             sourceImage.setVisibility(View.GONE);
             sourceSpinnerText.setVisibility(View.VISIBLE);
             sourceSpinner.setVisibility(View.VISIBLE);
+            sourceNumPrefix.setVisibility(View.GONE);
+
+            type = AppSettings.WEBSITE;
 
             SourceSpinnerAdapter adapter = new SourceSpinnerAdapter(appContext,
                     R.layout.spinner_row,
                     Arrays.asList(getResources().getStringArray(R.array.source_menu)));
             sourceSpinner.setAdapter(adapter);
-            sourceSpinner.setSelection(0);
-            sourceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent,
-                        View view,
-                        int position,
-                        long id) {
 
-                    selectSource(getTypeFromPosition(position));
-                    Log.i(TAG, "Spinner launched folder fragment");
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-
-                }
-            });
-
-            type = AppSettings.WEBSITE;
-            prefix = AppSettings.getSourceDataPrefix(type);
-            hint = AppSettings.getSourceDataHint(type);
-            suffix = AppSettings.getSourceDataSuffix(type);
-
-            startHour = 0;
-            startMinute = 0;
-            endHour = 0;
-            endMinute = 0;
         }
         else {
             sourceImage.setVisibility(View.VISIBLE);
             sourceSpinnerText.setVisibility(View.GONE);
             sourceSpinner.setVisibility(View.GONE);
+            sourceSortText.setVisibility(View.VISIBLE);
+            sourceSortSpinner.setVisibility(View.VISIBLE);
+            sourceNumPrefix.setVisibility(View.VISIBLE);
 
             type = arguments.getString(Source.TYPE);
             setFocusBlocks();
 
+            List<SortData> sortDataList = AppSettings.getSourceSortList(type);
+            sortAdapter.setSortData(sortDataList);
+            if (!sortDataList.isEmpty()) {
+                int index = sortDataList.indexOf(new SortData(arguments.getString(Source.SORT, ""), "", ""));
+                if (index >= 0) {
+                    sourceSortSpinner.setSelection(index);
+                }
+            }
+
             folderData = arguments.getString(Source.DATA);
             String data = folderData;
-
-            hint = AppSettings.getSourceDataHint(type);
-            prefix = AppSettings.getSourceDataPrefix(type);
-            suffix = AppSettings.getSourceDataSuffix(type);
-
-            switch (type) {
-                case AppSettings.FOLDER:
-                    data = Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER));
-                    break;
-
+            if (type.equals(AppSettings.FOLDER)) {
+                data = Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER));
             }
 
             sourceTitle.setText(arguments.getString(Source.TITLE));
-
-            if (getArguments().getInt(Source.NUM, -1) >= 0) {
-                sourceNum.setText("" + arguments.getInt(Source.NUM));
-            }
             sourceData.setText(data);
+            sourceNum.setText(getArguments().getInt(Source.NUM, -1) >= 0 ? "" + arguments.getInt(Source.NUM) : "");
 
             if (imageDrawable != null) {
                 sourceImage.setImageDrawable(imageDrawable);
+            }
+            else if (arguments.containsKey(Source.IMAGE_FILE)) {
+                needsRecycle = true;
+                sourceImage.setImageBitmap(ThumbnailUtils.extractThumbnail(
+                        BitmapFactory.decodeFile(arguments.getString(Source.IMAGE_FILE)),
+                        screenWidth, (int) (screenWidth / 16f * 9f),
+                        ThumbnailUtils.OPTIONS_RECYCLE_INPUT));
             }
 
             boolean showPreview = arguments.getBoolean(Source.PREVIEW);
@@ -385,6 +447,9 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         }
 
+        sourceImage.getLayoutParams().height = (int) (screenWidth / 16 * 9);
+        sourceImage.requestLayout();
+
         setDataWrappers();
 
         sourceUse = (Switch) headerView.findViewById(R.id.source_use_switch);
@@ -397,9 +462,6 @@ public class SourceInfoFragment extends PreferenceFragment {
             view.setBackgroundColor(getResources().getColor(R.color.DARK_THEME_BACKGROUND));
         }
 
-        ListView listView = (ListView) view.findViewById(android.R.id.list);
-        listView.addHeaderView(headerView);
-
         if (savedInstanceState != null) {
             if (arguments.getString(Source.TYPE, "").length() > 0) {
                 sourceSpinner.setSelection(getPositionOfType(savedInstanceState.getString(Source.TYPE,
@@ -410,16 +472,30 @@ public class SourceInfoFragment extends PreferenceFragment {
             sourceNum.setText(savedInstanceState.getString(Source.NUM, ""));
         }
 
+        sourceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent,
+                                       View view,
+                                       int position,
+                                       long id) {
+
+                Log.d(TAG, "onItemSelected: " + position);
+                if (resumed) {
+                    selectSource(getTypeFromPosition(position));
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
         return view;
     }
 
     private int getPositionOfType(String type) {
         return Arrays.asList(getResources().getStringArray(R.array.source_menu)).indexOf(type);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
@@ -429,6 +505,9 @@ public class SourceInfoFragment extends PreferenceFragment {
         outState.putString(Source.TITLE, String.valueOf(sourceTitle.getText()));
         outState.putString(Source.DATA, String.valueOf(sourceData.getText()));
         outState.putString(Source.NUM, String.valueOf(sourceNum.getText()));
+        outState.putString(Source.SORT, sortAdapter.getCount() > 0 ?
+                ((SortData) sortAdapter.getItem(
+                        sourceSortSpinner.getSelectedItemPosition())).getTitle() : "");
 
         super.onSaveInstanceState(outState);
     }
@@ -436,6 +515,8 @@ public class SourceInfoFragment extends PreferenceFragment {
     @Override
     public void onResume() {
         super.onResume();
+
+        resumed = true;
 
         if (dropboxAPI.getSession().authenticationSuccessful()) {
             try {
@@ -472,6 +553,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                     sourceSpinner.setAlpha(interpolatedTime);
                     sourceTitle.setAlpha(interpolatedTime);
                     settingsContainer.setAlpha(interpolatedTime);
+                    sortContainer.setAlpha(interpolatedTime);
+                    numContainer.setAlpha(interpolatedTime);
                     sourceUse.setAlpha(interpolatedTime);
 
                 }
@@ -483,6 +566,8 @@ public class SourceInfoFragment extends PreferenceFragment {
                 protected void applyTransformation(float interpolatedTime, Transformation t) {
 
                     settingsContainer.setAlpha(interpolatedTime);
+                    sortContainer.setAlpha(interpolatedTime);
+                    numContainer.setAlpha(interpolatedTime);
                     sourceUse.setAlpha(interpolatedTime);
 
                 }
@@ -495,9 +580,26 @@ public class SourceInfoFragment extends PreferenceFragment {
 
     }
 
+
+
+    @Override
+    public void onStop() {
+
+        if (needsRecycle && sourceImage.getDrawable() instanceof BitmapDrawable) {
+            ((BitmapDrawable) sourceImage.getDrawable()).getBitmap().recycle();
+        }
+
+        super.onStop();
+    }
+
     private void saveSource() {
 
-        final Intent sourceIntent = new Intent();
+        if (FileHandler.isDownloading()) {
+            Toast.makeText(appContext,
+                    "Cannot add/edit source while downloading",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         String title = sourceTitle.getText().toString();
         String data = sourceData.getText().toString();
@@ -506,20 +608,20 @@ public class SourceInfoFragment extends PreferenceFragment {
             data = folderData;
         }
 
-        if (title.equals("")) {
+        if (TextUtils.isEmpty(title)) {
             Toast.makeText(appContext, "Title cannot be empty", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (data.equals("")) {
+        if (TextUtils.isEmpty(data)) {
             Toast.makeText(appContext, "Data cannot be empty", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (sourceNum.getText().toString().equals("")) {
+        if (TextUtils.isEmpty(sourceNum.getText().toString())) {
             Toast.makeText(appContext, "# of images cannot be empty", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        int num = 0;
+        int num;
         try {
             num = Integer.parseInt(sourceNum.getText().toString());
         }
@@ -537,45 +639,39 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         }
 
-        if (sourcePosition == -1) {
+        Source source = new Source();
+        source.setType(type);
+        source.setTitle(sourceTitle.getText()
+                .toString());
+        source.setData(data);
+        source.setNum(num);
+        source.setUse(sourceUse.isChecked());
+        source.setPreview(
+                ((CustomSwitchPreference) findPreference("source_show_preview")).isChecked());
+        source.setUseTime(timePref.isChecked());
+        source.setTime(String.format("%02d:%02d - %02d:%02d",
+                startHour, startMinute, endHour, endMinute));
+        source.setSort(sourceSortSpinner.getCount() > 0 ?
+                ((SortData) sourceSortSpinner.getSelectedItem()).getTitle() : "");
+        Log.d(TAG, "Sort set to " + source.getSort());
 
-            if (FileHandler.isDownloading()) {
-                Toast.makeText(appContext,
-                        "Cannot add source while downloading",
-                        Toast.LENGTH_SHORT).show();
+        if (sourcePosition == -1) {
+            if (!listener.addSource(source)) {
+                listener.sendToast("Error: Title in use.\nPlease use a different title.");
                 return;
             }
-
-            sourceIntent.setAction(SourceListFragment.ADD_ENTRY);
-
         }
         else {
-
-            if (!getArguments().getString(Source.TITLE).equals(title)) {
-                FileHandler.renameFolder(getArguments().getString(Source.TITLE), title);
+            if (listener.saveSource(source, sourcePosition)) {
+                if (!getArguments().getString(Source.TITLE).equals(title)) {
+                    FileHandler.renameFolder(getArguments().getString(Source.TITLE), title);
+                }
             }
-
-            if (FileHandler.isDownloading()) {
-                Toast.makeText(appContext,
-                        "Cannot edit while downloading",
-                        Toast.LENGTH_SHORT).show();
+            else {
+                listener.sendToast("Error: Title in use.\nPlease use a different title.");
                 return;
             }
-
-            sourceIntent.setAction(SourceListFragment.SET_ENTRY);
         }
-
-        sourceIntent.putExtra(Source.TYPE, type);
-        sourceIntent.putExtra(Source.TITLE, sourceTitle.getText().toString());
-        sourceIntent.putExtra(Source.DATA, data);
-        sourceIntent.putExtra(Source.NUM, num);
-        sourceIntent.putExtra(Source.POSITION, sourcePosition);
-        sourceIntent.putExtra(Source.USE, sourceUse.isChecked());
-        sourceIntent.putExtra(Source.PREVIEW,
-                ((CustomSwitchPreference) findPreference("source_show_preview")).isChecked());
-        sourceIntent.putExtra(Source.USE_TIME, timePref.isChecked());
-        sourceIntent.putExtra(Source.TIME, String.format("%02d:%02d - %02d:%02d",
-                startHour, startMinute, endHour, endMinute));
 
         try {
             InputMethodManager im = (InputMethodManager) appContext.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -585,7 +681,6 @@ public class SourceInfoFragment extends PreferenceFragment {
         catch (Exception e) {
             e.printStackTrace();
         }
-
 
         final int screenHeight = getResources().getDisplayMetrics().heightPixels;
         final View fragmentView = getView();
@@ -614,7 +709,6 @@ public class SourceInfoFragment extends PreferenceFragment {
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    LocalBroadcastManager.getInstance(appContext).sendBroadcast(sourceIntent);
                     getFragmentManager().popBackStack();
                 }
 
@@ -626,9 +720,6 @@ public class SourceInfoFragment extends PreferenceFragment {
 
             animation.setDuration(SLIDE_EXIT_TIME);
             getView().startAnimation(animation);
-        }
-        else {
-            LocalBroadcastManager.getInstance(appContext).sendBroadcast(sourceIntent);
         }
 
     }
@@ -646,16 +737,14 @@ public class SourceInfoFragment extends PreferenceFragment {
             final int num) {
 
         this.type = type;
-        this.prefix = AppSettings.getSourceDataPrefix(type);
-        this.hint = AppSettings.getSourceDataHint(type);
-        this.suffix = AppSettings.getSourceDataSuffix(type);
         this.folderData = data;
 
         handler.post(new Runnable() {
             @Override
             public void run() {
                 sourceTitle.setText(title);
-                sourceData.setText(SourceInfoFragment.this.type.equals(AppSettings.FOLDER) ? Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER)) : data);
+                sourceData.setText(SourceInfoFragment.this.type.equals(AppSettings.FOLDER) ?
+                        Arrays.toString(folderData.split(AppSettings.DATA_SPLITTER)) : data);
                 sourceNum.setText(num >= 0 ? "" + num : "");
                 setDataWrappers();
             }
@@ -664,6 +753,23 @@ public class SourceInfoFragment extends PreferenceFragment {
     }
 
     private void setDataWrappers() {
+
+        prefix = AppSettings.getSourceDataPrefix(type);
+        hint = AppSettings.getSourceDataHint(type);
+        suffix = AppSettings.getSourceDataSuffix(type);
+
+        List<SortData> sortDataList = AppSettings.getSourceSortList(type);
+        sortAdapter.setSortData(sortDataList);
+
+        if (sortDataList.isEmpty()) {
+            sourceSortText.setVisibility(View.GONE);
+            sourceSortSpinner.setVisibility(View.GONE);
+        }
+        else {
+            sourceSortText.setVisibility(View.VISIBLE);
+            sourceSortSpinner.setVisibility(View.VISIBLE);
+        }
+
         sourcePrefix.setText(prefix);
         sourceSuffix.setText(suffix);
         if (prefix.length() > 0) {
@@ -692,13 +798,13 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         if (!type.equals(newType) &&
                 (type.equals(AppSettings.FOLDER) ||
-                type.equals(AppSettings.GOOGLE_ALBUM) ||
+                type.equals(AppSettings.GOOGLE_PLUS_ALBUM) ||
+                type.equals(AppSettings.GOOGLE_DRIVE_ALBUM) ||
                 type.equals(AppSettings.DROPBOX_FOLDER))) {
             sourceTitle.setText("");
             sourceData.setText("");
             sourceNum.setText("");
         }
-
         type = newType;
 
         switch (type) {
@@ -719,13 +825,53 @@ public class SourceInfoFragment extends PreferenceFragment {
                 break;
             case AppSettings.IMGUR_ALBUM:
                 break;
-            case AppSettings.GOOGLE_ALBUM:
-                if (AppSettings.getGoogleAccountName().equals("")) {
+            case AppSettings.GOOGLE_PLUS_ALBUM:
+                if (TextUtils.isEmpty(AppSettings.getGoogleAccountName())) {
                     startActivityForResult(GoogleAccount.getPickerIntent(),
                             GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN);
                 }
                 else if (getFragmentManager().findFragmentByTag("folder_fragment") == null) {
                     new PicasaAlbumTask().execute();
+                }
+                break;
+            case AppSettings.GOOGLE_DRIVE_ALBUM:
+                if (drive == null) {
+                    driveCredential = GoogleAccountCredential.usingOAuth2(
+                            appContext,
+                            Collections.singleton(DriveScopes.DRIVE));
+                    drive = new Drive.Builder(AndroidHttp.newCompatibleTransport(),
+                            GsonFactory.getDefaultInstance(), driveCredential)
+                            .setApplicationName(appContext.getResources()
+                                    .getString(R.string.app_name) + "/" + BuildConfig.VERSION_NAME)
+                            .build();
+                }
+                if (TextUtils.isEmpty(AppSettings.getDriveAccountName())) {
+                    startActivityForResult(driveCredential.newChooseAccountIntent(), REQUEST_DRIVE_ACCOUNT);
+                }
+                else {
+                    driveCredential.setSelectedAccountName(AppSettings.getDriveAccountName());
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                drive.about()
+                                        .get()
+                                        .execute();
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showDriveFragment();
+                                    }
+                                });
+                            }
+                            catch (UserRecoverableAuthIOException e) {
+                                startActivityForResult(e.getIntent(), REQUEST_DRIVE_AUTH);
+                            }
+                            catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
                 }
                 break;
             case AppSettings.TUMBLR_BLOG:
@@ -735,7 +881,7 @@ public class SourceInfoFragment extends PreferenceFragment {
             case AppSettings.REDDIT_SUBREDDIT:
                 break;
             case AppSettings.DROPBOX_FOLDER:
-                if (!AppSettings.useDropboxAccount() || AppSettings.getDropboxAccountToken().equals("") || !dropboxAPI.getSession().isLinked()) {
+                if (!AppSettings.useDropboxAccount() || TextUtils.isEmpty(AppSettings.getDropboxAccountToken()) || !dropboxAPI.getSession().isLinked()) {
                     AppSettings.setUseDropboxAccount(false);
                     AppSettings.setDropboxAccountToken("");
                     dropboxAPI.getSession().startOAuth2Authentication(appContext);
@@ -746,10 +892,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                 break;
             default:
         }
-
-        prefix = AppSettings.getSourceDataPrefix(type);
-        hint = AppSettings.getSourceDataHint(type);
-        suffix = AppSettings.getSourceDataSuffix(type);
 
         setFocusBlocks();
         setDataWrappers();
@@ -763,8 +905,8 @@ public class SourceInfoFragment extends PreferenceFragment {
 
         switch (type) {
             case AppSettings.FOLDER:
-            case AppSettings.GOOGLE_ALBUM:
                 focusNum = false;
+            case AppSettings.GOOGLE_DRIVE_ALBUM:
             case AppSettings.DROPBOX_FOLDER:
                 focusData = false;
                 break;
@@ -776,6 +918,65 @@ public class SourceInfoFragment extends PreferenceFragment {
 
     @Override
     public void onActivityResult(int requestCode, int responseCode, Intent intent) {
+
+        if (requestCode == REQUEST_DRIVE_AUTH && responseCode == Activity.RESULT_OK) {
+            String accountName = intent.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
+            if (!TextUtils.isEmpty(accountName)) {
+                AppSettings.setDriveAccountName(accountName);
+                AppSettings.setUseGoogleDriveAccount(true);
+                driveCredential.setSelectedAccountName(accountName);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // Send an about request to check if app is authenticated
+                            drive.about().get().execute();
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showDriveFragment();
+                                }
+                            });
+                        }
+                        catch (UserRecoverableAuthIOException e) {
+                            startActivityForResult(e.getIntent(), REQUEST_DRIVE_AUTH);
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
+        }
+        else if (requestCode == REQUEST_DRIVE_ACCOUNT && responseCode == Activity.RESULT_OK) {
+            String accountName = intent.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
+            if (!TextUtils.isEmpty(accountName)) {
+                AppSettings.setDriveAccountName(accountName);
+                AppSettings.setUseGoogleDriveAccount(true);
+                driveCredential.setSelectedAccountName(accountName);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // Send an about request to check if app is authenticated
+                            drive.about().get().execute();
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showDriveFragment();
+                                }
+                            });
+                        }
+                        catch (UserRecoverableAuthIOException e) {
+                            startActivityForResult(e.getIntent(), REQUEST_DRIVE_AUTH);
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
+        }
 
         if (requestCode == GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN) {
             if (intent != null && responseCode == Activity.RESULT_OK) {
@@ -852,11 +1053,13 @@ public class SourceInfoFragment extends PreferenceFragment {
         Bundle arguments = new Bundle();
         arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
         arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
-        final LocalImageAdapter adapter = new LocalImageAdapter(appContext, topDir, startDir);
+        final AdapterImages adapter = new AdapterImages(appContext, topDir, startDir, folderFragment);
         folderFragment.setArguments(arguments);
         folderFragment.setAdapter(adapter);
         folderFragment.setStartingDirectoryText(startDir.getAbsolutePath());
         folderFragment.setListener(new FolderFragment.FolderEventListener() {
+            private Activity dialogActivity;
+
             @Override
             public void onUseDirectoryClick() {
                 DialogFactory.ActionDialogListener listener = new DialogFactory.ActionDialogListener() {
@@ -873,13 +1076,24 @@ public class SourceInfoFragment extends PreferenceFragment {
                     }
                 };
 
-                DialogFactory.showActionDialog(appContext,
+                DialogFactory.showActionDialog(dialogActivity,
                         "",
                         "Include subdirectories?",
                         listener,
                         R.string.cancel_button,
                         R.string.no_button,
                         R.string.yes_button);
+            }
+
+            @Override
+            public void onItemClick(int positionInList) {
+                File selectedFile = adapter.getItem(positionInList);
+
+                if (selectedFile.exists() && selectedFile.isDirectory()) {
+                    adapter.setDirectory(selectedFile);
+                    folderFragment.setDirectoryText(adapter.getDirectory()
+                            .getAbsolutePath());
+                }
             }
 
             private void setAppDirectory(boolean useSubdirectories) {
@@ -890,7 +1104,8 @@ public class SourceInfoFragment extends PreferenceFragment {
 
                 if (useSubdirectories) {
 
-                    Toast.makeText(appContext, "Loading subdirectories...", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(dialogActivity, "Loading subdirectories...", Toast.LENGTH_SHORT)
+                            .show();
 
                     new Thread(new Runnable() {
                         @Override
@@ -907,22 +1122,36 @@ public class SourceInfoFragment extends PreferenceFragment {
                             }
 
                             if (isAdded()) {
-                                setData(AppSettings.FOLDER,
-                                        dir.getName(),
-                                        stringBuilder.toString(),
-                                        numImages);
+
+                                SourceInfoFragment sourceInfoFragment = (SourceInfoFragment) dialogActivity.getFragmentManager().findFragmentByTag("sourceInfoFragment");
+
+                                if (sourceInfoFragment != null) {
+                                    sourceInfoFragment.setData(AppSettings.FOLDER,
+                                            dir.getName(),
+                                            stringBuilder.toString(),
+                                            numImages);
+                                }
+                                dialogActivity = null;
                             }
                         }
                     }).start();
+                    adapter.setFinished();
+                    dialogActivity.onBackPressed();
                 }
                 else {
-                    setData(AppSettings.FOLDER,
-                            dir.getName(),
-                            dir.getAbsolutePath(),
-                            dir.listFiles(filenameFilter) != null ? dir.listFiles(filenameFilter).length : 0);
+                    SourceInfoFragment sourceInfoFragment = (SourceInfoFragment) dialogActivity.getFragmentManager().findFragmentByTag("sourceInfoFragment");
+
+                    if (sourceInfoFragment != null) {
+                        sourceInfoFragment.setData(AppSettings.FOLDER,
+                                dir.getName(),
+                                dir.getAbsolutePath(),
+                                dir.listFiles(filenameFilter) != null ?
+                                        dir.listFiles(filenameFilter).length : 0);
+                    }
+                    adapter.setFinished();
+                    dialogActivity.onBackPressed();
+                    dialogActivity = null;
                 }
-                adapter.setFinished();
-                getActivity().onBackPressed();
             }
 
             private ArrayList<File> getAllDirectories(File dir) {
@@ -946,26 +1175,23 @@ public class SourceInfoFragment extends PreferenceFragment {
             }
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
-                File selectedFile = adapter.getItem(positionInList);
-
-                if (selectedFile.exists() && selectedFile.isDirectory()) {
-                    adapter.setDirectory(selectedFile);
-                    folderFragment.setDirectoryText(adapter.getDirectory().getAbsolutePath());
-                }
-            }
-
-            @Override
             public boolean onBackPressed() {
 
                 boolean endDirectory = adapter.backDirectory();
-                folderFragment.setDirectoryText(adapter.getDirectory().getAbsolutePath());
+                folderFragment.setDirectoryText(adapter.getDirectory()
+                        .getAbsolutePath());
 
                 return endDirectory;
+            }
+
+            @Override
+            public void setActivity(Activity activity) {
+                this.dialogActivity = activity;
             }
         });
 
         getFragmentManager().beginTransaction()
+                .setCustomAnimations(R.animator.none, R.animator.slide_to_bottom, R.animator.none, R.animator.slide_to_bottom)
                 .add(R.id.content_frame, folderFragment, "folder_fragment")
                 .addToBackStack(null)
                 .commit();
@@ -979,35 +1205,178 @@ public class SourceInfoFragment extends PreferenceFragment {
         Bundle arguments = new Bundle();
         arguments.putBoolean(FolderFragment.USE_DIRECTORY, false);
         arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, false);
-        final AlbumAdapter adapter = new AlbumAdapter(appContext, names, images, links);
+        final AdapterAlbum adapter = new AdapterAlbum(appContext, names, images, links, folderFragment);
         folderFragment.setArguments(arguments);
         folderFragment.setAdapter(adapter);
         folderFragment.setListener(new FolderFragment.FolderEventListener() {
+            public Activity dialogActivity;
+
             @Override
             public void onUseDirectoryClick() {
                 // Not implemented
             }
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
-                setData(type,
-                        names.get(positionInList),
-                        links.get(positionInList),
-                        Integer.parseInt(nums.get(positionInList)));
+            public void onItemClick(int positionInList) {
 
-                getActivity().onBackPressed();
+
+                SourceInfoFragment sourceInfoFragment = (SourceInfoFragment) dialogActivity.getFragmentManager().findFragmentByTag("sourceInfoFragment");
+
+                if (sourceInfoFragment != null) {
+                    sourceInfoFragment.setData(type,
+                            names.get(positionInList),
+                            links.get(positionInList),
+                            Integer.parseInt(nums.get(positionInList)));
+                }
+
+                dialogActivity.onBackPressed();
+                dialogActivity = null;
             }
 
             @Override
             public boolean onBackPressed() {
                 return true;
             }
+
+            @Override
+            public void setActivity(Activity activity) {
+                this.dialogActivity = activity;
+            }
         });
 
         getFragmentManager().beginTransaction()
+                .setCustomAnimations(R.animator.none, R.animator.slide_to_bottom, R.animator.none, R.animator.slide_to_bottom)
                 .add(R.id.content_frame, folderFragment, "folder_fragment")
                 .addToBackStack(null)
                 .commit();
+    }
+
+    private void showDriveFragment() {
+
+        if (!type.equals(AppSettings.GOOGLE_DRIVE_ALBUM)) {
+            return;
+        }
+
+        final FolderFragment folderFragment = new FolderFragment();
+        Bundle arguments = new Bundle();
+        arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
+        arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
+
+        final AdapterDrive adapter = new AdapterDrive(appContext, folderFragment);
+        folderFragment.setArguments(arguments);
+        folderFragment.setListener(new FolderFragment.FolderEventListener() {
+
+            public Activity dialogActivity;
+
+            @Override
+            public void onUseDirectoryClick() {
+                com.google.api.services.drive.model.File file = adapter.getMainDir();
+                SourceInfoFragment sourceInfoFragment = (SourceInfoFragment) dialogActivity.getFragmentManager().findFragmentByTag("sourceInfoFragment");
+
+                if (sourceInfoFragment != null) {
+                    sourceInfoFragment.setData(AppSettings.GOOGLE_DRIVE_ALBUM, file.getTitle(), file.getId(), -1);
+                }
+                adapter.setFinished(true);
+                dialogActivity.onBackPressed();
+                dialogActivity = null;
+            }
+
+            @Override
+            public void onItemClick(int positionInList) {
+
+                final com.google.api.services.drive.model.File file = adapter.getItem(positionInList);
+                if (!file.getMimeType().equals("application/vnd.google-apps.folder")) {
+                    return;
+                }
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Drive.Files.List request = drive.files().list();
+                            final FileList files = request.setQ(
+                                    "'" + file.getId() + "' in parents and trashed=false").execute();
+                            final List<com.google.api.services.drive.model.File> fileList = files.getItems();
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    adapter.setDir(file, fileList);
+                                }
+                            });
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
+
+            @Override
+            public boolean onBackPressed() {
+                if (adapter.backDirectory()) {
+                    return true;
+                }
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        com.google.api.services.drive.model.File file = adapter.getMainDir();
+                        try {
+                            ParentReference parentReference = drive.parents().list(file.getId()).execute().getItems().get(0);
+                            final com.google.api.services.drive.model.File parentFile = drive.files()
+                                    .get(parentReference.getId())
+                                    .execute();
+                            Drive.Files.List request = drive.files().list();
+                            FileList files = request.setQ(
+                                    "'" + parentReference.getId() + "' in parents and trashed=false").execute();
+                            final List<com.google.api.services.drive.model.File> fileList = files.getItems();
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    adapter.setDir(parentFile, fileList);
+                                }
+                            });
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+
+                return false;
+            }
+
+            @Override
+            public void setActivity(Activity activity) {
+                this.dialogActivity = activity;
+            }
+        });
+
+        Toast.makeText(appContext, "Loading Google Drive", Toast.LENGTH_SHORT).show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    com.google.api.services.drive.model.File file = drive.files().get("root").execute();
+                    Drive.Files.List request = drive.files().list();
+                    FileList files = request.setQ("'root' in parents and trashed=false").execute();
+                    adapter.setDirs(file, file, files.getItems());
+                    folderFragment.setAdapter(adapter);
+                    folderFragment.setStartingDirectoryText(file.getTitle());
+                    getFragmentManager().beginTransaction()
+                            .setCustomAnimations(R.animator.none, R.animator.slide_to_bottom,
+                                    R.animator.none, R.animator.slide_to_bottom)
+                            .add(R.id.content_frame, folderFragment,
+                                    "folder_fragment")
+                            .addToBackStack(null)
+                            .commit();
+                    Log.d(TAG, "folderFragment committed");
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     private void showDropboxFragment() {
@@ -1021,22 +1390,30 @@ public class SourceInfoFragment extends PreferenceFragment {
         arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
         arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
 
-        final DropboxAdapter adapter = new DropboxAdapter((Activity) appContext);
+        final AdapterDropbox adapter = new AdapterDropbox(appContext, folderFragment);
         folderFragment.setArguments(arguments);
         folderFragment.setListener(new FolderFragment.FolderEventListener() {
+
+            public Activity dialogActivity;
 
             @Override
             public void onUseDirectoryClick() {
                 Entry entry = adapter.getMainDir();
                 if (entry.isDir) {
-                    setData(AppSettings.DROPBOX_FOLDER, entry.fileName(), entry.path, -1);
+                    SourceInfoFragment sourceInfoFragment = (SourceInfoFragment) dialogActivity.getFragmentManager().findFragmentByTag("sourceInfoFragment");
+
+                    if (sourceInfoFragment != null) {
+                        sourceInfoFragment.setData(AppSettings.DROPBOX_FOLDER, entry.fileName(),
+                                entry.path, -1);
+                    }
                     adapter.setFinished(true);
-                    getActivity().onBackPressed();
+                    dialogActivity.onBackPressed();
+                    dialogActivity = null;
                 }
             }
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int positionInList, long id) {
+            public void onItemClick(int positionInList) {
                 final Entry entry = adapter.getItem(positionInList);
                 if (!entry.isDir) {
                     return;
@@ -1066,7 +1443,6 @@ public class SourceInfoFragment extends PreferenceFragment {
                         }
                     }
                 }).start();
-
             }
 
             @Override
@@ -1103,6 +1479,11 @@ public class SourceInfoFragment extends PreferenceFragment {
 
                 return false;
             }
+
+            @Override
+            public void setActivity(Activity activity) {
+                this.dialogActivity = activity;
+            }
         });
 
         Toast.makeText(appContext, "Loading Dropbox", Toast.LENGTH_SHORT).show();
@@ -1131,6 +1512,7 @@ public class SourceInfoFragment extends PreferenceFragment {
                 folderFragment.setStartingDirectoryText(startEntry.path);
 
                 getFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.animator.none, R.animator.slide_to_bottom, R.animator.none, R.animator.slide_to_bottom)
                         .add(R.id.content_frame, folderFragment, "folder_fragment")
                         .addToBackStack(null)
                         .commit();
@@ -1182,11 +1564,6 @@ public class SourceInfoFragment extends PreferenceFragment {
         else {
             getFragmentManager().popBackStack();
         }
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
     }
 
     class PicasaAlbumTask extends AsyncTask<Void, String, Void> {
@@ -1265,7 +1642,7 @@ public class SourceInfoFragment extends PreferenceFragment {
         protected void onPostExecute(Void aVoid) {
 
             if (isAdded()) {
-                showAlbumFragment(AppSettings.GOOGLE_ALBUM,
+                showAlbumFragment(AppSettings.GOOGLE_PLUS_ALBUM,
                         albumNames,
                         albumImageLinks,
                         albumLinks,
@@ -1273,5 +1650,13 @@ public class SourceInfoFragment extends PreferenceFragment {
             }
         }
     }
+
+    public interface Listener {
+        boolean addSource(Source source);
+        boolean saveSource(Source source, int position);
+
+        void sendToast(String message);
+    }
+
 
 }

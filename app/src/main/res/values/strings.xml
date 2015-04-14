@@ -210,8 +210,10 @@
     <string name="use_experimental_downloader">Experimental Downloader</string>
     <string name="use_experimental_downloader_description">Include JavaScript generated websites</string>
 
-    <string name="use_google_account">Google Account</string>
-    <string name="use_google_account_description">Connect a Google account</string>
+    <string name="use_google_account">Google+ Account</string>
+    <string name="use_google_account_description">Connect a Google+ account</string>
+    <string name="use_google_drive_account">Google Drive</string>
+    <string name="use_google_drive_account_description">Connect a Google Drive account</string>
     <string name="use_dropbox_account">Dropbox Account</string>
     <string name="use_dropbox_account_description">Connect a Dropbox account</string>
 
@@ -283,7 +285,7 @@
     <string name="change_theme">Change Theme</string>
     <string name="change_theme_description">Use different app theme</string>
     <string name="use_advanced">Advanced Settings</string>
-    <string name="use_advanced_description">Show advanced settings</string>
+    <string name="use_advanced_description">Show advanced settings (will change user input of internal values), do not enable unless you know what you\'re doing</string>
     <string name="export_sources">Export Sources</string>
     <string name="export_sources_description">Export source data to a file</string>
     <string name="import_sources">Import Sources</string>
@@ -329,6 +331,8 @@
     <string name="about_library_picasso_description">Used to efficiently load some of the images.\nCopyright 2013 Square, Inc.</string>
     <string name="about_library_colorpickerview">ColorPickerView Library</string>
     <string name="about_library_colorpickerview_description">Used to provide color options.\nCopyright © 2010 Daniel Nilsson</string>
+    <string name="about_library_google_play_services">Google Play Services Library</string>
+    <string name="about_library_google_play_services_description">Used to provide access to various Google services</string>
 
     <string name="about_self_copyright">Copyright © 2014 Winson Chiu</string>
     <string name="about_self_copyright_description">Copyright © 2014 Winson Chiu</string>
@@ -476,6 +480,18 @@
     <string name="delete">Delete</string>
     <string name="view_images">View Images</string>
     <string name="edit">Edit</string>
+    <string name="source_sort">Sort by</string>
+    <string name="source_num_prefix"># of Images</string>
+    <string name="item_download">Download source</string>
+    <string name="item_delete">Delete source</string>
+    <string name="item_view">View images</string>
+    <string name="item_edit">Edit source</string>
+    <string name="empty_directory">Directory is empty</string>
+    <string name="empty_history">History is empty</string>
+    <string name="item_sort_activated">Activated</string>
+    <string name="item_sort_location">Location</string>
+    <string name="item_sort_name">Name</string>
+    <string name="item_sort_number"># of Images</string>
 
     <string-array name="fragment_titles">
         <item>Sources</item>
@@ -508,6 +524,7 @@
         <item>Folder</item>
         <item>Dropbox Folder</item>
         <item>Google+ Album</item>
+        <item>Google Drive Album</item>
         <item>Imgur Subreddit</item>
         <item>Imgur Album</item>
         <item>Reddit Subreddit</item>

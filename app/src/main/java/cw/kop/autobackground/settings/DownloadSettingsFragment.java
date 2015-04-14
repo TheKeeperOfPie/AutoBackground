@@ -30,6 +30,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,8 +46,8 @@ import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
+import cw.kop.autobackground.images.AdapterImages;
 import cw.kop.autobackground.images.FolderFragment;
-import cw.kop.autobackground.images.LocalImageAdapter;
 
 public class DownloadSettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 
@@ -55,9 +56,11 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     private final static int REQUEST_FILE_ID = 0;
     private SwitchPreference timerPref;
     private Preference startTimePref;
-    private Context appContext;
+    private Activity activity;
     private PendingIntent pendingIntent;
     private AlarmManager alarmManager;
+    private Preference imageHistorySizePref;
+    private Preference thumbnailSizePref;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,21 +71,21 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        appContext = getActivity();
+        this.activity = getActivity();
 
         Intent intent = new Intent();
         intent.setAction(LiveWallpaperService.DOWNLOAD_WALLPAPER);
         intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-        pendingIntent = PendingIntent.getBroadcast(appContext, 0, intent, 0);
+        pendingIntent = PendingIntent.getBroadcast(this.activity, 0, intent, 0);
 
-        alarmManager = (AlarmManager) appContext.getSystemService(Context.ALARM_SERVICE);
+        alarmManager = (AlarmManager) this.activity.getSystemService(Context.ALARM_SERVICE);
 
         Log.i("DSF", "onAttach");
     }
 
     @Override
     public void onDetach() {
-        appContext = null;
+        activity = null;
         super.onDetach();
     }
 
@@ -103,7 +106,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     @Override
                     public void onClickRight(View v) {
                         FileHandler.deleteAllBitmaps();
-                        Toast.makeText(appContext,
+                        Toast.makeText(activity,
                                 "Deleted images with prefix\n" + AppSettings.getImagePrefix(),
                                 Toast.LENGTH_SHORT).show();
                         this.dismissDialog();
@@ -111,7 +114,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
                 };
 
-                DialogFactory.showActionDialog(appContext,
+                DialogFactory.showActionDialog(activity,
                         "Are you sure you want to delete all images?",
                         "This cannot be undone.",
                         clickListener,
@@ -138,7 +141,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     }
                 };
 
-                DialogFactory.showInputDialog(appContext,
+                DialogFactory.showInputDialog(activity,
                         "Image Prefix",
                         "",
                         "" + AppSettings.getImagePrefix(),
@@ -173,7 +176,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     }
                 };
 
-                DialogFactory.showTimeDialog(appContext,
+                DialogFactory.showTimeDialog(activity,
                         "Time to start download:",
                         listener,
                         AppSettings.getTimerHour(),
@@ -204,14 +207,32 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             preferenceCategory.removePreference(findPreference("image_prefix_adv"));
             preferenceCategory.removePreference(findPreference("delete_images"));
         }
+        else {
+            imageHistorySizePref = findPreference("image_history_size");
+            imageHistorySizePref.setOnPreferenceClickListener(
+                    new Preference.OnPreferenceClickListener() {
+                        @Override
+                        public boolean onPreferenceClick(Preference preference) {
+                            showImageHistorySiseDialog();
+                            return true;
+                        }
+                    });
+            thumbnailSizePref = findPreference("thumbnail_size");
+            thumbnailSizePref.setOnPreferenceClickListener(
+                    new Preference.OnPreferenceClickListener() {
+                        @Override
+                        public boolean onPreferenceClick(Preference preference) {
+                            showThumbnailSizeDialog();
+                            return true;
+                        }
+                    });
+        }
 
         return inflater.inflate(R.layout.fragment_list, container, false);
 
     }
 
     private void showDialogTimerMenu() {
-
-        AppSettings.setTimerDuration(0);
 
         DialogFactory.ListDialogListener clickListener = new DialogFactory.ListDialogListener() {
             @Override
@@ -244,10 +265,8 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     default:
                 }
 
-                if (AppSettings.getTimerDuration() > 0) {
-                    float days = (float) AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN / CONVERT_MIN_TO_DAY;
-                    timerPref.setSummary("Download every " + String.format("%.2f", days) + (days == 1 ? " day" : " days"));
-                }
+                float days = (float) AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN / CONVERT_MIN_TO_DAY;
+                timerPref.setSummary("Download every " + String.format("%.2f", days) + (days == 1 ? " day" : " days"));
 
                 setDownloadAlarm();
                 dismissDialog();
@@ -261,7 +280,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
             }
         };
 
-        DialogFactory.showListDialog(appContext,
+        DialogFactory.showListDialog(activity,
                 "Download Interval:",
                 clickListener,
                 R.array.timer_entry_menu);
@@ -269,13 +288,10 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
     private void showDialogTimerForInput() {
 
-        AppSettings.setTimerDuration(0);
-
         DialogFactory.InputDialogListener listener = new DialogFactory.InputDialogListener() {
 
             @Override
             public void onClickMiddle(View v) {
-                AppSettings.setTimerDuration(0);
                 timerPref.setChecked(false);
                 dismissDialog();
             }
@@ -285,7 +301,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
                 String value = getEditTextString();
 
-                if (value.equals("") || Long.parseLong(value) < 0) {
+                if (TextUtils.isEmpty(value) || Long.parseLong(value) <= 0) {
                     timerPref.setChecked(false);
                     dismissDialog();
                     return;
@@ -300,7 +316,9 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                 AppSettings.setTimerDuration(inputValue * CONVERT_MILLES_TO_MIN);
                 setDownloadAlarm();
                 float days = (float) AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN / CONVERT_MIN_TO_DAY;
-                timerPref.setSummary("Download every " + String.format("%.2f", days) + (days == 1 ? " day" : " days"));
+                timerPref.setSummary(
+                        "Download every " + String.format("%.2f", days) + (days == 1 ? " day" :
+                                " days"));
                 dismissDialog();
             }
 
@@ -313,10 +331,91 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
         };
 
-        DialogFactory.showInputDialog(appContext,
+        DialogFactory.showInputDialog(activity,
                 "Download Interval",
                 "Number of minutes",
-                "",
+                "" + (AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN),
+                listener,
+                -1,
+                R.string.cancel_button,
+                R.string.ok_button,
+                InputType.TYPE_CLASS_NUMBER);
+    }
+
+
+
+    private void showImageHistorySiseDialog() {
+
+
+        DialogFactory.InputDialogListener listener = new DialogFactory.InputDialogListener() {
+
+            @Override
+            public void onClickMiddle(View v) {
+                dismissDialog();
+            }
+
+            @Override
+            public void onClickRight(View v) {
+
+                String value = getEditTextString();
+
+                if (TextUtils.isEmpty(value) ||  Integer.parseInt(value) < 0) {
+                    dismissDialog();
+                    return;
+                }
+
+                int inputValue = Integer.parseInt(value);
+
+                AppSettings.setImageHistorySize(inputValue);
+                dismissDialog();
+            }
+
+        };
+
+        DialogFactory.showInputDialog(activity,
+                "Image History Size",
+                "Number of images in history",
+                "" + AppSettings.getImageHistorySize(),
+                listener,
+                -1,
+                R.string.cancel_button,
+                R.string.ok_button,
+                InputType.TYPE_CLASS_NUMBER);
+    }
+
+
+
+    private void showThumbnailSizeDialog() {
+
+        DialogFactory.InputDialogListener listener = new DialogFactory.InputDialogListener() {
+
+            @Override
+            public void onClickMiddle(View v) {
+                dismissDialog();
+            }
+
+            @Override
+            public void onClickRight(View v) {
+
+                String value = getEditTextString();
+
+                if (TextUtils.isEmpty(value) ||  Integer.parseInt(value) < 0) {
+                    dismissDialog();
+                    return;
+                }
+
+                int inputValue = Integer.parseInt(value);
+
+                AppSettings.setThumbnailSize(inputValue);
+                dismissDialog();
+            }
+
+        };
+
+        DialogFactory.showInputDialog(activity,
+                "Thumbnail Size",
+                "Max size in pixels",
+                "" + AppSettings.getThumbnailSize(),
                 listener,
                 -1,
                 R.string.cancel_button,
@@ -326,7 +425,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
     private void setDownloadAlarm() {
 
-        if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
+        if (AppSettings.useTimer()) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeInMillis(System.currentTimeMillis());
             calendar.set(Calendar.HOUR_OF_DAY, AppSettings.getTimerHour());
@@ -373,7 +472,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     }
                 };
 
-                DialogFactory.showInputDialog(appContext,
+                DialogFactory.showInputDialog(activity,
                         "Minimum Width of Image:",
                         "Width in pixels",
                         "" + AppSettings.getImageWidth(),
@@ -401,7 +500,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
                     }
                 };
 
-                DialogFactory.showInputDialog(appContext,
+                DialogFactory.showInputDialog(activity,
                         "Minimum Height of Image:",
                         "Height in pixels",
                         "" + AppSettings.getImageHeight(),
@@ -416,7 +515,7 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
         });
 
 
-        if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0) {
+        if (AppSettings.useTimer()) {
             float days = (float) AppSettings.getTimerDuration() / CONVERT_MILLES_TO_MIN / CONVERT_MIN_TO_DAY;
             timerPref.setSummary("Download every " + String.format("%.2f", days) + (days == 1 ? " day" : " days"));
         }
@@ -438,10 +537,10 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, final String key) {
 
 
-        if (!((Activity) appContext).isFinishing()) {
+        if (!(activity).isFinishing()) {
 
             if (key.equals("use_timer")) {
                 if (AppSettings.useTimer()) {
@@ -462,52 +561,62 @@ public class DownloadSettingsFragment extends PreferenceFragment implements OnSh
 
             if (key.equals("use_download_path") && AppSettings.useDownloadPath()) {
 
-                File rootDir = Environment.getExternalStorageDirectory();
-                if (!rootDir.exists() || !rootDir.canRead()) {
-                    rootDir = new File(File.separator);
-                }
+                File startDir = Environment.getExternalStorageDirectory();
                 final FolderFragment folderFragment = new FolderFragment();
                 Bundle arguments = new Bundle();
                 arguments.putBoolean(FolderFragment.SHOW_DIRECTORY_TEXT, true);
                 arguments.putBoolean(FolderFragment.USE_DIRECTORY, true);
-                final LocalImageAdapter adapter = new LocalImageAdapter(appContext, rootDir, rootDir);
+                final AdapterImages adapter = new AdapterImages(activity,
+                        new File(File.separator), startDir, folderFragment);
                 folderFragment.setArguments(arguments);
                 folderFragment.setAdapter(adapter);
-                folderFragment.setStartingDirectoryText(rootDir.getAbsolutePath());
+                folderFragment.setStartingDirectoryText(startDir.getAbsolutePath());
                 folderFragment.setListener(new FolderFragment.FolderEventListener() {
+                    public Activity dialogActivity;
+
                     @Override
                     public void onUseDirectoryClick() {
-                        AppSettings.setDownloadPath(adapter.getDirectory().getAbsolutePath());
-                        Toast.makeText(appContext,
+                        AppSettings.setDownloadPath(adapter.getDirectory()
+                                .getAbsolutePath());
+                        Toast.makeText(dialogActivity,
                                 "Download path set to: \n" + AppSettings.getDownloadPath(),
-                                Toast.LENGTH_SHORT).show();
+                                Toast.LENGTH_SHORT)
+                                .show();
                         adapter.setFinished();
-                        getActivity().onBackPressed();
+                        dialogActivity.onBackPressed();
                     }
 
                     @Override
-                    public void onItemClick(AdapterView<?> parent,
-                            View view,
-                            int positionInList,
-                            long id) {
+                    public void onItemClick(int positionInList) {
                         File selectedFile = adapter.getItem(positionInList);
 
                         if (selectedFile.exists() && selectedFile.isDirectory()) {
                             adapter.setDirectory(selectedFile);
-                            folderFragment.setDirectoryText(adapter.getDirectory().getAbsolutePath());
+                            folderFragment.setDirectoryText(adapter.getDirectory()
+                                    .getAbsolutePath());
                         }
                     }
 
                     @Override
                     public boolean onBackPressed() {
                         boolean endDirectory = adapter.backDirectory();
-                        folderFragment.setDirectoryText(adapter.getDirectory().getAbsolutePath());
+                        folderFragment.setDirectoryText(adapter.getDirectory()
+                                .getAbsolutePath());
+                        if (!adapter.isFinished()) {
+                            ((SwitchPreference) findPreference(key)).setChecked(false);
+                        }
 
                         return endDirectory;
+                    }
+
+                    @Override
+                    public void setActivity(Activity activity) {
+                        this.dialogActivity = activity;
                     }
                 });
 
                 getFragmentManager().beginTransaction()
+                        .setCustomAnimations(R.animator.none, R.animator.slide_to_bottom, R.animator.none, R.animator.slide_to_bottom)
                         .add(R.id.content_frame, folderFragment, "folder_fragment")
                         .addToBackStack(null)
                         .commit();

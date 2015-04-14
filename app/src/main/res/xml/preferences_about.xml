@@ -50,6 +50,12 @@
             />
 
         <Preference
+            android:key="about_library_google_play_services"
+            android:summary="@string/about_library_google_play_services_description"
+            android:title="@string/about_library_google_play_services"
+            />
+
+        <Preference
             android:key="about_copyright"
             android:summary="@string/about_copyright_description"
             android:title="@string/about_copyright"

@@ -113,11 +113,8 @@
             android:title="@string/use_image_history"
             />
 
-        <EditTextPreference
-            android:defaultValue="250"
-            android:inputType="number"
+        <Preference
             android:key="image_history_size"
-            android:numeric="integer"
             android:summary="@string/image_history_size_description"
             android:title="@string/image_history_size"
             />
@@ -129,11 +126,8 @@
             android:title="@string/use_thumbnails"
             />
 
-        <EditTextPreference
-            android:defaultValue="100"
-            android:inputType="number"
+        <Preference
             android:key="thumbnail_size"
-            android:numeric="integer"
             android:summary="@string/thumbnail_size_description"
             android:title="@string/thumbnail_size"
             />

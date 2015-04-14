@@ -19,6 +19,7 @@ package cw.kop.autobackground;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ThumbnailUtils;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -35,6 +36,7 @@ import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.wearable.WearableListenerService;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
@@ -110,7 +112,7 @@ public class EventListenerService extends WearableListenerService {
 
                         if (currentBitmap != null) {
                             Intent intent = new Intent(LOAD_IMAGE);
-                            LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+                            LocalBroadcastManager.getInstance(this).sendBroadcast(
                                     intent);
                             Log.i(TAG, "Bitmap received");
                         }
@@ -159,7 +161,7 @@ public class EventListenerService extends WearableListenerService {
                         WearSettings.setSecondWidth(dataMap.getFloat(WearConstants.SECOND_WIDTH, 2.0f));
 
                         Intent intent = new Intent(LOAD_SETTINGS);
-                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(
                                 intent);
                         Log.i(TAG, "Settings received");
                         break;
@@ -199,7 +201,26 @@ public class EventListenerService extends WearableListenerService {
             Log.w(TAG, "Requested an unknown Asset.");
             return null;
         }
-        // decode the stream into a bitmap
-        return BitmapFactory.decodeStream(assetInputStream);
+
+        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        int screenHeight = getResources().getDisplayMetrics().heightPixels;
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        options.inPreferQualityOverSpeed = true;
+        options.inScaled = true;
+        options.inDither = true;
+
+        Bitmap bitmap = ThumbnailUtils.extractThumbnail(
+                BitmapFactory.decodeStream(assetInputStream, null, options),
+                screenWidth, screenHeight, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+        try {
+            assetInputStream.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+
     }
 }

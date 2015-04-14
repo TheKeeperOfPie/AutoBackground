@@ -21,18 +21,51 @@
     >
 
     <item
-        android:id="@+id/cycle_wallpaper"
+        android:id="@+id/item_cycle"
         android:icon="@drawable/ic_refresh_white_24dp"
         android:title="@string/cycle_wallpaper"
         app:showAsAction="ifRoom"/>
+
     <item
-        android:id="@+id/download_wallpaper"
+        android:id="@+id/item_download"
         android:icon="@drawable/ic_file_download_white_24dp"
         android:title="@string/download_wallpaper"
         app:showAsAction="ifRoom"/>
+
     <item
-        android:id="@+id/sort_sources"
+        android:id="@+id/item_sort"
         android:icon="@drawable/ic_sort_white_24dp"
         android:title="@string/sort_sources"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom"
+        >
+
+        <menu>
+            <item
+                android:id="@+id/item_sort_activated"
+                android:title="@string/item_sort_activated"
+                android:orderInCategory="100"
+                />
+
+            <item
+                android:id="@+id/item_sort_location"
+                android:title="@string/item_sort_location"
+                android:orderInCategory="200"
+                />
+
+            <item
+                android:id="@+id/item_sort_name"
+                android:title="@string/item_sort_name"
+                android:orderInCategory="300"
+                />
+
+            <item
+                android:id="@+id/item_sort_number"
+                android:title="@string/item_sort_number"
+                android:orderInCategory="400"
+                />
+
+        </menu>
+
+    </item>
+
 </menu>

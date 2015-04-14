@@ -18,7 +18,6 @@ package cw.kop.autobackground.files;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -258,6 +257,7 @@ public class FileHandler {
         if (folder.exists() && folder.isDirectory()) {
             if (folder.listFiles().length > 0) {
                 for (File file : folder.listFiles()) {
+                    AppSettings.clearUrl(file.getName());
                     file.delete();
                 }
             }

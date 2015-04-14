@@ -41,5 +41,6 @@
     <color name="DARK_THEME_DIALOG">#FF424242</color>
 
     <color name="ALERT_TEXT">#FFDD0808</color>
+    <color name="BUTTON_SHADOW">#33000000</color>
 
 </resources>

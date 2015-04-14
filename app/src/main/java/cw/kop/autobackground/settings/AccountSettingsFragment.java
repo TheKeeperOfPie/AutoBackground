@@ -25,6 +25,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,18 +38,29 @@ import com.dropbox.client2.session.AppKeyPair;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.DriveScopes;
 
 import java.io.IOException;
+import java.util.Collections;
 
+import cw.kop.autobackground.BuildConfig;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.accounts.GoogleAccount;
-import cw.kop.autobackground.settings.AppSettings;
 
 public class AccountSettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+    private static final int REQUEST_DRIVE_ACCOUNT = 9005;
+    private static final int REQUEST_DRIVE_AUTH = 9006;
     private Context appContext;
     private SwitchPreference googlePref;
     private DropboxAPI<AndroidAuthSession> dropboxAPI;
+    private GoogleAccountCredential driveCredential;
+    private Drive drive;
 
     @Override
     public void onAttach(Activity activity) {
@@ -70,6 +82,16 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
         AppKeyPair appKeys = new AppKeyPair(ApiKeys.DROPBOX_KEY, ApiKeys.DROPBOX_SECRET);
         AndroidAuthSession session = new AndroidAuthSession(appKeys);
         dropboxAPI = new DropboxAPI<>(session);
+
+        driveCredential = GoogleAccountCredential.usingOAuth2(
+                appContext,
+                Collections.singleton(DriveScopes.DRIVE));
+        if (!TextUtils.isEmpty(AppSettings.getDriveAccountName())) {
+            driveCredential.setSelectedAccountName(AppSettings.getDriveAccountName());
+        }
+        drive = new Drive.Builder(AndroidHttp.newCompatibleTransport(), GsonFactory.getDefaultInstance(), driveCredential)
+                .setApplicationName(appContext.getResources().getString(R.string.app_name) + "/" + BuildConfig.VERSION_NAME)
+                .build();
     }
 
     @Override
@@ -136,6 +158,29 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
+                case "use_google_drive_account":
+                    if (TextUtils.isEmpty(AppSettings.getDriveAccountName())) {
+                        startActivityForResult(driveCredential.newChooseAccountIntent(), REQUEST_DRIVE_ACCOUNT);
+                    }
+                    else {
+                        AppSettings.setDriveAccountName("");
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    driveCredential.getGoogleAccountManager().invalidateAuthToken(driveCredential.getToken());
+                                }
+                                catch (IOException | GoogleAuthException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }).start();
+                        if (AppSettings.useToast()) {
+                            Toast.makeText(appContext,
+                                    "Google Drive account deactivated",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
             }
         }
 
@@ -143,7 +188,55 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
 
     @Override
     public void onActivityResult(int requestCode, int responseCode, Intent intent) {
-        if (requestCode == GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN) {
+
+
+        if (requestCode == REQUEST_DRIVE_AUTH && responseCode == Activity.RESULT_OK) {
+            String accountName = intent.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
+            if (!TextUtils.isEmpty(accountName)) {
+                AppSettings.setDriveAccountName(accountName);
+                AppSettings.setUseGoogleDriveAccount(true);
+                driveCredential.setSelectedAccountName(accountName);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // Send an about request to check if app is authenticated
+                            drive.about().get().execute();
+                        }
+                        catch (UserRecoverableAuthIOException e) {
+                            startActivityForResult(e.getIntent(), REQUEST_DRIVE_ACCOUNT);
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
+        }
+        else if (requestCode == REQUEST_DRIVE_ACCOUNT && responseCode == Activity.RESULT_OK) {
+            String accountName = intent.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
+            if (!TextUtils.isEmpty(accountName)) {
+                AppSettings.setDriveAccountName(accountName);
+                AppSettings.setUseGoogleDriveAccount(true);
+                driveCredential.setSelectedAccountName(accountName);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            // Send an about request to check if app is authenticated
+                            drive.about().get().execute();
+                        }
+                        catch (UserRecoverableAuthIOException e) {
+                            startActivityForResult(e.getIntent(), REQUEST_DRIVE_ACCOUNT);
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
+            }
+        }
+        else if (requestCode == GoogleAccount.GOOGLE_ACCOUNT_SIGN_IN) {
             if (responseCode == Activity.RESULT_OK) {
                 final String accountName = intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
                 AppSettings.setGoogleAccountName(accountName);
@@ -183,7 +276,7 @@ public class AccountSettingsFragment extends PreferenceFragment implements Share
                 GoogleAccount.deleteAccount();
             }
         }
-        if (requestCode == GoogleAccount.GOOGLE_AUTH_CODE) {
+        else if (requestCode == GoogleAccount.GOOGLE_AUTH_CODE) {
             if (responseCode == Activity.RESULT_OK) {
                 new AsyncTask<Void, Void, Void>() {
                     @Override

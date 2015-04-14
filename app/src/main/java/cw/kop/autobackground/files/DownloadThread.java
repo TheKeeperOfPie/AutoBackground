@@ -28,8 +28,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
 import android.widget.Toast;
@@ -39,6 +39,14 @@ import com.dropbox.client2.DropboxAPI.Entry;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.DriveScopes;
+import com.google.api.services.drive.model.ChildReference;
+import com.google.api.services.drive.model.FileList;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -52,7 +60,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -60,12 +70,13 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -74,6 +85,7 @@ import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.settings.ApiKeys;
 import cw.kop.autobackground.settings.AppSettings;
+import cw.kop.autobackground.sources.SortData;
 import cw.kop.autobackground.sources.Source;
 
 /**
@@ -82,6 +94,7 @@ import cw.kop.autobackground.sources.Source;
 public class DownloadThread extends Thread {
 
     public static final String DROPBOX_FILE_PREFIX = "Dropbox File: ";
+    public static final String GOOGLE_DRIVE_FILE_PREFIX = "Google Drive File: ";
 
     private static final String CHECK_DOWNLOAD = "Check download settings";
     private static final String NO_CHOSEN_METHOD = "No download method chosen";
@@ -102,11 +115,14 @@ public class DownloadThread extends Thread {
     private int numTarget;
     private HashSet<String> usedLinks;
     private HashSet<String> usedDropboxPaths;
+    private HashSet<String> usedDrivePaths;
     private List<File> downloadedFiles;
     private boolean isAnyLowResolution;
     private boolean isLowResolution;
     private boolean isNotEnoughNew;
+    private boolean isNotAuthenticated;
     private volatile boolean interrupted;
+    private Drive drive;
 
     public DownloadThread(Context context, List<Source> sources) {
         appContext = context;
@@ -114,7 +130,7 @@ public class DownloadThread extends Thread {
         AppKeyPair appKeys = new AppKeyPair(ApiKeys.DROPBOX_KEY, ApiKeys.DROPBOX_SECRET);
         AndroidAuthSession session = new AndroidAuthSession(appKeys);
         dropboxAPI = new DropboxAPI<>(session);
-        if (AppSettings.useDropboxAccount() && !AppSettings.getDropboxAccountToken().equals("")) {
+        if (AppSettings.useDropboxAccount() && !TextUtils.isEmpty(AppSettings.getDropboxAccountToken())) {
             dropboxAPI.getSession().setOAuth2AccessToken(AppSettings.getDropboxAccountToken());
         }
     }
@@ -193,18 +209,22 @@ public class DownloadThread extends Thread {
 
         usedLinks = new HashSet<>();
         usedDropboxPaths = new HashSet<>();
+        usedDrivePaths = new HashSet<>();
 
         if (AppSettings.checkDuplicates()) {
             Set<String> rawLinks = AppSettings.getUsedLinks();
             for (String link : rawLinks) {
-                if (link.contains(DROPBOX_FILE_PREFIX)) {
-                    usedDropboxPaths.add(link.substring(link.indexOf(DROPBOX_FILE_PREFIX) + DROPBOX_FILE_PREFIX.length()));
-                }
-                else {
-                    if (link.lastIndexOf("Time:") > 0) {
-                        link = link.substring(0, link.lastIndexOf("Time:"));
+                int lastIndex = link.lastIndexOf("Time:");
+                if (lastIndex > 0) {
+                    if (link.startsWith(DROPBOX_FILE_PREFIX)) {
+                        usedDropboxPaths.add(link.substring(DROPBOX_FILE_PREFIX.length(), lastIndex));
                     }
-                    usedLinks.add(link);
+                    else if (link.startsWith(GOOGLE_DRIVE_FILE_PREFIX)) {
+                        usedDrivePaths.add(link.substring(GOOGLE_DRIVE_FILE_PREFIX.length(), lastIndex));
+                    }
+                    else {
+                        usedLinks.add(link.substring(0, lastIndex));
+                    }
                 }
             }
         }
@@ -243,8 +263,11 @@ public class DownloadThread extends Thread {
                     case AppSettings.IMGUR_ALBUM:
                         downloadImgurAlbum(source);
                         break;
-                    case AppSettings.GOOGLE_ALBUM:
+                    case AppSettings.GOOGLE_PLUS_ALBUM:
                         downloadPicasa(source);
+                        break;
+                    case AppSettings.GOOGLE_DRIVE_ALBUM:
+                        downloadDrive(source);
                         break;
                     case AppSettings.TUMBLR_BLOG:
                         downloadTumblrBlog(source);
@@ -295,7 +318,7 @@ public class DownloadThread extends Thread {
             if (!url.contains("http")) {
                 url = "http:" + url;
             }
-            if (link.attr("width") != null && !link.attr("width").equals("")) {
+            if (link.attr("width") != null && !TextUtils.isEmpty(link.attr("width"))) {
                 try {
                     if (Integer.parseInt(link.attr("width")) < AppSettings.getImageWidth() || Integer.parseInt(
                             link.attr("height")) < AppSettings.getImageHeight()) {
@@ -305,14 +328,12 @@ public class DownloadThread extends Thread {
                 catch (NumberFormatException e) {
                 }
             }
-            if (url.endsWith(".png") || url.endsWith(".jpg") || url.endsWith(".jpeg")) {
+            if (AppSettings.checkIsImage(url)) {
                 links.add(url);
             }
             else if (AppSettings.forceDownload() && url.length() > 5 && (url.endsWith(".com") || url.endsWith(
                     ".org") || url.endsWith(".net"))) {
-                links.add(url + ".png");
-                links.add(url + ".jpg");
-                links.add(url);
+                links.add(url + AppSettings.JPG);
             }
         }
         return links;
@@ -393,13 +414,13 @@ public class DownloadThread extends Thread {
         FilenameFilter filenameFilter = FileHandler.getImageFileNameFilter();
         
         File[] fileArray = mainDir.listFiles(filenameFilter);
-        fileArray = fileArray == null ? new File[1] : fileArray;
+        fileArray = fileArray == null ? new File[0] : fileArray;
 
         List<File> files = new ArrayList<>(Arrays.asList(fileArray));
         files.removeAll(downloadedFiles);
 
         if (!AppSettings.keepImages()) {
-            int extra = mainDir.list(filenameFilter).length - targetNum;
+            int extra = fileArray.length - targetNum;
             while (extra > 0 && files.size() > 0) {
                 File file = files.get(0);
                 AppSettings.clearUrl(file.getName());
@@ -439,12 +460,16 @@ public class DownloadThread extends Thread {
 
         String apiUrl = "https://api.imgur.com/3/gallery/r/" + source.getData();
 
+        if (!TextUtils.isEmpty(source.getSort())) {
+            apiUrl += "/" + AppSettings.getSourceSortParameter(source).getData();
+        }
+
         Log.i(TAG, "apiUrl: " + apiUrl);
 
         try {
             HttpGet httpGet = new HttpGet(apiUrl);
             httpGet.setHeader("Authorization", "Client-ID " + ApiKeys.IMGUR_CLIENT_ID);
-            httpGet.setHeader("Content-type", "application/json");
+            httpGet.setHeader("Content-Type", "application/json");
 
             String response = getResponse(httpGet);
             if (response == null) {
@@ -463,7 +488,7 @@ public class DownloadThread extends Thread {
                 imageList.add(imageObject.getString("link"));
 
                 String subredditPage = imageObject.getString("reddit_comments");
-                if (subredditPage != null && !subredditPage.equals("")) {
+                if (subredditPage != null && !TextUtils.isEmpty(subredditPage)) {
                     imagePages.add("http://reddit.com" + subredditPage);
                 }
                 else {
@@ -500,7 +525,7 @@ public class DownloadThread extends Thread {
         try {
             HttpGet httpGet = new HttpGet(apiUrl);
             httpGet.setHeader("Authorization", "Client-ID " + ApiKeys.IMGUR_CLIENT_ID);
-            httpGet.setHeader("Content-type", "application/json");
+            httpGet.setHeader("Content-Type", "application/json");
 
             String response = getResponse(httpGet);
             if (response == null) {
@@ -564,6 +589,204 @@ public class DownloadThread extends Thread {
         }
 
         startDownload(imageList, imageList, source);
+
+    }
+
+    private void downloadDrive(Source source) {
+
+        String dir = AppSettings.getDownloadPath();
+        String title = source.getTitle();
+        int targetNum = source.getNum();
+        int numDownloaded = 0;
+
+        if (drive == null) {
+            GoogleAccountCredential driveCredential = GoogleAccountCredential.usingOAuth2(
+                    appContext,
+                    Collections.singleton(DriveScopes.DRIVE));
+            if (TextUtils.isEmpty(AppSettings.getDriveAccountName())) {
+                isNotAuthenticated = true;
+                imageDetails += title + ": " + numDownloaded + " / " + targetNum + " images" + AppSettings.DATA_SPLITTER;
+                return;
+            }
+            else {
+                driveCredential.setSelectedAccountName(AppSettings.getDriveAccountName());
+            }
+            drive = new Drive.Builder(
+                    AndroidHttp.newCompatibleTransport(), GsonFactory.getDefaultInstance(),
+                    driveCredential)
+                    .setApplicationName(appContext.getResources()
+                            .getString(R.string.app_name) + "/" + BuildConfig.VERSION_NAME)
+                    .build();
+        }
+
+        try {
+            Drive.Files.List request = drive.files().list();
+            final FileList files = request.setQ(
+                    "'" + source.getData() + "' in parents and trashed=false").execute();
+            final List<com.google.api.services.drive.model.File> fileList = files.getItems();
+
+            List<com.google.api.services.drive.model.File> imageFiles = new ArrayList<>();
+            List<String> imageData = new ArrayList<>();
+
+            for (com.google.api.services.drive.model.File file : fileList) {
+
+                // Move mimeType to a static variable
+                if (!file.getMimeType().equals("application/vnd.google-apps.folder") && !usedDrivePaths.contains(file.getId()) && file.getImageMediaMetadata() != null) {
+                    imageFiles.add(file);
+                    imageData.add(GOOGLE_DRIVE_FILE_PREFIX + file.getId());
+                }
+
+            }
+
+            isLowResolution = false;
+            Set<File> downloadedFiles = new HashSet<>();
+
+            for (int count = 0; numDownloaded < targetNum && count < imageFiles.size(); count++) {
+                if (isInterrupted() || interrupted) {
+                    removeExtras(dir, title, targetNum, downloadedFiles);
+                    break;
+                }
+
+                com.google.api.services.drive.model.File imageFile = imageFiles.get(count);
+                String randData = imageData.get(count);
+
+                boolean newLink = usedLinks.add(randData);
+
+                if (newLink) {
+
+                    Bitmap bitmap = null;
+
+                    FlushedInputStream flushed = null;
+
+                    try {
+                        int minWidth = AppSettings.getImageWidth();
+                        int minHeight = AppSettings.getImageHeight();
+
+                        flushed = new FlushedInputStream(drive.files().get(imageFile.getId()).executeMediaAsInputStream());
+
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inJustDecodeBounds = true;
+                        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                        options.inPreferQualityOverSpeed = true;
+                        options.inDither = true;
+
+                        BitmapFactory.decodeStream(flushed, null, options);
+
+                        flushed.close();
+
+                        int bitWidth = options.outWidth;
+                        int bitHeight = options.outHeight;
+                        options.inJustDecodeBounds = false;
+
+                        Log.i(TAG, "bitWidth: " + bitWidth + " bitHeight: " + bitHeight);
+
+                        if (bitWidth + 1 < minWidth || bitHeight + 1 < minHeight) {
+                            isLowResolution = true;
+                            bitmap = null;
+                        }
+                        else {
+
+                            int sampleSize = 1;
+
+                            if (!AppSettings.useFullResolution()) {
+
+                                if (bitHeight > minHeight || bitWidth > minWidth) {
+
+                                    final int halfHeight = bitHeight / 2;
+                                    final int halfWidth = bitWidth / 2;
+                                    while ((halfHeight / sampleSize) > minHeight && (halfWidth / sampleSize) > minWidth) {
+                                        sampleSize *= 2;
+                                    }
+                                }
+                            }
+
+                            options.inSampleSize = sampleSize;
+
+                            imageFile.setMimeType("image/png");
+                            drive.files()
+                                    .patch(imageFile.getId(), imageFile)
+                                    .execute();
+
+                            flushed = new FlushedInputStream(drive.files()
+                                    .get(imageFile.getId())
+                                    .executeMediaAsInputStream());
+
+                            int len;
+                            int size = 1024;
+                            byte[] buffer;
+                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                            buffer = new byte[size];
+                            while ((len = flushed.read(buffer, 0, size)) != -1) {
+                                outputStream.write(buffer, 0, len);
+                            }
+                            byte[] bytes = outputStream.toByteArray();
+                            bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+
+                        }
+
+                    }
+                    catch (java.io.InterruptedIOException e) {
+                        DownloadThread.this.interrupt();
+                        Log.i(TAG, "Interrupted");
+                    }
+                    catch (Throwable e) {
+                        if (isInterrupted()) {
+                            DownloadThread.this.interrupt();
+                        }
+                        e.printStackTrace();
+                    }
+                    finally {
+                        if (flushed != null) {
+                            flushed.close();
+                        }
+                    }
+
+                    if (bitmap != null && !interrupted) {
+                        long time = System.currentTimeMillis();
+                        File file = new File(dir + "/" + title + " " + AppSettings.getImagePrefix() + "/" + title + " " + AppSettings.getImagePrefix() + " " + time + ".png");
+
+                        if (AppSettings.useImageHistory()) {
+                            AppSettings.addUsedLink(randData, time);
+                            if (AppSettings.cacheThumbnails()) {
+                                writeToFileWithThumbnail(bitmap,
+                                        randData,
+                                        dir,
+                                        file,
+                                        time);
+                            }
+                            else {
+                                writeToFile(bitmap, randData, file);
+                            }
+                        }
+                        else {
+                            writeToFile(bitmap, randData, file);
+                        }
+                        downloadedFiles.add(file);
+                        numDownloaded++;
+                        updateNotification(++numTarget + totalTarget);
+                    }
+                }
+            }
+
+            removeExtras(dir, title, targetNum, downloadedFiles);
+            imageDetails += title + ": " + numDownloaded + " / " + targetNum + " images" + AppSettings.DATA_SPLITTER;
+
+            if (numDownloaded < targetNum) {
+                if (isLowResolution) {
+                    isAnyLowResolution = true;
+                }
+                else {
+                    isNotEnoughNew = true;
+                }
+            }
+
+            totalDownloaded += numDownloaded;
+
+        }
+        catch (IllegalArgumentException | IOException e) {
+            e.printStackTrace();
+        }
+
 
     }
 
@@ -661,7 +884,20 @@ public class DownloadThread extends Thread {
             return;
         }
 
-        String apiUrl = "https://reddit.com/r/" + source.getData() + "/hot/.json?limit=100";
+        String apiUrl = "https://reddit.com/r/" + source.getData();
+
+        SortData sortData = AppSettings.getSourceSortParameter(source);
+
+        if (!TextUtils.isEmpty(source.getSort()) && sortData != null) {
+            apiUrl += "/" + sortData.getData();
+        }
+
+        apiUrl +=".json?limit=100";
+
+
+        if (!TextUtils.isEmpty(source.getSort()) && sortData != null) {
+            apiUrl += "&t=" + sortData.getQuery();
+        }
 
         Log.i(TAG, "apiUrl: " + apiUrl);
 
@@ -689,7 +925,11 @@ public class DownloadThread extends Thread {
                 if (i == 0) {
                     Log.i(TAG, "First object: " + linkObject.toString());
                 }
-                imageList.add(linkObject.getString("url"));
+                String url = linkObject.getString("url");
+                if (url.contains("imgur") && !AppSettings.checkIsImage(url)) {
+                    url += ".jpg";
+                }
+                imageList.add(url);
                 imagePages.add("https://reddit.com" + linkObject.getString("permalink"));
 
             }
@@ -718,8 +958,7 @@ public class DownloadThread extends Thread {
             for (Entry entry : entries) {
                 if (!entry.isDir &&
                         !usedDropboxPaths.contains(entry.path) &&
-                        (entry.path.contains(".jpg") || entry.path.contains(".jpeg") || entry.path.contains(
-                                ".png"))) {
+                        (AppSettings.checkIsImage(entry.path))) {
                     imageLinks.add(dropboxAPI.media(entry.path, true).url);
                     imageData.add(DROPBOX_FILE_PREFIX + entry.path);
                 }
@@ -776,18 +1015,14 @@ public class DownloadThread extends Thread {
     private Bitmap getImage(String url) {
 
         if (Patterns.WEB_URL.matcher(url).matches()) {
+            InputStream input = null;
             try {
                 int minWidth = AppSettings.getImageWidth();
                 int minHeight = AppSettings.getImageHeight();
                 URL imageUrl = new URL(url);
                 HttpURLConnection connection = (HttpURLConnection) imageUrl.openConnection();
                 connection.connect();
-                InputStream input = connection.getInputStream();
-
-                if (!connection.getHeaderField("Content-Type").startsWith("image/") && !AppSettings.forceDownload()) {
-                    Log.i(TAG, "Not an image: " + url);
-                    return null;
-                }
+                input = connection.getInputStream();
 
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inJustDecodeBounds = true;
@@ -831,7 +1066,17 @@ public class DownloadThread extends Thread {
                 connection.connect();
                 input = connection.getInputStream();
 
-                Bitmap bitmap = BitmapFactory.decodeStream(input, null, options);
+                int len;
+                int size = 1024;
+                byte[] buffer;
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                buffer = new byte[size];
+                while ((len = input.read(buffer, 0, size)) != -1) {
+                    outputStream.write(buffer, 0, len);
+                }
+                byte[] bytes = outputStream.toByteArray();
+                input.close();
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
                 if (bitmap == null) {
                     Log.i(TAG, "Null bitmap");
@@ -844,9 +1089,21 @@ public class DownloadThread extends Thread {
                 DownloadThread.this.interrupt();
                 Log.i(TAG, "Interrupted");
             }
-            catch (OutOfMemoryError | IOException e) {
-                DownloadThread.this.interrupt();
+            catch (Throwable e) {
+                if (isInterrupted()) {
+                    DownloadThread.this.interrupt();
+                }
                 e.printStackTrace();
+            }
+            finally {
+                if (input != null) {
+                    try {
+                        input.close();
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
         Log.i(TAG, "Possible malformed URL");
@@ -1028,6 +1285,10 @@ public class DownloadThread extends Thread {
 
                 if (isNotEnoughNew) {
                     inboxStyle.addLine("Not enough new images");
+                }
+
+                if (isNotAuthenticated) {
+                    inboxStyle.addLine("Account authentication denied");
                 }
 
                 for (String detail : imageDetails.split(AppSettings.DATA_SPLITTER)) {

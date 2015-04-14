@@ -50,12 +50,9 @@
             android:title="@string/use_pin_indicator"
             />
 
-        <EditTextPreference
-            android:defaultValue="5"
+        <Preference
             android:inputType="number"
             android:key="history_size"
-            android:maxLength="2"
-            android:numeric="integer"
             android:summary="@string/history_size_description"
             android:title="@string/history_size"
             />

@@ -37,6 +37,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -55,6 +56,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import cw.kop.autobackground.DialogFactory;
+import cw.kop.autobackground.DividerItemDecoration;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.OptionData;
 import cw.kop.autobackground.OptionsListAdapter;
@@ -88,6 +90,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
     private ImageView optionOneHighlight;
     private ImageView optionTwoHighlight;
     private ImageView optionThreeHighlight;
+    private Preference historySizePref;
 
     public NotificationSettingsFragment() {
     }
@@ -112,6 +115,15 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
         View view = inflater.inflate(R.layout.fragment_notification, container, false);
 
         preferenceList = (ListView) view.findViewById(android.R.id.list);
+
+        historySizePref = findPreference("history_size");
+        historySizePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                showHistorySizeDialog();
+                return true;
+            }
+        });
 
         recyclerView = (RecyclerView) view.findViewById(R.id.notification_options_list);
 
@@ -160,7 +172,7 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.addItemDecoration(new DividerItemDecoration(appContext, DividerItemDecoration.VERTICAL_LIST));
 
         Preference iconActionPref = findPreference("notification_icon_action");
         iconActionPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -681,7 +693,10 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
             }
         };
 
-        DialogFactory.showColorPickerDialog(appContext, "Enter text color:", listener, -1, R.string.cancel_button, R.string.ok_button, index == 4 ? AppSettings.getNotificationTitleColor() : AppSettings.getNotificationSummaryColor());
+        DialogFactory.showColorPickerDialog(appContext, "Enter text color:", listener, -1,
+                R.string.cancel_button, R.string.ok_button,
+                index == 4 ? AppSettings.getNotificationTitleColor() :
+                        AppSettings.getNotificationSummaryColor());
     }
 
     private void showOptionColorDialog(final int index, final String title, final int drawable) {
@@ -803,6 +818,46 @@ public class NotificationSettingsFragment extends PreferenceFragment implements 
                 clickListener,
                 R.array.pin_entry_menu);
 
+    }
+
+
+
+    private void showHistorySizeDialog() {
+
+        DialogFactory.InputDialogListener listener = new DialogFactory.InputDialogListener() {
+
+            @Override
+            public void onClickMiddle(View v) {
+                dismissDialog();
+            }
+
+            @Override
+            public void onClickRight(View v) {
+
+                String value = getEditTextString();
+
+                if (TextUtils.isEmpty(value) ||  Integer.parseInt(value) < 0) {
+                    dismissDialog();
+                    return;
+                }
+
+                int inputValue = Integer.parseInt(value);
+
+                AppSettings.setHistorySize(inputValue);
+                dismissDialog();
+            }
+
+        };
+
+        DialogFactory.showInputDialog(appContext,
+                "Previous History Size",
+                "Number of images in buffer",
+                "" + AppSettings.getHistorySize(),
+                listener,
+                -1,
+                R.string.cancel_button,
+                R.string.ok_button,
+                InputType.TYPE_CLASS_NUMBER);
     }
 
     @Override

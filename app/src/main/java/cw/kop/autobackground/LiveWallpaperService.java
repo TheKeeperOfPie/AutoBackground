@@ -42,7 +42,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -54,7 +53,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.Asset;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.Wearable;
 import com.squareup.picasso.Picasso;
@@ -114,7 +115,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
             switch (action) {
                 case STOP_DOWNLOAD:
-                    FileHandler.cancel(getApplicationContext());
+                    FileHandler.cancel(LiveWallpaperService.this);
                     break;
                 case UPDATE_NOTIFICATION:
                     startNotification(intent.getBooleanExtra("use", false));
@@ -296,7 +297,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         super.onCreate();
 
         handler = new Handler();
-        AppSettings.initPrefs(getApplicationContext());
+        AppSettings.initPrefs(this);
 
         AppSettings.resetVer1_30();
         AppSettings.resetVer1_40();
@@ -315,14 +316,11 @@ public class LiveWallpaperService extends GLWallpaperService {
             startNotification(true);
         }
 
-        googleApiClient = new GoogleApiClient.Builder(getApplicationContext())
+        googleApiClient = new GoogleApiClient.Builder(LiveWallpaperService.this)
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                     @Override
                     public void onConnected(Bundle connectionHint) {
                         isWearConnected = true;
-                        if (AppSettings.useToast()) {
-                            Toast.makeText(LiveWallpaperService.this, "Connected to Wear device", Toast.LENGTH_LONG).show();
-                        }
                     }
                     @Override
                     public void onConnectionSuspended(int cause) {
@@ -343,51 +341,25 @@ public class LiveWallpaperService extends GLWallpaperService {
         Log.i(TAG, "onCreateService");
     }
 
+    private PendingIntent getBroadcastPendingIntent(String action) {
+        return PendingIntent.getBroadcast(this, 0, new Intent(action), 0);
+    }
+
     private void setIntents() {
         Intent downloadIntent = new Intent(LiveWallpaperService.DOWNLOAD_WALLPAPER);
         downloadIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
         pendingDownloadIntent = PendingIntent.getBroadcast(this, 0, downloadIntent, 0);
 
-        pendingIntervalIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.UPDATE_WALLPAPER),
-                0);
-        pendingToastIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.TOAST_LOCATION),
-                0);
-        pendingCopyIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.COPY_IMAGE),
-                0);
-        pendingCycleIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.CYCLE_IMAGE),
-                0);
-        pendingDeleteIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.DELETE_IMAGE),
-                0);
-        pendingOpenIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.OPEN_IMAGE),
-                0);
-        pendingPinIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.PIN_IMAGE),
-                0);
-        pendingPreviousIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.PREVIOUS_IMAGE),
-                0);
-        pendingShareIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.SHARE_IMAGE),
-                0);
-        pendingGameIntent = PendingIntent.getBroadcast(this,
-                0,
-                new Intent(LiveWallpaperService.TOGGLE_GAME),
-                0);
+        pendingIntervalIntent = getBroadcastPendingIntent(LiveWallpaperService.UPDATE_WALLPAPER);
+        pendingToastIntent = getBroadcastPendingIntent(LiveWallpaperService.TOAST_LOCATION);
+        pendingCopyIntent = getBroadcastPendingIntent(LiveWallpaperService.COPY_IMAGE);
+        pendingCycleIntent = getBroadcastPendingIntent(LiveWallpaperService.CYCLE_IMAGE);
+        pendingDeleteIntent = getBroadcastPendingIntent(LiveWallpaperService.DELETE_IMAGE);
+        pendingOpenIntent = getBroadcastPendingIntent(LiveWallpaperService.OPEN_IMAGE);
+        pendingPinIntent = getBroadcastPendingIntent(LiveWallpaperService.PIN_IMAGE);
+        pendingPreviousIntent = getBroadcastPendingIntent(LiveWallpaperService.PREVIOUS_IMAGE);
+        pendingShareIntent = getBroadcastPendingIntent(LiveWallpaperService.SHARE_IMAGE);
+        pendingGameIntent = getBroadcastPendingIntent(LiveWallpaperService.TOGGLE_GAME);
         pendingAppIntent = PendingIntent.getActivity(this,
                 0,
                 new Intent(this, MainActivity.class),
@@ -417,8 +389,8 @@ public class LiveWallpaperService extends GLWallpaperService {
     }
 
     private void startAlarms() {
-        if (AppSettings.useTimer() && AppSettings.getTimerDuration() > 0 && PendingIntent.getBroadcast(
-                getApplicationContext(),
+        if (AppSettings.useTimer() && PendingIntent.getBroadcast(
+                LiveWallpaperService.this,
                 0,
                 new Intent(LiveWallpaperService.DOWNLOAD_WALLPAPER),
                 PendingIntent.FLAG_NO_CREATE) != null) {
@@ -429,6 +401,17 @@ public class LiveWallpaperService extends GLWallpaperService {
             calendar.set(Calendar.MINUTE, AppSettings.getTimerMinute());
 
             alarmManager.cancel(pendingDownloadIntent);
+
+            if (AppSettings.getLastDownloadTime() > 0) {
+
+                long targetTime = AppSettings.getLastDownloadTime() + AppSettings.getTimerDuration();
+                if (System.currentTimeMillis() < targetTime) {
+                    calendar.setTimeInMillis(targetTime);
+                    calendar.set(Calendar.HOUR_OF_DAY, AppSettings.getTimerHour());
+                    calendar.set(Calendar.MINUTE, AppSettings.getTimerMinute());
+                }
+
+            }
 
             if (calendar.getTimeInMillis() > System.currentTimeMillis()) {
                 alarmManager.setInexactRepeating(AlarmManager.RTC,
@@ -442,9 +425,10 @@ public class LiveWallpaperService extends GLWallpaperService {
                         AppSettings.getTimerDuration(),
                         pendingDownloadIntent);
             }
+
         }
         if (AppSettings.useInterval() && AppSettings.getIntervalDuration() > 0 && PendingIntent.getBroadcast(
-                getApplicationContext(),
+                LiveWallpaperService.this,
                 0,
                 new Intent(LiveWallpaperService.UPDATE_WALLPAPER),
                 PendingIntent.FLAG_NO_CREATE) != null) {
@@ -1187,7 +1171,7 @@ public class LiveWallpaperService extends GLWallpaperService {
         public GLWallpaperEngine() {
             super();
 
-            gestureDetector = new GestureDetector(getApplicationContext(),
+            gestureDetector = new GestureDetector(LiveWallpaperService.this,
                     new GestureDetector.SimpleOnGestureListener() {
 
                         @Override
@@ -1310,7 +1294,7 @@ public class LiveWallpaperService extends GLWallpaperService {
             NetworkInfo mobile = connect.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
             if (wifi != null && wifi.isConnected() && AppSettings.useWifi()) {
-                FileHandler.download(getApplicationContext());
+                FileHandler.download(LiveWallpaperService.this);
                 if (downloadOnConnection) {
                     try {
                         unregisterReceiver(networkReceiver);
@@ -1320,7 +1304,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 }
             }
             else if (mobile != null && mobile.isConnected() && AppSettings.useMobile()) {
-                FileHandler.download(getApplicationContext());
+                FileHandler.download(LiveWallpaperService.this);
                 if (downloadOnConnection) {
                     try {
                         unregisterReceiver(networkReceiver);
@@ -1572,11 +1556,11 @@ public class LiveWallpaperService extends GLWallpaperService {
                 int bitHeight = options.outHeight;
                 int sampleSize = 1;
 
-                if (bitWidth > 280 || bitHeight > 280) {
+                if (bitWidth > 512 || bitHeight > 512) {
 
                     final int halfHeight = bitHeight / 2;
                     final int halfWidth = bitWidth / 2;
-                    while ((halfHeight / sampleSize) > 280 && (halfWidth / sampleSize) > 280) {
+                    while ((halfHeight / sampleSize) > 512 && (halfWidth / sampleSize) > 512) {
                         sampleSize *= 2;
                     }
                 }
@@ -1585,7 +1569,7 @@ public class LiveWallpaperService extends GLWallpaperService {
                 options.inScaled = true;
                 options.inDither = true;
                 Bitmap bitmap = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(file.getAbsolutePath(),
-                        options), 280, 280);
+                        options), 512, 512, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
 
                 if (bitmap == null) {
                     return;
@@ -1610,6 +1594,7 @@ public class LiveWallpaperService extends GLWallpaperService {
 
                 switch (action) {
                     case LiveWallpaperService.DOWNLOAD_WALLPAPER:
+                        AppSettings.setLastDownloadTime(System.currentTimeMillis());
                         getNewImages();
                         break;
                     case LiveWallpaperService.CYCLE_IMAGE:

@@ -39,6 +39,7 @@ public class Source {
     public static final String TIME = "time";
     public static final String IMAGE_FILE = "imageFile";
     public static final String NUM_STORED = "numStored";
+    public static final String SORT = "sort";
 
     private String type;
     private String title;
@@ -50,6 +51,8 @@ public class Source {
     private boolean useTime;
     private String time;
     private File imageFile;
+    private String sort;
+    private boolean expanded;
 
     public String getType() {
         return type;
@@ -123,6 +126,14 @@ public class Source {
         this.useTime = useTime;
     }
 
+    public String getSort() {
+        return sort;
+    }
+
+    public void setSort(String sort) {
+        this.sort = sort;
+    }
+
     public File getImageFile() {
         return imageFile;
     }
@@ -143,13 +154,15 @@ public class Source {
         object.put(USE_TIME, useTime);
         object.put(TIME, time);
         object.put(IMAGE_FILE, imageFile != null ? imageFile.getAbsolutePath() : null);
+        object.put(SORT, sort);
         return object;
     }
 
     public static Source fromJson(JSONObject object) throws JSONException {
         Source source = new Source();
         source.setType(object.has(TYPE) ? object.getString(TYPE) : AppSettings.WEBSITE);
-        source.setTitle(object.has(TITLE) ? object.getString(TITLE) : "" + System.currentTimeMillis());
+        source.setTitle(
+                object.has(TITLE) ? object.getString(TITLE) : "" + System.currentTimeMillis());
         source.setData(object.has(DATA) ? object.getString(DATA) : "Error loading data");
         source.setNum(object.has(NUM) ? object.getInt(NUM) : 1);
         source.setNumStored(object.has(NUM_STORED) ? object.getInt(NUM_STORED) : 0);
@@ -158,6 +171,7 @@ public class Source {
         source.setUseTime(!object.has(USE_TIME) || object.getBoolean(USE_TIME));
         source.setTime(object.has(TIME) ? object.getString(TIME) : "00:00 - 00:00");
         source.setImageFile(object.has(IMAGE_FILE) ? new File(object.getString(IMAGE_FILE)) : null);
+        source.setSort(object.has(SORT) ? object.getString(SORT) : "");
         return source;
     }
 
@@ -170,5 +184,13 @@ public class Source {
             e.printStackTrace();
         }
         return super.toString();
+    }
+
+    public void setExpanded(boolean expanded) {
+        this.expanded = expanded;
+    }
+
+    public boolean isExpanded() {
+        return expanded;
     }
 }

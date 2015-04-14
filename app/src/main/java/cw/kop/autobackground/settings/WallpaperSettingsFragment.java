@@ -29,6 +29,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -506,13 +507,13 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
             public void onClickRight(View v) {
                 String value = getEditTextString();
 
-                if (value.equals("") || Long.parseLong(value) < 0) {
+                if (TextUtils.isEmpty(value) || Long.parseLong(value) < 0) {
                     intervalPref.setChecked(false);
                     dismissDialog();
                     return;
                 }
 
-                long inputValue = Long.parseLong(value);
+                long inputValue = Long.parseLong(value) * CONVERT_MINUTES_TO_MILLES;
 
                 if (inputValue < 3000L && inputValue > 0) {
                     inputValue = 3000L;
@@ -532,8 +533,8 @@ public class WallpaperSettingsFragment extends PreferenceFragment implements OnS
 
         DialogFactory.showInputDialog(appContext,
                 "Update Interval",
-                "Number of milliseconds",
-                "",
+                "Number of minutes",
+                "" + (AppSettings.getIntervalDuration() / CONVERT_MINUTES_TO_MILLES),
                 listener,
                 -1,
                 R.string.cancel_button,

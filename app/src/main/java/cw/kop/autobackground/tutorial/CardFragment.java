@@ -23,10 +23,12 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -67,6 +69,7 @@ public class CardFragment extends Fragment implements View.OnClickListener {
                 inflater.inflate(R.layout.tutorial_card_fragment_dark, container, false);
         View sourceCard = view.findViewById(R.id.source_card);
         sourceCard.setOnClickListener(this);
+        view.findViewById(R.id.source_image_overlay).setVisibility(View.GONE);
 
         int colorFilterInt = AppSettings.getColorFilterInt(appContext);
 
@@ -78,29 +81,22 @@ public class CardFragment extends Fragment implements View.OnClickListener {
             }
         });
 
-        ImageView deleteButton = (ImageView) view.findViewById(R.id.source_delete_button);
-        ImageView viewButton = (ImageView) view.findViewById(R.id.source_view_image_button);
-        ImageView editButton = (ImageView) view.findViewById(R.id.source_edit_button);
+        Toolbar toolbar = (Toolbar) view.findViewById(R.id.toolbar_actions);
 
-        Drawable deleteDrawable = getResources().getDrawable(R.drawable.ic_delete_white_24dp);
-        Drawable viewDrawable = getResources().getDrawable(R.drawable.ic_photo_white_24dp);
-        Drawable editDrawable = getResources().getDrawable(R.drawable.ic_edit_white_24dp);
-
-        deleteDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-        viewDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-        editDrawable.setColorFilter(colorFilterInt, PorterDuff.Mode.MULTIPLY);
-
-        deleteButton.setImageDrawable(deleteDrawable);
-        viewButton.setImageDrawable(viewDrawable);
-        editButton.setImageDrawable(editDrawable);
-
-        deleteButton.setOnClickListener(null);
-        viewButton.setOnClickListener(null);
-        editButton.setOnClickListener(null);
+        toolbar.inflateMenu(R.menu.menu_source);
+        toolbar.getMenu().findItem(R.id.item_source_download).getIcon().setColorFilter(colorFilterInt,
+                PorterDuff.Mode.MULTIPLY);
+        toolbar.getMenu().findItem(R.id.item_source_delete).getIcon().setColorFilter(colorFilterInt,
+                PorterDuff.Mode.MULTIPLY);
+        toolbar.getMenu().findItem(R.id.item_source_view).getIcon().setColorFilter(colorFilterInt,
+                PorterDuff.Mode.MULTIPLY);
+        toolbar.getMenu().findItem(R.id.item_source_edit).getIcon().setColorFilter(colorFilterInt,
+                PorterDuff.Mode.MULTIPLY);
 
         TextView sourceType = (TextView) view.findViewById(R.id.source_type);
         TextView sourceData = (TextView) view.findViewById(R.id.source_data);
         TextView sourceNum = (TextView) view.findViewById(R.id.source_num);
+        TextView sourceSort = (TextView) view.findViewById(R.id.source_sort);
         TextView sourceTime = (TextView) view.findViewById(R.id.source_time);
 
         int colorPrimary = getResources().getColor(R.color.BLUE_OPAQUE);
@@ -113,6 +109,9 @@ public class CardFragment extends Fragment implements View.OnClickListener {
         SpannableString numPrefix = new SpannableString("Number of Images: ");
         numPrefix.setSpan(new ForegroundColorSpan(colorPrimary), 0, numPrefix.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        SpannableString sortPrefix = new SpannableString("Sort By: ");
+        sortPrefix.setSpan(new ForegroundColorSpan(colorPrimary), 0, sortPrefix.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         SpannableString timePrefix = new SpannableString("Active Time: ");
         timePrefix.setSpan(new ForegroundColorSpan(colorPrimary), 0, timePrefix.length(),
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -120,6 +119,7 @@ public class CardFragment extends Fragment implements View.OnClickListener {
         sourceType.setText(typePrefix);
         sourceData.setText(dataPrefix);
         sourceNum.setText(numPrefix);
+        sourceSort.setText(sortPrefix);
         sourceTime.setText(timePrefix);
 
         ImageView image = (ImageView) view.findViewById(R.id.source_image);

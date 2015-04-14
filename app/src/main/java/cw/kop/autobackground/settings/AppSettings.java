@@ -27,11 +27,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -39,16 +37,17 @@ import java.util.Set;
 import cw.kop.autobackground.R;
 import cw.kop.autobackground.files.FileHandler;
 import cw.kop.autobackground.shared.WearConstants;
+import cw.kop.autobackground.sources.SortData;
 import cw.kop.autobackground.sources.Source;
 
 public class AppSettings {
 
     public static final String WEBSITE = "Website";
     public static final String FOLDER = "Folder";
-    //    public static final String IMGUR = "imgur";
     public static final String IMGUR_SUBREDDIT = "Imgur Subreddit";
     public static final String IMGUR_ALBUM = "Imgur Album";
-    public static final String GOOGLE_ALBUM = "Google+ Album";
+    public static final String GOOGLE_PLUS_ALBUM = "Google+ Album";
+    public static final String GOOGLE_DRIVE_ALBUM = "Google Drive Album";
     public static final String TUMBLR_BLOG = "Tumblr Blog";
     public static final String TUMBLR_TAG = "Tumblr Tag";
     public static final String REDDIT_SUBREDDIT = "Reddit Subreddit";
@@ -66,7 +65,18 @@ public class AppSettings {
     private static final String TAG = AppSettings.class.getCanonicalName();
     private static final long DEFAULT_INTERVAL = 0;
 
+    public static final String PNG = ".png";
+    public static final String JPG = ".jpg";
+    public static final String JPEG = ".jpeg";
+    public static final String WEBM = ".webm";
+
     private static SharedPreferences prefs;
+
+    public static boolean checkIsImage(String url) {
+        String lowercase = url.toLowerCase();
+
+        return lowercase.endsWith(PNG) || lowercase.endsWith(JPG) || lowercase.endsWith(JPEG) || lowercase.endsWith(WEBM);
+    }
 
     private static boolean isFirstRun() {
         return prefs.getBoolean("first_run", true);
@@ -168,7 +178,7 @@ public class AppSettings {
                         newType = AppSettings.FOLDER;
                         break;
                     case "picasa":
-                        newType = AppSettings.GOOGLE_ALBUM;
+                        newType = AppSettings.GOOGLE_PLUS_ALBUM;
                         break;
                     case "tumblr_blog":
                         newType = AppSettings.TUMBLR_BLOG;
@@ -250,7 +260,7 @@ public class AppSettings {
     }
 
     public static void clearUrl(String key) {
-        prefs.edit().putString(key, "").apply();
+        prefs.edit().remove(key).apply();
     }
 
     public static boolean useDownloadPath() {
@@ -305,6 +315,10 @@ public class AppSettings {
 
     public static int getColorFilterInt(Context context) {
 
+        if (context == null) {
+            return 0xFFDEDEDE;
+        }
+
         switch (getTheme()) {
             default:
             case APP_LIGHT_THEME:
@@ -335,6 +349,17 @@ public class AppSettings {
                 return context.getResources().getColor(R.color.LIGHT_THEME_DIALOG);
             case APP_DARK_THEME:
                 return context.getResources().getColor(R.color.DARK_THEME_DIALOG);
+        }
+
+    }
+    public static int getDialogColorResource() {
+
+        switch (getTheme()) {
+            default:
+            case APP_LIGHT_THEME:
+                return R.color.LIGHT_THEME_DIALOG;
+            case APP_DARK_THEME:
+                return R.color.DARK_THEME_DIALOG;
         }
 
     }
@@ -721,6 +746,10 @@ public class AppSettings {
         return Integer.parseInt(prefs.getString("history_size", "15"));
     }
 
+    public static void setHistorySize(int size) {
+        prefs.edit().putString("history_size", String.valueOf(size)).apply();
+    }
+
     public static boolean useHighResolutionNotificationIcon() {
         return prefs.getBoolean("high_resolution_notification_icon", false);
     }
@@ -777,10 +806,12 @@ public class AppSettings {
             default:
             case WEBSITE:
             case FOLDER:
-            case GOOGLE_ALBUM:
+            case GOOGLE_PLUS_ALBUM:
+            case GOOGLE_DRIVE_ALBUM:
             case TUMBLR_BLOG:
-            case TUMBLR_TAG:
                 return "";
+            case TUMBLR_TAG:
+                return "Tag: ";
             case IMGUR_SUBREDDIT:
                 return "imgur.com/r/";
             case IMGUR_ALBUM:
@@ -796,7 +827,8 @@ public class AppSettings {
 
             default:
             case FOLDER:
-            case GOOGLE_ALBUM:
+            case GOOGLE_PLUS_ALBUM:
+            case GOOGLE_DRIVE_ALBUM:
                 return "";
             case AppSettings.WEBSITE:
                 return "URL";
@@ -819,7 +851,8 @@ public class AppSettings {
             default:
             case WEBSITE:
             case FOLDER:
-            case GOOGLE_ALBUM:
+            case GOOGLE_PLUS_ALBUM:
+            case GOOGLE_DRIVE_ALBUM:
             case TUMBLR_TAG:
             case IMGUR_SUBREDDIT:
             case IMGUR_ALBUM:
@@ -828,6 +861,79 @@ public class AppSettings {
             case TUMBLR_BLOG:
                 return ".tumblr.com";
         }
+    }
+
+    public static SortData getSourceSortParameter(Source source) {
+
+        switch (source.getType()) {
+            case IMGUR_SUBREDDIT:
+                switch (source.getSort()) {
+                    default:
+                    case "New":
+                        return new SortData("New", "time", "");
+                    case "Top - Day":
+                        return new SortData("Top - Day", "top/day", "");
+                    case "Top - Week":
+                        return new SortData("Top - Week", "top/week", "");
+                    case "Top - Month":
+                        return new SortData("Top - Month", "top/month", "");
+                    case "Top - Year":
+                        return new SortData("Top - Year", "top/year", "");
+                    case "Top - All":
+                        return new SortData("Top - All", "top/all", "");
+                }
+            case REDDIT_SUBREDDIT:
+
+                switch (source.getSort()) {
+                    default:
+                    case "Hot":
+                        return new SortData("Hot", "hot", "");
+                    case "New":
+                        return new SortData("New", "new", "");
+                    case "Top - Hour":
+                        return new SortData("Top - Hour", "top", "hour");
+                    case "Top - Day":
+                        return new SortData("Top - Day", "top", "day");
+                    case "Top - Week":
+                        return new SortData("Top - Week", "top", "week");
+                    case "Top - Month":
+                        return new SortData("Top - Month", "top", "month");
+                    case "Top - Year":
+                        return new SortData("Top - Year", "top", "year");
+                    case "Top - All":
+                        return new SortData("Top - All", "top", "all");
+                }
+            default:
+        }
+        return null;
+    }
+
+    public static List<SortData> getSourceSortList(String type) {
+
+        List<SortData> sortData = new ArrayList<>();
+
+        switch (type) {
+            case IMGUR_SUBREDDIT:
+                sortData.add(new SortData("New", "time", ""));
+                sortData.add(new SortData("Top - Day", "top/day", ""));
+                sortData.add(new SortData("Top - Week", "top/week", ""));
+                sortData.add(new SortData("Top - Month", "top/month", ""));
+                sortData.add(new SortData("Top - Year", "top/year", ""));
+                sortData.add(new SortData("Top - All", "top/all", ""));
+                break;
+            case REDDIT_SUBREDDIT:
+                sortData.add(new SortData("Hot", "hot", ""));
+                sortData.add(new SortData("New", "new", ""));
+                sortData.add(new SortData("Top - Hour", "top", "hour"));
+                sortData.add(new SortData("Top - Day", "top", "day"));
+                sortData.add(new SortData("Top - Week", "top", "week"));
+                sortData.add(new SortData("Top - Month", "top", "month"));
+                sortData.add(new SortData("Top - Year", "top", "year"));
+                sortData.add(new SortData("Top - All", "top", "all"));
+                break;
+            default:
+        }
+        return sortData;
     }
 
     public static int getSourceNum(int index) {
@@ -874,11 +980,19 @@ public class AppSettings {
     }
 
     public static int getImageHistorySize() {
-        return Integer.parseInt(prefs.getString("image_history_size", "250"));
+        return Integer.parseInt(prefs.getString("image_history_size", "500"));
+    }
+
+    public static void setImageHistorySize(int size) {
+        prefs.edit().putString("image_history_size", "" + size).apply();
     }
 
     public static boolean cacheThumbnails() {
         return prefs.getBoolean("use_thumbnails", true);
+    }
+
+    public static void setThumbnailSize(int size) {
+        prefs.edit().putString("thumbnail_size", String.valueOf(size)).apply();
     }
 
     public static int getThumbnailSize() {
@@ -896,6 +1010,8 @@ public class AppSettings {
     public static void addUsedLink(String link, long time) {
         HashSet<String> set = getUsedLinks();
         set.add(link + "Time:" + time);
+
+        Log.d(TAG, "addUsedLink: " + (link + "Time:" + time));
 
         prefs.edit().putStringSet("used_history_links", set).commit();
     }
@@ -919,21 +1035,32 @@ public class AppSettings {
                 public int compare(String lhs, String rhs) {
 
                     try {
-                        long first = Long.parseLong(lhs.substring(lhs.lastIndexOf("Time:")));
-                        long second = Long.parseLong(rhs.substring(lhs.lastIndexOf("Time:")));
+                        long first = Long.parseLong(lhs.substring(lhs.lastIndexOf("Time:") + 5));
+                        long second = Long.parseLong(rhs.substring(rhs.lastIndexOf("Time:") + 5));
 
                         return (int) (first - second);
                     }
                     catch (Exception e) {
-
+                        e.printStackTrace();
                     }
 
                     return 0;
                 }
             });
 
+            Log.d(TAG, "checkUsedLinksSize");
+            for (String link : linkList) {
+                Log.d(TAG, "Link: " + link);
+            }
+
             for (int i = 0; i < iterations; i++) {
+                Log.d(TAG, "Remove: " + linkList.get(0));
                 linkList.remove(0);
+            }
+
+            Log.d(TAG, "After remove");
+            for (String link : linkList) {
+                Log.d(TAG, "Link: " + link);
             }
 
             HashSet<String> newSet = new HashSet<String>(linkList);
@@ -1005,7 +1132,8 @@ public class AppSettings {
 
         }
 
-        prefs.edit().putString("notification_icon_string", value).apply();
+        prefs.edit().putString("notification_icon_string", value)
+                .apply();
     }
 
     public static void setUseNotificationIconFile(boolean value) {
@@ -1115,7 +1243,8 @@ public class AppSettings {
     }
 
     public static void setNotificationSummaryColor(int color) {
-        prefs.edit().putInt("notification_summary_color", color).apply();
+        prefs.edit().putInt("notification_summary_color", color)
+                .apply();
     }
 
     public static void setNotificationOptionTitle(int position, String title) {
@@ -1391,6 +1520,14 @@ public class AppSettings {
         prefs.edit().putString("dropbox_account_token", token).commit();
     }
 
+    public static boolean useGoogleDriveAccount() {
+        return prefs.getBoolean("use_google_drive_account", false);
+    }
+
+    public static void setUseGoogleDriveAccount(boolean use) {
+        prefs.edit().putBoolean("use_google_drive_account", use).commit();
+    }
+
     public static void setTimeType(String type) {
         prefs.edit().putString(WearConstants.TIME_TYPE, type).apply();
     }
@@ -1551,4 +1688,19 @@ public class AppSettings {
         return prefs.getInt(WearConstants.SECOND_SHADOW_COLOR, 0xFF000000);
     }
 
+    public static long getLastDownloadTime() {
+        return prefs.getLong("last_download_time", -1);
+    }
+
+    public static void setLastDownloadTime(long timeMillis) {
+        prefs.edit().putLong("last_download_time", timeMillis).apply();
+    }
+
+    public static void setDriveAccountName(String accountName) {
+        prefs.edit().putString("drive_account_name", accountName).commit();
+    }
+
+    public static String getDriveAccountName() {
+        return prefs.getString("drive_account_name", "");
+    }
 }

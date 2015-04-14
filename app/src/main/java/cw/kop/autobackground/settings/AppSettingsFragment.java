@@ -26,7 +26,6 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
-import android.util.JsonWriter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -52,7 +51,6 @@ import cw.kop.autobackground.DialogFactory;
 import cw.kop.autobackground.LiveWallpaperService;
 import cw.kop.autobackground.MainActivity;
 import cw.kop.autobackground.R;
-import cw.kop.autobackground.settings.AppSettings;
 import cw.kop.autobackground.sources.Source;
 import cw.kop.autobackground.tutorial.TutorialActivity;
 

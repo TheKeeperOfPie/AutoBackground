@@ -16,7 +16,6 @@
 
 package cw.kop.autobackground.accounts;
 
-import android.content.Context;
 import android.content.Intent;
 
 import com.google.android.gms.common.AccountPicker;
