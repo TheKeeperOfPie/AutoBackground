@@ -1201,17 +1201,17 @@ public class SourceListFragment extends Fragment implements View.OnClickListener
                 }
                 int newPaddingHorizontal = Math.round(viewStartPaddingHorizontal * (1 - interpolatedTime));
                 int newPaddingVertical = Math.round(viewStartPaddingVertical * (1 - interpolatedTime));
-                int newCardMarginVertical = Math.round(cardStartMarginVertical * (1 - interpolatedTime));
-                int newCardMarginHorizontal = Math.round(cardStartMarginHorizontal * (1 - interpolatedTime));
-                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).topMargin = newCardMarginVertical;
-                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).bottomMargin = newCardMarginVertical;
-                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).leftMargin = newCardMarginHorizontal;
-                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).rightMargin = newCardMarginHorizontal;
+                float newCardMarginVertical = cardStartMarginVertical * (1f - interpolatedTime);
+                float newCardMarginHorizontal = cardStartMarginHorizontal * (1 - interpolatedTime);
+                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).topMargin = (int) newCardMarginVertical;
+                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).bottomMargin = (int) newCardMarginVertical;
+                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).leftMargin = (int) newCardMarginHorizontal;
+                ((LinearLayout.LayoutParams) sourceCard.getLayoutParams()).rightMargin = (int) newCardMarginHorizontal;
                 view.setPadding(newPaddingHorizontal, newPaddingVertical, newPaddingHorizontal,
                         view.getPaddingBottom());
                 view.setY(viewStartY - interpolatedTime * viewStartY);
                 sourceContainer.getLayoutParams().height = (int) (viewStartHeight + (screenHeight - viewStartHeight) * interpolatedTime);
-                sourceImage.getLayoutParams().height = imageStartHeight + 2 * (viewStartPaddingVertical - newPaddingVertical + cardStartMarginVertical - newCardMarginVertical);
+                sourceImage.getLayoutParams().height = (int) (imageStartHeight + 2f * (viewStartPaddingVertical - newPaddingVertical + cardStartMarginVertical - newCardMarginVertical));
                 sourceTitle.setY(
                         textStartY + interpolatedTime * (textTranslationY + 2 * (viewStartPaddingVertical - newPaddingVertical + cardStartMarginVertical - newCardMarginVertical)));
                 sourceTitle.setX(textStartX + viewStartPaddingHorizontal - newPaddingHorizontal);
