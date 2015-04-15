@@ -83,6 +83,7 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
 
     private static final String TAG = WearSettingsFragment.class.getName();
     private static final float SHADOW_RADIUS = 5f;
+
     private Context appContext;
     private GoogleApiClient googleApiClient;
     private boolean isWearConnected = false;
@@ -593,8 +594,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
             return;
         }
 
-        canvas.drawColor(0xFFFF0000);
-
         setPaints();
 
         Time time = new Time();
@@ -664,8 +663,6 @@ public class WearSettingsFragment extends PreferenceFragment implements OnShared
         if (canvas == null) {
             return;
         }
-
-        canvas.drawColor(0xFFFF0000);
 
         setPaints();
 
